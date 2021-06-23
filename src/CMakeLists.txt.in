@@ -1,0 +1,30 @@
+cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
+project(cuml4r LANGUAGES CXX CUDA)
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_definitions(-DHAS_CUML)
+
+if(IS_DIRECTORY ${CUML_INCLUDE_DIR})
+    # CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES is needed so that cuda_runtime.h is found
+    # CUML_INCLUDE_DIR is needed so that kmeans/kmeans_c.h is found
+    include_directories(${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES} ${CUML_INCLUDE_DIR})
+else()
+    message(FATAL_ERROR "CUML_INCLUDE_DIR not specified.")
+endif(IS_DIRECTORY ${CUML_INCLUDE_DIR})
+if(IS_DIRECTORY ${CUML_LIBRARY_DIR})
+    # CUML_LIBRARY_DIR point to the director where libcuml++.so lives
+    link_directories(${CUML_LIBRARY_DIR})
+else()
+    message(FATAL_ERROR "CUML_LIBRARY_DIR not specified.")
+endif(IS_DIRECTORY ${CUML_LIBRARY_DIR})
+
+include_directories(@R_INCLUDE_DIR@)
+include_directories(@RCPP_INCLUDE_DIR@)
+
+add_library(cuml4r SHARED kmeans.cpp RcppExports.cpp)
+# Need to set linker language to CUDA to link the CUDA Runtime
+set_target_properties(cuml4r PROPERTIES LINKER_LANGUAGE "CUDA")
+set_target_properties(cuml4r PROPERTIES PREFIX "")
+# Link cuml
+target_link_libraries(cuml4r cuml++ cublas cusolver cudart cusparse)
