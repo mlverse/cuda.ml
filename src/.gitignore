@@ -1,0 +1,8 @@
+Makefile
+Makevars
+CMakeLists\.txt
+CMakeCache\.txt
+CMakeFiles
+*\.o
+*\.so
+*\.swp

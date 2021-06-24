@@ -1,0 +1,10 @@
+^\.gitignore$
+^src/\.gitignore$
+^src/Makefile$
+^src/Makevars$
+^src/CMakeLists\.txt$
+^src/CMakeCache\.txt$
+^src/CMakeFiles/*
+^src/*\.o$
+^src/*\.so$
+^.*\.swp
