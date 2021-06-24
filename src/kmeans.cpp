@@ -1,21 +1,30 @@
-#include <cstring>
-
 #if HAS_CUML
+
 #include <raft/handle.hpp>
 #include <raft/mr/device/allocator.hpp>
+
 #include <cuml/cluster/kmeans.hpp>
+
 #include "cuda_utils.h"
+#include "matrix_utils.h"
+
+#include <memory>
+#include <vector>
+
 #else
+
 #include <Rcpp.h>
+
 #endif
 
-// [[Rcpp::export]]
-Rcpp::List kMeans(Rcpp::NumericMatrix const& m, int const k, int const max_iters) {
+// [[Rcpp::export(".kmeans")]]
+Rcpp::List kmeans(Rcpp::NumericMatrix const& m, int const k, int const max_iters) {
   Rcpp::List result;
 
 #if HAS_CUML
-  auto const n_samples = m.ncol();
-  auto const n_features = m.nrow();
+  auto const matrix = cuml4r::Matrix<>(m, /*transpose=*/ true);
+  auto const n_samples = matrix.numRows;
+  auto const n_features = matrix.numCols;
   
   ML::kmeans::KMeansParams params;
   params.n_clusters = k;
@@ -29,7 +38,7 @@ Rcpp::List kMeans(Rcpp::NumericMatrix const& m, int const k, int const max_iters
   CUDA_RT_CALL(cudaStreamCreate(&stream));
   handle.set_stream(stream);
   
-  auto const h_src_data = Rcpp::as<std::vector<double>>(Rcpp::NumericVector(m));
+  auto const& h_src_data = matrix.values;
   
   // kmeans input data
   double *d_src_data = nullptr;
@@ -64,6 +73,10 @@ Rcpp::List kMeans(Rcpp::NumericMatrix const& m, int const k, int const max_iters
 
   result["labels"] = Rcpp::IntegerVector(h_pred_labels.cbegin(), h_pred_labels.cend());
   result["centroids"] = Rcpp::NumericMatrix(n_features, k, h_pred_centroids.begin());
+#else
+
+#include "warn_cuml_missing.h"
+
 #endif
 
   return result;
