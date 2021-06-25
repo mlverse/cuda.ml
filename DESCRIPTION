@@ -1,13 +1,26 @@
 Package: cuml4r
 Type: Package
-Title: What the Package Does in One 'Title Case' Line
-Version: 1.0
+Title: R Interface for the RAPIDS cuML Suite of Libraries
+Version: 0.0.1
 Date: 2021-06-23
-Author: Your Name
-Maintainer: Your Name <your@email.com>
-Description: One paragraph description of what the package does as one
-        or more full sentences.
-License: GPL (>= 2)
+Authors@R:
+    person(given = "Yitao",
+           family = "Li",
+           role = c("aut", "cre"),
+           email = "yitao@rstudio.com",
+           comment = c(ORCID = "0000-0002-1261-905X"))
+Maintainer: Yitao Li <yitao@rstudio.com>
+Description: This package provides an R interface for the RAPIDS cuML suite of
+        libraries. It is currently under active development.
+License: Apache License (>= 2.0)
 Imports: Rcpp (>= 1.0.6)
+Suggests:
+    magrittr,
+    MASS,
+    purrr,
+    rlang
 LinkingTo: Rcpp
-Biarch: TRUE
+OS_type: unix
+SystemRequirements: RAPIDS cuML (see https://rapids.ai/start.html)
+RoxygenNote: 7.1.1
+NeedsCompilation: yes
