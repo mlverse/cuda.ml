@@ -1,30 +1,46 @@
-has_cuml <- function() {
+get_cuda_path <- function() {
   cuda_path <- Sys.getenv("CUDA_PATH", unset = NA_character_)
-  cuml_missing <- (  
-    if (is.na(cuda_path)) {
-      warning("'CUDA_PATH' env variable is missing.")
-      TRUE
-    } else {
-      cuml_headers_dir <- file.path(cuda_path, "include", "cuml")
-      if (!dir.exists(cuml_headers_dir)) {
-        warning(cuml_headers_dir, " does not exist or is not a directory.")
-        TRUE
-      } else {
-        FALSE
-      }
-    }
-  )
-
-  if (cuml_missing) {
-    warning("`cuml4r` requires a valid RAPIDS installation. ",
-      "Please follow https://rapids.ai/start.html to install RAPIDS first.",
-      "`cuml4r` must be installed and run from an environment containing ",
-      "a valid CUDA_PATH env variable ",
-      "(e.g., '/home/user/anaconda3/envs/rapids-21.06' or similar)."
+  if (is.na(cuda_path)) {
+    warning(
+      "\t**********************************************\n",
+      "\t**********************************************\n",
+      "\t**                                          **\n",
+      "\t**  'CUDA_PATH' env variable is missing --  **\n",
+      "\t**  will boldly assume it is '/usr' !       **\n",
+      "\t**                                          **\n",
+      "\t**********************************************\n",
+      "\t**********************************************\n",
+      immediate. = TRUE
     )
+    cuda_path <- "/usr"
   }
 
-  !cuml_missing
+  cuda_path
+}
+
+has_cuml <- function() {
+  cuda_path <- get_cuda_path()
+  cuml_headers_dir <- file.path(cuda_path, "include", "cuml")
+
+  if (!dir.exists(cuml_headers_dir)) {
+    warning(
+      "\t'", cuml_headers_dir, "' does not exist or is not a directory!\n\n",
+      "\t***************************************************************************\n",
+      "\t***************************************************************************\n",
+      "\t**                                                                       **\n",
+      "\t**  `cuml4r` requires a valid RAPIDS installation.                       **\n",
+      "\t**  Please follow https://rapids.ai/start.html to install RAPIDS first.  **\n",
+      "\t**  `cuml4r` must be installed and run from an environment containing    **\n",
+      "\t**  a valid CUDA_PATH env variable\n                                     **\n",
+      "\t**  (e.g., '/home/user/anaconda3/envs/rapids-21.06' or similar).         **\n",
+      "\t**                                                                       **\n",
+      "\t***************************************************************************\n",
+      "\t***************************************************************************\n"
+    )
+    FALSE
+  } else {
+    TRUE
+  }
 }
 
 cuml_missing <- !has_cuml()
@@ -37,7 +53,7 @@ run_cmake <- function() {
   wd <- getwd()
   on.exit(setwd(wd))
   setwd("src")
-  cuda_path <- Sys.getenv("CUDA_PATH")
+  cuda_path <- get_cuda_path()
   system2(
     "cmake",
     args = c(
