@@ -1,21 +1,19 @@
 #if HAS_CUML
 
-#include <raft/handle.hpp>
-#include <raft/mr/device/allocator.hpp>
+#include "cuda_utils.h"
+#include "handle_utils.h"
+#include "matrix_utils.h"
+#include "stream_allocator.h"
 
 #include <cuml/cluster/kmeans.hpp>
-
-#include "cuda_utils.h"
-#include "matrix_utils.h"
 
 #include <memory>
 #include <vector>
 
-#else
+#endif
 
 #include <Rcpp.h>
 
-#endif
 
 // [[Rcpp::export(".kmeans")]]
 Rcpp::List kmeans(Rcpp::NumericMatrix const& m, int const k, int const max_iters) {
@@ -30,13 +28,10 @@ Rcpp::List kmeans(Rcpp::NumericMatrix const& m, int const k, int const max_iters
   params.n_clusters = k;
   params.max_iter = max_iters;
 
+  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  auto stream = stream_view.value();
   raft::handle_t handle;
-  auto const allocator = std::make_shared<raft::mr::device::default_allocator>();
-  handle.set_device_allocator(allocator);
-
-  cudaStream_t stream;
-  CUDA_RT_CALL(cudaStreamCreate(&stream));
-  handle.set_stream(stream);
+  cuml4r::handle_utils::initializeHandle(handle, stream);
 
   auto const& h_src_data = matrix.values;
 

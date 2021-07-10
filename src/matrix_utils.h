@@ -1,11 +1,13 @@
 #pragma once
 
+#include <Rcpp.h>
+
 namespace cuml4r {
 
 template <typename T = double>
 struct Matrix {
    size_t const numRows;
-   size_t const numCols; 
+   size_t const numCols;
    // all entries of the matrix in row-major order
    std::vector<T> const values;
 
@@ -14,7 +16,7 @@ struct Matrix {
      numCols(transpose ? m.nrow() : m.ncol()),
      // conversion from column-major order to row-major order
      values(
-       transpose ? 
+       transpose ?
        Rcpp::as<std::vector<T>>(Rcpp::NumericVector(m)) :
        Rcpp::as<std::vector<T>>(Rcpp::NumericVector(Rcpp::transpose(m)))
      ) {}
