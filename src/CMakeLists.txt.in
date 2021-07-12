@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
-project(cuml4r LANGUAGES CXX CUDA)
+project(cuml4r LANGUAGES CUDA CXX)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -22,7 +22,10 @@ endif(IS_DIRECTORY ${CUML_LIBRARY_DIR})
 include_directories(@R_INCLUDE_DIR@)
 include_directories(@RCPP_INCLUDE_DIR@)
 
-add_library(cuml4r SHARED cuda_utils.cpp device_allocator.cpp stream_allocator.cpp handle_utils.cpp kmeans.cpp dbscan.cpp RcppExports.cpp)
+set_source_files_properties(kmeans.cpp PROPERTIES LANGUAGE CUDA)
+set_source_files_properties(dbscan.cpp PROPERTIES LANGUAGE CUDA)
+add_library(cuml4r SHARED cuda_utils.cu device_allocator.cpp stream_allocator.cpp handle_utils.cpp kmeans.cpp dbscan.cpp RcppExports.cpp)
+
 # Need to set linker language to CUDA to link the CUDA Runtime
 set_target_properties(cuml4r PROPERTIES LINKER_LANGUAGE "CUDA")
 set_target_properties(cuml4r PROPERTIES PREFIX "")
