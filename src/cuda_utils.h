@@ -3,7 +3,6 @@
 #if HAS_CUML
 
 #include <cuda_runtime.h>
-#include <Rcpp.h>
 
 #ifndef CUDA_RT_CALL
 #define CUDA_RT_CALL(call)                                              \
@@ -19,6 +18,12 @@
     }                                                                   \
   }
 #endif
+
+namespace cuml4r {
+
+int currentDevice();
+
+}  // namespace cuml4r
 
 #else
 
