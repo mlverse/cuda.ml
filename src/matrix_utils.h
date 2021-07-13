@@ -1,6 +1,9 @@
 #pragma once
 
+#if HAS_CUML
+
 #include <Rcpp.h>
+#include "pinned_host_vector.h"
 
 namespace cuml4r {
 
@@ -9,7 +12,7 @@ struct Matrix {
    size_t const numRows;
    size_t const numCols;
    // all entries of the matrix in row-major order
-   std::vector<T> const values;
+   thrust::host_vector<T, thrust::cuda::experimental::pinned_allocator<T>> const values;
 
    explicit Matrix(Rcpp::NumericMatrix const& m, bool const transpose) noexcept :
      numRows(transpose ? m.ncol() : m.nrow()),
@@ -23,3 +26,9 @@ struct Matrix {
 };
 
 }
+
+#else
+
+#include "warn_cuml_missing.h"
+
+#endif

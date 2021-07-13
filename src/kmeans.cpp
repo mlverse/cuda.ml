@@ -1,14 +1,23 @@
 #if HAS_CUML
 
+#include "async_utils.h"
 #include "cuda_utils.h"
 #include "handle_utils.h"
 #include "matrix_utils.h"
+#include "preprocessor.h"
 #include "stream_allocator.h"
+#include "pinned_host_vector.h"
 
 #include <cuml/cluster/kmeans.hpp>
+#include <thrust/device_vector.h>
+#include <thrust/async/copy.h>
 
 #include <memory>
 #include <vector>
+
+#else
+
+#include "warn_cuml_missing.h"
 
 #endif
 
@@ -29,42 +38,47 @@ Rcpp::List kmeans(Rcpp::NumericMatrix const& m, int const k, int const max_iters
   params.max_iter = max_iters;
 
   auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
-  auto stream = stream_view.value();
   raft::handle_t handle;
-  cuml4r::handle_utils::initializeHandle(handle, stream);
-
-  auto const& h_src_data = matrix.values;
+  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
 
   // kmeans input data
-  double *d_src_data = nullptr;
-  auto const src_data_sz = n_samples * n_features * sizeof(double);
-  CUDA_RT_CALL(cudaMalloc(&d_src_data, src_data_sz));
-  CUDA_RT_CALL(cudaMemcpyAsync(d_src_data, h_src_data.data(),
-                               src_data_sz,
-                               cudaMemcpyHostToDevice, stream));
+  auto const& h_src_data = matrix.values;
+
+  auto const n_centroid_values = params.n_clusters * n_features;
+  thrust::device_vector<double> d_src_data(h_src_data.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(src_data_h2d) = cuml4r::async_copy(
+    stream_view.value(),
+    h_src_data.cbegin(),
+    h_src_data.cend(),
+    d_src_data.begin()
+  );
+
   // kmeans outputs
-  double *d_pred_centroids = nullptr;
-  CUDA_RT_CALL(cudaMalloc(&d_pred_centroids,
-                          params.n_clusters * n_features * sizeof(double)));
-  int *d_pred_labels = nullptr;
-  CUDA_RT_CALL(cudaMalloc(&d_pred_labels, n_samples * sizeof(int)));
+  thrust::device_vector<double> d_pred_centroids(n_centroid_values);
+  thrust::device_vector<int> d_pred_labels(n_samples);
 
   double inertia = 0;
   int n_iter = 0;
-  ML::kmeans::fit_predict(handle, params, d_src_data, n_samples, n_features, 0,
-                          d_pred_centroids, d_pred_labels, inertia, n_iter);
+  ML::kmeans::fit_predict(handle, params, d_src_data.data().get(), n_samples, n_features, 0,
+                          d_pred_centroids.data().get(), d_pred_labels.data().get(), inertia, n_iter);
 
-  std::vector<int> h_pred_labels(n_samples);
-  CUDA_RT_CALL(cudaMemcpyAsync(h_pred_labels.data(), d_pred_labels,
-                               n_samples * sizeof(int),
-                               cudaMemcpyDeviceToHost, stream));
-  std::vector<double> h_pred_centroids(params.n_clusters * n_features);
-  CUDA_RT_CALL(
-    cudaMemcpyAsync(h_pred_centroids.data(), d_pred_centroids,
-                    params.n_clusters * n_features * sizeof(double),
-                    cudaMemcpyDeviceToHost, stream));
+  cuml4r::pinned_host_vector<int> h_pred_labels(n_samples);
+  auto CUML4R_ANONYMOUS_VARIABLE(pred_labels_d2h) = cuml4r::async_copy(
+    stream_view.value(),
+    d_pred_labels.cbegin(),
+    d_pred_labels.cend(),
+    h_pred_labels.begin()
+  );
 
-  CUDA_RT_CALL(cudaStreamSynchronize(stream));
+  cuml4r::pinned_host_vector<double> h_pred_centroids(n_centroid_values);
+  auto CUML4R_ANONYMOUS_VARIABLE(pred_centroids_d2h) = cuml4r::async_copy(
+    stream_view.value(),
+    d_pred_centroids.cbegin(),
+    d_pred_centroids.cend(),
+    h_pred_centroids.begin()
+  );
+
+  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
   result["labels"] = Rcpp::IntegerVector(h_pred_labels.cbegin(), h_pred_labels.cend());
   result["centroids"] = Rcpp::NumericMatrix(n_features, k, h_pred_centroids.begin());

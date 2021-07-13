@@ -1,11 +1,15 @@
 #if HAS_CUML
 
+#include "async_utils.h"
 #include "cuda_utils.h"
 #include "handle_utils.h"
 #include "matrix_utils.h"
+#include "preprocessor.h"
 #include "stream_allocator.h"
 
 #include <cuml/cluster/dbscan.hpp>
+#include <thrust/device_vector.h>
+#include <thrust/async/copy.h>
 
 #include <memory>
 #include <vector>
@@ -16,43 +20,45 @@
 
 
 // [[Rcpp::export(".dbscan")]]
-Rcpp::List dbscan(Rcpp::NumericMatrix const& m, int const min_pts, float const eps, size_t max_bytes_per_batch) {
+Rcpp::List dbscan(Rcpp::NumericMatrix const& m, int const min_pts, double const eps, size_t max_bytes_per_batch) {
   Rcpp::List result;
 
 #if HAS_CUML
-  auto const matrix = cuml4r::Matrix<float>(m, /*transpose=*/ true);
+  auto const matrix = cuml4r::Matrix<>(m, /*transpose=*/ true);
   auto const n_samples = matrix.numRows;
   auto const n_features = matrix.numCols;
   auto const& h_src_data = matrix.values;
 
   auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
-  auto stream = stream_view.value();
   raft::handle_t handle;
-  cuml4r::handle_utils::initializeHandle(handle, stream);
+  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
 
   // dbscan input data
-  float *d_src_data = nullptr;
+  thrust::device_vector<double> d_src_data(h_src_data.size());
 
   // dbscan output data
-  int* d_labels = nullptr;
+  thrust::device_vector<int> d_labels(n_samples);
 
-  auto const labels_sz = n_samples * sizeof(int);
-  CUDA_RT_CALL(cudaMalloc(&d_labels, labels_sz));
+  auto CUML4R_ANONYMOUS_VARIABLE(src_data_h2d) = cuml4r::async_copy(
+    stream_view.value(),
+    h_src_data.cbegin(),
+    h_src_data.cend(),
+    d_src_data.begin()
+  );
 
-  auto const src_data_sz = n_samples * n_features * sizeof(float);
-  CUDA_RT_CALL(cudaMalloc(&d_src_data, src_data_sz));
-  CUDA_RT_CALL(cudaMemcpyAsync(d_src_data, h_src_data.data(),
-                               src_data_sz,
-                               cudaMemcpyHostToDevice, stream));
-
-  ML::Dbscan::fit(handle, d_src_data, n_samples, n_features, eps, min_pts,
-                  raft::distance::L2SqrtUnexpanded, d_labels, nullptr,
+  ML::Dbscan::fit(handle, d_src_data.data().get(), n_samples, n_features, eps, min_pts,
+                  raft::distance::L2SqrtUnexpanded, d_labels.data().get(), nullptr,
                   max_bytes_per_batch, false);
 
   std::vector<int> h_labels(n_samples);
-  CUDA_RT_CALL(cudaMemcpyAsync(h_labels.data(), d_labels, labels_sz,
-                               cudaMemcpyDeviceToHost, stream));
-  CUDA_RT_CALL(cudaStreamSynchronize(stream));
+  auto CUML4R_ANONYMOUS_VARIABLE(labels_d2h) = cuml4r::async_copy(
+    stream_view.value(),
+    d_labels.cbegin(),
+    d_labels.cend(),
+    h_labels.begin()
+  );
+
+  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
   result["labels"] = Rcpp::IntegerVector(h_labels.cbegin(), h_labels.cend());
 #else

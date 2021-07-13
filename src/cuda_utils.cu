@@ -6,6 +6,7 @@
 
 namespace cuml4r {
 
+__host__
 int currentDevice() {
   int dev_id;
   CUDA_RT_CALL(cudaGetDevice(&dev_id));

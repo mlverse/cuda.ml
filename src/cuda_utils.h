@@ -4,6 +4,13 @@
 
 #include <cuda_runtime.h>
 
+namespace Rcpp {
+
+template <typename... Args>
+void stop(const char* fmt, Args&&... args);
+
+}  // namespace Rcpp
+
 #ifndef CUDA_RT_CALL
 #define CUDA_RT_CALL(call)                                              \
   {                                                                     \
@@ -21,6 +28,7 @@
 
 namespace cuml4r {
 
+__host__
 int currentDevice();
 
 }  // namespace cuml4r
