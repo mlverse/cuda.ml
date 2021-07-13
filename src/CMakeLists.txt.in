@@ -29,9 +29,22 @@ endif(IS_DIRECTORY ${CUML_LIBRARY_DIR})
 include_directories(@R_INCLUDE_DIR@)
 include_directories(@RCPP_INCLUDE_DIR@)
 
-set_source_files_properties(kmeans.cpp PROPERTIES LANGUAGE CUDA)
-set_source_files_properties(dbscan.cpp PROPERTIES LANGUAGE CUDA)
-add_library(cuml4r SHARED cuda_utils.cu device_allocator.cpp stream_allocator.cpp handle_utils.cpp kmeans.cpp dbscan.cpp RcppExports.cpp)
+foreach(x kmeans.cpp dbscan.cpp random_forest.cpp)
+    set_source_files_properties(${x} PROPERTIES LANGUAGE CUDA)
+endforeach()
+
+add_library(
+  cuml4r
+  SHARED
+  cuda_utils.cu
+  device_allocator.cpp
+  stream_allocator.cpp
+  handle_utils.cu
+  kmeans.cpp
+  dbscan.cpp
+  random_forest.cpp
+  RcppExports.cpp
+)
 
 # Need to set linker language to CUDA to link the CUDA Runtime
 set_target_properties(cuml4r PROPERTIES LINKER_LANGUAGE "CUDA")
