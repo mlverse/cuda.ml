@@ -20,7 +20,7 @@
 
 
 // [[Rcpp::export(".dbscan")]]
-Rcpp::List dbscan(Rcpp::NumericMatrix const& m, int const min_pts, double const eps, size_t max_bytes_per_batch) {
+Rcpp::List dbscan(Rcpp::NumericMatrix const& m, int const min_pts, double const eps, size_t const max_bytes_per_batch) {
   Rcpp::List result;
 
 #if HAS_CUML

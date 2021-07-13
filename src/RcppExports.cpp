@@ -11,7 +11,7 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // dbscan
-Rcpp::List dbscan(Rcpp::NumericMatrix const& m, int const min_pts, double const eps, size_t max_bytes_per_batch);
+Rcpp::List dbscan(Rcpp::NumericMatrix const& m, int const min_pts, double const eps, size_t const max_bytes_per_batch);
 RcppExport SEXP _cuml4r_dbscan(SEXP mSEXP, SEXP min_ptsSEXP, SEXP epsSEXP, SEXP max_bytes_per_batchSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -19,7 +19,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type m(mSEXP);
     Rcpp::traits::input_parameter< int const >::type min_pts(min_ptsSEXP);
     Rcpp::traits::input_parameter< double const >::type eps(epsSEXP);
-    Rcpp::traits::input_parameter< size_t >::type max_bytes_per_batch(max_bytes_per_batchSEXP);
+    Rcpp::traits::input_parameter< size_t const >::type max_bytes_per_batch(max_bytes_per_batchSEXP);
     rcpp_result_gen = Rcpp::wrap(dbscan(m, min_pts, eps, max_bytes_per_batch));
     return rcpp_result_gen;
 END_RCPP
