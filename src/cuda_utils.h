@@ -4,10 +4,18 @@
 
 #include <cuda_runtime.h>
 
+#ifndef NORET
+# if defined(__GNUC__) && __GNUC__ >= 3
+#  define NORET __attribute__((noreturn))
+# else
+#  define NORET
+# endif
+#endif
+
 namespace Rcpp {
 
 template <typename... Args>
-void stop(const char* fmt, Args&&... args);
+void NORET stop(const char* fmt, Args&&... args);
 
 }  // namespace Rcpp
 
