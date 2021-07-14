@@ -5,6 +5,13 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_definitions(-DHAS_CUML)
 
+if(DEFINED ENV{CUML4R_ENABLE_CCACHE})
+    find_program(CCACHE_FOUND ccache)
+    if(CCACHE_FOUND)
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "CCACHE_BASEDIR=${CMAKE_SOURCE_DIR} CCACHE_NOHASHDIR=true CCACHE_SLOPPINESS=include_file_ctime ccache")
+    endif(CCACHE_FOUND)
+endif(DEFINED ENV{CUML4R_ENABLE_CCACHE})
+
 if(IS_DIRECTORY ${CUML_INCLUDE_DIR})
     # CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES is needed so that cuda_runtime.h is found
     # CUML_INCLUDE_DIR is needed so that kmeans/kmeans_c.h is found
