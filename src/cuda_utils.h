@@ -5,11 +5,11 @@
 #include <cuda_runtime.h>
 
 #ifndef NORET
-# if defined(__GNUC__) && __GNUC__ >= 3
-#  define NORET __attribute__((noreturn))
-# else
-#  define NORET
-# endif
+#if defined(__GNUC__) && __GNUC__ >= 3
+#define NORET __attribute__((noreturn))
+#else
+#define NORET
+#endif
 #endif
 
 namespace Rcpp {
@@ -28,16 +28,14 @@ void NORET stop(const char* fmt, Args&&... args);
         "ERROR: CUDA RT call \"%s\" in line %d of file %s failed with " \
         "%s (%d).\n",                                                   \
         #call, __LINE__, __FILE__, cudaGetErrorString(cudaStatus),      \
-        cudaStatus                                                      \
-      );                                                                \
+        cudaStatus);                                                    \
     }                                                                   \
   }
 #endif
 
 namespace cuml4r {
 
-__host__
-int currentDevice();
+__host__ int currentDevice();
 
 }  // namespace cuml4r
 

@@ -7,4 +7,6 @@
 ^src/CMakeFiles/*
 ^src/*\.o$
 ^src/*\.so$
+^src/\.clang-format$
 ^.*\.swp
+^\.clang-format.sh$
