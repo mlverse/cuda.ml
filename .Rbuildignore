@@ -8,3 +8,4 @@
 ^src/*\.o$
 ^src/*\.so$
 ^.*\.swp
+^\.clang-format.sh$

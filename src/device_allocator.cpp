@@ -6,7 +6,8 @@
 
 namespace {
 
-auto const kDefaultDeviceAllocator = std::make_shared<raft::mr::device::default_allocator>();
+auto const kDefaultDeviceAllocator =
+  std::make_shared<raft::mr::device::default_allocator>();
 
 }  // namespace
 

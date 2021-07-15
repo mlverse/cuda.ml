@@ -1,8 +1,8 @@
 #if HAS_CUML
 
 #include "stream_allocator.h"
-#include "device_allocator.h"
 #include "cuda_utils.h"
+#include "device_allocator.h"
 
 #include <rmm/cuda_stream.hpp>
 #include <rmm/cuda_stream_view.hpp>
@@ -17,9 +17,7 @@ using CudaStreamsMap = std::unordered_map<int, rmm::cuda_stream>;
 
 auto const gCudaStreamsMap = std::make_shared<CudaStreamsMap>();
 
-void destroyCudaStreams() {
-  gCudaStreamsMap->clear();
-}
+void destroyCudaStreams() { gCudaStreamsMap->clear(); }
 
 std::shared_ptr<CudaStreamsMap> registerCudaStreamsMap() {
   // destroy all CUDA streams created by `cuml4r` before CUDA driver shuts down

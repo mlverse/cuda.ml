@@ -16,13 +16,17 @@ struct RandomForestMetaDataDeleter {
   }
 };
 
-using RandomForestClassifierUPtr = std::unique_ptr<
-    ML::RandomForestClassifierD, RandomForestMetaDataDeleter<double, int>>;
+using RandomForestClassifierUPtr =
+  std::unique_ptr<ML::RandomForestClassifierD,
+                  RandomForestMetaDataDeleter<double, int>>;
 
 struct RandomForestClassifierModel {
   RandomForestClassifierUPtr const rf_;
   std::unordered_map<int, int> const inverseLabelsMap_;
-  RandomForestClassifierModel(RandomForestClassifierUPtr rf, std::unordered_map<int, int>&& inverse_labels_map) noexcept : rf_(std::move(rf)), inverseLabelsMap_(std::move(inverse_labels_map)) {}
+  RandomForestClassifierModel(
+    RandomForestClassifierUPtr rf,
+    std::unordered_map<int, int>&& inverse_labels_map) noexcept
+    : rf_(std::move(rf)), inverseLabelsMap_(std::move(inverse_labels_map)) {}
 };
 
 }  // namespace cuml4r

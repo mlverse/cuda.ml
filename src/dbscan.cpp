@@ -7,9 +7,9 @@
 #include "preprocessor.h"
 #include "stream_allocator.h"
 
-#include <cuml/cluster/dbscan.hpp>
-#include <thrust/device_vector.h>
 #include <thrust/async/copy.h>
+#include <thrust/device_vector.h>
+#include <cuml/cluster/dbscan.hpp>
 
 #include <memory>
 #include <vector>
@@ -18,13 +18,13 @@
 
 #include <Rcpp.h>
 
-
 // [[Rcpp::export(".dbscan")]]
-Rcpp::List dbscan(Rcpp::NumericMatrix const& m, int const min_pts, double const eps, size_t const max_bytes_per_batch) {
+Rcpp::List dbscan(Rcpp::NumericMatrix const& m, int const min_pts,
+                  double const eps, size_t const max_bytes_per_batch) {
   Rcpp::List result;
 
 #if HAS_CUML
-  auto const matrix = cuml4r::Matrix<>(m, /*transpose=*/ true);
+  auto const matrix = cuml4r::Matrix<>(m, /*transpose=*/true);
   auto const n_samples = matrix.numRows;
   auto const n_features = matrix.numCols;
   auto const& h_src_data = matrix.values;
@@ -39,24 +39,17 @@ Rcpp::List dbscan(Rcpp::NumericMatrix const& m, int const min_pts, double const 
   // dbscan output data
   thrust::device_vector<int> d_labels(n_samples);
 
-  auto CUML4R_ANONYMOUS_VARIABLE(src_data_h2d) = cuml4r::async_copy(
-    stream_view.value(),
-    h_src_data.cbegin(),
-    h_src_data.cend(),
-    d_src_data.begin()
-  );
+  auto CUML4R_ANONYMOUS_VARIABLE(src_data_h2d) =
+    cuml4r::async_copy(stream_view.value(), h_src_data.cbegin(),
+                       h_src_data.cend(), d_src_data.begin());
 
-  ML::Dbscan::fit(handle, d_src_data.data().get(), n_samples, n_features, eps, min_pts,
-                  raft::distance::L2SqrtUnexpanded, d_labels.data().get(), nullptr,
-                  max_bytes_per_batch, false);
+  ML::Dbscan::fit(handle, d_src_data.data().get(), n_samples, n_features, eps,
+                  min_pts, raft::distance::L2SqrtUnexpanded,
+                  d_labels.data().get(), nullptr, max_bytes_per_batch, false);
 
   std::vector<int> h_labels(n_samples);
   auto CUML4R_ANONYMOUS_VARIABLE(labels_d2h) = cuml4r::async_copy(
-    stream_view.value(),
-    d_labels.cbegin(),
-    d_labels.cend(),
-    h_labels.begin()
-  );
+    stream_view.value(), d_labels.cbegin(), d_labels.cend(), h_labels.begin());
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 

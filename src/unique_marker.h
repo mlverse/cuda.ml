@@ -9,9 +9,8 @@
 namespace cuml4r {
 
 struct unique_marker final {
-public:
-  __host__
-  unique_marker() : handle_(nullptr, marker_deleter()) {
+ public:
+  __host__ unique_marker() : handle_(nullptr, marker_deleter()) {
     cudaEvent_t e;
     CUDA_RT_CALL(cudaEventCreateWithFlags(&e, cudaEventDisableTiming));
     handle_.reset(e);
@@ -24,15 +23,11 @@ public:
 
   ~unique_marker() = default;
 
-  __host__
-  cudaEvent_t get() const noexcept {
-    return handle_.get();
-  }
+  __host__ cudaEvent_t get() const noexcept { return handle_.get(); }
 
-private:
+ private:
   struct marker_deleter final {
-    __host__
-    void operator()(CUevent_st* e) const {
+    __host__ void operator()(CUevent_st* e) const {
       if (e != nullptr) {
         cudaEventDestroy(e);
       }
