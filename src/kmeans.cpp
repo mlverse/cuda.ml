@@ -24,14 +24,14 @@
 #include <Rcpp.h>
 
 // [[Rcpp::export(".kmeans")]]
-Rcpp::List kmeans(Rcpp::NumericMatrix const& m, int const k,
+Rcpp::List kmeans(Rcpp::NumericMatrix const& x, int const k,
                   int const max_iters) {
   Rcpp::List result;
 
 #if HAS_CUML
-  auto const matrix = cuml4r::Matrix<>(m, /*transpose=*/false);
-  auto const n_samples = matrix.numRows;
-  auto const n_features = matrix.numCols;
+  auto const m = cuml4r::Matrix<>(x, /*transpose=*/false);
+  auto const n_samples = m.numRows;
+  auto const n_features = m.numCols;
 
   ML::kmeans::KMeansParams params;
   params.n_clusters = k;
@@ -42,7 +42,7 @@ Rcpp::List kmeans(Rcpp::NumericMatrix const& m, int const k,
   cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
 
   // kmeans input data
-  auto const& h_src_data = matrix.values;
+  auto const& h_src_data = m.values;
 
   auto const n_centroid_values = params.n_clusters * n_features;
   thrust::device_vector<double> d_src_data(h_src_data.size());

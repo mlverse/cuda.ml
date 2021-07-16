@@ -6,15 +6,10 @@ new_rand_forest_model <- function(mode, xptr, formula = NULL, labels = NULL) {
 #'
 #' Build a random forest model for classification or regression tasks.
 #'
-#' @param x The input matrix or dataframe. Each data point should be a row and
-#'   should consist of numeric values only.
-#' @param y A numeric vector desired responses for all data points.
-#' @param formula If 'input' is a dataframe, then a R formula syntax of the form
-#'   '<response col> ~ .' or
-#'   '<response col> ~ <predictor 1> + <predictor 2> + ...'
-#'   may be used to specify the response column and the predictor column(s).
-#' @param mode Type of task to perform. Should be either "classification" or
-#'   "regression".
+#' @inheritParams model-with-numeric-input
+#' @inheritParams supervised-model-with-numeric-output
+#' @inheritParams supervised-model-formula-spec
+#' @inheritParams supervised-model-classification-or-regression-mode
 #' @param mtry The number of predictors that will be randomly sampled at each
 #'   split when creating the tree models. Default: the square root of the total
 #'   number of predictors.

@@ -19,15 +19,15 @@
 #include <Rcpp.h>
 
 // [[Rcpp::export(".dbscan")]]
-Rcpp::List dbscan(Rcpp::NumericMatrix const& m, int const min_pts,
+Rcpp::List dbscan(Rcpp::NumericMatrix const& x, int const min_pts,
                   double const eps, size_t const max_bytes_per_batch) {
   Rcpp::List result;
 
 #if HAS_CUML
-  auto const matrix = cuml4r::Matrix<>(m, /*transpose=*/false);
-  auto const n_samples = matrix.numRows;
-  auto const n_features = matrix.numCols;
-  auto const& h_src_data = matrix.values;
+  auto const m = cuml4r::Matrix<>(x, /*transpose=*/false);
+  auto const n_samples = m.numRows;
+  auto const n_features = m.numCols;
+  auto const& h_src_data = m.values;
 
   auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
   raft::handle_t handle;

@@ -26,12 +26,12 @@ cuml_rand_forest(
 )
 }
 \arguments{
-\item{x}{The input matrix or dataframe. Each data point should be a row and
-should consist of numeric values only.}
+\item{x}{The input matrix or dataframe. Each data point should be a row
+and should consist of numeric values only.}
 
-\item{y}{A numeric vector desired responses for all data points.}
+\item{y}{A numeric vector of desired responses.}
 
-\item{formula}{If 'input' is a dataframe, then a R formula syntax of the form
+\item{formula}{If 'x' is a dataframe, then a R formula syntax of the form
 '<response col> ~ .' or
 '<response col> ~ <predictor 1> + <predictor 2> + ...'
 may be used to specify the response column and the predictor column(s).}

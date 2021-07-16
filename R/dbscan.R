@@ -3,8 +3,7 @@
 #' Run the DBSCAN (Density-based spatial clustering of applications with noise)
 #' clustering algorithm.
 #'
-#' @param m The input matrix or dataframe. Each data point should be a row and
-#'   should consist of numeric values only.
+#' @inheritParams model-with-numeric-input
 #' @param min_pts,eps A point `p` is a core point if at least `min_pts` are
 #'   within distance `eps` from it.
 #'
@@ -33,9 +32,9 @@
 #' print(clusters)
 #'
 #' @export
-cuml_dbscan <- function(m, min_pts, eps) {
+cuml_dbscan <- function(x, min_pts, eps) {
   res <- .dbscan(
-    m = as.matrix(m),
+    x = as.matrix(x),
     min_pts = min_pts,
     eps = eps,
     max_bytes_per_batch = 0L

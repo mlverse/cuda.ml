@@ -4,10 +4,10 @@
 \alias{cuml_kmeans}
 \title{Run the K means clustering algorithm.}
 \usage{
-cuml_kmeans(m, k, max_iters = 300)
+cuml_kmeans(x, k, max_iters = 300)
 }
 \arguments{
-\item{m}{The input matrix or dataframe. Each data point should be a row
+\item{x}{The input matrix or dataframe. Each data point should be a row
 and should consist of numeric values only.}
 
 \item{k}{The number of clusters.}

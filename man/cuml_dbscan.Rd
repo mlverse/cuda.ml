@@ -4,11 +4,11 @@
 \alias{cuml_dbscan}
 \title{Run the DBSCAN clustering algorithm.}
 \usage{
-cuml_dbscan(m, min_pts, eps)
+cuml_dbscan(x, min_pts, eps)
 }
 \arguments{
-\item{m}{The input matrix or dataframe. Each data point should be a row and
-should consist of numeric values only.}
+\item{x}{The input matrix or dataframe. Each data point should be a row
+and should consist of numeric values only.}
 
 \item{min_pts, eps}{A point `p` is a core point if at least `min_pts` are
 within distance `eps` from it.}
