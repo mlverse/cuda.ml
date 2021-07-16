@@ -18,7 +18,7 @@ cuml_rand_forest(
   max_predictors_per_note_split = NULL,
   n_bins = 128,
   min_samples_leaf = 1,
-  split_criterion = c("gini", "entropy", "mse", "mae"),
+  split_criterion = NULL,
   min_impurity_decrease = 0,
   max_batch_size = 128,
   n_streams = 8,
@@ -68,8 +68,8 @@ split. Default: square root of the total number predictors.}
 Default: 1.}
 
 \item{split_criterion}{The criterion used to split nodes, can be "gini" or
-"entropy" for classifications, or one of {"gini", "entropy", "mse", "mae"}
-for regressions. Default: "gini".}
+"entropy" for classifications, and "mse" or "mae" for regressions.
+Default: "gini" for classification; "mse" for regression.}
 
 \item{min_impurity_decrease}{Minimum decrease in impurity requried for node
 to be spilt. Default: 0.}
@@ -93,14 +93,43 @@ Build a random forest model for classification or regression tasks.
 \examples{
 library(cuml4r)
 
+# Classification
+
 model <- cuml_rand_forest(
   iris,
   formula = Species ~ .,
+  mode = "classification",
   trees = 100
 )
 
 predictions <- predict(model, iris)
 
 print(predictions)
+
+cat(
+  "Number of correct predictions: ",
+  sum(predictions == iris[, "Species"]),
+  "\n"
+)
+
+# Regression
+
+model <- cuml_rand_forest(
+  iris,
+  formula = Species ~ .,
+  mode = "regression",
+  trees = 100
+)
+
+predictions <- predict(model, iris)
+
+print(predictions)
+print(round(predictions))
+
+cat(
+  "Number of correct predictions: ",
+  sum(as.integer(round(predictions)) == as.integer(iris[, "Species"])),
+ "\n"
+)
 
 }
