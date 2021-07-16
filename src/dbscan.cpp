@@ -24,7 +24,7 @@ Rcpp::List dbscan(Rcpp::NumericMatrix const& m, int const min_pts,
   Rcpp::List result;
 
 #if HAS_CUML
-  auto const matrix = cuml4r::Matrix<>(m, /*transpose=*/true);
+  auto const matrix = cuml4r::Matrix<>(m, /*transpose=*/false);
   auto const n_samples = matrix.numRows;
   auto const n_features = matrix.numCols;
   auto const& h_src_data = matrix.values;

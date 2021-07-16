@@ -7,9 +7,11 @@
 cuml_dbscan(m, min_pts, eps)
 }
 \arguments{
-\item{m}{The input matrix. Each data point should be a column within this matrix.}
+\item{m}{The input matrix or dataframe. Each data point should be a row and
+should consist of numeric values only.}
 
-\item{min_pts, eps}{A point `p` is a core point if at least `min_pts` are within distance `eps` from it.}
+\item{min_pts, eps}{A point `p` is a core point if at least `min_pts` are
+within distance `eps` from it.}
 }
 \value{
 A list containing the cluster assignments of all data points. A data
@@ -32,13 +34,12 @@ gen_pts <- function() {
       ~ MASS::mvrnorm(10, mu = .x, Sigma = matrix(c(1, 0, 0, 1), nrow = 2))
     )
 
-  rlang::exec(rbind, !!!pts) \%>\%
-    t()
+  rlang::exec(rbind, !!!pts)
 }
 
 m <- gen_pts()
-res <- cuml_dbscan(m, min_pts = 5, eps = 3)
+clusters <- cuml_dbscan(m, min_pts = 5, eps = 3)
 
-print(res)
+print(clusters)
 
 }

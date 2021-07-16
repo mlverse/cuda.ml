@@ -7,7 +7,8 @@
 cuml_kmeans(m, k, max_iters = 300)
 }
 \arguments{
-\item{m}{The input matrix. Each data point should be a column within this matrix.}
+\item{m}{The input matrix or dataframe. Each data point should be a row
+and should consist of numeric values only.}
 
 \item{k}{The number of clusters.}
 
@@ -21,24 +22,15 @@ A list containing the cluster assignments and the centroid of each
 Run the K means clustering algorithm.
 }
 \examples{
+
 library(cuml4r)
-library(magrittr)
 
-gen_pts <- function() {
-  centroids <- list(c(1000, 1000), c(-1000, -1000), c(-1000, 1000))
+kclust <- cuml_kmeans(
+  iris[, which(names(iris) != "Species")],
+  k = 3,
+  max_iters = 100
+)
 
-  pts <- centroids \%>\%
-    purrr::map(
-      ~ MASS::mvrnorm(10, mu = .x, Sigma = matrix(c(1, 0, 0, 1), nrow = 2))
-    )
-
-  rlang::exec(rbind, !!!pts) \%>\%
-    t()
-}
-
-m <- gen_pts()
-res <- cuml_kmeans(m, k = 3, max_iters = 100)
-
-print(res)
+print(kclust)
 
 }

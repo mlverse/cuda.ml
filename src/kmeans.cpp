@@ -29,7 +29,7 @@ Rcpp::List kmeans(Rcpp::NumericMatrix const& m, int const k,
   Rcpp::List result;
 
 #if HAS_CUML
-  auto const matrix = cuml4r::Matrix<>(m, /*transpose=*/true);
+  auto const matrix = cuml4r::Matrix<>(m, /*transpose=*/false);
   auto const n_samples = matrix.numRows;
   auto const n_features = matrix.numCols;
 
@@ -74,8 +74,8 @@ Rcpp::List kmeans(Rcpp::NumericMatrix const& m, int const k,
 
   result["labels"] =
     Rcpp::IntegerVector(h_pred_labels.cbegin(), h_pred_labels.cend());
-  result["centroids"] =
-    Rcpp::NumericMatrix(n_features, k, h_pred_centroids.begin());
+  result["centroids"] = Rcpp::transpose(
+    Rcpp::NumericMatrix(n_features, k, h_pred_centroids.begin()));
   result["inertia"] = inertia;
   result["n_iter"] = n_iter;
 #else
