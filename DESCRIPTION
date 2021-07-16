@@ -19,7 +19,7 @@ Suggests:
     magrittr,
     MASS,
     purrr,
-    rlang
+    rlang (>= 0.1.4)
 LinkingTo: Rcpp
 OS_type: unix
 SystemRequirements: RAPIDS cuML (see https://rapids.ai/start.html)

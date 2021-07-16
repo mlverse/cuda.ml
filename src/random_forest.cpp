@@ -13,6 +13,7 @@
 #include <thrust/device_vector.h>
 #include <cuml/ensemble/randomforest.hpp>
 
+#include <chrono>
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -79,15 +80,14 @@ __host__ std::unordered_map<int, int> reverse(
 SEXP rf_classifier_fit(Rcpp::NumericMatrix const& input,
                        Rcpp::IntegerVector const& labels, int const n_trees,
                        bool const bootstrap, float const max_samples,
-                       uint64_t const seed, int const n_streams,
-                       int const max_depth, int const max_leaves,
-                       float const max_features, int const n_bins,
-                       int const min_samples_leaf, int const min_samples_split,
-                       int const split_criterion,
+                       int const n_streams, int const max_depth,
+                       int const max_leaves, float const max_features,
+                       int const n_bins, int const min_samples_leaf,
+                       int const min_samples_split, int const split_criterion,
                        float const min_impurity_decrease,
                        int const max_batch_size, int const verbosity) {
 #if HAS_CUML
-  auto const input_m = cuml4r::Matrix<>(input, /*transpose=*/false);
+  auto const input_m = cuml4r::Matrix<>(input, /*transpose=*/true);
   int const n_samples = input_m.numCols;
   int const n_features = input_m.numRows;
 
@@ -111,15 +111,19 @@ SEXP rf_classifier_fit(Rcpp::NumericMatrix const& input,
     stream_view.value(), h_labels.cbegin(), h_labels.cend(), d_labels.begin());
   {
     auto* rf_ptr = rf.get();
-    ML::fit(handle, rf_ptr, d_input.data().get(), n_samples, n_features,
-            d_labels.data().get(),
-            /*n_unique_labels=*/static_cast<int>(labels_map.size()),
-            ML::set_rf_params(
-              max_depth, max_leaves, max_features, n_bins, min_samples_leaf,
-              min_samples_split, min_impurity_decrease, bootstrap, n_trees,
-              max_samples, seed, static_cast<ML::CRITERION>(split_criterion),
-              n_streams, max_batch_size),
-            /*verbosity=*/verbosity);
+    ML::fit(
+      handle, rf_ptr, d_input.data().get(), n_samples, n_features,
+      d_labels.data().get(),
+      /*n_unique_labels=*/static_cast<int>(labels_map.size()),
+      ML::set_rf_params(max_depth, max_leaves, max_features, n_bins,
+                        min_samples_leaf, min_samples_split,
+                        min_impurity_decrease, bootstrap, n_trees, max_samples,
+                        std::chrono::duration_cast<std::chrono::milliseconds>(
+                          std::chrono::system_clock::now().time_since_epoch())
+                          .count(),
+                        static_cast<ML::CRITERION>(split_criterion), n_streams,
+                        max_batch_size),
+      /*verbosity=*/verbosity);
 
     CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
     if (rf_ptr != rf.get()) {
@@ -141,11 +145,11 @@ SEXP rf_classifier_fit(Rcpp::NumericMatrix const& input,
 }
 
 // [[Rcpp::export(".rf_classifier_predict")]]
-Rcpp::IntegerVector rf_classifier_predict(SEXP model_sexp,
+Rcpp::IntegerVector rf_classifier_predict(SEXP model_xptr,
                                           Rcpp::NumericMatrix const& input,
                                           int const verbosity) {
 #if HAS_CUML
-  auto const input_m = cuml4r::Matrix<>(input, /*transpose=*/true);
+  auto const input_m = cuml4r::Matrix<>(input, /*transpose=*/false);
   int const n_samples = input_m.numRows;
   int const n_features = input_m.numCols;
 
@@ -153,7 +157,7 @@ Rcpp::IntegerVector rf_classifier_predict(SEXP model_sexp,
   raft::handle_t handle;
   cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
 
-  auto model = Rcpp::XPtr<cuml4r::RandomForestClassifierModel>(model_sexp);
+  auto model = Rcpp::XPtr<cuml4r::RandomForestClassifierModel>(model_xptr);
 
   // inputs
   auto const& h_input = input_m.values;

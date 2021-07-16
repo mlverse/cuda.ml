@@ -9,11 +9,11 @@
     .Call(`_cuml4r_kmeans`, m, k, max_iters)
 }
 
-.rf_classifier_fit <- function(input, labels, n_trees, bootstrap, max_samples, seed, n_streams, max_depth, max_leaves, max_features, n_bins, min_samples_leaf, min_samples_split, split_criterion, min_impurity_decrease, max_batch_size, verbosity) {
-    .Call(`_cuml4r_rf_classifier_fit`, input, labels, n_trees, bootstrap, max_samples, seed, n_streams, max_depth, max_leaves, max_features, n_bins, min_samples_leaf, min_samples_split, split_criterion, min_impurity_decrease, max_batch_size, verbosity)
+.rf_classifier_fit <- function(input, labels, n_trees, bootstrap, max_samples, n_streams, max_depth, max_leaves, max_features, n_bins, min_samples_leaf, min_samples_split, split_criterion, min_impurity_decrease, max_batch_size, verbosity) {
+    .Call(`_cuml4r_rf_classifier_fit`, input, labels, n_trees, bootstrap, max_samples, n_streams, max_depth, max_leaves, max_features, n_bins, min_samples_leaf, min_samples_split, split_criterion, min_impurity_decrease, max_batch_size, verbosity)
 }
 
-.rf_classifier_predict <- function(model_sexp, input, verbosity) {
-    .Call(`_cuml4r_rf_classifier_predict`, model_sexp, input, verbosity)
+.rf_classifier_predict <- function(model_xptr, input, verbosity) {
+    .Call(`_cuml4r_rf_classifier_predict`, model_xptr, input, verbosity)
 }
 
