@@ -10,7 +10,7 @@ Authors@R:
            comment = c(ORCID = "0000-0002-1261-905X"))
 Maintainer: Yitao Li <yitao@rstudio.com>
 Description: This package provides an R interface for cuML
-    (see <https://github.com/rapidsai/cuml>). cuML is a suite of GPU-accelarated
+    (see <https://github.com/rapidsai/cuml>). cuML is a suite of GPU-accelerated
     machine learning libraries powered by CUDA
     (<https://en.wikipedia.org/wiki/CUDA>).
 License: Apache License (>= 2.0)
