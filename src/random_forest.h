@@ -20,6 +20,10 @@ using RandomForestClassifierUPtr =
   std::unique_ptr<ML::RandomForestClassifierD,
                   RandomForestMetaDataDeleter<double, int>>;
 
+using RandomForestRegressorUPtr =
+  std::unique_ptr<ML::RandomForestRegressorD,
+                  RandomForestMetaDataDeleter<double, double>>;
+
 struct RandomForestClassifierModel {
   RandomForestClassifierUPtr const rf_;
   std::unordered_map<int, int> const inverseLabelsMap_;

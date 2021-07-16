@@ -76,12 +76,53 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rf_regressor_fit
+SEXP rf_regressor_fit(Rcpp::NumericMatrix const& input, Rcpp::NumericVector const& responses, int const n_trees, bool const bootstrap, float const max_samples, int const n_streams, int const max_depth, int const max_leaves, float const max_features, int const n_bins, int const min_samples_leaf, int const min_samples_split, int const split_criterion, float const min_impurity_decrease, int const max_batch_size, int const verbosity);
+RcppExport SEXP _cuml4r_rf_regressor_fit(SEXP inputSEXP, SEXP responsesSEXP, SEXP n_treesSEXP, SEXP bootstrapSEXP, SEXP max_samplesSEXP, SEXP n_streamsSEXP, SEXP max_depthSEXP, SEXP max_leavesSEXP, SEXP max_featuresSEXP, SEXP n_binsSEXP, SEXP min_samples_leafSEXP, SEXP min_samples_splitSEXP, SEXP split_criterionSEXP, SEXP min_impurity_decreaseSEXP, SEXP max_batch_sizeSEXP, SEXP verbositySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector const& >::type responses(responsesSEXP);
+    Rcpp::traits::input_parameter< int const >::type n_trees(n_treesSEXP);
+    Rcpp::traits::input_parameter< bool const >::type bootstrap(bootstrapSEXP);
+    Rcpp::traits::input_parameter< float const >::type max_samples(max_samplesSEXP);
+    Rcpp::traits::input_parameter< int const >::type n_streams(n_streamsSEXP);
+    Rcpp::traits::input_parameter< int const >::type max_depth(max_depthSEXP);
+    Rcpp::traits::input_parameter< int const >::type max_leaves(max_leavesSEXP);
+    Rcpp::traits::input_parameter< float const >::type max_features(max_featuresSEXP);
+    Rcpp::traits::input_parameter< int const >::type n_bins(n_binsSEXP);
+    Rcpp::traits::input_parameter< int const >::type min_samples_leaf(min_samples_leafSEXP);
+    Rcpp::traits::input_parameter< int const >::type min_samples_split(min_samples_splitSEXP);
+    Rcpp::traits::input_parameter< int const >::type split_criterion(split_criterionSEXP);
+    Rcpp::traits::input_parameter< float const >::type min_impurity_decrease(min_impurity_decreaseSEXP);
+    Rcpp::traits::input_parameter< int const >::type max_batch_size(max_batch_sizeSEXP);
+    Rcpp::traits::input_parameter< int const >::type verbosity(verbositySEXP);
+    rcpp_result_gen = Rcpp::wrap(rf_regressor_fit(input, responses, n_trees, bootstrap, max_samples, n_streams, max_depth, max_leaves, max_features, n_bins, min_samples_leaf, min_samples_split, split_criterion, min_impurity_decrease, max_batch_size, verbosity));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rf_regressor_predict
+Rcpp::NumericVector rf_regressor_predict(SEXP model_xptr, Rcpp::NumericMatrix const& input, int const verbosity);
+RcppExport SEXP _cuml4r_rf_regressor_predict(SEXP model_xptrSEXP, SEXP inputSEXP, SEXP verbositySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type model_xptr(model_xptrSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< int const >::type verbosity(verbositySEXP);
+    rcpp_result_gen = Rcpp::wrap(rf_regressor_predict(model_xptr, input, verbosity));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_cuml4r_dbscan", (DL_FUNC) &_cuml4r_dbscan, 4},
     {"_cuml4r_kmeans", (DL_FUNC) &_cuml4r_kmeans, 3},
     {"_cuml4r_rf_classifier_fit", (DL_FUNC) &_cuml4r_rf_classifier_fit, 16},
     {"_cuml4r_rf_classifier_predict", (DL_FUNC) &_cuml4r_rf_classifier_predict, 3},
+    {"_cuml4r_rf_regressor_fit", (DL_FUNC) &_cuml4r_rf_regressor_fit, 16},
+    {"_cuml4r_rf_regressor_predict", (DL_FUNC) &_cuml4r_rf_regressor_predict, 3},
     {NULL, NULL, 0}
 };
 
