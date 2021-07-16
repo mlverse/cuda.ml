@@ -222,11 +222,13 @@ SEXP rf_regressor_fit(Rcpp::NumericMatrix const& input,
   thrust::device_vector<double> d_input(h_input.size());
   auto CUML4R_ANONYMOUS_VARIABLE(input_h2d) = cuml4r::async_copy(
     stream_view.value(), h_input.cbegin(), h_input.cend(), d_input.begin());
-  cuml4r::pinned_host_vector<double> h_responses(Rcpp::as<std::vector<double>>(responses));
+  cuml4r::pinned_host_vector<double> h_responses(
+    Rcpp::as<std::vector<double>>(responses));
 
   thrust::device_vector<double> d_responses(h_responses.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(responses_h2d) = cuml4r::async_copy(
-    stream_view.value(), h_responses.cbegin(), h_responses.cend(), d_responses.begin());
+  auto CUML4R_ANONYMOUS_VARIABLE(responses_h2d) =
+    cuml4r::async_copy(stream_view.value(), h_responses.cbegin(),
+                       h_responses.cend(), d_responses.begin());
   {
     auto* rf_ptr = rf.get();
     ML::fit(
@@ -261,8 +263,8 @@ SEXP rf_regressor_fit(Rcpp::NumericMatrix const& input,
 
 // [[Rcpp::export(".rf_regressor_predict")]]
 Rcpp::NumericVector rf_regressor_predict(SEXP model_xptr,
-                                          Rcpp::NumericMatrix const& input,
-                                          int const verbosity) {
+                                         Rcpp::NumericMatrix const& input,
+                                         int const verbosity) {
 #if HAS_CUML
   auto const input_m = cuml4r::Matrix<>(input, /*transpose=*/false);
   int const n_samples = input_m.numRows;
@@ -283,8 +285,8 @@ Rcpp::NumericVector rf_regressor_predict(SEXP model_xptr,
   // outputs
   thrust::device_vector<double> d_predictions(n_samples);
 
-  ML::predict(handle, /*forest=*/model.get(), d_input.data().get(),
-              n_samples, n_features, /*predictions=*/d_predictions.data().get(),
+  ML::predict(handle, /*forest=*/model.get(), d_input.data().get(), n_samples,
+              n_features, /*predictions=*/d_predictions.data().get(),
               /*verbosity=*/verbosity);
 
   cuml4r::pinned_host_vector<double> h_predictions(n_samples);
