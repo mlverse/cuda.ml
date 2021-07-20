@@ -1,7 +1,3 @@
-new_rand_forest_model <- function(mode, xptr, formula = NULL, labels = NULL) {
-  structure(list(mode = mode, xptr = xptr, formula = formula, labels = labels), class = "cuml_rand_forest")
-}
-
 #' Train a random forest model.
 #'
 #' Train a random forest model for classification or regression tasks.
@@ -114,25 +110,13 @@ cuml_rand_forest <- function(
   )
   split_criterion <- match_split_criterion(split_criterion, mode)
   cuml_log_level <- match_cuml_log_level(cuml_log_level)
-
-  if (!is.null(formula)) {
-    if (!inherits(x, "data.frame")) {
-      stop("'x' must be a data.frame when predictor column(s) and response ",
-           "column are specified using the formula syntax.")
-    }
-    response_col <- all.vars(formula)[[1]]
-    predictor_cols <- labels(terms(formula, data = x))
-    y <- x[, response_col]
-    x <- x[, which(names(x) %in% predictor_cols)]
-  } else if (!is.numeric(y)) {
-    stop("'y' must be a numeric vector if predictor(s) and responses are not",
-         " specified using the formula syntax.")
-  }
+  c(x, y) %<-% process_input_and_label_specs(x, y, formula)
 
   switch(
     mode,
     classification = {
-      new_rand_forest_model(
+      new_model(
+        cls = "cuml_rand_forest",
         mode = mode,
         xptr = .rf_classifier_fit(
           input = as.matrix(x),
@@ -153,11 +137,12 @@ cuml_rand_forest <- function(
           verbosity = cuml_log_level
         ),
         formula = formula,
-        labels = levels(y)
+        resp_var = y
       )
     },
     regression = {
-      new_rand_forest_model(
+      new_model(
+        cls = "cuml_rand_forest",
         mode = mode,
         xptr = .rf_regressor_fit(
           input = as.matrix(x),
@@ -177,8 +162,7 @@ cuml_rand_forest <- function(
           max_batch_size = as.integer(max_batch_size),
           verbosity = cuml_log_level
         ),
-        formula = formula,
-        labels = NULL
+        formula = formula
       )
     }
   )
@@ -212,34 +196,24 @@ predict.cuml_rand_forest <- function(
                                      x,
                                      cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
   cuml_log_level <- match_cuml_log_level(cuml_log_level)
-
-  if (!is.null(model$formula)) {
-    predictor_cols <- labels(terms(model$formula, data = x))
-    x <- x[, which(names(x) %in% predictor_cols)]
-  }
+  x <- process_input_specs(x, model)
 
   switch (
     model$mode,
     classification = {
-      predictions <- .rf_classifier_predict(
+      .rf_classifier_predict(
         model_xptr = model$xptr,
         input = as.matrix(x),
         verbosity = cuml_log_level
-      )
-      if (!is.null(model$labels)) {
-        predictions <- factor(
-          predictions, levels = seq_along(model$labels), labels = model$labels
-        )
-      }
+      ) %>%
+        postprocess_classification_results(model)
     },
     regression = {
-      predictions <- .rf_regressor_predict(
+      .rf_regressor_predict(
         model_xptr = model$xptr,
         input = as.matrix(x),
         verbosity = cuml_log_level
       )
     }
   )
-
-  predictions
 }
