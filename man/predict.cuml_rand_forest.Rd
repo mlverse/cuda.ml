@@ -13,8 +13,8 @@
 \arguments{
 \item{model}{A random forest model object.}
 
-\item{x}{The input matrix or dataframe. Each data point should be a row and
-should consist of numeric values only.}
+\item{x}{The input matrix or dataframe. Each data point should be a row
+and should consist of numeric values only.}
 
 \item{cuml_log_level}{Log level within cuML library functions. Must be one of
 {"off", "critical", "error", "warn", "info", "debug", "trace"}.
