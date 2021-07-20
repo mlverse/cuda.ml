@@ -14,12 +14,14 @@ Description: This package provides an R interface for cuML
     machine learning libraries powered by CUDA
     (<https://en.wikipedia.org/wiki/CUDA>).
 License: Apache License (>= 2.0)
-Imports: Rcpp (>= 1.0.6)
-Suggests:
+Imports:
     magrittr,
+    Rcpp (>= 1.0.6),
+    rlang (>= 0.1.4),
+    zeallot (>= 0.1.0)
+Suggests:
     MASS,
-    purrr,
-    rlang (>= 0.1.4)
+    purrr
 LinkingTo: Rcpp
 OS_type: unix
 SystemRequirements: RAPIDS cuML (see https://rapids.ai/start.html)
