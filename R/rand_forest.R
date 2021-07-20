@@ -2,9 +2,9 @@ new_rand_forest_model <- function(mode, xptr, formula = NULL, labels = NULL) {
   structure(list(mode = mode, xptr = xptr, formula = formula, labels = labels), class = "cuml_rand_forest")
 }
 
-#' Build a random forest model.
+#' Train a random forest model.
 #'
-#' Build a random forest model for classification or regression tasks.
+#' Train a random forest model for classification or regression tasks.
 #'
 #' @inheritParams model-with-numeric-input
 #' @inheritParams supervised-model-with-numeric-output

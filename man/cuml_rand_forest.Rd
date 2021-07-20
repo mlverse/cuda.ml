@@ -2,7 +2,7 @@
 % Please edit documentation in R/rand_forest.R
 \name{cuml_rand_forest}
 \alias{cuml_rand_forest}
-\title{Build a random forest model.}
+\title{Train a random forest model.}
 \usage{
 cuml_rand_forest(
   x,
@@ -88,7 +88,7 @@ Default: off.}
 A random forest model object.
 }
 \description{
-Build a random forest model for classification or regression tasks.
+Train a random forest model for classification or regression tasks.
 }
 \examples{
 library(cuml4r)
