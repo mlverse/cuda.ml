@@ -25,3 +25,11 @@
     .Call(`_cuml4r_rf_regressor_predict`, model_xptr, input, verbosity)
 }
 
+.svc_fit <- function(x, labels, sample_weights, C, cache_size, max_iter, nochange_steps, tol, verbosity, epsilon, kernel_type, degree, gamma, coef0) {
+    .Call(`_cuml4r_svc_fit`, x, labels, sample_weights, C, cache_size, max_iter, nochange_steps, tol, verbosity, epsilon, kernel_type, degree, gamma, coef0)
+}
+
+.svc_predict <- function(svc_xptr, x) {
+    .Call(`_cuml4r_svc_predict`, svc_xptr, x)
+}
+
