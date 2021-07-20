@@ -1,5 +1,6 @@
 #if HAS_CUML
 
+#include "svm.h"
 #include "async_utils.h"
 #include "cuda_utils.h"
 #include "handle_utils.h"
@@ -24,20 +25,22 @@
 #include <Rcpp.h>
 
 // [[Rcpp::export(".svc_fit")]]
-SEXP svc_fit(Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& labels,
-             Rcpp::NumericVector const& sample_weights, double const C,
-             double const cache_size, int const max_iter,
-             int const nochange_steps, double const tol, int const verbosity,
-             double const epsilon, int const kernel_type, int const degree,
-             double const gamma, double const coef0) {
+SEXP svc_fit(Rcpp::NumericMatrix const& input,
+             Rcpp::NumericVector const& labels, double const cost,
+             int const kernel, double const gamma, double const coef0,
+             int const degree, double const tol, int const max_iter,
+             int const nochange_steps, double const cache_size,
+             Rcpp::NumericVector const& sample_weights, int const verbosity) {
 #if HAS_CUML
-  auto const m = cuml4r::Matrix<>(x, /*transpose=*/true);
+  using ModelCtx = cuml4r::ModelCtx<ML::SVM::SVC<double>>;
+
+  auto const m = cuml4r::Matrix<>(input, /*transpose=*/true);
   auto const n_samples = m.numCols;
   auto const n_features = m.numRows;
 
   auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
-  raft::handle_t handle;
-  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+  auto handle = std::make_unique<raft::handle_t>();
+  cuml4r::handle_utils::initializeHandle(*handle, stream_view.value());
 
   // SVM input
   auto const& h_input = m.values;
@@ -63,13 +66,13 @@ SEXP svc_fit(Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& labels,
   }
 
   MLCommon::Matrix::KernelParams kernel_params{
-    /*kernel=*/static_cast<MLCommon::Matrix::KernelType>(kernel_type), degree,
-    gamma, coef0};
+    /*kernel=*/static_cast<MLCommon::Matrix::KernelType>(kernel), degree, gamma,
+    coef0};
 
   // SVM output
   auto svc = std::make_unique<ML::SVM::SVC<double>>(
-    handle, C, tol, kernel_params, cache_size, max_iter, nochange_steps,
-    verbosity);
+    *handle, /*C=*/cost, tol, kernel_params, cache_size, max_iter,
+    nochange_steps, verbosity);
 
   svc->fit(d_input.data().get(), /*nrows=*/n_samples, /*ncols=*/n_features,
            d_labels.data().get(),
@@ -77,7 +80,7 @@ SEXP svc_fit(Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& labels,
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
-  return Rcpp::XPtr<ML::SVM::SVC<double>>(svc.release());
+  return Rcpp::XPtr<ModelCtx>(new ModelCtx(std::move(svc), std::move(handle)));
 #else
 
 #include "warn_cuml_missing.h"
@@ -88,36 +91,33 @@ SEXP svc_fit(Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& labels,
 }
 
 // [[Rcpp::export(".svc_predict")]]
-Rcpp::NumericVector svc_predict(SEXP svc_xptr,
-                                Rcpp::NumericMatrix const& x) {
+Rcpp::NumericVector svc_predict(SEXP model_xptr,
+                                Rcpp::NumericMatrix const& input) {
 #if HAS_CUML
-  auto const m = cuml4r::Matrix<>(x, /*transpose=*/true);
+  auto const m = cuml4r::Matrix<>(input, /*transpose=*/true);
   auto const n_samples = m.numCols;
   auto const n_features = m.numRows;
 
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
-  raft::handle_t handle;
-  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
-
-  auto svc = Rcpp::XPtr<ML::SVM::SVC<double>>(svc_xptr);
+  auto ctx = Rcpp::XPtr<cuml4r::ModelCtx<ML::SVM::SVC<double>>>(model_xptr);
+  auto const& svc = ctx->model_;
+  auto* stream = ctx->handle_->get_stream();
 
   // input
   auto const& h_input = m.values;
   thrust::device_vector<double> d_input(h_input.size());
   auto CUML4R_ANONYMOUS_VARIABLE(input_h2d) = cuml4r::async_copy(
-    stream_view.value(), h_input.cbegin(), h_input.cend(), d_input.begin());
+    stream, h_input.cbegin(), h_input.cend(), d_input.begin());
 
   // output
   thrust::device_vector<double> d_preds(n_samples);
 
-  svc->predict(d_input.data().get(), /*n_rows=*/n_samples, /*c_cols=*/n_features, d_preds.data().get());
-
+  svc->predict(d_input.data().get(), /*n_rows=*/n_samples,
+               /*c_cols=*/n_features, d_preds.data().get());
 
   cuml4r::pinned_host_vector<double> h_preds(n_samples);
   auto CUML4R_ANONYMOUS_VARIABLE(preds_d2h) = cuml4r::async_copy(
-    stream_view.value(), d_preds.cbegin(), d_preds.cend(), h_preds.begin());
-
-  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
+    stream, d_preds.cbegin(), d_preds.cend(), h_preds.begin());
+  CUDA_RT_CALL(cudaStreamSynchronize(stream));
 
   return Rcpp::NumericVector(h_preds.begin(), h_preds.end());
 #else
