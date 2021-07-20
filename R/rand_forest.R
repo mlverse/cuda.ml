@@ -10,6 +10,7 @@ new_rand_forest_model <- function(mode, xptr, formula = NULL, labels = NULL) {
 #' @inheritParams supervised-model-with-numeric-output
 #' @inheritParams supervised-model-formula-spec
 #' @inheritParams supervised-model-classification-or-regression-mode
+#' @inheritParams cuml-log-level
 #' @param mtry The number of predictors that will be randomly sampled at each
 #'   split when creating the tree models. Default: the square root of the total
 #'   number of predictors.
@@ -36,9 +37,6 @@ new_rand_forest_model <- function(mode, xptr, formula = NULL, labels = NULL) {
 #'   to be spilt. Default: 0.
 #' @param max_batch_size Maximum number of nodes that can be processed in a
 #'   given batch. Default: 128.
-#' @param cuml_log_level Log level within cuML library functions. Must be one of
-#'   {"off", "critical", "error", "warn", "info", "debug", "trace"}.
-#'   Default: off.
 #' @param n_streams Number of CUDA streams to use for building trees.
 #'   Default: 8.
 #'

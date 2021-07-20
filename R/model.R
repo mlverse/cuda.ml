@@ -40,3 +40,14 @@ NULL
 #'
 #' @name supervised-model-classification-or-regression-mode
 NULL
+
+#' Parameter for CUML log level.
+#'
+#' Log level parameter whose value must map to one of the CUML log levels.
+#'
+#' @param cuml_log_level Log level within cuML library functions. Must be one of
+#'   {"off", "critical", "error", "warn", "info", "debug", "trace"}.
+#'   Default: off.
+#'
+#' @name cuml-log-level
+NULL
