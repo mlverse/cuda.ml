@@ -3,8 +3,6 @@
 
 #if HAS_CUML
 
-#include <raft/handle.hpp>
-
 namespace cuml4r {
 namespace handle_utils {
 
