@@ -2,19 +2,22 @@
 
 #if HAS_CUML
 
-#include <raft/handle.hpp>
-
 #include <memory>
+
+namespace raft {
+
+class handle_t;
+
+}  // namespace raft
 
 namespace cuml4r {
 
-template <typename M>
+template <typename M, typename H = raft::handle_t>
 struct ModelCtx {
   std::unique_ptr<M> const model_;
-  std::unique_ptr<raft::handle_t> const handle_;
+  std::unique_ptr<H> const handle_;
 
-  ModelCtx(std::unique_ptr<M> model,
-           std::unique_ptr<raft::handle_t> handle) noexcept
+  ModelCtx(std::unique_ptr<M> model, std::unique_ptr<H> handle) noexcept
     : model_(std::move(model)), handle_(std::move(handle)) {}
 };
 
