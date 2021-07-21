@@ -18,6 +18,7 @@ cuml_svm(
   max_iter = 100L * nrow(x),
   nochange_steps = 1000L,
   cache_size = 1024,
+  epsilon = 0.1,
   sample_weights = NULL,
   cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")
 )
@@ -83,6 +84,11 @@ Default: 1000.}
 
 \item{cache_size}{Size of kernel cache (MiB) in device memory. Default: 1024.}
 
+\item{epsilon}{Espsilon parameter of the epsilon-SVR model. There is no
+penalty for points that are predicted within the epsilon-tube around the
+target values. Please note this parameter is only relevant for regression
+tasks. Default: 0.1.}
+
 \item{sample_weights}{Optional weight assigned to each input data point.}
 
 \item{cuml_log_level}{Log level within cuML library functions. Must be one of
@@ -96,7 +102,6 @@ Please note only binary classification is implemented by cuML at the moment.
 \examples{
 
 library(cuml4r)
-library(dplyr)
 
 samples <- iris
 samples[,"isSetosa"] <- (iris[,"Species"] == "setosa")
@@ -116,4 +121,16 @@ cat(
   sum(predictions == samples[, "isSetosa"]),
   "\n"
 )
+
+model <- cuml_svm(
+  mtcars,
+  formula = mpg ~ .,
+  mode = "regression",
+  kernel = "rbf"
+)
+
+predictions <- predict(model, mtcars)
+
+cat("MPG predictions:", predictions, "\n")
+
 }

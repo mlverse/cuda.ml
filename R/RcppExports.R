@@ -33,3 +33,11 @@
     .Call(`_cuml4r_svc_predict`, model_xptr, input)
 }
 
+.svr_fit <- function(X, y, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, epsilon, sample_weights, verbosity) {
+    .Call(`_cuml4r_svr_fit`, X, y, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, epsilon, sample_weights, verbosity)
+}
+
+.svr_predict <- function(svr_xptr, X) {
+    .Call(`_cuml4r_svr_predict`, svr_xptr, X)
+}
+
