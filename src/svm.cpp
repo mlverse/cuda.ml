@@ -10,10 +10,10 @@
 #include "stream_allocator.h"
 
 #include <cuml/svm/svm_parameter.h>
-#include <cuml/svm/svc.hpp>
-#include <cuml/svm/svr.hpp>
 #include <thrust/async/copy.h>
 #include <thrust/device_vector.h>
+#include <cuml/svm/svc.hpp>
+#include <cuml/svm/svr.hpp>
 
 #include <memory>
 #include <vector>
@@ -113,11 +113,12 @@ SEXP svc_fit(Rcpp::NumericMatrix const& input,
 
 // [[Rcpp::export(".svc_predict")]]
 Rcpp::NumericVector svc_predict(SEXP model_xptr,
-                                Rcpp::NumericMatrix const& input) {
+                                Rcpp::NumericMatrix const& input,
+                                bool predict_class) {
 #if HAS_CUML
   auto const m = cuml4r::Matrix<>(input, /*transpose=*/true);
-  auto const n_samples = m.numCols;
-  auto const n_features = m.numRows;
+  int const n_samples = m.numCols;
+  int const n_features = m.numRows;
 
   auto ctx = Rcpp::XPtr<cuml4r::ModelCtx<ML::SVM::SVC<double>>>(model_xptr);
   auto const& svc = ctx->model_;
@@ -132,8 +133,17 @@ Rcpp::NumericVector svc_predict(SEXP model_xptr,
   // output
   thrust::device_vector<double> d_preds(n_samples);
 
-  svc->predict(d_input.data().get(), /*n_rows=*/n_samples,
-               /*c_cols=*/n_features, d_preds.data().get());
+  if (predict_class) {
+    svc->predict(/*input=*/d_input.data().get(), /*n_rows=*/n_samples,
+                 /*c_cols=*/n_features, /*preds=*/d_preds.data().get());
+  } else {
+    ML::SVM::svcPredict(
+      /*handle=*/*ctx->handle_, /*input=*/d_input.data().get(),
+      /*n_rows=*/n_samples,
+      /*c_cols=*/n_features, /*kernel_parames=*/svc->kernel_params,
+      /*model=*/svc->model, /*preds=*/d_preds.data().get(),
+      /*buffer_size=*/svc->param.cache_size, /*predict_class=*/false);
+  }
 
   cuml4r::pinned_host_vector<double> h_preds(n_samples);
   auto CUML4R_ANONYMOUS_VARIABLE(preds_d2h) = cuml4r::async_copy(

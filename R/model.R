@@ -79,8 +79,20 @@ process_input_and_label_specs <- function(x, y, formula) {
   list(x, y)
 }
 
-new_model <- function(cls, mode, xptr, formula = NULL, resp_var = NULL) {
-  structure(list(mode = mode, xptr = xptr, formula = formula, resp_var_cls = class(resp_var), resp_var_attrs = attributes(resp_var)), class = cls)
+new_model <- function(cls, mode, xptr, formula = NULL, resp_var = NULL, ...) {
+  structure(
+    c(
+      list(
+        mode = mode,
+        xptr = xptr,
+        formula = formula,
+        resp_var_cls = class(resp_var),
+        resp_var_attrs = attributes(resp_var)
+      ),
+      rlang::dots_list(...)
+    ),
+    class = cls
+  )
 }
 
 postprocess_classification_results <- function(predictions, model) {

@@ -2,6 +2,7 @@
 
 S3method(predict,cuml_rand_forest)
 S3method(predict,cuml_svm)
+S3method(predict,cuml_svm_multi_class)
 export(cuml_dbscan)
 export(cuml_kmeans)
 export(cuml_rand_forest)

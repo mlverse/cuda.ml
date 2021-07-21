@@ -13,7 +13,6 @@ match_kernel_type <- function(kernel = c("rbf", "tanh", "polynomial", "linear"))
 #' Train a SVM model.
 #'
 #' Train a Support Vector Machine model for classification or regression tasks.
-#' Please note only binary classification is implemented by cuML at the moment.
 #'
 #' @inheritParams model-with-numeric-input
 #' @inheritParams supervised-model-with-numeric-output
@@ -68,22 +67,18 @@ match_kernel_type <- function(kernel = c("rbf", "tanh", "polynomial", "linear"))
 #'
 #' library(cuml4r)
 #'
-#' samples <- iris
-#' samples[,"isSetosa"] <- (iris[,"Species"] == "setosa")
-#' samples <- samples[, names(samples) != "Species"]
-#'
 #' model <- cuml_svm(
-#'   samples,
-#'   formula = isSetosa ~ .,
+#'   iris,
+#'   formula = Species ~ .,
 #'   mode = "classification",
 #'   kernel = "rbf"
 #' )
 #'
-#' predictions <- predict(model, samples)
+#' predictions <- predict(model, iris)
 #'
 #' cat(
 #'   "Number of correct predictions: ",
-#'   sum(predictions == samples[, "isSetosa"]),
+#'   sum(predictions == iris$Species),
 #'   "\n"
 #' )
 #'
@@ -121,27 +116,63 @@ cuml_svm <- function(x, y = NULL, formula = NULL,
   switch(
     mode,
     classification = {
-      new_model(
-        cls = "cuml_svm",
-        mode = mode,
-        xptr = .svc_fit(
-          input = as.matrix(x),
-          labels = as.integer(y),
-          cost = as.numeric(cost),
-          kernel = kernel,
-          gamma = as.numeric(gamma),
-          coef0 = as.numeric(coef0),
-          degree = as.integer(degree),
-          tol = as.numeric(tol),
-          max_iter = as.integer(max_iter),
-          nochange_steps = as.integer(nochange_steps),
-          cache_size = as.numeric(cache_size),
-          sample_weights = as.numeric(sample_weights),
-          verbosity = cuml_log_level
-        ),
-        formula = formula,
-        resp_var = y
-      )
+      unique_labels <- unique(y)
+      if (length(unique_labels) > 2) {
+        # implement a one-vs-rest strategy for multi-class classification
+        models <- list()
+        for (label in unique_labels) {
+          ovr_labels <- as.integer(y == label)
+          models[[label]] <- new_model(
+            cls = "cuml_svm",
+            mode = "classification",
+            xptr = .svc_fit(
+              input = as.matrix(x),
+              labels = ovr_labels,
+              cost = as.numeric(cost),
+              kernel = kernel,
+              gamma = as.numeric(gamma),
+              coef0 = as.numeric(coef0),
+              degree = as.integer(degree),
+              tol = as.numeric(tol),
+              max_iter = as.integer(max_iter),
+              nochange_steps = as.integer(nochange_steps),
+              cache_size = as.numeric(cache_size),
+              sample_weights = as.numeric(sample_weights),
+              verbosity = cuml_log_level
+            )
+          )
+        }
+
+        new_model(
+          cls = "cuml_svm_multi_class",
+          mode = mode,
+          xptr = models,
+          formula = formula,
+          unique_labels = unique_labels
+        )
+      } else {
+        new_model(
+          cls = "cuml_svm",
+          mode = mode,
+          xptr = .svc_fit(
+            input = as.matrix(x),
+            labels = as.integer(y),
+            cost = as.numeric(cost),
+            kernel = kernel,
+            gamma = as.numeric(gamma),
+            coef0 = as.numeric(coef0),
+            degree = as.integer(degree),
+            tol = as.numeric(tol),
+            max_iter = as.integer(max_iter),
+            nochange_steps = as.integer(nochange_steps),
+            cache_size = as.numeric(cache_size),
+            sample_weights = as.numeric(sample_weights),
+            verbosity = cuml_log_level
+          ),
+          formula = formula,
+          resp_var = y
+        )
+      }
     },
     regression = {
       new_model(
@@ -186,7 +217,8 @@ predict.cuml_svm <- function(model, x) {
     classification = {
       .svc_predict(
         model_xptr = model$xptr,
-        input = as.matrix(x)
+        input = as.matrix(x),
+        predict_class = TRUE
       ) %>%
         postprocess_classification_results(model)
     },
@@ -197,4 +229,38 @@ predict.cuml_svm <- function(model, x) {
       )
     }
   )
+}
+
+#' Predict using a SVM model.
+#'
+#' Predict using a Support Vector Machine model.
+#'
+#' @inheritParams model-with-numeric-input
+#' @param model A Support Vector Machine model.
+#'
+#' @export
+predict.cuml_svm_multi_class <- function(model, x) {
+  x <- process_input_specs(x, model)
+
+  scores <- seq_along(model$unique_labels) %>%
+    lapply(
+      function(label_idx) {
+        .svc_predict(
+          model_xptr = model$xptr[[model$unique_labels[[label_idx]]]]$xptr,
+          input = as.matrix(x),
+          predict_class = FALSE
+        )
+      }
+    )
+
+  seq_len(nrow(x)) %>%
+    sapply(
+      function(input_idx) {
+        optimal_label_idx <- seq_along(model$unique_labels) %>%
+          lapply(function(label_idx) scores[[label_idx]][[input_idx]]) %>%
+          which.max()
+
+        model$unique_labels[[optimal_label_idx]]
+      }
+    )
 }

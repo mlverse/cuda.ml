@@ -139,14 +139,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // svc_predict
-Rcpp::NumericVector svc_predict(SEXP model_xptr, Rcpp::NumericMatrix const& input);
-RcppExport SEXP _cuml4r_svc_predict(SEXP model_xptrSEXP, SEXP inputSEXP) {
+Rcpp::NumericVector svc_predict(SEXP model_xptr, Rcpp::NumericMatrix const& input, bool predict_class);
+RcppExport SEXP _cuml4r_svc_predict(SEXP model_xptrSEXP, SEXP inputSEXP, SEXP predict_classSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type model_xptr(model_xptrSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type input(inputSEXP);
-    rcpp_result_gen = Rcpp::wrap(svc_predict(model_xptr, input));
+    Rcpp::traits::input_parameter< bool >::type predict_class(predict_classSEXP);
+    rcpp_result_gen = Rcpp::wrap(svc_predict(model_xptr, input, predict_class));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -195,7 +196,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuml4r_rf_regressor_fit", (DL_FUNC) &_cuml4r_rf_regressor_fit, 16},
     {"_cuml4r_rf_regressor_predict", (DL_FUNC) &_cuml4r_rf_regressor_predict, 3},
     {"_cuml4r_svc_fit", (DL_FUNC) &_cuml4r_svc_fit, 13},
-    {"_cuml4r_svc_predict", (DL_FUNC) &_cuml4r_svc_predict, 2},
+    {"_cuml4r_svc_predict", (DL_FUNC) &_cuml4r_svc_predict, 3},
     {"_cuml4r_svr_fit", (DL_FUNC) &_cuml4r_svr_fit, 14},
     {"_cuml4r_svr_predict", (DL_FUNC) &_cuml4r_svr_predict, 2},
     {NULL, NULL, 0}
