@@ -1,8 +1,7 @@
 match_kernel_type <- function(kernel = c("rbf", "tanh", "polynomial", "linear")) {
   kernel <- match.arg(kernel)
 
-  switch(
-    kernel,
+  switch(kernel,
     linear = 0L,
     polynomial = 1L,
     rbf = 2L,
@@ -92,7 +91,6 @@ match_kernel_type <- function(kernel = c("rbf", "tanh", "polynomial", "linear"))
 #' predictions <- predict(model, mtcars)
 #'
 #' cat("MPG predictions:", predictions, "\n")
-#'
 #' @export
 cuml_svm <- function(x, y = NULL, formula = NULL,
                      mode = c("classification", "regression"),
@@ -113,8 +111,7 @@ cuml_svm <- function(x, y = NULL, formula = NULL,
   cuml_log_level <- match_cuml_log_level(cuml_log_level)
   c(x, y) %<-% process_input_and_label_specs(x, y, formula)
 
-  switch(
-    mode,
+  switch(mode,
     classification = {
       unique_labels <- unique(y)
       if (length(unique_labels) > 2) {
@@ -212,8 +209,7 @@ cuml_svm <- function(x, y = NULL, formula = NULL,
 predict.cuml_svm <- function(model, x) {
   x <- process_input_specs(x, model)
 
-  switch (
-    model$mode,
+  switch(model$mode,
     classification = {
       .svc_predict(
         model_xptr = model$xptr,

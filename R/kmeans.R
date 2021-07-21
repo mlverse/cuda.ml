@@ -20,7 +20,6 @@
 #' )
 #'
 #' print(kclust)
-#'
 #' @export
 cuml_kmeans <- function(x, k, max_iters = 300) {
   .kmeans(x = as.matrix(x), k = k, max_iters = max_iters)

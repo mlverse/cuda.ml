@@ -64,16 +64,20 @@ process_input_specs <- function(x, model) {
 process_input_and_label_specs <- function(x, y, formula) {
   if (!is.null(formula)) {
     if (!inherits(x, "data.frame")) {
-      stop("'x' must be a data.frame when predictor column(s) and response ",
-           "column are specified using the formula syntax.")
+      stop(
+        "'x' must be a data.frame when predictor column(s) and response ",
+        "column are specified using the formula syntax."
+      )
     }
     response_col <- all.vars(formula)[[1]]
     predictor_cols <- labels(terms(formula, data = x))
     y <- x[, response_col]
     x <- x[, which(names(x) %in% predictor_cols)]
   } else if (!is.numeric(y)) {
-    stop("'y' must be a numeric vector if predictor(s) and responses are not",
-         " specified using the formula syntax.")
+    stop(
+      "'y' must be a numeric vector if predictor(s) and responses are not",
+      " specified using the formula syntax."
+    )
   }
 
   list(x, y)

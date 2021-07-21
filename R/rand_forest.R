@@ -77,12 +77,10 @@
 #' cat(
 #'   "Number of correct predictions: ",
 #'   sum(as.integer(round(predictions)) == as.integer(iris[, "Species"])),
-#'  "\n"
+#'   "\n"
 #' )
-#'
 #' @export
-cuml_rand_forest <- function(
-                             x,
+cuml_rand_forest <- function(x,
                              y = NULL,
                              formula = NULL,
                              mode = c("classification", "regression"),
@@ -102,8 +100,7 @@ cuml_rand_forest <- function(
                              cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
   mode <- match.arg(mode)
   split_criterion <- split_criterion %||% (
-    switch(
-      mode,
+    switch(mode,
       classification = "gini",
       regression = "mse"
     )
@@ -112,8 +109,7 @@ cuml_rand_forest <- function(
   cuml_log_level <- match_cuml_log_level(cuml_log_level)
   c(x, y) %<-% process_input_and_label_specs(x, y, formula)
 
-  switch(
-    mode,
+  switch(mode,
     classification = {
       new_model(
         cls = "cuml_rand_forest",
@@ -189,17 +185,14 @@ cuml_rand_forest <- function(
 #' predictions <- predict(model, iris)
 #'
 #' print(predictions)
-#'
 #' @export
-predict.cuml_rand_forest <- function(
-                                     model,
+predict.cuml_rand_forest <- function(model,
                                      x,
                                      cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
   cuml_log_level <- match_cuml_log_level(cuml_log_level)
   x <- process_input_specs(x, model)
 
-  switch (
-    model$mode,
+  switch(model$mode,
     classification = {
       .rf_classifier_predict(
         model_xptr = model$xptr,

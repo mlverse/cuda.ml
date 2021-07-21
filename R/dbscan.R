@@ -30,7 +30,6 @@
 #' clusters <- cuml_dbscan(m, min_pts = 5, eps = 3)
 #'
 #' print(clusters)
-#'
 #' @export
 cuml_dbscan <- function(x, min_pts, eps) {
   res <- .dbscan(

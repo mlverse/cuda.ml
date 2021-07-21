@@ -5,8 +5,7 @@ match_split_criterion <- function(criterion = c("gini", "entropy", "mse", "mae")
     stop("'", criterion, "' is not a valid criterion for classification.")
   }
 
-  switch(
-    criterion,
+  switch(criterion,
     gini = 0L,
     entropy = 1L,
     mse = 2L,
