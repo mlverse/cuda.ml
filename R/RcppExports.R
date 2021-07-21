@@ -29,8 +29,8 @@
     .Call(`_cuml4r_svc_fit`, input, labels, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, sample_weights, verbosity)
 }
 
-.svc_predict <- function(model_xptr, input) {
-    .Call(`_cuml4r_svc_predict`, model_xptr, input)
+.svc_predict <- function(model_xptr, input, predict_class) {
+    .Call(`_cuml4r_svc_predict`, model_xptr, input, predict_class)
 }
 
 .svr_fit <- function(X, y, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, epsilon, sample_weights, verbosity) {

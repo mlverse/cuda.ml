@@ -97,28 +97,23 @@ Default: off.}
 }
 \description{
 Train a Support Vector Machine model for classification or regression tasks.
-Please note only binary classification is implemented by cuML at the moment.
 }
 \examples{
 
 library(cuml4r)
 
-samples <- iris
-samples[,"isSetosa"] <- (iris[,"Species"] == "setosa")
-samples <- samples[, names(samples) != "Species"]
-
 model <- cuml_svm(
-  samples,
-  formula = isSetosa ~ .,
+  iris,
+  formula = Species ~ .,
   mode = "classification",
   kernel = "rbf"
 )
 
-predictions <- predict(model, samples)
+predictions <- predict(model, iris)
 
 cat(
   "Number of correct predictions: ",
-  sum(predictions == samples[, "isSetosa"]),
+  sum(predictions == iris$Species),
   "\n"
 )
 
