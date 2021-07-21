@@ -150,6 +150,42 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// svr_fit
+SEXP svr_fit(Rcpp::NumericMatrix const& X, Rcpp::NumericVector const& y, double const cost, int const kernel, double const gamma, double const coef0, int const degree, double const tol, int const max_iter, int const nochange_steps, double const cache_size, double epsilon, Rcpp::NumericVector const& sample_weights, int const verbosity);
+RcppExport SEXP _cuml4r_svr_fit(SEXP XSEXP, SEXP ySEXP, SEXP costSEXP, SEXP kernelSEXP, SEXP gammaSEXP, SEXP coef0SEXP, SEXP degreeSEXP, SEXP tolSEXP, SEXP max_iterSEXP, SEXP nochange_stepsSEXP, SEXP cache_sizeSEXP, SEXP epsilonSEXP, SEXP sample_weightsSEXP, SEXP verbositySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector const& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< double const >::type cost(costSEXP);
+    Rcpp::traits::input_parameter< int const >::type kernel(kernelSEXP);
+    Rcpp::traits::input_parameter< double const >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< double const >::type coef0(coef0SEXP);
+    Rcpp::traits::input_parameter< int const >::type degree(degreeSEXP);
+    Rcpp::traits::input_parameter< double const >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< int const >::type max_iter(max_iterSEXP);
+    Rcpp::traits::input_parameter< int const >::type nochange_steps(nochange_stepsSEXP);
+    Rcpp::traits::input_parameter< double const >::type cache_size(cache_sizeSEXP);
+    Rcpp::traits::input_parameter< double >::type epsilon(epsilonSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector const& >::type sample_weights(sample_weightsSEXP);
+    Rcpp::traits::input_parameter< int const >::type verbosity(verbositySEXP);
+    rcpp_result_gen = Rcpp::wrap(svr_fit(X, y, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, epsilon, sample_weights, verbosity));
+    return rcpp_result_gen;
+END_RCPP
+}
+// svr_predict
+Rcpp::NumericVector svr_predict(SEXP svr_xptr, Rcpp::NumericMatrix const& X);
+RcppExport SEXP _cuml4r_svr_predict(SEXP svr_xptrSEXP, SEXP XSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type svr_xptr(svr_xptrSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type X(XSEXP);
+    rcpp_result_gen = Rcpp::wrap(svr_predict(svr_xptr, X));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_cuml4r_dbscan", (DL_FUNC) &_cuml4r_dbscan, 4},
@@ -160,6 +196,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuml4r_rf_regressor_predict", (DL_FUNC) &_cuml4r_rf_regressor_predict, 3},
     {"_cuml4r_svc_fit", (DL_FUNC) &_cuml4r_svc_fit, 13},
     {"_cuml4r_svc_predict", (DL_FUNC) &_cuml4r_svc_predict, 2},
+    {"_cuml4r_svr_fit", (DL_FUNC) &_cuml4r_svr_fit, 14},
+    {"_cuml4r_svr_predict", (DL_FUNC) &_cuml4r_svr_predict, 2},
     {NULL, NULL, 0}
 };
 
