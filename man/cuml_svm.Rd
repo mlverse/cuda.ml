@@ -95,6 +95,10 @@ tasks. Default: 0.1.}
 {"off", "critical", "error", "warn", "info", "debug", "trace"}.
 Default: off.}
 }
+\value{
+A Support Vector Machine classifier / regressor object that can be
+  used with the 'predict' S3 generic to make predictions on new data points.
+}
 \description{
 Train a Support Vector Machine model for classification or regression tasks.
 }
@@ -103,19 +107,15 @@ Train a Support Vector Machine model for classification or regression tasks.
 library(cuml4r)
 
 model <- cuml_svm(
-  iris,
+  iris[1:100,],
   formula = Species ~ .,
   mode = "classification",
   kernel = "rbf"
 )
 
-predictions <- predict(model, iris)
+predictions <- predict(model, iris[1:100,])
 
-cat(
-  "Number of correct predictions: ",
-  sum(predictions == iris$Species),
-  "\n"
-)
+cat("Iris species predictions: ", predictions, "\n")
 
 model <- cuml_svm(
   mtcars,
@@ -127,5 +127,4 @@ model <- cuml_svm(
 predictions <- predict(model, mtcars)
 
 cat("MPG predictions:", predictions, "\n")
-
 }

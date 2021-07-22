@@ -2,7 +2,7 @@
 #'
 #' Run the K means clustering algorithm.
 #'
-#' @inheritParams model-with-numeric-input
+#' @template model-with-numeric-input
 #' @param k The number of clusters.
 #' @param max_iters Maximum number of iterations (default: 300).
 #'

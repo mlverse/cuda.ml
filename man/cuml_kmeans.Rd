@@ -32,5 +32,4 @@ kclust <- cuml_kmeans(
 )
 
 print(kclust)
-
 }

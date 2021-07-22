@@ -85,7 +85,8 @@ Default: 8.}
 Default: off.}
 }
 \value{
-A random forest model object.
+A random forest classifier / regressor object that can be used with
+  the 'predict' S3 generic to make predictions on new data points.
 }
 \description{
 Train a random forest model for classification or regression tasks.
@@ -129,7 +130,6 @@ print(round(predictions))
 cat(
   "Number of correct predictions: ",
   sum(as.integer(round(predictions)) == as.integer(iris[, "Species"])),
- "\n"
+  "\n"
 )
-
 }

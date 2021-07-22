@@ -2,11 +2,11 @@
 #'
 #' Train a random forest model for classification or regression tasks.
 #'
-#' @inheritParams model-with-numeric-input
-#' @inheritParams supervised-model-with-numeric-output
-#' @inheritParams supervised-model-formula-spec
-#' @inheritParams supervised-model-classification-or-regression-mode
-#' @inheritParams cuml-log-level
+#' @template model-with-numeric-input
+#' @template supervised-model-with-numeric-output
+#' @template supervised-model-formula-spec
+#' @template supervised-model-classification-or-regression-mode
+#' @template cuml-log-level
 #' @param mtry The number of predictors that will be randomly sampled at each
 #'   split when creating the tree models. Default: the square root of the total
 #'   number of predictors.
@@ -36,7 +36,8 @@
 #' @param n_streams Number of CUDA streams to use for building trees.
 #'   Default: 8.
 #'
-#' @return A random forest model object.
+#' @return A random forest classifier / regressor object that can be used with
+#'   the 'predict' S3 generic to make predictions on new data points.
 #'
 #' @examples
 #' library(cuml4r)
@@ -164,33 +165,13 @@ cuml_rand_forest <- function(x,
   )
 }
 
-#' Predict using a random forest model.
-#'
-#' Perform classification or regression tasks using a trained random forest
-#' model.
-#'
-#' @inheritParams model-with-numeric-input
-#' @inheritParams cuml-log-level
-#' @param model A random forest model object.
-#'
-#' @examples
-#' library(cuml4r)
-#'
-#' model <- cuml_rand_forest(
-#'   iris,
-#'   formula = Species ~ .,
-#'   trees = 100
-#' )
-#'
-#' predictions <- predict(model, iris)
-#'
-#' print(predictions)
 #' @export
-predict.cuml_rand_forest <- function(model,
-                                     x,
+predict.cuml_rand_forest <- function(object,
+                                     ...,
                                      cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
+  model <- object
+  x <- process_input_specs(rlang::dots_list(...)[[1]], model)
   cuml_log_level <- match_cuml_log_level(cuml_log_level)
-  x <- process_input_specs(x, model)
 
   switch(model$mode,
     classification = {

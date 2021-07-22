@@ -13,11 +13,11 @@ match_kernel_type <- function(kernel = c("rbf", "tanh", "polynomial", "linear"))
 #'
 #' Train a Support Vector Machine model for classification or regression tasks.
 #'
-#' @inheritParams model-with-numeric-input
-#' @inheritParams supervised-model-with-numeric-output
-#' @inheritParams supervised-model-formula-spec
-#' @inheritParams supervised-model-classification-or-regression-mode
-#' @inheritParams cuml-log-level
+#' @template model-with-numeric-input
+#' @template supervised-model-with-numeric-output
+#' @template supervised-model-formula-spec
+#' @template supervised-model-classification-or-regression-mode
+#' @template cuml-log-level
 #' @param cost A positive number for the cost of predicting a sample within or
 #'   on the wrong side of the margin. Default: 1.
 #' @param kernel Type of the SVM kernel function (must be one of "rbf", "tanh",
@@ -62,24 +62,23 @@ match_kernel_type <- function(kernel = c("rbf", "tanh", "polynomial", "linear"))
 #'   tasks. Default: 0.1.
 #' @param sample_weights Optional weight assigned to each input data point.
 #'
+#' @return A Support Vector Machine classifier / regressor object that can be
+#'   used with the 'predict' S3 generic to make predictions on new data points.
+#'
 #' @examples
 #'
 #' library(cuml4r)
 #'
 #' model <- cuml_svm(
-#'   iris,
+#'   iris[1:100,],
 #'   formula = Species ~ .,
 #'   mode = "classification",
 #'   kernel = "rbf"
 #' )
 #'
-#' predictions <- predict(model, iris)
+#' predictions <- predict(model, iris[1:100,])
 #'
-#' cat(
-#'   "Number of correct predictions: ",
-#'   sum(predictions == iris$Species),
-#'   "\n"
-#' )
+#' cat("Iris species predictions: ", predictions, "\n")
 #'
 #' model <- cuml_svm(
 #'   mtcars,
@@ -198,16 +197,10 @@ cuml_svm <- function(x, y = NULL, formula = NULL,
   )
 }
 
-#' Predict using a SVM model.
-#'
-#' Predict using a Support Vector Machine model.
-#'
-#' @inheritParams model-with-numeric-input
-#' @param model A Support Vector Machine model.
-#'
 #' @export
-predict.cuml_svm <- function(model, x) {
-  x <- process_input_specs(x, model)
+predict.cuml_svm <- function(object, ...) {
+  model <- object
+  x <- process_input_specs(rlang::dots_list(...)[[1]], model)
 
   switch(model$mode,
     classification = {
@@ -227,16 +220,10 @@ predict.cuml_svm <- function(model, x) {
   )
 }
 
-#' Predict using a SVM model.
-#'
-#' Predict using a Support Vector Machine model.
-#'
-#' @inheritParams model-with-numeric-input
-#' @param model A Support Vector Machine model.
-#'
 #' @export
-predict.cuml_svm_multi_class <- function(model, x) {
-  x <- process_input_specs(x, model)
+predict.cuml_svm_multi_class <- function(object, ...) {
+  model <- object
+  x <- process_input_specs(rlang::dots_list(...)[[1]], model)
 
   scores <- seq_along(model$unique_labels) %>%
     lapply(

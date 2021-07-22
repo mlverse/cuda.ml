@@ -3,7 +3,7 @@
 #' Run the DBSCAN (Density-based spatial clustering of applications with noise)
 #' clustering algorithm.
 #'
-#' @inheritParams model-with-numeric-input
+#' @template model-with-numeric-input
 #' @param min_pts,eps A point `p` is a core point if at least `min_pts` are
 #'   within distance `eps` from it.
 #'
