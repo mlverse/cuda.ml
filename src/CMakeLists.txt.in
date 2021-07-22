@@ -29,7 +29,14 @@ endif(IS_DIRECTORY ${CUML_LIBRARY_DIR})
 include_directories(@R_INCLUDE_DIR@)
 include_directories(@RCPP_INCLUDE_DIR@)
 
-foreach(x kmeans.cpp dbscan.cpp random_forest.cpp svm.cpp)
+foreach(
+  x
+  kmeans.cpp
+  dbscan.cpp
+  random_forest_classifier.cpp
+  random_forest_regressor.cpp
+  svm_classifier.cpp
+  svm_regressor.cpp)
     set_source_files_properties(${x} PROPERTIES LANGUAGE CUDA)
 endforeach()
 
@@ -42,8 +49,10 @@ add_library(
   handle_utils.cu
   kmeans.cpp
   dbscan.cpp
-  random_forest.cpp
-  svm.cpp
+  random_forest_classifier.cpp
+  random_forest_regressor.cpp
+  svm_classifier.cpp
+  svm_regressor.cpp
   RcppExports.cpp
 )
 
