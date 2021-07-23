@@ -5,8 +5,8 @@
     .Call(`_cuml4r_dbscan`, x, min_pts, eps, max_bytes_per_batch)
 }
 
-.kmeans <- function(x, k, max_iters) {
-    .Call(`_cuml4r_kmeans`, x, k, max_iters)
+.kmeans <- function(x, k, max_iters, tol, init_method, centroids, seed, verbosity) {
+    .Call(`_cuml4r_kmeans`, x, k, max_iters, tol, init_method, centroids, seed, verbosity)
 }
 
 .rf_classifier_fit <- function(input, labels, n_trees, bootstrap, max_samples, n_streams, max_depth, max_leaves, max_features, n_bins, min_samples_leaf, min_samples_split, split_criterion, min_impurity_decrease, max_batch_size, verbosity) {

@@ -113,9 +113,8 @@ SEXP svc_fit(Rcpp::NumericMatrix const& input,
 }
 
 // [[Rcpp::export(".svc_predict")]]
-SEXP svc_predict(SEXP model_xptr,
-                                Rcpp::NumericMatrix const& input,
-                                bool predict_class) {
+SEXP svc_predict(SEXP model_xptr, Rcpp::NumericMatrix const& input,
+                 bool predict_class) {
 #if HAS_CUML
   auto const m = cuml4r::Matrix<>(input, /*transpose=*/true);
   int const n_samples = m.numCols;

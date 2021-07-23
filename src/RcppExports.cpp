@@ -25,15 +25,20 @@ BEGIN_RCPP
 END_RCPP
 }
 // kmeans
-Rcpp::List kmeans(Rcpp::NumericMatrix const& x, int const k, int const max_iters);
-RcppExport SEXP _cuml4r_kmeans(SEXP xSEXP, SEXP kSEXP, SEXP max_itersSEXP) {
+Rcpp::List kmeans(Rcpp::NumericMatrix const& x, int const k, int const max_iters, double const tol, int const init_method, Rcpp::NumericMatrix const& centroids, int const seed, int const verbosity);
+RcppExport SEXP _cuml4r_kmeans(SEXP xSEXP, SEXP kSEXP, SEXP max_itersSEXP, SEXP tolSEXP, SEXP init_methodSEXP, SEXP centroidsSEXP, SEXP seedSEXP, SEXP verbositySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type x(xSEXP);
     Rcpp::traits::input_parameter< int const >::type k(kSEXP);
     Rcpp::traits::input_parameter< int const >::type max_iters(max_itersSEXP);
-    rcpp_result_gen = Rcpp::wrap(kmeans(x, k, max_iters));
+    Rcpp::traits::input_parameter< double const >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< int const >::type init_method(init_methodSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type centroids(centroidsSEXP);
+    Rcpp::traits::input_parameter< int const >::type seed(seedSEXP);
+    Rcpp::traits::input_parameter< int const >::type verbosity(verbositySEXP);
+    rcpp_result_gen = Rcpp::wrap(kmeans(x, k, max_iters, tol, init_method, centroids, seed, verbosity));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -190,7 +195,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_cuml4r_dbscan", (DL_FUNC) &_cuml4r_dbscan, 4},
-    {"_cuml4r_kmeans", (DL_FUNC) &_cuml4r_kmeans, 3},
+    {"_cuml4r_kmeans", (DL_FUNC) &_cuml4r_kmeans, 8},
     {"_cuml4r_rf_classifier_fit", (DL_FUNC) &_cuml4r_rf_classifier_fit, 16},
     {"_cuml4r_rf_classifier_predict", (DL_FUNC) &_cuml4r_rf_classifier_predict, 3},
     {"_cuml4r_rf_regressor_fit", (DL_FUNC) &_cuml4r_rf_regressor_fit, 16},
