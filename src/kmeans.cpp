@@ -25,7 +25,9 @@
 
 // [[Rcpp::export(".kmeans")]]
 Rcpp::List kmeans(Rcpp::NumericMatrix const& x, int const k,
-                  int const max_iters) {
+                  int const max_iters, double const tol, int const init_method,
+                  Rcpp::NumericMatrix const& centroids, int const seed,
+                  int const verbosity) {
   Rcpp::List result;
 
 #if HAS_CUML
@@ -36,6 +38,13 @@ Rcpp::List kmeans(Rcpp::NumericMatrix const& x, int const k,
   ML::kmeans::KMeansParams params;
   params.n_clusters = k;
   params.max_iter = max_iters;
+  if (tol > 0) {
+    params.tol = tol;
+    params.inertia_check = true;
+  }
+  params.init = static_cast<ML::kmeans::KMeansParams::InitMethod>(init_method);
+  params.seed = seed;
+  params.verbosity = verbosity;
 
   auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
   raft::handle_t handle;
@@ -52,6 +61,14 @@ Rcpp::List kmeans(Rcpp::NumericMatrix const& x, int const k,
 
   // kmeans outputs
   thrust::device_vector<double> d_pred_centroids(n_centroid_values);
+  cuml4r::unique_marker centroids_h2d;
+  if (params.init == ML::kmeans::KMeansParams::InitMethod::Array) {
+    auto const m_centroids = cuml4r::Matrix<>(centroids, /*transpose=*/false);
+    auto const& h_centroids = m_centroids.values;
+    centroids_h2d =
+      cuml4r::async_copy(stream_view.value(), h_centroids.cbegin(),
+                         h_centroids.cend(), d_pred_centroids.begin());
+  }
   thrust::device_vector<int> d_pred_labels(n_samples);
 
   double inertia = 0;
