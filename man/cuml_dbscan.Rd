@@ -41,5 +41,4 @@ m <- gen_pts()
 clusters <- cuml_dbscan(m, min_pts = 5, eps = 3)
 
 print(clusters)
-
 }

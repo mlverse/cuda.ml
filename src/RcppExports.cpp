@@ -139,7 +139,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // svc_predict
-Rcpp::NumericVector svc_predict(SEXP model_xptr, Rcpp::NumericMatrix const& input, bool predict_class);
+SEXP svc_predict(SEXP model_xptr, Rcpp::NumericMatrix const& input, bool predict_class);
 RcppExport SEXP _cuml4r_svc_predict(SEXP model_xptrSEXP, SEXP inputSEXP, SEXP predict_classSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;

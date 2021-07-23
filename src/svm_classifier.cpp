@@ -113,7 +113,7 @@ SEXP svc_fit(Rcpp::NumericMatrix const& input,
 }
 
 // [[Rcpp::export(".svc_predict")]]
-Rcpp::NumericVector svc_predict(SEXP model_xptr,
+SEXP svc_predict(SEXP model_xptr,
                                 Rcpp::NumericMatrix const& input,
                                 bool predict_class) {
 #if HAS_CUML
@@ -156,7 +156,7 @@ Rcpp::NumericVector svc_predict(SEXP model_xptr,
 
 #include "warn_cuml_missing.h"
 
-  return {};
+  return Rcpp::IntegerVector();
 
 #endif
 }
