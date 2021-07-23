@@ -11,8 +11,8 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // dbscan
-Rcpp::List dbscan(Rcpp::NumericMatrix const& x, int const min_pts, double const eps, size_t const max_bytes_per_batch);
-RcppExport SEXP _cuml4r_dbscan(SEXP xSEXP, SEXP min_ptsSEXP, SEXP epsSEXP, SEXP max_bytes_per_batchSEXP) {
+Rcpp::List dbscan(Rcpp::NumericMatrix const& x, int const min_pts, double const eps, size_t const max_bytes_per_batch, int const verbosity);
+RcppExport SEXP _cuml4r_dbscan(SEXP xSEXP, SEXP min_ptsSEXP, SEXP epsSEXP, SEXP max_bytes_per_batchSEXP, SEXP verbositySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -20,7 +20,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int const >::type min_pts(min_ptsSEXP);
     Rcpp::traits::input_parameter< double const >::type eps(epsSEXP);
     Rcpp::traits::input_parameter< size_t const >::type max_bytes_per_batch(max_bytes_per_batchSEXP);
-    rcpp_result_gen = Rcpp::wrap(dbscan(x, min_pts, eps, max_bytes_per_batch));
+    Rcpp::traits::input_parameter< int const >::type verbosity(verbositySEXP);
+    rcpp_result_gen = Rcpp::wrap(dbscan(x, min_pts, eps, max_bytes_per_batch, verbosity));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -194,7 +195,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_cuml4r_dbscan", (DL_FUNC) &_cuml4r_dbscan, 4},
+    {"_cuml4r_dbscan", (DL_FUNC) &_cuml4r_dbscan, 5},
     {"_cuml4r_kmeans", (DL_FUNC) &_cuml4r_kmeans, 8},
     {"_cuml4r_rf_classifier_fit", (DL_FUNC) &_cuml4r_rf_classifier_fit, 16},
     {"_cuml4r_rf_classifier_predict", (DL_FUNC) &_cuml4r_rf_classifier_predict, 3},

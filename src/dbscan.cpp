@@ -20,7 +20,8 @@
 
 // [[Rcpp::export(".dbscan")]]
 Rcpp::List dbscan(Rcpp::NumericMatrix const& x, int const min_pts,
-                  double const eps, size_t const max_bytes_per_batch) {
+                  double const eps, size_t const max_bytes_per_batch,
+                  int const verbosity) {
   Rcpp::List result;
 
 #if HAS_CUML
@@ -43,9 +44,12 @@ Rcpp::List dbscan(Rcpp::NumericMatrix const& x, int const min_pts,
     cuml4r::async_copy(stream_view.value(), h_src_data.cbegin(),
                        h_src_data.cend(), d_src_data.begin());
 
-  ML::Dbscan::fit(handle, d_src_data.data().get(), n_samples, n_features, eps,
-                  min_pts, raft::distance::L2SqrtUnexpanded,
-                  d_labels.data().get(), nullptr, max_bytes_per_batch, false);
+  ML::Dbscan::fit(handle, /*input=*/d_src_data.data().get(),
+                  /*n_rows=*/n_samples, /*n_cols=*/n_features, eps, min_pts,
+                  /*metric=*/raft::distance::L2SqrtUnexpanded,
+                  /*labels=*/d_labels.data().get(),
+                  /*core_sample_indices=*/nullptr, max_bytes_per_batch,
+                  /*verbosity=*/verbosity, /*opg=*/false);
 
   std::vector<int> h_labels(n_samples);
   auto CUML4R_ANONYMOUS_VARIABLE(labels_d2h) = cuml4r::async_copy(

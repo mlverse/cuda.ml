@@ -4,7 +4,15 @@
 \alias{cuml_kmeans}
 \title{Run the K means clustering algorithm.}
 \usage{
-cuml_kmeans(x, k, max_iters = 300)
+cuml_kmeans(
+  x,
+  k,
+  max_iters = 300,
+  tol = 0,
+  init_method = c("kmeans++", "random"),
+  seed = 0L,
+  cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")
+)
 }
 \arguments{
 \item{x}{The input matrix or dataframe. Each data point should be a row
@@ -12,7 +20,20 @@ and should consist of numeric values only.}
 
 \item{k}{The number of clusters.}
 
-\item{max_iters}{Maximum number of iterations (default: 300).}
+\item{max_iters}{Maximum number of iterations. Default: 300.}
+
+\item{tol}{Relative tolerance with regards to inertia to declare convergence.
+Default: 0 (i.e., do not use inertia-based stopping criterion).}
+
+\item{init_method}{Method for initializing the centroids. Valid methods
+include "kmeans++", "random", or a matrix of k rows, each row specifying
+the initial value of a centroid. Default: "kmeans++".}
+
+\item{seed}{Seed to the random number generator. Default: 0.}
+
+\item{cuml_log_level}{Log level within cuML library functions. Must be one of
+{"off", "critical", "error", "warn", "info", "debug", "trace"}.
+Default: off.}
 }
 \value{
 A list containing the cluster assignments and the centroid of each
