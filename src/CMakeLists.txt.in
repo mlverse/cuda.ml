@@ -36,7 +36,9 @@ foreach(
   random_forest_classifier.cpp
   random_forest_regressor.cpp
   svm_classifier.cpp
-  svm_regressor.cpp)
+  svm_regressor.cpp
+  pca.cpp
+)
     set_source_files_properties(${x} PROPERTIES LANGUAGE CUDA)
 endforeach()
 
@@ -53,6 +55,7 @@ add_library(
   random_forest_regressor.cpp
   svm_classifier.cpp
   svm_regressor.cpp
+  pca.cpp
   RcppExports.cpp
 )
 
