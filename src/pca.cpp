@@ -25,7 +25,7 @@
 
 // [[Rcpp::export(".pca_fit_transform")]]
 Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x, double const tol,
-                             int const n_iters, bool const verbose,
+                             int const n_iters, int const verbosity,
                              int const n_components, int const algo,
                              bool const whiten) {
   Rcpp::List result;
@@ -41,7 +41,7 @@ Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x, double const tol,
   params.gpu_id = cuml4r::currentDevice();
   params.tol = tol;
   params.n_iterations = n_iters;
-  params.verbose = verbose;
+  params.verbose = verbosity;
   params.n_components = n_components;
   params.algorithm = static_cast<ML::solver>(algo);
   params.copy = true;
