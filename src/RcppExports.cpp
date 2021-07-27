@@ -44,19 +44,19 @@ BEGIN_RCPP
 END_RCPP
 }
 // pca_fit_transform
-Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x, double const tol, int const n_iters, bool const verbose, int const n_components, int const algo, bool const whiten);
-RcppExport SEXP _cuml4r_pca_fit_transform(SEXP xSEXP, SEXP tolSEXP, SEXP n_itersSEXP, SEXP verboseSEXP, SEXP n_componentsSEXP, SEXP algoSEXP, SEXP whitenSEXP) {
+Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x, double const tol, int const n_iters, int const verbosity, int const n_components, int const algo, bool const whiten);
+RcppExport SEXP _cuml4r_pca_fit_transform(SEXP xSEXP, SEXP tolSEXP, SEXP n_itersSEXP, SEXP verbositySEXP, SEXP n_componentsSEXP, SEXP algoSEXP, SEXP whitenSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type x(xSEXP);
     Rcpp::traits::input_parameter< double const >::type tol(tolSEXP);
     Rcpp::traits::input_parameter< int const >::type n_iters(n_itersSEXP);
-    Rcpp::traits::input_parameter< bool const >::type verbose(verboseSEXP);
+    Rcpp::traits::input_parameter< int const >::type verbosity(verbositySEXP);
     Rcpp::traits::input_parameter< int const >::type n_components(n_componentsSEXP);
     Rcpp::traits::input_parameter< int const >::type algo(algoSEXP);
     Rcpp::traits::input_parameter< bool const >::type whiten(whitenSEXP);
-    rcpp_result_gen = Rcpp::wrap(pca_fit_transform(x, tol, n_iters, verbose, n_components, algo, whiten));
+    rcpp_result_gen = Rcpp::wrap(pca_fit_transform(x, tol, n_iters, verbosity, n_components, algo, whiten));
     return rcpp_result_gen;
 END_RCPP
 }
