@@ -41,15 +41,22 @@ component have unit variance  and removing multi-collinearity.
 Default: FALSE.}
 }
 \value{
-A named list with the following elements:
+A PCA model object with the following attributes:
    - "components": a matrix of n_components rows containing the top principal
      components.
    - "explained_variance": amount of variance within the input data explained
      by each component.
    - "singular_values": singular values (non-negative) corresponding to the
      top principal components.
-   - "mean": The column wise mean of \code{x} which was used to mean-center
+   - "mean": the column wise mean of \code{x} which was used to mean-center
      \code{x} first.
+     representation of the input data based on principal components.
+   - "pca_params": opaque pointer to PCA parameters which will be used for
+     performing inverse transforms.
+
+ The model object can be used as input to the inverse_transform() function to
+ map a representation based on principal components back to the original
+ feature space.
 }
 \description{
 Compute principal component(s) of the input data.
@@ -60,5 +67,4 @@ library(cuml4r)
 
 iris.pca <- cuml_pca(iris[1:4], n_components = 3)
 print(iris.pca)
-
 }
