@@ -56,3 +56,17 @@ postprocess_classification_results <- function(predictions, model) {
 
   predictions
 }
+
+#' Apply an inverse transformation defined by cuML a model object.
+#'
+#' Given a trained cuML model, apply the inverse transformation defined by that
+#' model to an input dataset.
+#'
+#' @param model A model object.
+#' @param x The dataset to be transformed.
+#' @param ... Additional model-specific parameters (if any).
+#'
+#' @export
+inverse_transform <- function(model, x, ...) {
+  UseMethod("inverse_transform")
+}

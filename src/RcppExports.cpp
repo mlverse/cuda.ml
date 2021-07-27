@@ -60,6 +60,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// pca_inverse_transform
+Rcpp::NumericMatrix pca_inverse_transform(Rcpp::List model, Rcpp::NumericMatrix const& x);
+RcppExport SEXP _cuml4r_pca_inverse_transform(SEXP modelSEXP, SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type model(modelSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(pca_inverse_transform(model, x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rf_classifier_fit
 SEXP rf_classifier_fit(Rcpp::NumericMatrix const& input, Rcpp::IntegerVector const& labels, int const n_trees, bool const bootstrap, float const max_samples, int const n_streams, int const max_depth, int const max_leaves, float const max_features, int const n_bins, int const min_samples_leaf, int const min_samples_split, int const split_criterion, float const min_impurity_decrease, int const max_batch_size, int const verbosity);
 RcppExport SEXP _cuml4r_rf_classifier_fit(SEXP inputSEXP, SEXP labelsSEXP, SEXP n_treesSEXP, SEXP bootstrapSEXP, SEXP max_samplesSEXP, SEXP n_streamsSEXP, SEXP max_depthSEXP, SEXP max_leavesSEXP, SEXP max_featuresSEXP, SEXP n_binsSEXP, SEXP min_samples_leafSEXP, SEXP min_samples_splitSEXP, SEXP split_criterionSEXP, SEXP min_impurity_decreaseSEXP, SEXP max_batch_sizeSEXP, SEXP verbositySEXP) {
@@ -215,6 +227,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuml4r_dbscan", (DL_FUNC) &_cuml4r_dbscan, 5},
     {"_cuml4r_kmeans", (DL_FUNC) &_cuml4r_kmeans, 8},
     {"_cuml4r_pca_fit_transform", (DL_FUNC) &_cuml4r_pca_fit_transform, 7},
+    {"_cuml4r_pca_inverse_transform", (DL_FUNC) &_cuml4r_pca_inverse_transform, 2},
     {"_cuml4r_rf_classifier_fit", (DL_FUNC) &_cuml4r_rf_classifier_fit, 16},
     {"_cuml4r_rf_classifier_predict", (DL_FUNC) &_cuml4r_rf_classifier_predict, 3},
     {"_cuml4r_rf_regressor_fit", (DL_FUNC) &_cuml4r_rf_regressor_fit, 16},

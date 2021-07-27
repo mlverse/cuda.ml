@@ -35,17 +35,17 @@ Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x, double const tol,
   auto const n_rows = m.numCols;
   auto const n_cols = m.numRows;
 
-  ML::paramsPCA params;
-  params.n_rows = n_rows;
-  params.n_cols = n_cols;
-  params.gpu_id = cuml4r::currentDevice();
-  params.tol = tol;
-  params.n_iterations = n_iters;
-  params.verbose = verbosity;
-  params.n_components = n_components;
-  params.algorithm = static_cast<ML::solver>(algo);
-  params.copy = true;
-  params.whiten = whiten;
+  auto params = std::make_unique<ML::paramsPCA>();
+  params->n_rows = n_rows;
+  params->n_cols = n_cols;
+  params->gpu_id = cuml4r::currentDevice();
+  params->tol = tol;
+  params->n_iterations = n_iters;
+  params->verbose = verbosity;
+  params->n_components = n_components;
+  params->algorithm = static_cast<ML::solver>(algo);
+  params->copy = true;
+  params->whiten = whiten;
 
   auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
   raft::handle_t handle;
@@ -76,7 +76,7 @@ Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x, double const tol,
     /*singular_vals=*/d_singular_vals.data().get(),
     /*mu=*/d_mu.data().get(),
     /*noise_vars=*/d_noise_vars.data().get(),
-    /*prms=*/params);
+    /*prms=*/*params);
 
   cuml4r::pinned_host_vector<double> h_transformed_data(n_rows * n_components);
   cuml4r::pinned_host_vector<double> h_components(n_cols * n_components);
@@ -109,17 +109,20 @@ Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x, double const tol,
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
-  result["components"] = Rcpp::NumericMatrix(n_components, n_cols, h_components.begin());
+  result["components"] =
+    Rcpp::NumericMatrix(n_components, n_cols, h_components.begin());
   result["explained_variance"] =
     Rcpp::NumericVector(h_explained_var.begin(), h_explained_var.end());
-  result["explained_variance_ratio"] =
-    Rcpp::NumericVector(h_explained_var_ratio.begin(), h_explained_var_ratio.end());
+  result["explained_variance_ratio"] = Rcpp::NumericVector(
+    h_explained_var_ratio.begin(), h_explained_var_ratio.end());
   result["singular_values"] =
     Rcpp::NumericVector(h_singular_vals.begin(), h_singular_vals.end());
   result["mean"] = Rcpp::NumericVector(h_mu.begin(), h_mu.end());
   // NOTE: noise variance calculation appears to be unimplemented in cuML at the moment
   // result["noise_variance"] = Rcpp::NumericVector(h_noise_vars.begin(), h_noise_vars.end());
-  result["transformed_data"] = Rcpp::NumericMatrix(n_rows, n_components, h_transformed_data.begin());
+  result["transformed_data"] =
+    Rcpp::NumericMatrix(n_rows, n_components, h_transformed_data.begin());
+  result["pca_params"] = Rcpp::XPtr<ML::paramsPCA>(params.release());
 #else
 
 #include "warn_cuml_missing.h"
@@ -127,4 +130,69 @@ Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x, double const tol,
 #endif
 
   return result;
+}
+
+// [[Rcpp::export(".pca_inverse_transform")]]
+Rcpp::NumericMatrix pca_inverse_transform(Rcpp::List model, Rcpp::NumericMatrix const& x) {
+#if HAS_CUML
+  auto const m = cuml4r::Matrix<>(x, /*transpose=*/true);
+  auto const& h_trans_input = m.values;
+  auto const components = cuml4r::Matrix<>(model["components"], /*transpose=*/true);
+  auto const& h_components = components.values;
+  Rcpp::NumericVector const singular_vals = model["singular_values"];
+  cuml4r::pinned_host_vector<double> const h_singular_vals(singular_vals.cbegin(), singular_vals.cend());
+  Rcpp::NumericVector const mu = model["mean"];
+  cuml4r::pinned_host_vector<double> const h_mu(mu.begin(), mu.end());
+  Rcpp::XPtr<ML::paramsPCA> params = model["pca_params"];
+
+  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  raft::handle_t handle;
+  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+
+  // inverse transform inputs
+  thrust::device_vector<double> d_trans_input(h_trans_input.size());
+  thrust::device_vector<double> d_components(h_components.size());
+  thrust::device_vector<double> d_singular_vals(h_singular_vals.size());
+  thrust::device_vector<double> d_mu(h_mu.size());
+
+  auto CUML4R_ANONYMOUS_VARIABLE(trans_input_h2d) =
+    cuml4r::async_copy(stream_view.value(), h_trans_input.cbegin(),
+                       h_trans_input.cend(), d_trans_input.begin());
+  auto CUML4R_ANONYMOUS_VARIABLE(components_h2d) =
+    cuml4r::async_copy(stream_view.value(), h_components.cbegin(),
+                       h_components.cend(), d_components.begin());
+  auto CUML4R_ANONYMOUS_VARIABLE(singular_vals_h2d) =
+    cuml4r::async_copy(stream_view.value(), h_singular_vals.cbegin(),
+                       h_singular_vals.cend(), d_singular_vals.begin());
+  auto CUML4R_ANONYMOUS_VARIABLE(mu_h2d) =
+    cuml4r::async_copy(stream_view.value(), h_mu.cbegin(),
+                       h_mu.cend(), d_mu.begin());
+
+  // inverse transform output
+  thrust::device_vector<double> d_result(params->n_rows * params->n_cols);
+
+  ML::pcaInverseTransform(handle,
+    /*trans_input=*/d_trans_input.data().get(),
+    /*components=*/d_components.data().get(),
+    /*singular_vals=*/d_singular_vals.data().get(),
+    /*mu=*/d_mu.data().get(),
+    /*input=*/d_result.data().get(),
+    /*prms=*/*params
+  );
+
+  cuml4r::pinned_host_vector<double> h_result(d_result.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(result_d2h) =
+    cuml4r::async_copy(stream_view.value(), d_result.cbegin(),
+                       d_result.cend(), h_result.begin());
+
+  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
+
+  return Rcpp::NumericMatrix(params->n_rows, params->n_cols, h_result.begin());
+#else
+
+#include "warn_cuml_missing.h"
+
+  return {};
+
+#endif
 }
