@@ -164,11 +164,8 @@ Rcpp::NumericMatrix pca_inverse_transform(Rcpp::List model,
   auto const components =
     cuml4r::Matrix<>(model["components"], /*transpose=*/true);
   auto const& h_components = components.values;
-  Rcpp::NumericVector const singular_vals = model["singular_values"];
-  cuml4r::pinned_host_vector<double> const h_singular_vals(
-    singular_vals.cbegin(), singular_vals.cend());
-  Rcpp::NumericVector const mu = model["mean"];
-  cuml4r::pinned_host_vector<double> const h_mu(mu.begin(), mu.end());
+  Rcpp::NumericVector const h_singular_vals = model["singular_values"];
+  Rcpp::NumericVector const h_mu = model["mean"];
   Rcpp::XPtr<ML::paramsPCA> params = model["pca_params"];
 
   auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
