@@ -49,3 +49,7 @@
     .Call(`_cuml4r_svr_predict`, svr_xptr, X)
 }
 
+.tsvd_fit_transform <- function(x, tol, n_iters, verbosity, n_components, algo, transform_input) {
+    .Call(`_cuml4r_tsvd_fit_transform`, x, tol, n_iters, verbosity, n_components, algo, transform_input)
+}
+

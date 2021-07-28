@@ -38,6 +38,7 @@ foreach(
   svm_classifier.cpp
   svm_regressor.cpp
   pca.cpp
+  tsvd.cpp
 )
     set_source_files_properties(${x} PROPERTIES LANGUAGE CUDA)
 endforeach()
@@ -56,6 +57,7 @@ add_library(
   svm_classifier.cpp
   svm_regressor.cpp
   pca.cpp
+  tsvd.cpp
   RcppExports.cpp
 )
 
