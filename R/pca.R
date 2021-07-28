@@ -26,6 +26,8 @@ match_eig_algo <- function(eig_algo = c("dq", "jacobi")) {
 #' @param whitening If TRUE, then de-correlate all components, making each
 #'   component have unit variance  and removing multi-collinearity.
 #'   Default: FALSE.
+#' @param transform_input If TRUE, then compute an approximate representation
+#'   of the original input based on the principal components. Default: TRUE.
 #'
 #' @return A PCA model object with the following attributes:
 #'    - "components": a matrix of n_components rows containing the top principal
@@ -36,8 +38,9 @@ match_eig_algo <- function(eig_algo = c("dq", "jacobi")) {
 #'      top principal components.
 #'    - "mean": the column wise mean of \code{x} which was used to mean-center
 #'      \code{x} first.
-#"    - "transformed_data": a (possibly lower-dimensional and approximate)
-#'      representation of the input data based on principal components.
+#'    - "transformed_data": (only present if "transform_input" is set to TRUE)
+#'      an approximate representation of input data based on principal
+#'      components.
 #'    - "pca_params": opaque pointer to PCA parameters which will be used for
 #'      performing inverse transforms.
 #'
@@ -57,6 +60,7 @@ cuml_pca <- function(x,
                      eig_algo = c("dq", "jacobi"),
                      tol = 1e-7, n_iters = 15L,
                      whiten = FALSE,
+                     transform_input = TRUE,
                      cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
   n_components <- n_components %||% min(nrow(x), ncol(x))
   eig_algo <- match_eig_algo(eig_algo)
@@ -69,6 +73,7 @@ cuml_pca <- function(x,
     tol = as.numeric(tol),
     n_iters = n_iters,
     whiten = whiten,
+    transform_input = transform_input,
     verbosity = cuml_log_level
   )
   class(model) <- c("cuml_pca", class(model))
