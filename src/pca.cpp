@@ -27,7 +27,7 @@
 Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x, double const tol,
                              int const n_iters, int const verbosity,
                              int const n_components, int const algo,
-                             bool const whiten) {
+                             bool const whiten, bool const transform_input) {
   Rcpp::List result;
 
 #if HAS_CUML
@@ -58,7 +58,10 @@ Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x, double const tol,
     stream_view.value(), h_input.cbegin(), h_input.cend(), d_input.begin());
 
   // PCA outputs
-  thrust::device_vector<double> d_transformed_data(n_rows * n_components);
+  thrust::device_vector<double> d_transformed_data;
+  if (transform_input) {
+    d_transformed_data.resize(n_rows * n_components);
+  }
   thrust::device_vector<double> d_components(n_cols * n_components);
   thrust::device_vector<double> d_explained_var(n_components);
   thrust::device_vector<double> d_explained_var_ratio(n_components);
@@ -66,19 +69,34 @@ Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x, double const tol,
   thrust::device_vector<double> d_mu(n_cols);
   thrust::device_vector<double> d_noise_vars(1);
 
-  ML::pcaFitTransform(
-    handle,
-    /*input=*/d_input.data().get(),
-    /*trans_input=*/d_transformed_data.data().get(),
-    /*components=*/d_components.data().get(),
-    /*explained_var=*/d_explained_var.data().get(),
-    /*explained_var_ratio=*/d_explained_var_ratio.data().get(),
-    /*singular_vals=*/d_singular_vals.data().get(),
-    /*mu=*/d_mu.data().get(),
-    /*noise_vars=*/d_noise_vars.data().get(),
-    /*prms=*/*params);
+  if (transform_input) {
+    ML::pcaFitTransform(
+      handle,
+      /*input=*/d_input.data().get(),
+      /*trans_input=*/d_transformed_data.data().get(),
+      /*components=*/d_components.data().get(),
+      /*explained_var=*/d_explained_var.data().get(),
+      /*explained_var_ratio=*/d_explained_var_ratio.data().get(),
+      /*singular_vals=*/d_singular_vals.data().get(),
+      /*mu=*/d_mu.data().get(),
+      /*noise_vars=*/d_noise_vars.data().get(),
+      /*prms=*/*params);
+  } else {
+    ML::pcaFit(handle,
+               /*input=*/d_input.data().get(),
+               /*components=*/d_components.data().get(),
+               /*explained_var=*/d_explained_var.data().get(),
+               /*explained_var_ratio=*/d_explained_var_ratio.data().get(),
+               /*singular_vals=*/d_singular_vals.data().get(),
+               /*mu=*/d_mu.data().get(),
+               /*noise_vars=*/d_noise_vars.data().get(),
+               /*prms=*/*params);
+  }
 
-  cuml4r::pinned_host_vector<double> h_transformed_data(n_rows * n_components);
+  cuml4r::pinned_host_vector<double> h_transformed_data;
+  if (transform_input) {
+    h_transformed_data.resize(d_transformed_data.size());
+  }
   cuml4r::pinned_host_vector<double> h_components(n_cols * n_components);
   cuml4r::pinned_host_vector<double> h_explained_var(n_components);
   cuml4r::pinned_host_vector<double> h_explained_var_ratio(n_components);
@@ -86,9 +104,12 @@ Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x, double const tol,
   cuml4r::pinned_host_vector<double> h_mu(n_cols);
   cuml4r::pinned_host_vector<double> h_noise_vars(1);
 
-  auto CUML4R_ANONYMOUS_VARIABLE(transformed_data_d2h) =
-    cuml4r::async_copy(stream_view.value(), d_transformed_data.cbegin(),
-                       d_transformed_data.cend(), h_transformed_data.begin());
+  cuml4r::unique_marker transformed_data_d2h;
+  if (transform_input) {
+    transformed_data_d2h =
+      cuml4r::async_copy(stream_view.value(), d_transformed_data.cbegin(),
+                         d_transformed_data.cend(), h_transformed_data.begin());
+  }
   auto CUML4R_ANONYMOUS_VARIABLE(components_d2h) =
     cuml4r::async_copy(stream_view.value(), d_components.cbegin(),
                        d_components.cend(), h_components.begin());
@@ -120,8 +141,10 @@ Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x, double const tol,
   result["mean"] = Rcpp::NumericVector(h_mu.begin(), h_mu.end());
   // NOTE: noise variance calculation appears to be unimplemented in cuML at the moment
   // result["noise_variance"] = Rcpp::NumericVector(h_noise_vars.begin(), h_noise_vars.end());
-  result["transformed_data"] =
-    Rcpp::NumericMatrix(n_rows, n_components, h_transformed_data.begin());
+  if (transform_input) {
+    result["transformed_data"] =
+      Rcpp::NumericMatrix(n_rows, n_components, h_transformed_data.begin());
+  }
   result["pca_params"] = Rcpp::XPtr<ML::paramsPCA>(params.release());
 #else
 

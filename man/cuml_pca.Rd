@@ -11,6 +11,7 @@ cuml_pca(
   tol = 1e-07,
   n_iters = 15L,
   whiten = FALSE,
+  transform_input = TRUE,
   cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")
 )
 }
@@ -26,6 +27,9 @@ Default: 1e-7.}
 
 \item{n_iters}{Maximum number of iterations for the Jacobi method.
 Default: 15.}
+
+\item{transform_input}{If TRUE, then compute an approximate representation
+of the original input based on the principal components. Default: TRUE.}
 
 \item{cuml_log_level}{Log level within cuML library functions. Must be one of
 {"off", "critical", "error", "warn", "info", "debug", "trace"}.
@@ -50,7 +54,9 @@ A PCA model object with the following attributes:
      top principal components.
    - "mean": the column wise mean of \code{x} which was used to mean-center
      \code{x} first.
-     representation of the input data based on principal components.
+   - "transformed_data": (only present if "transform_input" is set to TRUE)
+     an approximate representation of input data based on principal
+     components.
    - "pca_params": opaque pointer to PCA parameters which will be used for
      performing inverse transforms.
 

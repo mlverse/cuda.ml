@@ -9,8 +9,8 @@
     .Call(`_cuml4r_kmeans`, x, k, max_iters, tol, init_method, centroids, seed, verbosity)
 }
 
-.pca_fit_transform <- function(x, tol, n_iters, verbosity, n_components, algo, whiten) {
-    .Call(`_cuml4r_pca_fit_transform`, x, tol, n_iters, verbosity, n_components, algo, whiten)
+.pca_fit_transform <- function(x, tol, n_iters, verbosity, n_components, algo, whiten, transform_input) {
+    .Call(`_cuml4r_pca_fit_transform`, x, tol, n_iters, verbosity, n_components, algo, whiten, transform_input)
 }
 
 .pca_inverse_transform <- function(model, x) {

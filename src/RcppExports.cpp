@@ -44,8 +44,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // pca_fit_transform
-Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x, double const tol, int const n_iters, int const verbosity, int const n_components, int const algo, bool const whiten);
-RcppExport SEXP _cuml4r_pca_fit_transform(SEXP xSEXP, SEXP tolSEXP, SEXP n_itersSEXP, SEXP verbositySEXP, SEXP n_componentsSEXP, SEXP algoSEXP, SEXP whitenSEXP) {
+Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x, double const tol, int const n_iters, int const verbosity, int const n_components, int const algo, bool const whiten, bool const transform_input);
+RcppExport SEXP _cuml4r_pca_fit_transform(SEXP xSEXP, SEXP tolSEXP, SEXP n_itersSEXP, SEXP verbositySEXP, SEXP n_componentsSEXP, SEXP algoSEXP, SEXP whitenSEXP, SEXP transform_inputSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -56,7 +56,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int const >::type n_components(n_componentsSEXP);
     Rcpp::traits::input_parameter< int const >::type algo(algoSEXP);
     Rcpp::traits::input_parameter< bool const >::type whiten(whitenSEXP);
-    rcpp_result_gen = Rcpp::wrap(pca_fit_transform(x, tol, n_iters, verbosity, n_components, algo, whiten));
+    Rcpp::traits::input_parameter< bool const >::type transform_input(transform_inputSEXP);
+    rcpp_result_gen = Rcpp::wrap(pca_fit_transform(x, tol, n_iters, verbosity, n_components, algo, whiten, transform_input));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -226,7 +227,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_cuml4r_dbscan", (DL_FUNC) &_cuml4r_dbscan, 5},
     {"_cuml4r_kmeans", (DL_FUNC) &_cuml4r_kmeans, 8},
-    {"_cuml4r_pca_fit_transform", (DL_FUNC) &_cuml4r_pca_fit_transform, 7},
+    {"_cuml4r_pca_fit_transform", (DL_FUNC) &_cuml4r_pca_fit_transform, 8},
     {"_cuml4r_pca_inverse_transform", (DL_FUNC) &_cuml4r_pca_inverse_transform, 2},
     {"_cuml4r_rf_classifier_fit", (DL_FUNC) &_cuml4r_rf_classifier_fit, 16},
     {"_cuml4r_rf_classifier_predict", (DL_FUNC) &_cuml4r_rf_classifier_predict, 3},
