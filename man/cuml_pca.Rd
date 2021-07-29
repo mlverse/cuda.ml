@@ -29,7 +29,7 @@ Default: 1e-7.}
 Default: 15.}
 
 \item{transform_input}{If TRUE, then compute an approximate representation
-of the original input based on the principal components. Default: TRUE.}
+of the input data. Default: TRUE.}
 
 \item{cuml_log_level}{Log level within cuML library functions. Must be one of
 {"off", "critical", "error", "warn", "info", "debug", "trace"}.
@@ -46,10 +46,12 @@ Default: FALSE.}
 }
 \value{
 A PCA model object with the following attributes:
-   - "components": a matrix of n_components rows containing the top principal
-     components.
+   - "components": a matrix of \code{n_components} rows containing the top
+     principal components.
    - "explained_variance": amount of variance within the input data explained
      by each component.
+   - "explained_variance_ratio": fraction of variance within the input data
+     explained by each component.
    - "singular_values": singular values (non-negative) corresponding to the
      top principal components.
    - "mean": the column wise mean of \code{x} which was used to mean-center
@@ -65,7 +67,9 @@ A PCA model object with the following attributes:
  feature space.
 }
 \description{
-Compute principal component(s) of the input data.
+Compute principal component(s) of the input data. Each feature from the input
+will be mean-centered (but not scaled) before the SVD computation takes
+place.
 }
 \examples{
 
