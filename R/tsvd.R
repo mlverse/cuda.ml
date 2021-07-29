@@ -21,6 +21,8 @@
 #'    - "singular_values": The singular values corresponding to each component.
 #'     The singular values are equal to the 2-norms of the \code{n_components}
 #'     variables in the lower-dimensional space.
+#'    - "tsvd_params": opaque pointer to TSVD parameters which will be used for
+#'      performing inverse transforms.
 #'
 #' @examples
 #' library(cuml4r)
@@ -49,4 +51,9 @@ cuml_tsvd <- function(x,
   class(model) <- c("cuml_tsvd", class(model))
 
   model
+}
+
+#' @export
+inverse_transform.cuml_tsvd <- function(model, x, ...) {
+  .tsvd_inverse_transform(model = model, x = as.matrix(x))
 }

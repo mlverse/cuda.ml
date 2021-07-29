@@ -145,6 +145,7 @@ Rcpp::List tsvd_fit_transform(Rcpp::NumericMatrix const& x, double const tol,
     result["transformed_data"] =
       Rcpp::NumericMatrix(n_rows, n_components, h_transformed_data.begin());
   }
+  result["tsvd_params"] = Rcpp::XPtr<ML::paramsTSVD>(params.release());
 #else
 
 #include "warn_cuml_missing.h"
@@ -152,4 +153,53 @@ Rcpp::List tsvd_fit_transform(Rcpp::NumericMatrix const& x, double const tol,
 #endif
 
   return result;
+}
+
+// [[Rcpp::export(".tsvd_inverse_transform")]]
+Rcpp::NumericMatrix tsvd_inverse_transform(Rcpp::List model,
+                                           Rcpp::NumericMatrix const& x) {
+#if HAS_CUML
+  auto const m = cuml4r::Matrix<>(x, /*transpose=*/true);
+  auto const& h_trans_input = m.values;
+  auto const components =
+    cuml4r::Matrix<>(model["components"], /*transpose=*/true);
+  auto const& h_components = components.values;
+  Rcpp::XPtr<ML::paramsTSVD> params = model["tsvd_params"];
+
+  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  raft::handle_t handle;
+  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+
+  // inverse transform inputs
+  thrust::device_vector<double> d_trans_input(h_trans_input.size());
+  thrust::device_vector<double> d_components(h_components.size());
+
+  auto CUML4R_ANONYMOUS_VARIABLE(trans_input_h2d) =
+    cuml4r::async_copy(stream_view.value(), h_trans_input.cbegin(),
+                       h_trans_input.cend(), d_trans_input.begin());
+  auto CUML4R_ANONYMOUS_VARIABLE(components_h2d) =
+    cuml4r::async_copy(stream_view.value(), h_components.cbegin(),
+                       h_components.cend(), d_components.begin());
+
+  // inverse transform output
+  thrust::device_vector<double> d_result(params->n_rows * params->n_cols);
+
+  ML::tsvdInverseTransform(handle, /*trans_input=*/d_trans_input.data().get(),
+    /*componenets=*/d_components.data().get(), /*input=*/d_result.data().get(),
+    /*prms=*/*params);
+
+  cuml4r::pinned_host_vector<double> h_result(d_result.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(result_d2h) = cuml4r::async_copy(
+    stream_view.value(), d_result.cbegin(), d_result.cend(), h_result.begin());
+
+  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
+
+  return Rcpp::NumericMatrix(params->n_rows, params->n_cols, h_result.begin());
+#else
+
+#include "warn_cuml_missing.h"
+
+  return {};
+
+#endif
 }

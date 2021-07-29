@@ -52,6 +52,8 @@ A TSVD model object with the following attributes:
    - "singular_values": The singular values corresponding to each component.
     The singular values are equal to the 2-norms of the \code{n_components}
     variables in the lower-dimensional space.
+   - "tsvd_params": opaque pointer to TSVD parameters which will be used for
+     performing inverse transforms.
 }
 \description{
 Dimensionality reduction using Truncated Singular Value Decomposition.
