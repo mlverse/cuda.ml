@@ -141,6 +141,10 @@ Rcpp::List tsvd_fit_transform(Rcpp::NumericMatrix const& x, double const tol,
   }
   result["singular_values"] =
     Rcpp::NumericVector(h_singular_vals.begin(), h_singular_vals.end());
+  if (transform_input) {
+    result["transformed_data"] =
+      Rcpp::NumericMatrix(n_rows, n_components, h_transformed_data.begin());
+  }
 #else
 
 #include "warn_cuml_missing.h"

@@ -30,6 +30,15 @@ process_input_and_label_specs <- function(x, y, formula) {
   list(x, y)
 }
 
+match_eig_algo <- function(eig_algo = c("dq", "jacobi")) {
+  eig_algo <- match.arg(eig_algo)
+
+  switch(eig_algo,
+    dq = 0L,
+    jacobi = 1L
+  )
+}
+
 new_model <- function(cls, mode, xptr, formula = NULL, resp_var = NULL, ...) {
   structure(
     c(
