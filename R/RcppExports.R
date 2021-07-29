@@ -53,3 +53,7 @@
     .Call(`_cuml4r_tsvd_fit_transform`, x, tol, n_iters, verbosity, n_components, algo, transform_input)
 }
 
+.tsvd_inverse_transform <- function(model, x) {
+    .Call(`_cuml4r_tsvd_inverse_transform`, model, x)
+}
+

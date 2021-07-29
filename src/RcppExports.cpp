@@ -240,6 +240,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// tsvd_inverse_transform
+Rcpp::NumericMatrix tsvd_inverse_transform(Rcpp::List model, Rcpp::NumericMatrix const& x);
+RcppExport SEXP _cuml4r_tsvd_inverse_transform(SEXP modelSEXP, SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type model(modelSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(tsvd_inverse_transform(model, x));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_cuml4r_dbscan", (DL_FUNC) &_cuml4r_dbscan, 5},
@@ -255,6 +267,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuml4r_svr_fit", (DL_FUNC) &_cuml4r_svr_fit, 14},
     {"_cuml4r_svr_predict", (DL_FUNC) &_cuml4r_svr_predict, 2},
     {"_cuml4r_tsvd_fit_transform", (DL_FUNC) &_cuml4r_tsvd_fit_transform, 7},
+    {"_cuml4r_tsvd_inverse_transform", (DL_FUNC) &_cuml4r_tsvd_inverse_transform, 2},
     {NULL, NULL, 0}
 };
 
