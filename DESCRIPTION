@@ -15,6 +15,7 @@ Description: The purpose of 'cuml4r' is to provide a simple and intuitive R
     CUDA (<https://en.wikipedia.org/wiki/CUDA>).
 License: Apache License (>= 2.0)
 Imports:
+    ellipsis,
     magrittr,
     Rcpp (>= 1.0.6),
     rlang (>= 0.1.4),

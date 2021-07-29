@@ -75,7 +75,9 @@ postprocess_classification_results <- function(predictions, model) {
 #' @param x The dataset to be transformed.
 #' @param ... Additional model-specific parameters (if any).
 #'
+#' @importFrom ellipsis check_dots_used
 #' @export
 inverse_transform <- function(model, x, ...) {
+  check_dots_used()
   UseMethod("inverse_transform")
 }

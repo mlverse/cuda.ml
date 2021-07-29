@@ -198,9 +198,11 @@ cuml_svm <- function(x, y = NULL, formula = NULL,
 }
 
 #' @export
+#' @importFrom ellipsis check_dots_used
 predict.cuml_svm <- function(object, ...) {
+  check_dots_used()
   model <- object
-  x <- process_input_specs(rlang::dots_list(...)[[1]], model)
+  x <- process_input_specs(...elt(1), model)
 
   switch(model$mode,
     classification = {
@@ -221,9 +223,11 @@ predict.cuml_svm <- function(object, ...) {
 }
 
 #' @export
+#' @importFrom ellipsis check_dots_used
 predict.cuml_svm_multi_class <- function(object, ...) {
+  check_dots_used()
   model <- object
-  x <- process_input_specs(rlang::dots_list(...)[[1]], model)
+  x <- process_input_specs(...elt(1), model)
 
   scores <- seq_along(model$unique_labels) %>%
     lapply(

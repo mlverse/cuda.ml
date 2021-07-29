@@ -165,12 +165,14 @@ cuml_rand_forest <- function(x,
   )
 }
 
+#' @importFrom ellipsis check_dots_used
 #' @export
 predict.cuml_rand_forest <- function(object,
                                      ...,
                                      cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
+  check_dots_used()
   model <- object
-  x <- process_input_specs(rlang::dots_list(...)[[1]], model)
+  x <- process_input_specs(...elt(1), model)
   cuml_log_level <- match_cuml_log_level(cuml_log_level)
 
   switch(model$mode,
