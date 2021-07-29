@@ -17,9 +17,11 @@ namespace cuml4r {
 // and synchronous with respect to the stream specified
 template <typename... Args>
 CUML4R_NODISCARD auto async_copy(cudaStream_t stream, Args&&... args) {
-  auto s = thrust::async::copy(std::forward<Args>(args)...);
+  auto e = thrust::async::copy(std::forward<Args>(args)...);
+  auto& s = e.stream();
   unique_marker m;
-  CUDA_RT_CALL(cudaStreamWaitEvent(stream, m.get(), 0));
+  CUDA_RT_CALL(cudaEventRecord(m.get(), s.get()));
+  CUDA_RT_CALL(cudaStreamWaitEvent(stream, m.get(), cudaEventWaitDefault));
   return m;
 }
 
