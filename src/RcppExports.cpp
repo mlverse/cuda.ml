@@ -223,6 +223,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// tsvd_fit_transform
+Rcpp::List tsvd_fit_transform(Rcpp::NumericMatrix const& x, double const tol, int const n_iters, int const verbosity, int const n_components, int const algo, bool const transform_input);
+RcppExport SEXP _cuml4r_tsvd_fit_transform(SEXP xSEXP, SEXP tolSEXP, SEXP n_itersSEXP, SEXP verbositySEXP, SEXP n_componentsSEXP, SEXP algoSEXP, SEXP transform_inputSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< double const >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< int const >::type n_iters(n_itersSEXP);
+    Rcpp::traits::input_parameter< int const >::type verbosity(verbositySEXP);
+    Rcpp::traits::input_parameter< int const >::type n_components(n_componentsSEXP);
+    Rcpp::traits::input_parameter< int const >::type algo(algoSEXP);
+    Rcpp::traits::input_parameter< bool const >::type transform_input(transform_inputSEXP);
+    rcpp_result_gen = Rcpp::wrap(tsvd_fit_transform(x, tol, n_iters, verbosity, n_components, algo, transform_input));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_cuml4r_dbscan", (DL_FUNC) &_cuml4r_dbscan, 5},
@@ -237,6 +254,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuml4r_svc_predict", (DL_FUNC) &_cuml4r_svc_predict, 3},
     {"_cuml4r_svr_fit", (DL_FUNC) &_cuml4r_svr_fit, 14},
     {"_cuml4r_svr_predict", (DL_FUNC) &_cuml4r_svr_predict, 2},
+    {"_cuml4r_tsvd_fit_transform", (DL_FUNC) &_cuml4r_tsvd_fit_transform, 7},
     {NULL, NULL, 0}
 };
 
