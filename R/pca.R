@@ -1,39 +1,26 @@
-match_eig_algo <- function(eig_algo = c("dq", "jacobi")) {
-  eig_algo <- match.arg(eig_algo)
-
-  switch(eig_algo,
-    dq = 0L,
-    jacobi = 1L
-  )
-}
-
 #' Perform principal component analysis.
 #'
-#' Compute principal component(s) of the input data.
+#' Compute principal component(s) of the input data. Each feature from the input
+#' will be mean-centered (but not scaled) before the SVD computation takes
+#' place.
 #'
 #' @template model-with-numeric-input
+#' @template eigen-decomposition
+#' @template transform-input
 #' @template cuml-log-level
 #' @param n_components Number of principal component(s) to keep. Default:
 #'   min(nrow(x), ncol(x)).
-#' @param algo Eigen decomposition algorithm to be applied to the covariance
-#'   matrix. Valid choices are "dq" (divid-and-conquer method for symmetric
-#'   matrices) and "jacobi" (the Jacobi method for symmetric matrices).
-#'   Default: "dq".
-#' @param tol Tolerance for singular values computed by the Jacobi method.
-#'   Default: 1e-7.
-#' @param n_iters Maximum number of iterations for the Jacobi method.
-#'   Default: 15.
 #' @param whitening If TRUE, then de-correlate all components, making each
 #'   component have unit variance  and removing multi-collinearity.
 #'   Default: FALSE.
-#' @param transform_input If TRUE, then compute an approximate representation
-#'   of the original input based on the principal components. Default: TRUE.
 #'
 #' @return A PCA model object with the following attributes:
-#'    - "components": a matrix of n_components rows containing the top principal
-#'      components.
+#'    - "components": a matrix of \code{n_components} rows containing the top
+#'      principal components.
 #'    - "explained_variance": amount of variance within the input data explained
 #'      by each component.
+#'    - "explained_variance_ratio": fraction of variance within the input data
+#'      explained by each component.
 #'    - "singular_values": singular values (non-negative) corresponding to the
 #'      top principal components.
 #'    - "mean": the column wise mean of \code{x} which was used to mean-center
@@ -71,7 +58,7 @@ cuml_pca <- function(x,
     n_components = as.integer(n_components),
     algo = eig_algo,
     tol = as.numeric(tol),
-    n_iters = n_iters,
+    n_iters = as.integer(n_iters),
     whiten = whiten,
     transform_input = transform_input,
     verbosity = cuml_log_level
