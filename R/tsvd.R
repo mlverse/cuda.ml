@@ -54,6 +54,6 @@ cuml_tsvd <- function(x,
 }
 
 #' @export
-inverse_transform.cuml_tsvd <- function(model, x, ...) {
+cuml_inverse_transform.cuml_tsvd <- function(model, x, ...) {
   .tsvd_inverse_transform(model = model, x = as.matrix(x))
 }

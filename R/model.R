@@ -77,7 +77,7 @@ postprocess_classification_results <- function(predictions, model) {
 #'
 #' @importFrom ellipsis check_dots_used
 #' @export
-inverse_transform <- function(model, x, ...) {
+cuml_inverse_transform <- function(model, x, ...) {
   check_dots_used()
-  UseMethod("inverse_transform")
+  UseMethod("cuml_inverse_transform")
 }

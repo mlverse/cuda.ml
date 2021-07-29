@@ -69,6 +69,6 @@ cuml_pca <- function(x,
 }
 
 #' @export
-inverse_transform.cuml_pca <- function(model, x, ...) {
+cuml_inverse_transform.cuml_pca <- function(model, x, ...) {
   .pca_inverse_transform(model = model, x = as.matrix(x))
 }
