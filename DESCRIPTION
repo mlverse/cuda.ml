@@ -1,7 +1,7 @@
 Package: cuml4r
 Type: Package
 Title: R Interface for the RAPIDS cuML Suite of Libraries
-Version: 0.1.0
+Version: 0.1.0.9000
 Authors@R:
     person(given = "Yitao",
            family = "Li",
