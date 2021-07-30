@@ -13,6 +13,7 @@
 #include <thrust/device_vector.h>
 #include <cuml/manifold/umap.hpp>
 
+#include <cmath>
 #include <memory>
 #include <vector>
 
@@ -44,6 +45,10 @@ Rcpp::List umap_fit(Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& y,
   auto const n_samples = m_x.numRows;
   auto const n_features = m_x.numCols;
 
+  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  raft::handle_t handle;
+  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+
   auto params = std::make_unique<ML::UMAPParams>();
   params->n_neighbors = n_neighbors;
   params->n_components = n_components;
@@ -57,8 +62,12 @@ Rcpp::List umap_fit(Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& y,
   params->negative_sample_rate = negative_sample_rate;
   params->transform_queue_size = transform_queue_size;
   params->verbosity = verbosity;
-  params->a = a;
-  params->b = b;
+  if (std::isnan(a) || std::isnan(b)) {
+    ML::UMAP::find_ab(handle, params.get());
+  } else {
+    params->a = a;
+    params->b = b;
+  }
   params->init = init;
   params->target_n_neighbors = target_n_neighbors;
   params->target_metric =
@@ -66,10 +75,6 @@ Rcpp::List umap_fit(Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& y,
   params->target_weight = target_weight;
   params->random_state = random_state;
   params->deterministic = deterministic;
-
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
-  raft::handle_t handle;
-  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
 
   // UMAP input
   auto const& h_x = m_x.values;
@@ -173,7 +178,8 @@ Rcpp::NumericMatrix umap_transform(Rcpp::List const& model,
 
 #include "warn_cuml_missing.h"
 
-  return {};
+  // dummy values with distinct data points
+  return Rcpp::NumericMatrix::diag(x.nrow(), 1);
 
 #endif
 }

@@ -66,14 +66,26 @@ postprocess_classification_results <- function(predictions, model) {
   predictions
 }
 
-#' Apply an inverse transformation defined by cuML a model object.
+#' Transform data using a trained cuML model.
+#'
+#' Given a trained cuML model, transform an input dataset using that model.
+#'
+#' @template cuml-transform
+#'
+#' @importFrom ellipsis check_dots_used
+#' @export
+cuml_transform <- function(model, x, ...) {
+  check_dots_used()
+  UseMethod("cuml_transform")
+}
+
+
+#' Apply the inverse transformation defined by a trained cuML model.
 #'
 #' Given a trained cuML model, apply the inverse transformation defined by that
 #' model to an input dataset.
 #'
-#' @param model A model object.
-#' @param x The dataset to be transformed.
-#' @param ... Additional model-specific parameters (if any).
+#' @template cuml-transform
 #'
 #' @importFrom ellipsis check_dots_used
 #' @export
