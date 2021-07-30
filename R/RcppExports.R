@@ -57,3 +57,11 @@
     .Call(`_cuml4r_tsvd_inverse_transform`, model, x)
 }
 
+.umap_fit <- function(x, y, n_neighbors, n_components, n_epochs, learning_rate, min_dist, spread, set_op_mix_ratio, local_connectivity, repulsion_strength, negative_sample_rate, transform_queue_size, verbosity, a, b, init, target_n_neighbors, target_metric, target_weight, random_state, deterministic) {
+    .Call(`_cuml4r_umap_fit`, x, y, n_neighbors, n_components, n_epochs, learning_rate, min_dist, spread, set_op_mix_ratio, local_connectivity, repulsion_strength, negative_sample_rate, transform_queue_size, verbosity, a, b, init, target_n_neighbors, target_metric, target_weight, random_state, deterministic)
+}
+
+.umap_transform <- function(model, x) {
+    .Call(`_cuml4r_umap_transform`, model, x)
+}
+

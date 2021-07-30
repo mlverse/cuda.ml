@@ -252,6 +252,50 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// umap_fit
+Rcpp::List umap_fit(Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& y, int const n_neighbors, int const n_components, int const n_epochs, float const learning_rate, float const min_dist, float const spread, float const set_op_mix_ratio, int const local_connectivity, float const repulsion_strength, int const negative_sample_rate, float const transform_queue_size, int const verbosity, float const a, float const b, int const init, int const target_n_neighbors, int const target_metric, float const target_weight, uint64_t const random_state, bool const deterministic);
+RcppExport SEXP _cuml4r_umap_fit(SEXP xSEXP, SEXP ySEXP, SEXP n_neighborsSEXP, SEXP n_componentsSEXP, SEXP n_epochsSEXP, SEXP learning_rateSEXP, SEXP min_distSEXP, SEXP spreadSEXP, SEXP set_op_mix_ratioSEXP, SEXP local_connectivitySEXP, SEXP repulsion_strengthSEXP, SEXP negative_sample_rateSEXP, SEXP transform_queue_sizeSEXP, SEXP verbositySEXP, SEXP aSEXP, SEXP bSEXP, SEXP initSEXP, SEXP target_n_neighborsSEXP, SEXP target_metricSEXP, SEXP target_weightSEXP, SEXP random_stateSEXP, SEXP deterministicSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector const& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< int const >::type n_neighbors(n_neighborsSEXP);
+    Rcpp::traits::input_parameter< int const >::type n_components(n_componentsSEXP);
+    Rcpp::traits::input_parameter< int const >::type n_epochs(n_epochsSEXP);
+    Rcpp::traits::input_parameter< float const >::type learning_rate(learning_rateSEXP);
+    Rcpp::traits::input_parameter< float const >::type min_dist(min_distSEXP);
+    Rcpp::traits::input_parameter< float const >::type spread(spreadSEXP);
+    Rcpp::traits::input_parameter< float const >::type set_op_mix_ratio(set_op_mix_ratioSEXP);
+    Rcpp::traits::input_parameter< int const >::type local_connectivity(local_connectivitySEXP);
+    Rcpp::traits::input_parameter< float const >::type repulsion_strength(repulsion_strengthSEXP);
+    Rcpp::traits::input_parameter< int const >::type negative_sample_rate(negative_sample_rateSEXP);
+    Rcpp::traits::input_parameter< float const >::type transform_queue_size(transform_queue_sizeSEXP);
+    Rcpp::traits::input_parameter< int const >::type verbosity(verbositySEXP);
+    Rcpp::traits::input_parameter< float const >::type a(aSEXP);
+    Rcpp::traits::input_parameter< float const >::type b(bSEXP);
+    Rcpp::traits::input_parameter< int const >::type init(initSEXP);
+    Rcpp::traits::input_parameter< int const >::type target_n_neighbors(target_n_neighborsSEXP);
+    Rcpp::traits::input_parameter< int const >::type target_metric(target_metricSEXP);
+    Rcpp::traits::input_parameter< float const >::type target_weight(target_weightSEXP);
+    Rcpp::traits::input_parameter< uint64_t const >::type random_state(random_stateSEXP);
+    Rcpp::traits::input_parameter< bool const >::type deterministic(deterministicSEXP);
+    rcpp_result_gen = Rcpp::wrap(umap_fit(x, y, n_neighbors, n_components, n_epochs, learning_rate, min_dist, spread, set_op_mix_ratio, local_connectivity, repulsion_strength, negative_sample_rate, transform_queue_size, verbosity, a, b, init, target_n_neighbors, target_metric, target_weight, random_state, deterministic));
+    return rcpp_result_gen;
+END_RCPP
+}
+// umap_transform
+Rcpp::NumericMatrix umap_transform(Rcpp::List const& model, Rcpp::NumericMatrix const& x);
+RcppExport SEXP _cuml4r_umap_transform(SEXP modelSEXP, SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List const& >::type model(modelSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(umap_transform(model, x));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_cuml4r_dbscan", (DL_FUNC) &_cuml4r_dbscan, 5},
@@ -268,6 +312,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuml4r_svr_predict", (DL_FUNC) &_cuml4r_svr_predict, 2},
     {"_cuml4r_tsvd_fit_transform", (DL_FUNC) &_cuml4r_tsvd_fit_transform, 7},
     {"_cuml4r_tsvd_inverse_transform", (DL_FUNC) &_cuml4r_tsvd_inverse_transform, 2},
+    {"_cuml4r_umap_fit", (DL_FUNC) &_cuml4r_umap_fit, 22},
+    {"_cuml4r_umap_transform", (DL_FUNC) &_cuml4r_umap_transform, 2},
     {NULL, NULL, 0}
 };
 
