@@ -63,8 +63,8 @@ SEXP rf_regressor_fit(Rcpp::NumericMatrix const& input,
   thrust::device_vector<double> d_input(h_input.size());
   auto CUML4R_ANONYMOUS_VARIABLE(input_h2d) = cuml4r::async_copy(
     stream_view.value(), h_input.cbegin(), h_input.cend(), d_input.begin());
-  cuml4r::pinned_host_vector<double> h_responses(
-    Rcpp::as<std::vector<double>>(responses));
+  auto const h_responses(
+    Rcpp::as<cuml4r::pinned_host_vector<double>>(responses));
 
   thrust::device_vector<double> d_responses(h_responses.size());
   auto CUML4R_ANONYMOUS_VARIABLE(responses_h2d) =

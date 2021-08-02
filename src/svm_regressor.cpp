@@ -72,7 +72,7 @@ SEXP svr_fit(Rcpp::NumericMatrix const& X, Rcpp::NumericVector const& y,
   auto CUML4R_ANONYMOUS_VARIABLE(X_h2d) = cuml4r::async_copy(
     stream_view.value(), h_X.cbegin(), h_X.cend(), d_X.begin());
 
-  cuml4r::pinned_host_vector<double> h_y(Rcpp::as<std::vector<double>>(y));
+  auto const h_y(Rcpp::as<cuml4r::pinned_host_vector<double>>(y));
   thrust::device_vector<double> d_y(h_y.size());
   auto CUML4R_ANONYMOUS_VARIABLE(y_h2d) = cuml4r::async_copy(
     stream_view.value(), h_y.cbegin(), h_y.cend(), d_y.begin());
@@ -80,8 +80,8 @@ SEXP svr_fit(Rcpp::NumericMatrix const& X, Rcpp::NumericVector const& y,
   thrust::device_vector<double> d_sample_weights;
   cuml4r::unique_marker sample_weights_h2d;
   if (sample_weights.size() > 0) {
-    cuml4r::pinned_host_vector<double> h_sample_weights(
-      Rcpp::as<std::vector<double>>(sample_weights));
+    auto const h_sample_weights(
+      Rcpp::as<cuml4r::pinned_host_vector<double>>(sample_weights));
     d_sample_weights.resize(h_sample_weights.size());
     sample_weights_h2d =
       cuml4r::async_copy(stream_view.value(), h_sample_weights.cbegin(),
