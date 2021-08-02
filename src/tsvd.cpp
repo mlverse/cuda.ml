@@ -185,8 +185,9 @@ Rcpp::NumericMatrix tsvd_inverse_transform(Rcpp::List model,
   thrust::device_vector<double> d_result(params->n_rows * params->n_cols);
 
   ML::tsvdInverseTransform(handle, /*trans_input=*/d_trans_input.data().get(),
-    /*componenets=*/d_components.data().get(), /*input=*/d_result.data().get(),
-    /*prms=*/*params);
+                           /*componenets=*/d_components.data().get(),
+                           /*input=*/d_result.data().get(),
+                           /*prms=*/*params);
 
   cuml4r::pinned_host_vector<double> h_result(d_result.size());
   auto CUML4R_ANONYMOUS_VARIABLE(result_d2h) = cuml4r::async_copy(
