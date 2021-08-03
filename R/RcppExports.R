@@ -49,6 +49,10 @@
     .Call(`_cuml4r_svr_predict`, svr_xptr, X)
 }
 
+.tsne_fit <- function(x, dim, n_neighbors, theta, epssq, perplexity, perplexity_max_iter, perplexity_tol, early_exaggeration, late_exaggeration, exaggeration_iter, min_gain, pre_learning_rate, post_learning_rate, max_iter, min_grad_norm, pre_momentum, post_momentum, random_state, verbosity, initialize_embeddings, square_distances, algo) {
+    .Call(`_cuml4r_tsne_fit`, x, dim, n_neighbors, theta, epssq, perplexity, perplexity_max_iter, perplexity_tol, early_exaggeration, late_exaggeration, exaggeration_iter, min_gain, pre_learning_rate, post_learning_rate, max_iter, min_grad_norm, pre_momentum, post_momentum, random_state, verbosity, initialize_embeddings, square_distances, algo)
+}
+
 .tsvd_fit_transform <- function(x, tol, n_iters, verbosity, n_components, algo, transform_input) {
     .Call(`_cuml4r_tsvd_fit_transform`, x, tol, n_iters, verbosity, n_components, algo, transform_input)
 }

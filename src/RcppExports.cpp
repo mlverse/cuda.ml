@@ -223,6 +223,39 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// tsne_fit
+Rcpp::NumericMatrix tsne_fit(Rcpp::NumericMatrix const& x, int const dim, int const n_neighbors, float const theta, float const epssq, float const perplexity, int const perplexity_max_iter, float const perplexity_tol, float const early_exaggeration, float const late_exaggeration, int const exaggeration_iter, float const min_gain, float const pre_learning_rate, float const post_learning_rate, int const max_iter, float const min_grad_norm, float const pre_momentum, float const post_momentum, long long const random_state, int const verbosity, bool const initialize_embeddings, bool const square_distances, int const algo);
+RcppExport SEXP _cuml4r_tsne_fit(SEXP xSEXP, SEXP dimSEXP, SEXP n_neighborsSEXP, SEXP thetaSEXP, SEXP epssqSEXP, SEXP perplexitySEXP, SEXP perplexity_max_iterSEXP, SEXP perplexity_tolSEXP, SEXP early_exaggerationSEXP, SEXP late_exaggerationSEXP, SEXP exaggeration_iterSEXP, SEXP min_gainSEXP, SEXP pre_learning_rateSEXP, SEXP post_learning_rateSEXP, SEXP max_iterSEXP, SEXP min_grad_normSEXP, SEXP pre_momentumSEXP, SEXP post_momentumSEXP, SEXP random_stateSEXP, SEXP verbositySEXP, SEXP initialize_embeddingsSEXP, SEXP square_distancesSEXP, SEXP algoSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int const >::type dim(dimSEXP);
+    Rcpp::traits::input_parameter< int const >::type n_neighbors(n_neighborsSEXP);
+    Rcpp::traits::input_parameter< float const >::type theta(thetaSEXP);
+    Rcpp::traits::input_parameter< float const >::type epssq(epssqSEXP);
+    Rcpp::traits::input_parameter< float const >::type perplexity(perplexitySEXP);
+    Rcpp::traits::input_parameter< int const >::type perplexity_max_iter(perplexity_max_iterSEXP);
+    Rcpp::traits::input_parameter< float const >::type perplexity_tol(perplexity_tolSEXP);
+    Rcpp::traits::input_parameter< float const >::type early_exaggeration(early_exaggerationSEXP);
+    Rcpp::traits::input_parameter< float const >::type late_exaggeration(late_exaggerationSEXP);
+    Rcpp::traits::input_parameter< int const >::type exaggeration_iter(exaggeration_iterSEXP);
+    Rcpp::traits::input_parameter< float const >::type min_gain(min_gainSEXP);
+    Rcpp::traits::input_parameter< float const >::type pre_learning_rate(pre_learning_rateSEXP);
+    Rcpp::traits::input_parameter< float const >::type post_learning_rate(post_learning_rateSEXP);
+    Rcpp::traits::input_parameter< int const >::type max_iter(max_iterSEXP);
+    Rcpp::traits::input_parameter< float const >::type min_grad_norm(min_grad_normSEXP);
+    Rcpp::traits::input_parameter< float const >::type pre_momentum(pre_momentumSEXP);
+    Rcpp::traits::input_parameter< float const >::type post_momentum(post_momentumSEXP);
+    Rcpp::traits::input_parameter< long long const >::type random_state(random_stateSEXP);
+    Rcpp::traits::input_parameter< int const >::type verbosity(verbositySEXP);
+    Rcpp::traits::input_parameter< bool const >::type initialize_embeddings(initialize_embeddingsSEXP);
+    Rcpp::traits::input_parameter< bool const >::type square_distances(square_distancesSEXP);
+    Rcpp::traits::input_parameter< int const >::type algo(algoSEXP);
+    rcpp_result_gen = Rcpp::wrap(tsne_fit(x, dim, n_neighbors, theta, epssq, perplexity, perplexity_max_iter, perplexity_tol, early_exaggeration, late_exaggeration, exaggeration_iter, min_gain, pre_learning_rate, post_learning_rate, max_iter, min_grad_norm, pre_momentum, post_momentum, random_state, verbosity, initialize_embeddings, square_distances, algo));
+    return rcpp_result_gen;
+END_RCPP
+}
 // tsvd_fit_transform
 Rcpp::List tsvd_fit_transform(Rcpp::NumericMatrix const& x, double const tol, int const n_iters, int const verbosity, int const n_components, int const algo, bool const transform_input);
 RcppExport SEXP _cuml4r_tsvd_fit_transform(SEXP xSEXP, SEXP tolSEXP, SEXP n_itersSEXP, SEXP verbositySEXP, SEXP n_componentsSEXP, SEXP algoSEXP, SEXP transform_inputSEXP) {
@@ -310,6 +343,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuml4r_svc_predict", (DL_FUNC) &_cuml4r_svc_predict, 3},
     {"_cuml4r_svr_fit", (DL_FUNC) &_cuml4r_svr_fit, 14},
     {"_cuml4r_svr_predict", (DL_FUNC) &_cuml4r_svr_predict, 2},
+    {"_cuml4r_tsne_fit", (DL_FUNC) &_cuml4r_tsne_fit, 23},
     {"_cuml4r_tsvd_fit_transform", (DL_FUNC) &_cuml4r_tsvd_fit_transform, 7},
     {"_cuml4r_tsvd_inverse_transform", (DL_FUNC) &_cuml4r_tsvd_inverse_transform, 2},
     {"_cuml4r_umap_fit", (DL_FUNC) &_cuml4r_umap_fit, 22},
