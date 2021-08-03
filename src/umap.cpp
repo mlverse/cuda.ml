@@ -23,6 +23,33 @@
 #endif
 
 #include <Rcpp.h>
+#include <type_traits>
+
+namespace {
+
+/*
+ * The 'ML::UMAPParams::target_weights' parameter was renamed to 'target_weight'
+ * at some point, so, using SFINAE here to be compatible with both versions of
+ * the 'ML::UMAPParams' definitions.
+ */
+
+// for cuML v21.06 or above
+template <typename T>
+void set_target_weight(
+  T& params,
+  typename std::remove_reference<decltype(T::target_weight)>::type const w) {
+  params.target_weight = w;
+}
+
+// for earlier versions of cuML
+template <typename T>
+void set_target_weight(
+  T& params,
+  typename std::remove_reference<decltype(T::target_weights)>::type const w) {
+  params.target_weights = w;
+}
+
+}  // namespace
 
 // [[Rcpp::export(".umap_fit")]]
 Rcpp::List umap_fit(Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& y,
@@ -63,7 +90,7 @@ Rcpp::List umap_fit(Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& y,
   params->target_n_neighbors = target_n_neighbors;
   params->target_metric =
     static_cast<ML::UMAPParams::MetricType>(target_metric);
-  params->target_weight = target_weight;
+  set_target_weight(*params, target_weight);
   params->random_state = random_state;
   params->deterministic = deterministic;
 
