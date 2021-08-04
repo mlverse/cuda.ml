@@ -2,7 +2,7 @@
 % Please edit documentation in R/model.R
 \name{cuml_inverse_transform}
 \alias{cuml_inverse_transform}
-\title{Apply an inverse transformation defined by cuML a model object.}
+\title{Apply the inverse transformation defined by a trained cuML model.}
 \usage{
 cuml_inverse_transform(model, x, ...)
 }
