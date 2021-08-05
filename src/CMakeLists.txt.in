@@ -38,6 +38,7 @@ foreach(
   svm_classifier.cpp
   svm_regressor.cpp
   pca.cpp
+  tsne.cpp
   tsvd.cpp
   umap.cpp
 )
@@ -58,6 +59,7 @@ add_library(
   svm_classifier.cpp
   svm_regressor.cpp
   pca.cpp
+  tsne.cpp
   tsvd.cpp
   umap.cpp
   RcppExports.cpp
