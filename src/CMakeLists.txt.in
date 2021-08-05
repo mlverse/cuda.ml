@@ -31,13 +31,14 @@ include_directories(@RCPP_INCLUDE_DIR@)
 
 foreach(
   x
-  kmeans.cpp
   dbscan.cpp
+  kmeans.cpp
+  pca.cpp
   random_forest_classifier.cpp
   random_forest_regressor.cpp
+  random_projection.cpp
   svm_classifier.cpp
   svm_regressor.cpp
-  pca.cpp
   tsne.cpp
   tsvd.cpp
   umap.cpp
@@ -52,13 +53,14 @@ add_library(
   device_allocator.cpp
   stream_allocator.cpp
   handle_utils.cu
-  kmeans.cpp
   dbscan.cpp
+  kmeans.cpp
+  pca.cpp
   random_forest_classifier.cpp
   random_forest_regressor.cpp
+  random_projection.cpp
   svm_classifier.cpp
   svm_regressor.cpp
-  pca.cpp
   tsne.cpp
   tsvd.cpp
   umap.cpp

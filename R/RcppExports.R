@@ -33,6 +33,14 @@
     .Call(`_cuml4r_rf_regressor_predict`, model_xptr, input, verbosity)
 }
 
+.rproj_fit <- function(n_samples, n_features, n_components, eps, gaussian_method, density, random_state) {
+    .Call(`_cuml4r_rproj_fit`, n_samples, n_features, n_components, eps, gaussian_method, density, random_state)
+}
+
+.rproj_transform <- function(rproj_ctx_xptr, input) {
+    .Call(`_cuml4r_rproj_transform`, rproj_ctx_xptr, input)
+}
+
 .svc_fit <- function(input, labels, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, sample_weights, verbosity) {
     .Call(`_cuml4r_svc_fit`, input, labels, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, sample_weights, verbosity)
 }

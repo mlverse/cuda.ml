@@ -151,6 +151,35 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rproj_fit
+SEXP rproj_fit(int const n_samples, int const n_features, int const n_components, double const eps, bool const gaussian_method, double const density, int const random_state);
+RcppExport SEXP _cuml4r_rproj_fit(SEXP n_samplesSEXP, SEXP n_featuresSEXP, SEXP n_componentsSEXP, SEXP epsSEXP, SEXP gaussian_methodSEXP, SEXP densitySEXP, SEXP random_stateSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int const >::type n_samples(n_samplesSEXP);
+    Rcpp::traits::input_parameter< int const >::type n_features(n_featuresSEXP);
+    Rcpp::traits::input_parameter< int const >::type n_components(n_componentsSEXP);
+    Rcpp::traits::input_parameter< double const >::type eps(epsSEXP);
+    Rcpp::traits::input_parameter< bool const >::type gaussian_method(gaussian_methodSEXP);
+    Rcpp::traits::input_parameter< double const >::type density(densitySEXP);
+    Rcpp::traits::input_parameter< int const >::type random_state(random_stateSEXP);
+    rcpp_result_gen = Rcpp::wrap(rproj_fit(n_samples, n_features, n_components, eps, gaussian_method, density, random_state));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rproj_transform
+Rcpp::NumericMatrix rproj_transform(SEXP rproj_ctx_xptr, Rcpp::NumericMatrix const& input);
+RcppExport SEXP _cuml4r_rproj_transform(SEXP rproj_ctx_xptrSEXP, SEXP inputSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type rproj_ctx_xptr(rproj_ctx_xptrSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type input(inputSEXP);
+    rcpp_result_gen = Rcpp::wrap(rproj_transform(rproj_ctx_xptr, input));
+    return rcpp_result_gen;
+END_RCPP
+}
 // svc_fit
 SEXP svc_fit(Rcpp::NumericMatrix const& input, Rcpp::NumericVector const& labels, double const cost, int const kernel, double const gamma, double const coef0, int const degree, double const tol, int const max_iter, int const nochange_steps, double const cache_size, Rcpp::NumericVector const& sample_weights, int const verbosity);
 RcppExport SEXP _cuml4r_svc_fit(SEXP inputSEXP, SEXP labelsSEXP, SEXP costSEXP, SEXP kernelSEXP, SEXP gammaSEXP, SEXP coef0SEXP, SEXP degreeSEXP, SEXP tolSEXP, SEXP max_iterSEXP, SEXP nochange_stepsSEXP, SEXP cache_sizeSEXP, SEXP sample_weightsSEXP, SEXP verbositySEXP) {
@@ -339,6 +368,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuml4r_rf_classifier_predict", (DL_FUNC) &_cuml4r_rf_classifier_predict, 3},
     {"_cuml4r_rf_regressor_fit", (DL_FUNC) &_cuml4r_rf_regressor_fit, 16},
     {"_cuml4r_rf_regressor_predict", (DL_FUNC) &_cuml4r_rf_regressor_predict, 3},
+    {"_cuml4r_rproj_fit", (DL_FUNC) &_cuml4r_rproj_fit, 7},
+    {"_cuml4r_rproj_transform", (DL_FUNC) &_cuml4r_rproj_transform, 2},
     {"_cuml4r_svc_fit", (DL_FUNC) &_cuml4r_svc_fit, 13},
     {"_cuml4r_svc_predict", (DL_FUNC) &_cuml4r_svc_predict, 3},
     {"_cuml4r_svr_fit", (DL_FUNC) &_cuml4r_svr_fit, 14},
