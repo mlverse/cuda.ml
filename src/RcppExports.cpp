@@ -151,6 +151,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rproj_johnson_lindenstrauss_min_dim
+size_t rproj_johnson_lindenstrauss_min_dim(size_t const n_samples, double const eps);
+RcppExport SEXP _cuml4r_rproj_johnson_lindenstrauss_min_dim(SEXP n_samplesSEXP, SEXP epsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< size_t const >::type n_samples(n_samplesSEXP);
+    Rcpp::traits::input_parameter< double const >::type eps(epsSEXP);
+    rcpp_result_gen = Rcpp::wrap(rproj_johnson_lindenstrauss_min_dim(n_samples, eps));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rproj_fit
 SEXP rproj_fit(int const n_samples, int const n_features, int const n_components, double const eps, bool const gaussian_method, double const density, int const random_state);
 RcppExport SEXP _cuml4r_rproj_fit(SEXP n_samplesSEXP, SEXP n_featuresSEXP, SEXP n_componentsSEXP, SEXP epsSEXP, SEXP gaussian_methodSEXP, SEXP densitySEXP, SEXP random_stateSEXP) {
@@ -368,6 +380,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuml4r_rf_classifier_predict", (DL_FUNC) &_cuml4r_rf_classifier_predict, 3},
     {"_cuml4r_rf_regressor_fit", (DL_FUNC) &_cuml4r_rf_regressor_fit, 16},
     {"_cuml4r_rf_regressor_predict", (DL_FUNC) &_cuml4r_rf_regressor_predict, 3},
+    {"_cuml4r_rproj_johnson_lindenstrauss_min_dim", (DL_FUNC) &_cuml4r_rproj_johnson_lindenstrauss_min_dim, 2},
     {"_cuml4r_rproj_fit", (DL_FUNC) &_cuml4r_rproj_fit, 7},
     {"_cuml4r_rproj_transform", (DL_FUNC) &_cuml4r_rproj_transform, 2},
     {"_cuml4r_svc_fit", (DL_FUNC) &_cuml4r_svc_fit, 13},

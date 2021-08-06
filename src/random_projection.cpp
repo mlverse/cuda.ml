@@ -40,6 +40,12 @@ struct RPROJCtx {
 
 }  // namespace
 
+// [[Rcpp::export(".rproj_johnson_lindenstrauss_min_dim")]]
+size_t rproj_johnson_lindenstrauss_min_dim(size_t const n_samples,
+                                           double const eps) {
+  return ML::johnson_lindenstrauss_min_dim(n_samples, eps);
+}
+
 // [[Rcpp::export(".rproj_fit")]]
 SEXP rproj_fit(int const n_samples, int const n_features,
                int const n_components, double const eps,
