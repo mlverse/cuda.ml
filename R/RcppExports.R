@@ -33,6 +33,10 @@
     .Call(`_cuml4r_rf_regressor_predict`, model_xptr, input, verbosity)
 }
 
+.rproj_johnson_lindenstrauss_min_dim <- function(n_samples, eps) {
+    .Call(`_cuml4r_rproj_johnson_lindenstrauss_min_dim`, n_samples, eps)
+}
+
 .rproj_fit <- function(n_samples, n_features, n_components, eps, gaussian_method, density, random_state) {
     .Call(`_cuml4r_rproj_fit`, n_samples, n_features, n_components, eps, gaussian_method, density, random_state)
 }

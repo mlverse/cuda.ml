@@ -22,6 +22,7 @@ Imports:
     zeallot (>= 0.1.0)
 Suggests:
     MASS,
+    mlbench,
     purrr
 LinkingTo: Rcpp
 OS_type: unix
