@@ -16,6 +16,7 @@ class allocator;
 
 namespace cuml4r {
 
+__host__
 std::shared_ptr<raft::mr::device::allocator> getDeviceAllocator();
 
 }  // namespace cuml4r

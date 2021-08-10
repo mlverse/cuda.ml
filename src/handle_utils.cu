@@ -1,5 +1,5 @@
-#include "handle_utils.h"
-#include "stream_allocator.h"
+#include "handle_utils.cuh"
+#include "stream_allocator.cuh"
 
 #if HAS_CUML
 

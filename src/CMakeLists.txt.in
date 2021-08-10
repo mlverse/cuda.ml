@@ -50,8 +50,8 @@ add_library(
   cuml4r
   SHARED
   cuda_utils.cu
-  device_allocator.cpp
-  stream_allocator.cpp
+  device_allocator.cu
+  stream_allocator.cu
   handle_utils.cu
   dbscan.cpp
   kmeans.cpp

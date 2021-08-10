@@ -23,6 +23,7 @@ namespace stream_allocator {
  */
 
 // get or create a non-default stream on the current device
+__host__
 rmm::cuda_stream_view getOrCreateStream();
 
 }  // namespace stream_allocator

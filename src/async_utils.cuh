@@ -2,9 +2,9 @@
 
 #if HAS_CUML
 
-#include "cuda_utils.h"
+#include "cuda_utils.cuh"
 #include "preprocessor.h"
-#include "unique_marker.h"
+#include "unique_marker.cuh"
 
 #include <thrust/async/copy.h>
 #include <thrust/system/cuda/future.h>
@@ -16,7 +16,7 @@ namespace cuml4r {
 // perform a copy operation that is asynchronous with respect to the host
 // and synchronous with respect to the stream specified
 template <typename... Args>
-CUML4R_NODISCARD auto async_copy(cudaStream_t stream, Args&&... args) {
+__host__ CUML4R_NODISCARD auto async_copy(cudaStream_t stream, Args&&... args) {
   auto e = thrust::async::copy(std::forward<Args>(args)...);
   auto& s = e.stream();
   unique_marker m;

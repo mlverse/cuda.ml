@@ -1,6 +1,6 @@
 #if HAS_CUML
 
-#include "device_allocator.h"
+#include "device_allocator.cuh"
 
 #include <raft/mr/device/allocator.hpp>
 

@@ -1,11 +1,11 @@
 #if HAS_CUML
 
-#include "async_utils.h"
-#include "cuda_utils.h"
-#include "handle_utils.h"
+#include "async_utils.cuh"
+#include "cuda_utils.cuh"
+#include "handle_utils.cuh"
 #include "matrix_utils.h"
 #include "preprocessor.h"
-#include "stream_allocator.h"
+#include "stream_allocator.cuh"
 
 #include <thrust/async/copy.h>
 #include <thrust/device_vector.h>
