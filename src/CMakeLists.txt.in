@@ -31,6 +31,7 @@ include_directories(@RCPP_INCLUDE_DIR@)
 
 foreach(
   x
+  agglomerative_clustering.cpp
   dbscan.cpp
   kmeans.cpp
   pca.cpp
@@ -53,6 +54,7 @@ add_library(
   device_allocator.cu
   stream_allocator.cu
   handle_utils.cu
+  agglomerative_clustering.cpp
   dbscan.cpp
   kmeans.cpp
   pca.cpp
