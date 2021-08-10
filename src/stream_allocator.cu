@@ -1,8 +1,8 @@
 #if HAS_CUML
 
-#include "stream_allocator.cuh"
 #include "cuda_utils.cuh"
 #include "device_allocator.cuh"
+#include "stream_allocator.cuh"
 
 #include <rmm/cuda_stream.hpp>
 #include <rmm/cuda_stream_view.hpp>
