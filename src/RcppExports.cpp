@@ -10,6 +10,21 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// agglomerative_clustering
+Rcpp::List agglomerative_clustering(Rcpp::NumericMatrix const& x, bool const pairwise_conn, int const metric, int const n_neighbors, int const n_clusters);
+RcppExport SEXP _cuml4r_agglomerative_clustering(SEXP xSEXP, SEXP pairwise_connSEXP, SEXP metricSEXP, SEXP n_neighborsSEXP, SEXP n_clustersSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< bool const >::type pairwise_conn(pairwise_connSEXP);
+    Rcpp::traits::input_parameter< int const >::type metric(metricSEXP);
+    Rcpp::traits::input_parameter< int const >::type n_neighbors(n_neighborsSEXP);
+    Rcpp::traits::input_parameter< int const >::type n_clusters(n_clustersSEXP);
+    rcpp_result_gen = Rcpp::wrap(agglomerative_clustering(x, pairwise_conn, metric, n_neighbors, n_clusters));
+    return rcpp_result_gen;
+END_RCPP
+}
 // dbscan
 Rcpp::List dbscan(Rcpp::NumericMatrix const& x, int const min_pts, double const eps, size_t const max_bytes_per_batch, int const verbosity);
 RcppExport SEXP _cuml4r_dbscan(SEXP xSEXP, SEXP min_ptsSEXP, SEXP epsSEXP, SEXP max_bytes_per_batchSEXP, SEXP verbositySEXP) {
@@ -372,6 +387,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_cuml4r_agglomerative_clustering", (DL_FUNC) &_cuml4r_agglomerative_clustering, 5},
     {"_cuml4r_dbscan", (DL_FUNC) &_cuml4r_dbscan, 5},
     {"_cuml4r_kmeans", (DL_FUNC) &_cuml4r_kmeans, 8},
     {"_cuml4r_pca_fit_transform", (DL_FUNC) &_cuml4r_pca_fit_transform, 8},
