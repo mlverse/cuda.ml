@@ -280,7 +280,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // tsne_fit
-Rcpp::NumericMatrix tsne_fit(Rcpp::NumericMatrix const& x, int const dim, int const n_neighbors, float const theta, float const epssq, float const perplexity, int const perplexity_max_iter, float const perplexity_tol, float const early_exaggeration, float const late_exaggeration, int const exaggeration_iter, float const min_gain, float const pre_learning_rate, float const post_learning_rate, int const max_iter, float const min_grad_norm, float const pre_momentum, float const post_momentum, long long const random_state, int const verbosity, bool const initialize_embeddings, bool const square_distances, int const algo);
+Rcpp::NumericMatrix tsne_fit(Rcpp::NumericMatrix const& x, int const dim, int const n_neighbors, float const theta, float const epssq, float const perplexity, int const perplexity_max_iter, float const perplexity_tol, float const early_exaggeration, float const late_exaggeration, int const exaggeration_iter, float const min_gain, float const pre_learning_rate, float const post_learning_rate, int const max_iter, float const min_grad_norm, float const pre_momentum, float const post_momentum, int64_t const random_state, int const verbosity, bool const initialize_embeddings, bool const square_distances, int const algo);
 RcppExport SEXP _cuml4r_tsne_fit(SEXP xSEXP, SEXP dimSEXP, SEXP n_neighborsSEXP, SEXP thetaSEXP, SEXP epssqSEXP, SEXP perplexitySEXP, SEXP perplexity_max_iterSEXP, SEXP perplexity_tolSEXP, SEXP early_exaggerationSEXP, SEXP late_exaggerationSEXP, SEXP exaggeration_iterSEXP, SEXP min_gainSEXP, SEXP pre_learning_rateSEXP, SEXP post_learning_rateSEXP, SEXP max_iterSEXP, SEXP min_grad_normSEXP, SEXP pre_momentumSEXP, SEXP post_momentumSEXP, SEXP random_stateSEXP, SEXP verbositySEXP, SEXP initialize_embeddingsSEXP, SEXP square_distancesSEXP, SEXP algoSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -303,7 +303,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< float const >::type min_grad_norm(min_grad_normSEXP);
     Rcpp::traits::input_parameter< float const >::type pre_momentum(pre_momentumSEXP);
     Rcpp::traits::input_parameter< float const >::type post_momentum(post_momentumSEXP);
-    Rcpp::traits::input_parameter< long long const >::type random_state(random_stateSEXP);
+    Rcpp::traits::input_parameter< int64_t const >::type random_state(random_stateSEXP);
     Rcpp::traits::input_parameter< int const >::type verbosity(verbositySEXP);
     Rcpp::traits::input_parameter< bool const >::type initialize_embeddings(initialize_embeddingsSEXP);
     Rcpp::traits::input_parameter< bool const >::type square_distances(square_distancesSEXP);

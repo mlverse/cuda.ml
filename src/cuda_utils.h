@@ -35,7 +35,7 @@ void NORET stop(const char* fmt, Args&&... args);
 
 namespace cuml4r {
 
-__host__ int currentDevice();
+int currentDevice();
 
 }  // namespace cuml4r
 

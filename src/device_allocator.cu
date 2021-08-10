@@ -1,6 +1,6 @@
 #if HAS_CUML
 
-#include "device_allocator.cuh"
+#include "device_allocator.h"
 
 #include <raft/mr/device/allocator.hpp>
 
@@ -13,7 +13,7 @@ auto const kDefaultDeviceAllocator =
 
 namespace cuml4r {
 
-std::shared_ptr<raft::mr::device::allocator> getDeviceAllocator() {
+__host__ std::shared_ptr<raft::mr::device::allocator> getDeviceAllocator() {
   return kDefaultDeviceAllocator;
 }
 

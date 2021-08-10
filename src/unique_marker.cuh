@@ -2,7 +2,7 @@
 
 #if HAS_CUML
 
-#include "cuda_utils.cuh"
+#include "cuda_utils.h"
 
 #include <memory>
 
