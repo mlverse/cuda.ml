@@ -10,10 +10,12 @@
 
 ### Dimensionality Reduction
 
-- Implemented R interfaces for Principal Component Analysis (PCA) and Truncated
-  Singular Value Decomposition (TSVD) routines in `cuML` (including ones
-  performing inverse transformations from lower-dimensional representation to
-  the original feature space).
+- Implemented R interfaces for Principal Component Analysis (PCA), Truncated
+  Singular Value Decomposition (TSVD), T-distributed Stochastic Neighbor
+  Embedding (T-SNE), Uniform Manifold Approximation and Projection (UMAP),
+  and Random Projection routines in `cuML` (including inverse transformations
+  from lower-dimensional representation to the original feature space when
+  applicable).
 
 ### Concurrency
 
