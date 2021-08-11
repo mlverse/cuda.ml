@@ -1,20 +1,20 @@
-#include "kmeans.h"
+#pragma once
 
-// [[Rcpp::export(".kmeans")]]
+#include <Rcpp.h>
+
+#if HAS_CUML
+
+namespace cuml4r {
+
 Rcpp::List kmeans(Rcpp::NumericMatrix const& x, int const k,
                   int const max_iters, double const tol, int const init_method,
                   Rcpp::NumericMatrix const& centroids, int const seed,
-                  int const verbosity) {
-#if HAS_CUML
+                  int const verbosity);
 
-  return cuml4r::kmeans(x, k, max_iters, tol, init_method, centroids, seed,
-                        verbosity);
+}  // namespace cuml4r
 
 #else
 
 #include "warn_cuml_missing.h"
 
-  return {};
-
 #endif
-}
