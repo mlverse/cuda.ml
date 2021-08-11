@@ -62,5 +62,4 @@ ctx <- cuml_rand_proj(vehicle_data, n_components = 4)
 
 set.seed(0L)
 print(kmeans(ctx$transformed_data, centers = 4, iter.max = 1000))
-
 }

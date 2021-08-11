@@ -96,7 +96,6 @@ match_umap_metric_type <- function(metric_type = c("categorical", "euclidean")) 
 #'
 #' set.seed(0L)
 #' print(kmeans(model$transformed, iter.max = 100, centers = 3))
-#'
 #' @export
 cuml_umap <- function(x, y = NULL, n_components = 2L, n_neighbors = 15L,
                       n_epochs = 500L, learning_rate = 1.0,

@@ -70,13 +70,13 @@ match_kernel_type <- function(kernel = c("rbf", "tanh", "polynomial", "linear"))
 #' library(cuml4r)
 #'
 #' model <- cuml_svm(
-#'   iris[1:100,],
+#'   iris[1:100, ],
 #'   formula = Species ~ .,
 #'   mode = "classification",
 #'   kernel = "rbf"
 #' )
 #'
-#' predictions <- predict(model, iris[1:100,])
+#' predictions <- predict(model, iris[1:100, ])
 #'
 #' cat("Iris species predictions: ", predictions, "\n")
 #'

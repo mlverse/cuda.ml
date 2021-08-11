@@ -134,5 +134,4 @@ model <- cuml_umap(
 
 set.seed(0L)
 print(kmeans(model$transformed, iter.max = 100, centers = 3))
-
 }

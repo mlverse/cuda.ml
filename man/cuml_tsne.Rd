@@ -108,5 +108,4 @@ embedding <- cuml_tsne(iris[1:4], method = "exact")
 
 set.seed(0L)
 print(kmeans(embedding, centers = 3))
-
 }

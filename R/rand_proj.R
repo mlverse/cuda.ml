@@ -38,7 +38,6 @@
 #'
 #' set.seed(0L)
 #' print(kmeans(ctx$transformed_data, centers = 4, iter.max = 1000))
-#'
 #' @export
 cuml_rand_proj <- function(x, n_components = NULL, eps = 0.1,
                            gaussian_method = TRUE, density = NULL,

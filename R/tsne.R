@@ -67,7 +67,6 @@ match_tsne_method <- function(method = c("barnes_hut", "fft", "exact")) {
 #'
 #' set.seed(0L)
 #' print(kmeans(embedding, centers = 3))
-#'
 #' @export
 cuml_tsne <- function(x, n_components = 2L,
                       n_neighbors = ceiling(3 * perplexity),
@@ -83,7 +82,7 @@ cuml_tsne <- function(x, n_components = 2L,
   learning_rate_method <- match.arg(learning_rate_method)
 
   if (identical(learning_rate_method, "adaptive") &&
-      method %in% c("barnes_hut", "fft")) {
+    method %in% c("barnes_hut", "fft")) {
     if (nrow(x) <= 2000L) {
       n_neighbors <- min(max(n_neighbors, 90L), nrow(x))
     } else {
