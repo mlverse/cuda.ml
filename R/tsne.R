@@ -1,4 +1,4 @@
-match_tsne_method <- function(method = c("barnes_hut", "fft", "exact")) {
+tsne_match_method <- function(method = c("barnes_hut", "fft", "exact")) {
   method <- match.arg(method)
 
   switch(method,
@@ -96,7 +96,7 @@ cuml_tsne <- function(x, n_components = 2L,
     pre_learning_rate <- learning_rate
     post_learning_rate <- learning_rate * 2
   }
-  algo <- match_tsne_method(method)
+  algo <- tsne_match_method(method)
   cuml_log_level <- match_cuml_log_level(cuml_log_level)
 
   .tsne_fit(

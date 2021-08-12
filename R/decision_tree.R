@@ -1,4 +1,4 @@
-match_split_criterion <- function(criterion = c("gini", "entropy", "mse", "mae"), mode = "classification") {
+decision_tree_match_split_criterion <- function(criterion = c("gini", "entropy", "mse", "mae"), mode = "classification") {
   criterion <- match.arg(criterion)
 
   if (identical(mode, "classification") && criterion %in% c("mse", "mae")) {

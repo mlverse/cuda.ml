@@ -1,4 +1,4 @@
-match_kmeans_init_method <- function(m = c("kmeans++", "random")) {
+kmeans_match_init_method <- function(m = c("kmeans++", "random")) {
   if (is.matrix(m)) {
     if (!is.numeric(m)) {
       stop(
@@ -51,7 +51,7 @@ cuml_kmeans <- function(x, k, max_iters = 300, tol = 0,
                         init_method = c("kmeans++", "random"),
                         seed = 0L,
                         cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
-  init_method_enum <- match_kmeans_init_method(init_method)
+  init_method_enum <- kmeans_match_init_method(init_method)
   centroids <- matrix(numeric(0))
   if (is.matrix(init_method)) {
     if (nrow(init_method) != k || ncol(init_method) != ncol(x)) {

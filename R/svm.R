@@ -1,4 +1,4 @@
-match_kernel_type <- function(kernel = c("rbf", "tanh", "polynomial", "linear")) {
+svm_match_kernel_type <- function(kernel = c("rbf", "tanh", "polynomial", "linear")) {
   kernel <- match.arg(kernel)
 
   switch(kernel,
@@ -106,7 +106,7 @@ cuml_svm <- function(x, y = NULL, formula = NULL,
                      sample_weights = NULL,
                      cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
   mode <- match.arg(mode)
-  kernel <- match_kernel_type(kernel)
+  kernel <- svm_match_kernel_type(kernel)
   cuml_log_level <- match_cuml_log_level(cuml_log_level)
   c(x, y) %<-% process_input_and_label_specs(x, y, formula)
 

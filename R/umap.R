@@ -1,4 +1,4 @@
-match_umap_init_mode <- function(init = c("spectral", "random")) {
+umap_match_init_mode <- function(init = c("spectral", "random")) {
   init <- match.arg(init)
 
   switch(init,
@@ -7,7 +7,7 @@ match_umap_init_mode <- function(init = c("spectral", "random")) {
   )
 }
 
-match_umap_metric_type <- function(metric_type = c("categorical", "euclidean")) {
+umap_match_metric_type <- function(metric_type = c("categorical", "euclidean")) {
   metric_type <- match.arg(metric_type)
 
   switch(metric_type,
@@ -107,8 +107,8 @@ cuml_umap <- function(x, y = NULL, n_components = 2L, n_neighbors = 15L,
                       target_metric = c("categorical", "euclidean"),
                       target_weight = 0.5, transform_input = TRUE, seed = NULL,
                       cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
-  init <- match_umap_init_mode(init)
-  target_metric <- match_umap_metric_type(target_metric)
+  init <- umap_match_init_mode(init)
+  target_metric <- umap_match_metric_type(target_metric)
   cuml_log_level <- match_cuml_log_level(cuml_log_level)
 
   model <- .umap_fit(

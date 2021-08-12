@@ -106,7 +106,7 @@ cuml_rand_forest <- function(x,
       regression = "mse"
     )
   )
-  split_criterion <- match_split_criterion(split_criterion, mode)
+  split_criterion <- decision_tree_match_split_criterion(split_criterion, mode)
   cuml_log_level <- match_cuml_log_level(cuml_log_level)
   c(x, y) %<-% process_input_and_label_specs(x, y, formula)
 
