@@ -40,6 +40,16 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// fil_enabled
+bool fil_enabled();
+RcppExport SEXP _cuml4r_fil_enabled() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(fil_enabled());
+    return rcpp_result_gen;
+END_RCPP
+}
 // kmeans
 Rcpp::List kmeans(Rcpp::NumericMatrix const& x, int const k, int const max_iters, double const tol, int const init_method, Rcpp::NumericMatrix const& centroids, int const seed, int const verbosity);
 RcppExport SEXP _cuml4r_kmeans(SEXP xSEXP, SEXP kSEXP, SEXP max_itersSEXP, SEXP tolSEXP, SEXP init_methodSEXP, SEXP centroidsSEXP, SEXP seedSEXP, SEXP verbositySEXP) {
@@ -389,6 +399,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_cuml4r_agglomerative_clustering", (DL_FUNC) &_cuml4r_agglomerative_clustering, 5},
     {"_cuml4r_dbscan", (DL_FUNC) &_cuml4r_dbscan, 5},
+    {"_cuml4r_fil_enabled", (DL_FUNC) &_cuml4r_fil_enabled, 0},
     {"_cuml4r_kmeans", (DL_FUNC) &_cuml4r_kmeans, 8},
     {"_cuml4r_pca_fit_transform", (DL_FUNC) &_cuml4r_pca_fit_transform, 8},
     {"_cuml4r_pca_inverse_transform", (DL_FUNC) &_cuml4r_pca_inverse_transform, 2},
