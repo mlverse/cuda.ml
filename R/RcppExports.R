@@ -9,6 +9,10 @@
     .Call(`_cuml4r_dbscan`, x, min_pts, eps, max_bytes_per_batch, verbosity)
 }
 
+.fil_enabled <- function() {
+    .Call(`_cuml4r_fil_enabled`)
+}
+
 .kmeans <- function(x, k, max_iters, tol, init_method, centroids, seed, verbosity) {
     .Call(`_cuml4r_kmeans`, x, k, max_iters, tol, init_method, centroids, seed, verbosity)
 }

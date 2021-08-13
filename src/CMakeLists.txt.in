@@ -17,7 +17,7 @@ endif(DEFINED ENV{CUML4R_ENABLE_CCACHE})
 if(IS_DIRECTORY ${CUML_INCLUDE_DIR})
     # CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES is needed so that cuda_runtime.h is found
     # CUML_INCLUDE_DIR is needed so that kmeans/kmeans_c.h is found
-    include_directories(${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES} ${CUML_INCLUDE_DIR})
+    set(CUML4R_INCLUDE_DIRS ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES} ${CUML_INCLUDE_DIR})
 else()
     message(FATAL_ERROR "CUML_INCLUDE_DIR not specified.")
 endif(IS_DIRECTORY ${CUML_INCLUDE_DIR})
@@ -31,13 +31,19 @@ endif(IS_DIRECTORY ${CUML_LIBRARY_DIR})
 include_directories(@R_INCLUDE_DIR@)
 include_directories(@RCPP_INCLUDE_DIR@)
 
+include_directories(${TREELITE_C_API_INCLUDE_DIR})
+
 add_library(
   cuml4r
   SHARED
+  # utils
   cuda_utils.cu
   device_allocator.cu
-  stream_allocator.cu
   handle_utils.cu
+  stream_allocator.cu
+  # Forest Inference Library (FIL)
+  fil.cpp
+  # algorithms
   agglomerative_clustering.cpp
   agglomerative_clustering.cu
   dbscan.cpp
@@ -68,5 +74,30 @@ add_library(
 # Need to set linker language to CUDA to link the CUDA Runtime
 set_target_properties(cuml4r PROPERTIES LINKER_LANGUAGE "CUDA")
 set_target_properties(cuml4r PROPERTIES PREFIX "")
+
+set(CUML4R_LIBS cuml4r PRIVATE cuml++ cublas cusolver cudart cusparse)
+
+find_package(Treelite)
+if(Treelite_FOUND)
+  set(CUML4R_LIBS ${CUML4R_LIBS} treelite::treelite treelite::treelite_runtime)
+  set(CUML4R_INCLUDE_DIRS ${CUML4R_INCLUDE_DIRS} ${Treelite_INCLUDE_DIRS})
+else()
+  message(
+    WARNING
+    "
+    Unable to locate 'TreeLite' using CMake. Forest Interference Library (FIL)
+    functionalities from `cuml4r` will be disabled!
+
+    Please install the treelite C API and re-install `cuml4r` if you want to
+    enable FIL functionalities.
+    "
+  )
+  set(
+    CUML4R_INCLUDE_DIRS ${CUML4R_INCLUDE_DIRS} ${CUML_STUB_HEADERS_DIR}
+  )
+endif(Treelite_FOUND)
+
+include_directories(${CUML4R_INCLUDE_DIRS})
+
 # Link cuml
-target_link_libraries(cuml4r cuml++ cublas cusolver cudart cusparse)
+target_link_libraries(${CUML4R_LIBS})

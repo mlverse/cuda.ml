@@ -53,12 +53,17 @@ run_cmake <- function() {
   wd <- getwd()
   on.exit(setwd(wd))
   setwd("src")
+
   cuda_path <- get_cuda_path()
+
   system2(
     "cmake",
     args = c(
       paste0("-DCUML_INCLUDE_DIR=", file.path(cuda_path, "include")),
       paste0("-DCUML_LIBRARY_DIR=", file.path(cuda_path, "lib")),
+      paste0(
+        "-DCUML_STUB_HEADERS_DIR=", normalizePath(file.path(getwd(), "stubs"))
+      ),
       "-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON",
       "."
     )
@@ -66,5 +71,8 @@ run_cmake <- function() {
 }
 
 if (!cuml_missing) {
+  define(PKG_CPPFLAGS = '')
   run_cmake()
+} else {
+  define(PKG_CPPFLAGS = normalizePath(file.path(getwd(), "src", "stubs")))
 }
