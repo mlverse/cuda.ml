@@ -41,13 +41,13 @@ add_library(
   device_allocator.cu
   handle_utils.cu
   stream_allocator.cu
-  # Forest Inference Library (FIL)
-  fil.cpp
-  # algorithms
+  # models & algorithms
   agglomerative_clustering.cpp
   agglomerative_clustering.cu
   dbscan.cpp
   dbscan.cu
+  fil.cpp
+  fil.cu
   kmeans.cpp
   kmeans.cu
   pca.cpp
