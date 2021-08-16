@@ -85,7 +85,7 @@ else()
   message(
     WARNING
     "
-    Unable to locate 'TreeLite' using CMake. Forest Interference Library (FIL)
+    Unable to locate 'TreeLite' using CMake. Forest Inference Library (FIL)
     functionalities from `cuml4r` will be disabled!
 
     Please install the treelite C API and re-install `cuml4r` if you want to
