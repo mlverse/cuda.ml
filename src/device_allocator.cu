@@ -1,4 +1,4 @@
-#if HAS_CUML
+#ifdef HAS_CUML
 
 #include "device_allocator.h"
 

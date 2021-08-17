@@ -5,7 +5,7 @@ Rcpp::List tsvd_fit_transform(Rcpp::NumericMatrix const& x, double const tol,
                               int const n_iters, int const verbosity,
                               int const n_components, int const algo,
                               bool const transform_input) {
-#if HAS_CUML
+#ifdef HAS_CUML
 
   return cuml4r::tsvd_fit_transform(x, tol, n_iters, verbosity, n_components,
                                     algo, transform_input);
@@ -21,7 +21,7 @@ Rcpp::List tsvd_fit_transform(Rcpp::NumericMatrix const& x, double const tol,
 // [[Rcpp::export(".tsvd_inverse_transform")]]
 Rcpp::NumericMatrix tsvd_inverse_transform(Rcpp::List model,
                                            Rcpp::NumericMatrix const& x) {
-#if HAS_CUML
+#ifdef HAS_CUML
 
   return cuml4r::tsvd_inverse_transform(model, x);
 

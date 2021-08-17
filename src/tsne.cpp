@@ -12,7 +12,7 @@ Rcpp::NumericMatrix tsne_fit(
   float const post_momentum, int64_t const random_state, int const verbosity,
   bool const initialize_embeddings, bool const square_distances,
   int const algo) {
-#if HAS_CUML
+#ifdef HAS_CUML
 
   return cuml4r::tsne_fit(
     x, dim, n_neighbors, theta, epssq, perplexity, perplexity_max_iter,

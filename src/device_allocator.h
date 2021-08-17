@@ -1,6 +1,6 @@
 #pragma once
 
-#if HAS_CUML
+#ifdef HAS_CUML
 
 #include <memory>
 

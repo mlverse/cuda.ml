@@ -7,7 +7,7 @@ SEXP svr_fit(Rcpp::NumericMatrix const& X, Rcpp::NumericVector const& y,
              int const max_iter, int const nochange_steps,
              double const cache_size, double epsilon,
              Rcpp::NumericVector const& sample_weights, int const verbosity) {
-#if HAS_CUML
+#ifdef HAS_CUML
 
   return cuml4r::svr_fit(X, y, cost, kernel, gamma, coef0, degree, tol,
                          max_iter, nochange_steps, cache_size, epsilon,
@@ -24,7 +24,7 @@ SEXP svr_fit(Rcpp::NumericMatrix const& X, Rcpp::NumericVector const& y,
 
 // [[Rcpp::export(".svr_predict")]]
 Rcpp::NumericVector svr_predict(SEXP svr_xptr, Rcpp::NumericMatrix const& X) {
-#if HAS_CUML
+#ifdef HAS_CUML
 
   return cuml4r::svr_predict(svr_xptr, X);
 

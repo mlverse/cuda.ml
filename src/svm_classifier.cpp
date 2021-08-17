@@ -7,7 +7,7 @@ SEXP svc_fit(Rcpp::NumericMatrix const& input,
              int const degree, double const tol, int const max_iter,
              int const nochange_steps, double const cache_size,
              Rcpp::NumericVector const& sample_weights, int const verbosity) {
-#if HAS_CUML
+#ifdef HAS_CUML
 
   return cuml4r::svc_fit(input, labels, cost, kernel, gamma, coef0, degree, tol,
                          max_iter, nochange_steps, cache_size, sample_weights,
@@ -25,7 +25,7 @@ SEXP svc_fit(Rcpp::NumericMatrix const& input,
 // [[Rcpp::export(".svc_predict")]]
 SEXP svc_predict(SEXP model_xptr, Rcpp::NumericMatrix const& input,
                  bool predict_class) {
-#if HAS_CUML
+#ifdef HAS_CUML
 
   return cuml4r::svc_predict(model_xptr, input, predict_class);
 

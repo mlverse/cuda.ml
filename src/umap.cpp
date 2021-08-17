@@ -15,7 +15,7 @@ Rcpp::List umap_fit(Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& y,
                     bool const deterministic) {
   Rcpp::List model;
 
-#if HAS_CUML
+#ifdef HAS_CUML
 
   return cuml4r::umap_fit(x, y, n_neighbors, n_components, n_epochs,
                           learning_rate, min_dist, spread, set_op_mix_ratio,
@@ -36,7 +36,7 @@ Rcpp::List umap_fit(Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& y,
 // [[Rcpp::export(".umap_transform")]]
 Rcpp::NumericMatrix umap_transform(Rcpp::List const& model,
                                    Rcpp::NumericMatrix const& x) {
-#if HAS_CUML
+#ifdef HAS_CUML
 
   return cuml4r::umap_transform(model, x);
 

@@ -3,7 +3,7 @@
 // [[Rcpp::export(".rproj_johnson_lindenstrauss_min_dim")]]
 size_t rproj_johnson_lindenstrauss_min_dim(size_t const n_samples,
                                            double const eps) {
-#if HAS_CUML
+#ifdef HAS_CUML
 
   return cuml4r::rproj_johnson_lindenstrauss_min_dim(n_samples, eps);
 
@@ -22,7 +22,7 @@ SEXP rproj_fit(int const n_samples, int const n_features,
                int const n_components, double const eps,
                bool const gaussian_method, double const density,
                int const random_state) {
-#if HAS_CUML
+#ifdef HAS_CUML
 
   return cuml4r::rproj_fit(n_samples, n_features, n_components, eps,
                            gaussian_method, density, random_state);
@@ -38,7 +38,7 @@ SEXP rproj_fit(int const n_samples, int const n_features,
 // [[Rcpp::export(".rproj_transform")]]
 Rcpp::NumericMatrix rproj_transform(SEXP rproj_ctx_xptr,
                                     Rcpp::NumericMatrix const& input) {
-#if HAS_CUML
+#ifdef HAS_CUML
 
   return cuml4r::rproj_transform(rproj_ctx_xptr, input);
 

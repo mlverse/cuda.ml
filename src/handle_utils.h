@@ -1,6 +1,6 @@
 #pragma once
 
-#if HAS_CUML
+#ifdef HAS_CUML
 
 #include <raft/handle.hpp>
 #include <rmm/cuda_stream_view.hpp>
