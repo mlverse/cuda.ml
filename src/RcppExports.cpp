@@ -50,6 +50,37 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// treelite_load_xgboost_model
+SEXP treelite_load_xgboost_model(std::string const& filename, int const algo, bool const output_class, float const threshold, int const storage_type, int const blocks_per_sm, int const threads_per_tree, int const n_items);
+RcppExport SEXP _cuml4r_treelite_load_xgboost_model(SEXP filenameSEXP, SEXP algoSEXP, SEXP output_classSEXP, SEXP thresholdSEXP, SEXP storage_typeSEXP, SEXP blocks_per_smSEXP, SEXP threads_per_treeSEXP, SEXP n_itemsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string const& >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< int const >::type algo(algoSEXP);
+    Rcpp::traits::input_parameter< bool const >::type output_class(output_classSEXP);
+    Rcpp::traits::input_parameter< float const >::type threshold(thresholdSEXP);
+    Rcpp::traits::input_parameter< int const >::type storage_type(storage_typeSEXP);
+    Rcpp::traits::input_parameter< int const >::type blocks_per_sm(blocks_per_smSEXP);
+    Rcpp::traits::input_parameter< int const >::type threads_per_tree(threads_per_treeSEXP);
+    Rcpp::traits::input_parameter< int const >::type n_items(n_itemsSEXP);
+    rcpp_result_gen = Rcpp::wrap(treelite_load_xgboost_model(filename, algo, output_class, threshold, storage_type, blocks_per_sm, threads_per_tree, n_items));
+    return rcpp_result_gen;
+END_RCPP
+}
+// treelite_predict
+Rcpp::NumericMatrix treelite_predict(SEXP const& model, Rcpp::NumericMatrix const& x, bool const output_probabilities);
+RcppExport SEXP _cuml4r_treelite_predict(SEXP modelSEXP, SEXP xSEXP, SEXP output_probabilitiesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP const& >::type model(modelSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< bool const >::type output_probabilities(output_probabilitiesSEXP);
+    rcpp_result_gen = Rcpp::wrap(treelite_predict(model, x, output_probabilities));
+    return rcpp_result_gen;
+END_RCPP
+}
 // kmeans
 Rcpp::List kmeans(Rcpp::NumericMatrix const& x, int const k, int const max_iters, double const tol, int const init_method, Rcpp::NumericMatrix const& centroids, int const seed, int const verbosity);
 RcppExport SEXP _cuml4r_kmeans(SEXP xSEXP, SEXP kSEXP, SEXP max_itersSEXP, SEXP tolSEXP, SEXP init_methodSEXP, SEXP centroidsSEXP, SEXP seedSEXP, SEXP verbositySEXP) {
@@ -400,6 +431,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuml4r_agglomerative_clustering", (DL_FUNC) &_cuml4r_agglomerative_clustering, 5},
     {"_cuml4r_dbscan", (DL_FUNC) &_cuml4r_dbscan, 5},
     {"_cuml4r_fil_enabled", (DL_FUNC) &_cuml4r_fil_enabled, 0},
+    {"_cuml4r_treelite_load_xgboost_model", (DL_FUNC) &_cuml4r_treelite_load_xgboost_model, 8},
+    {"_cuml4r_treelite_predict", (DL_FUNC) &_cuml4r_treelite_predict, 3},
     {"_cuml4r_kmeans", (DL_FUNC) &_cuml4r_kmeans, 8},
     {"_cuml4r_pca_fit_transform", (DL_FUNC) &_cuml4r_pca_fit_transform, 8},
     {"_cuml4r_pca_inverse_transform", (DL_FUNC) &_cuml4r_pca_inverse_transform, 2},

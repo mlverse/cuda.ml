@@ -13,6 +13,14 @@
     .Call(`_cuml4r_fil_enabled`)
 }
 
+.treelite_load_xgboost_model <- function(filename, algo, output_class, threshold, storage_type, blocks_per_sm, threads_per_tree, n_items) {
+    .Call(`_cuml4r_treelite_load_xgboost_model`, filename, algo, output_class, threshold, storage_type, blocks_per_sm, threads_per_tree, n_items)
+}
+
+.treelite_predict <- function(model, x, output_probabilities) {
+    .Call(`_cuml4r_treelite_predict`, model, x, output_probabilities)
+}
+
 .kmeans <- function(x, k, max_iters, tol, init_method, centroids, seed, verbosity) {
     .Call(`_cuml4r_kmeans`, x, k, max_iters, tol, init_method, centroids, seed, verbosity)
 }

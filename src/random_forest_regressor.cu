@@ -79,9 +79,8 @@ __host__ SEXP rf_regressor_fit(
   return Rcpp::XPtr<ML::RandomForestRegressorD>(rf.release());
 }
 
-__host__ Rcpp::NumericVector rf_regressor_predict(SEXP model_xptr,
-                                         Rcpp::NumericMatrix const& input,
-                                         int const verbosity) {
+__host__ Rcpp::NumericVector rf_regressor_predict(
+  SEXP model_xptr, Rcpp::NumericMatrix const& input, int const verbosity) {
   auto const input_m = cuml4r::Matrix<>(input, /*transpose=*/false);
   int const n_samples = input_m.numRows;
   int const n_features = input_m.numCols;
