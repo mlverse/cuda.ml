@@ -6,9 +6,9 @@
 #include "preprocessor.h"
 #include "stream_allocator.h"
 
+#include <cuml/fil/fil.h>
 #include <thrust/async/copy.h>
 #include <thrust/device_vector.h>
-#include <cuml/fil/fil.h>
 #include <treelite/c_api.h>
 
 #include <Rcpp.h>
@@ -18,10 +18,27 @@
 
 namespace {
 
+enum class ModelType { XGBoost, XGBoostJSON, LightGBM };
+
+__host__ int treeliteLoadModel(ModelType const model_type, char const* filename,
+                               ModelHandle& model_handle) {
+  switch (model_type) {
+    case ModelType::XGBoost:
+      return TreeliteLoadXGBoostModel(filename, &model_handle);
+    case ModelType::XGBoostJSON:
+      return TreeliteLoadXGBoostJSON(filename, &model_handle);
+    case ModelType::LightGBM:
+      return TreeliteLoadLightGBMModel(filename, &model_handle);
+  }
+
+  // unreachable
+  return -1;
+}
+
 struct TreeliteModel {
-  TreeliteModel(std::unique_ptr<raft::handle_t> handle,
-                ML::fil::forest_t const forest, ModelHandle const model,
-                size_t const num_classes)
+  __host__ TreeliteModel(std::unique_ptr<raft::handle_t> handle,
+                         ML::fil::forest_t const forest,
+                         ModelHandle const model, size_t const num_classes)
     : handle_(std::move(handle)),
       forest_(forest),
       model_(model),
@@ -42,16 +59,18 @@ struct TreeliteModel {
 
 namespace cuml4r {
 
-SEXP treelite_load_xgboost_model(
-  std::string const& filename, int const algo, bool const output_class,
-  float const threshold, int const storage_type, int const blocks_per_sm,
-  int const threads_per_tree, int const n_items) {
+__host__ SEXP fil_load_model(int const model_type, std::string const& filename,
+                             int const algo, bool const output_class,
+                             float const threshold, int const storage_type,
+                             int const blocks_per_sm,
+                             int const threads_per_tree, int const n_items) {
   Rcpp::List model;
 
   ModelHandle model_handle;
   {
-    auto const rc = TreeliteLoadXGBoostModel(/*filename=*/filename.c_str(),
-                                             /*out=*/&model_handle);
+    auto const rc = treeliteLoadModel(
+      /*model_type=*/static_cast<ModelType>(model_type),
+      /*filename=*/filename.c_str(), model_handle);
     if (rc < 0) {
       char const* err = TreeliteGetLastError();
       Rcpp::stop("Failed to load XGBoost model file '%s': %s.",
@@ -89,15 +108,14 @@ SEXP treelite_load_xgboost_model(
   }
 
   return Rcpp::XPtr<TreeliteModel>(std::make_unique<TreeliteModel>(
-                                /*handle=*/std::move(handle), forest,
-                                /*model=*/model_handle, num_classes)
-                                .release());
+                                     /*handle=*/std::move(handle), forest,
+                                     /*model=*/model_handle, num_classes)
+                                     .release());
 }
 
-Rcpp::NumericMatrix treelite_predict(
-    SEXP const& model,
-    Rcpp::NumericMatrix const& x,
-    bool const output_probabilities) {
+__host__ Rcpp::NumericMatrix fil_predict(SEXP const& model,
+                                         Rcpp::NumericMatrix const& x,
+                                         bool const output_probabilities) {
   auto const model_xptr = Rcpp::XPtr<TreeliteModel>(model);
   auto const m = cuml4r::Matrix<float>(x, /*transpose=*/false);
 
@@ -106,22 +124,26 @@ Rcpp::NumericMatrix treelite_predict(
   // ensemble input data
   auto const& h_x = m.values;
   thrust::device_vector<float> d_x(h_x.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(x_h2d) =
-    cuml4r::async_copy(handle.get_stream(), h_x.cbegin(), h_x.cend(), d_x.begin());
+  auto CUML4R_ANONYMOUS_VARIABLE(x_h2d) = cuml4r::async_copy(
+    handle.get_stream(), h_x.cbegin(), h_x.cend(), d_x.begin());
 
   // ensemble output
-  thrust::device_vector<float> d_preds(output_probabilities ? 2 * m.numRows : m.numRows);
+  thrust::device_vector<float> d_preds(output_probabilities ? 2 * m.numRows
+                                                            : m.numRows);
 
-  ML::fil::predict(/*h=*/handle, /*f=*/model_xptr->forest_, /*preds=*/d_preds.data().get(),
-    /*data=*/d_x.data().get(), /*num_rows=*/m.numRows, /*predict_proba=*/output_probabilities);
+  ML::fil::predict(/*h=*/handle, /*f=*/model_xptr->forest_,
+                   /*preds=*/d_preds.data().get(),
+                   /*data=*/d_x.data().get(), /*num_rows=*/m.numRows,
+                   /*predict_proba=*/output_probabilities);
 
   cuml4r::pinned_host_vector<float> h_preds(d_preds.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(preds_d2h) =
-    cuml4r::async_copy(handle.get_stream(), d_preds.cbegin(), d_preds.cend(), h_preds.begin());
+  auto CUML4R_ANONYMOUS_VARIABLE(preds_d2h) = cuml4r::async_copy(
+    handle.get_stream(), d_preds.cbegin(), d_preds.cend(), h_preds.begin());
 
   CUDA_RT_CALL(cudaStreamSynchronize(handle.get_stream()));
 
-  return Rcpp::NumericMatrix(m.numRows, output_probabilities ? 2 : 1, h_preds.begin());
+  return Rcpp::NumericMatrix(m.numRows, output_probabilities ? 2 : 1,
+                             h_preds.begin());
 }
 
 }  // namespace cuml4r

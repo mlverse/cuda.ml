@@ -13,16 +13,17 @@ bool fil_enabled() {
 #endif
 }
 
-// [[Rcpp::export(".treelite_load_xgboost_model")]]
-SEXP treelite_load_xgboost_model(
-  std::string const& filename, int const algo, bool const output_class,
-  float const threshold, int const storage_type, int const blocks_per_sm,
-  int const threads_per_tree, int const n_items) {
+// [[Rcpp::export(".fil_load_model")]]
+SEXP fil_load_model(int const model_type, std::string const& filename,
+                    int const algo, bool const output_class,
+                    float const threshold, int const storage_type,
+                    int const blocks_per_sm, int const threads_per_tree,
+                    int const n_items) {
 #ifndef CUML4R_TREELITE_C_API_MISSING
 
-  return cuml4r::treelite_load_xgboost_model(
-    filename, algo, output_class, threshold, storage_type, blocks_per_sm,
-    threads_per_tree, n_items);
+  return cuml4r::fil_load_model(model_type, filename, algo, output_class,
+                                threshold, storage_type, blocks_per_sm,
+                                threads_per_tree, n_items);
 
 #else
 
@@ -31,14 +32,12 @@ SEXP treelite_load_xgboost_model(
 #endif
 }
 
-// [[Rcpp::export(".treelite_predict")]]
-Rcpp::NumericMatrix treelite_predict(
-    SEXP const& model,
-    Rcpp::NumericMatrix const& x,
-    bool const output_probabilities) {
+// [[Rcpp::export(".fil_predict")]]
+Rcpp::NumericMatrix fil_predict(SEXP const& model, Rcpp::NumericMatrix const& x,
+                                bool const output_probabilities) {
 #ifndef CUML4R_TREELITE_C_API_MISSING
 
-  return cuml4r::treelite_predict(model, x, output_probabilities);
+  return cuml4r::fil_predict(model, x, output_probabilities);
 
 #else
 
