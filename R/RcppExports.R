@@ -5,6 +5,10 @@
     .Call(`_cuml4r_agglomerative_clustering`, x, pairwise_conn, metric, n_neighbors, n_clusters)
 }
 
+.has_cuml <- function() {
+    .Call(`_cuml4r_has_cuml`)
+}
+
 .dbscan <- function(x, min_pts, eps, max_bytes_per_batch, verbosity) {
     .Call(`_cuml4r_dbscan`, x, min_pts, eps, max_bytes_per_batch, verbosity)
 }

@@ -1,7 +1,7 @@
 #include "handle_utils.h"
 #include "stream_allocator.h"
 
-#if HAS_CUML
+#ifdef HAS_CUML
 
 namespace cuml4r {
 namespace handle_utils {

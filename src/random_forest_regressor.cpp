@@ -10,7 +10,7 @@ SEXP rf_regressor_fit(Rcpp::NumericMatrix const& input,
                       int const min_samples_split, int const split_criterion,
                       float const min_impurity_decrease,
                       int const max_batch_size, int const verbosity) {
-#if HAS_CUML
+#ifdef HAS_CUML
 
   return cuml4r::rf_regressor_fit(
     input, responses, n_trees, bootstrap, max_samples, n_streams, max_depth,
@@ -30,7 +30,7 @@ SEXP rf_regressor_fit(Rcpp::NumericMatrix const& input,
 Rcpp::NumericVector rf_regressor_predict(SEXP model_xptr,
                                          Rcpp::NumericMatrix const& input,
                                          int const verbosity) {
-#if HAS_CUML
+#ifdef HAS_CUML
   return cuml4r::rf_regressor_predict(model_xptr, input, verbosity);
 #else
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#if HAS_CUML
+#ifdef HAS_CUML
 
 #include "cuda_utils.h"
 #include "preprocessor.h"

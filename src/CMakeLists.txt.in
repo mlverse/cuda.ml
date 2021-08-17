@@ -38,6 +38,7 @@ add_library(
   SHARED
   # utils
   cuda_utils.cu
+  cuml_utils.cpp
   device_allocator.cu
   handle_utils.cu
   stream_allocator.cu

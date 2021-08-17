@@ -10,7 +10,7 @@ SEXP rf_classifier_fit(Rcpp::NumericMatrix const& input,
                        int const min_samples_split, int const split_criterion,
                        float const min_impurity_decrease,
                        int const max_batch_size, int const verbosity) {
-#if HAS_CUML
+#ifdef HAS_CUML
 
   return cuml4r::rf_classifier_fit(
     input, labels, n_trees, bootstrap, max_samples, n_streams, max_depth,
@@ -29,7 +29,7 @@ SEXP rf_classifier_fit(Rcpp::NumericMatrix const& input,
 Rcpp::IntegerVector rf_classifier_predict(SEXP model_xptr,
                                           Rcpp::NumericMatrix const& input,
                                           int const verbosity) {
-#if HAS_CUML
+#ifdef HAS_CUML
 
   return cuml4r::rf_classifier_predict(model_xptr, input, verbosity);
 

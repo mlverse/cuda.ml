@@ -25,6 +25,16 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// has_cuml
+bool has_cuml();
+RcppExport SEXP _cuml4r_has_cuml() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(has_cuml());
+    return rcpp_result_gen;
+END_RCPP
+}
 // dbscan
 Rcpp::List dbscan(Rcpp::NumericMatrix const& x, int const min_pts, double const eps, size_t const max_bytes_per_batch, int const verbosity);
 RcppExport SEXP _cuml4r_dbscan(SEXP xSEXP, SEXP min_ptsSEXP, SEXP epsSEXP, SEXP max_bytes_per_batchSEXP, SEXP verbositySEXP) {
@@ -429,6 +439,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_cuml4r_agglomerative_clustering", (DL_FUNC) &_cuml4r_agglomerative_clustering, 5},
+    {"_cuml4r_has_cuml", (DL_FUNC) &_cuml4r_has_cuml, 0},
     {"_cuml4r_dbscan", (DL_FUNC) &_cuml4r_dbscan, 5},
     {"_cuml4r_fil_enabled", (DL_FUNC) &_cuml4r_fil_enabled, 0},
     {"_cuml4r_treelite_load_xgboost_model", (DL_FUNC) &_cuml4r_treelite_load_xgboost_model, 8},

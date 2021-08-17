@@ -1,6 +1,6 @@
 #pragma once
 
-#if HAS_CUML
+#ifdef HAS_CUML
 
 #include <thrust/host_vector.h>
 #include <thrust/system/cuda/experimental/pinned_allocator.h>

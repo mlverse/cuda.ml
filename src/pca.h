@@ -2,7 +2,7 @@
 
 #include <Rcpp.h>
 
-#if HAS_CUML
+#ifdef HAS_CUML
 
 namespace cuml4r {
 

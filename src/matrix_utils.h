@@ -1,6 +1,6 @@
 #pragma once
 
-#if HAS_CUML
+#ifdef HAS_CUML
 
 #include <Rcpp.h>
 #include "pinned_host_vector.h"

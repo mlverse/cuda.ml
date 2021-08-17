@@ -4,7 +4,7 @@
 Rcpp::List dbscan(Rcpp::NumericMatrix const& x, int const min_pts,
                   double const eps, size_t const max_bytes_per_batch,
                   int const verbosity) {
-#if HAS_CUML
+#ifdef HAS_CUML
 
   return cuml4r::dbscan(x, min_pts, eps, max_bytes_per_batch, verbosity);
 
