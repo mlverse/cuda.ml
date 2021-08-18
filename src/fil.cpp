@@ -15,13 +15,13 @@ bool fil_enabled() {
 
 // [[Rcpp::export(".fil_load_model")]]
 SEXP fil_load_model(int const model_type, std::string const& filename,
-                    int const algo, bool const output_class,
+                    int const algo, bool const classification,
                     float const threshold, int const storage_type,
                     int const blocks_per_sm, int const threads_per_tree,
                     int const n_items) {
 #ifndef CUML4R_TREELITE_C_API_MISSING
 
-  return cuml4r::fil_load_model(model_type, filename, algo, output_class,
+  return cuml4r::fil_load_model(model_type, filename, algo, classification,
                                 threshold, storage_type, blocks_per_sm,
                                 threads_per_tree, n_items);
 

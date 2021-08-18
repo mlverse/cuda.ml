@@ -60,7 +60,7 @@ struct TreeliteModel {
 namespace cuml4r {
 
 __host__ SEXP fil_load_model(int const model_type, std::string const& filename,
-                             int const algo, bool const output_class,
+                             int const algo, bool const classification,
                              float const threshold, int const storage_type,
                              int const blocks_per_sm,
                              int const threads_per_tree, int const n_items) {
@@ -80,7 +80,7 @@ __host__ SEXP fil_load_model(int const model_type, std::string const& filename,
 
   ML::fil::treelite_params_t params;
   params.algo = static_cast<ML::fil::algo_t>(algo);
-  params.output_class = output_class;
+  params.output_class = classification;
   params.threshold = threshold;
   params.storage_type = static_cast<ML::fil::storage_type_t>(storage_type);
   params.blocks_per_sm = blocks_per_sm;
@@ -98,13 +98,16 @@ __host__ SEXP fil_load_model(int const model_type, std::string const& filename,
                          /*model=*/model_handle, /*tl_params=*/&params);
 
   size_t num_classes = 0;
-  {
+  if (classification) {
     auto const rc =
       TreeliteQueryNumClass(/*handle=*/model_handle, /*out=*/&num_classes);
     if (rc < 0) {
       char const* err = TreeliteGetLastError();
       Rcpp::stop("TreeliteQueryNumClass failed: %s.", err);
     }
+
+    // Treelite returns 1 as number of classes for binary classification.
+    num_classes = std::max(num_classes, size_t(2));
   }
 
   return Rcpp::XPtr<TreeliteModel>(std::make_unique<TreeliteModel>(
@@ -119,6 +122,10 @@ __host__ Rcpp::NumericMatrix fil_predict(SEXP const& model,
   auto const model_xptr = Rcpp::XPtr<TreeliteModel>(model);
   auto const m = cuml4r::Matrix<float>(x, /*transpose=*/false);
 
+  if (output_probabilities && model_xptr->numClasses_ == 0) {
+    Rcpp::stop("'output_probabilities' is not applicable for regressions!");
+  }
+
   auto& handle = *(model_xptr->handle_);
 
   // ensemble input data
@@ -128,8 +135,8 @@ __host__ Rcpp::NumericMatrix fil_predict(SEXP const& model,
     handle.get_stream(), h_x.cbegin(), h_x.cend(), d_x.begin());
 
   // ensemble output
-  thrust::device_vector<float> d_preds(output_probabilities ? 2 * m.numRows
-                                                            : m.numRows);
+  thrust::device_vector<float> d_preds(
+    output_probabilities ? model_xptr->numClasses_ * m.numRows : m.numRows);
 
   ML::fil::predict(/*h=*/handle, /*f=*/model_xptr->forest_,
                    /*preds=*/d_preds.data().get(),
@@ -142,8 +149,9 @@ __host__ Rcpp::NumericMatrix fil_predict(SEXP const& model,
 
   CUDA_RT_CALL(cudaStreamSynchronize(handle.get_stream()));
 
-  return Rcpp::NumericMatrix(m.numRows, output_probabilities ? 2 : 1,
-                             h_preds.begin());
+  return Rcpp::transpose(
+    Rcpp::NumericMatrix(output_probabilities ? model_xptr->numClasses_ : 1,
+                        m.numRows, h_preds.begin()));
 }
 
 }  // namespace cuml4r

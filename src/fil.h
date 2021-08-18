@@ -8,7 +8,7 @@
 namespace cuml4r {
 
 SEXP fil_load_model(int const model_type, std::string const& filename,
-                    int const algo, bool const output_class,
+                    int const algo, bool const classification,
                     float const threshold, int const storage_type,
                     int const block_per_sm, int const threads_per_tree,
                     int const n_items);
