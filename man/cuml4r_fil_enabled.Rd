@@ -19,9 +19,8 @@ if (cuml4r_fil_enabled()) {
   # run GPU-accelerated Forest Inference Library (FIL) functionalities
 } else {
   message(
-    "FIL functionalities are disabled in the current installation of "
+    "FIL functionalities are disabled in the current installation of ",
     "`cuml4r`."
   )
 }
-
 }
