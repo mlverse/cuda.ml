@@ -23,6 +23,7 @@ learning libraries powered by [CUDA](https://en.wikipedia.org/wiki/CUDA).
 | | t-Distributed Stochastic Neighbor Embedding (TSNE) | |
 | **Nonlinear Models for Regression or Classification** | Random Forest (RF) Classification | Only single-GPU implementation is supported at the moment |
 | | Random Forest (RF) Regression | Only single-GPU implementation is supported at the moment |
+| | Inference for decision tree-based models in XGBoost or LightGBM formats using the CuML Forest Inference Library (FIL) | Requires linkage to the Treelite C library when `cuml4r` is installed. Treelite is used for model loading. |
 |  | Support Vector Machine Classifier (SVC) | |
 |  | Epsilon-Support Vector Regression (SVR) | |
 
