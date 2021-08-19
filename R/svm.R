@@ -13,10 +13,8 @@ svm_match_kernel_type <- function(kernel = c("rbf", "tanh", "polynomial", "linea
 #'
 #' Train a Support Vector Machine model for classification or regression tasks.
 #'
-#' @template model-with-numeric-input
-#' @template supervised-model-with-numeric-output
-#' @template supervised-model-formula-spec
-#' @template supervised-model-classification-or-regression-mode
+#' @template supervised-model-inputs
+#' @template supervised-model-output
 #' @template cuml-log-level
 #' @param cost A positive number for the cost of predicting a sample within or
 #'   on the wrong side of the margin. Default: 1.
@@ -69,114 +67,218 @@ svm_match_kernel_type <- function(kernel = c("rbf", "tanh", "polynomial", "linea
 #'
 #' library(cuml4r)
 #'
+#' # Classification
+#'
 #' model <- cuml_svm(
-#'   iris[1:100, ],
 #'   formula = Species ~ .,
-#'   mode = "classification",
+#'   data = iris,
 #'   kernel = "rbf"
 #' )
 #'
-#' predictions <- predict(model, iris[1:100, ])
+#' predictions <- predict(model, iris[-which(names(iris) == "Species")])
 #'
-#' cat("Iris species predictions: ", predictions, "\n")
+#' # Regression
 #'
 #' model <- cuml_svm(
-#'   mtcars,
 #'   formula = mpg ~ .,
-#'   mode = "regression",
+#'   data = mtcars,
 #'   kernel = "rbf"
 #' )
 #'
 #' predictions <- predict(model, mtcars)
-#'
-#' cat("MPG predictions:", predictions, "\n")
 #' @export
-cuml_svm <- function(x, y = NULL, formula = NULL,
-                     mode = c("classification", "regression"),
-                     cost = 1,
-                     kernel = c("rbf", "tanh", "polynomial", "linear"),
-                     gamma = 1 / ncol(x),
-                     coef0 = 0,
-                     degree = 3L,
-                     tol = 1e-3,
-                     max_iter = 100L * nrow(x),
-                     nochange_steps = 1000L,
-                     cache_size = 1024,
-                     epsilon = 0.1,
-                     sample_weights = NULL,
-                     cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
-  mode <- match.arg(mode)
+cuml_svm <- function(x, ...) {
+  UseMethod("cuml_svm")
+}
+
+#' @rdname cuml_svm
+#' @export
+cuml_svm.default <- function(x, ...) {
+  report_undefined_fn("cuml_svm", x)
+}
+
+#' @rdname cuml_svm
+#' @export
+cuml_svm.data.frame <- function(x, y, cost = 1,
+                                kernel = c("rbf", "tanh", "polynomial", "linear"),
+                                gamma = NULL, coef0 = 0, degree = 3L,
+                                tol = 1e-3, max_iter = NULL,
+                                nochange_steps = 1000L, cache_size = 1024,
+                                epsilon = 0.1, sample_weights = NULL,
+                                cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                                ...) {
+  processed <- hardhat::mold(x, y)
+
+  cuml_svm_bridge(
+    processed = processed,
+    cost = cost,
+    kernel = kernel,
+    gamma = gamma,
+    coef0 = coef0,
+    degree = degree,
+    tol = tol,
+    max_iter = max_iter,
+    nochange_steps = nochange_steps,
+    cache_size = cache_size,
+    epsilon = epsilon,
+    sample_weights = sample_weights,
+    cuml_log_level = cuml_log_level
+  )
+}
+
+#' @rdname cuml_svm
+#' @export
+cuml_svm.matrix <- function(x, y, cost = 1,
+                            kernel = c("rbf", "tanh", "polynomial", "linear"),
+                            gamma = NULL, coef0 = 0, degree = 3L, tol = 1e-3,
+                            max_iter = NULL, nochange_steps = 1000L,
+                            cache_size = 1024, epsilon = 0.1,
+                            sample_weights = NULL,
+                            cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                            ...) {
+  processed <- hardhat::mold(x, y)
+
+  cuml_svm_bridge(
+    processed,
+    cost = cost,
+    kernel = kernel,
+    gamma = gamma,
+    coef0 = coef0,
+    degree = degree,
+    tol = tol,
+    max_iter = max_iter,
+    nochange_steps = nochange_steps,
+    cache_size = cache_size,
+    epsilon = epsilon,
+    sample_weights = sample_weights,
+    cuml_log_level = cuml_log_level
+  )
+}
+
+#' @rdname cuml_svm
+#' @export
+cuml_svm.formula <- function(formula, data, cost = 1,
+                             kernel = c("rbf", "tanh", "polynomial", "linear"),
+                             gamma = NULL, coef0 = 0, degree = 3L, tol = 1e-3,
+                             max_iter = NULL, nochange_steps = 1000L,
+                             cache_size = 1024, epsilon = 0.1,
+                             sample_weights = NULL,
+                             cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                             ...) {
+  processed <- hardhat::mold(formula, data)
+
+  cuml_svm_bridge(
+    processed,
+    cost = cost,
+    kernel = kernel,
+    gamma = gamma,
+    coef0 = coef0,
+    degree = degree,
+    tol = tol,
+    max_iter = max_iter,
+    nochange_steps = nochange_steps,
+    cache_size = cache_size,
+    epsilon = epsilon,
+    sample_weights = sample_weights,
+    cuml_log_level = cuml_log_level
+  )
+}
+
+#' @rdname cuml_svm
+#' @export
+cuml_svm.recipe <- function(x, data, cost = 1,
+                            kernel = c("rbf", "tanh", "polynomial", "linear"),
+                            gamma = NULL, coef0 = 0, degree = 3L, tol = 1e-3,
+                            max_iter = NULL, nochange_steps = 1000L,
+                            cache_size = 1024, epsilon = 0.1,
+                            sample_weights = NULL,
+                            cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                            ...) {
+  processed <- hardhat::mold(x, data)
+
+  cuml_svm_bridge(
+    processed,
+    cost = cost,
+    kernel = kernel,
+    gamma = gamma,
+    coef0 = coef0,
+    degree = degree,
+    tol = tol,
+    max_iter = max_iter,
+    nochange_steps = nochange_steps,
+    cache_size = cache_size,
+    epsilon = epsilon,
+    sample_weights = sample_weights,
+    cuml_log_level = cuml_log_level
+  )
+}
+
+cuml_svm_bridge <- function(processed, cost, kernel, gamma, coef0, degree, tol,
+                            max_iter, nochange_steps, cache_size, epsilon,
+                            sample_weights, cuml_log_level) {
+  hardhat::validate_outcomes_are_univariate(processed$outcomes)
+  x <- as.matrix(processed$predictors)
+  y <- processed$outcomes[[1]]
+
+  gamma <- gamma %||% 1.0 / ncol(x)
+  max_iter <- max_iter %||% 100L * nrow(x)
   kernel <- svm_match_kernel_type(kernel)
   cuml_log_level <- match_cuml_log_level(cuml_log_level)
-  c(x, y) %<-% process_input_and_label_specs(x, y, formula)
 
-  switch(mode,
-    classification = {
-      unique_labels <- unique(y)
-      if (length(unique_labels) > 2) {
-        # implement a one-vs-rest strategy for multi-class classification
-        models <- list()
-        for (label in unique_labels) {
-          ovr_labels <- as.integer(y == label)
-          models[[label]] <- new_model(
-            cls = "cuml_svm",
-            mode = "classification",
-            xptr = .svc_fit(
-              input = as.matrix(x),
-              labels = ovr_labels,
-              cost = as.numeric(cost),
-              kernel = kernel,
-              gamma = as.numeric(gamma),
-              coef0 = as.numeric(coef0),
-              degree = as.integer(degree),
-              tol = as.numeric(tol),
-              max_iter = as.integer(max_iter),
-              nochange_steps = as.integer(nochange_steps),
-              cache_size = as.numeric(cache_size),
-              sample_weights = as.numeric(sample_weights),
-              verbosity = cuml_log_level
-            )
-          )
-        }
+  svm_fit_impl <- (
+    if (is.factor(y)) {
+      # classification
+      ylevels <- levels(y)
+      if (length(ylevels) > 2) {
+        cuml_svm_classification_multiclass_impl
 
-        new_model(
-          cls = "cuml_svm_multi_class",
-          mode = mode,
-          xptr = models,
-          formula = formula,
-          unique_labels = unique_labels
-        )
       } else {
-        new_model(
-          cls = "cuml_svm",
-          mode = mode,
-          xptr = .svc_fit(
-            input = as.matrix(x),
-            labels = as.integer(y),
-            cost = as.numeric(cost),
-            kernel = kernel,
-            gamma = as.numeric(gamma),
-            coef0 = as.numeric(coef0),
-            degree = as.integer(degree),
-            tol = as.numeric(tol),
-            max_iter = as.integer(max_iter),
-            nochange_steps = as.integer(nochange_steps),
-            cache_size = as.numeric(cache_size),
-            sample_weights = as.numeric(sample_weights),
-            verbosity = cuml_log_level
-          ),
-          formula = formula,
-          resp_var = y
-        )
+        cuml_svm_classification_binary_impl
       }
-    },
-    regression = {
-      new_model(
-        cls = "cuml_svm",
-        mode = mode,
-        xptr = .svr_fit(
-          X = as.matrix(x),
-          y = as.numeric(y),
+    } else {
+      cuml_svm_regression_impl
+    }
+  )
+
+  svm_fit_impl(
+    processed = processed,
+    cost = cost,
+    kernel = kernel,
+    gamma = gamma,
+    coef0 = coef0,
+    degree = degree,
+    tol = tol,
+    max_iter = max_iter,
+    nochange_steps = nochange_steps,
+    cache_size = cache_size,
+    epsilon = epsilon,
+    sample_weights = sample_weights,
+    cuml_log_level = cuml_log_level
+  )
+}
+
+cuml_svm_classification_multiclass_impl <- function(processed, cost, kernel,
+                                                    gamma, coef0, degree, tol,
+                                                    max_iter, nochange_steps,
+                                                    cache_size, epsilon,
+                                                    sample_weights, cuml_log_level) {
+  x <- as.matrix(processed$predictors)
+  y <- processed$outcomes[[1]]
+  ylevels <- levels(y)
+
+  # implement a one-vs-rest strategy for multi-class classification
+  models <- list()
+  for (idx in seq_along(ylevels)) {
+    ovr_labels <- as.integer(y == ylevels[[idx]])
+
+    model <- (
+      if (!any(ovr_labels)) {
+        # None of the training data points had the current label.
+        NULL
+      } else {
+        model_xptr <- .svc_fit(
+          input = x,
+          labels = ovr_labels,
           cost = as.numeric(cost),
           kernel = kernel,
           gamma = as.numeric(gamma),
@@ -186,68 +288,168 @@ cuml_svm <- function(x, y = NULL, formula = NULL,
           max_iter = as.integer(max_iter),
           nochange_steps = as.integer(nochange_steps),
           cache_size = as.numeric(cache_size),
-          epsilon = as.numeric(epsilon),
           sample_weights = as.numeric(sample_weights),
           verbosity = cuml_log_level
-        ),
-        formula = formula,
-        resp_var = y
-      )
-    }
-  )
-}
+        )
 
-#' @export
-#' @importFrom ellipsis check_dots_used
-predict.cuml_svm <- function(object, ...) {
-  check_dots_used()
-  model <- object
-  x <- process_input_specs(...elt(1), model)
-
-  switch(model$mode,
-    classification = {
-      .svc_predict(
-        model_xptr = model$xptr,
-        input = as.matrix(x),
-        predict_class = TRUE
-      ) %>%
-        postprocess_classification_results(model)
-    },
-    regression = {
-      .svr_predict(
-        svr_xptr = model$xptr,
-        X = as.matrix(x)
-      )
-    }
-  )
-}
-
-#' @export
-#' @importFrom ellipsis check_dots_used
-predict.cuml_svm_multi_class <- function(object, ...) {
-  check_dots_used()
-  model <- object
-  x <- process_input_specs(...elt(1), model)
-
-  scores <- seq_along(model$unique_labels) %>%
-    lapply(
-      function(label_idx) {
-        .svc_predict(
-          model_xptr = model$xptr[[model$unique_labels[[label_idx]]]]$xptr,
-          input = as.matrix(x),
-          predict_class = FALSE
+        new_model(
+          cls = "cuml_svm",
+          mode = "classification",
+          xptr <- model_xptr
         )
       }
     )
 
-  seq_len(nrow(x)) %>%
-    sapply(
-      function(input_idx) {
-        optimal_label_idx <- seq_along(model$unique_labels) %>%
-          lapply(function(label_idx) scores[[label_idx]][[input_idx]]) %>%
-          which.max()
+    models <- append(models, list(model))
+  }
 
-        model$unique_labels[[optimal_label_idx]]
+  new_model(
+    cls = "cuml_svm",
+    mode = "classification",
+    xptr = models,
+    multiclass = TRUE,
+    blueprint = processed$blueprint
+  )
+}
+
+cuml_svm_classification_binary_impl <- function(processed, cost, kernel, gamma,
+                                                coef0, degree, tol, max_iter,
+                                                nochange_steps, cache_size,
+                                                epsilon, sample_weights,
+                                                cuml_log_level) {
+  x <- as.matrix(processed$predictors)
+  y <- processed$outcomes[[1]]
+
+  model_xptr <- .svc_fit(
+    input = x,
+    labels = as.integer(y),
+    cost = as.numeric(cost),
+    kernel = kernel,
+    gamma = as.numeric(gamma),
+    coef0 = as.numeric(coef0),
+    degree = as.integer(degree),
+    tol = as.numeric(tol),
+    max_iter = as.integer(max_iter),
+    nochange_steps = as.integer(nochange_steps),
+    cache_size = as.numeric(cache_size),
+    sample_weights = as.numeric(sample_weights),
+    verbosity = cuml_log_level
+  )
+
+  new_model(
+    cls = "cuml_svm",
+    mode = "classification",
+    xptr = model_xptr,
+    multiclass = FALSE,
+    blueprint = processed$blueprint
+  )
+}
+
+cuml_svm_regression_impl <- function(processed, cost, kernel, gamma, coef0,
+                                     degree, tol, max_iter, nochange_steps,
+                                     cache_size, epsilon, sample_weights,
+                                     cuml_log_level) {
+  x <- as.matrix(processed$predictors)
+  y <- processed$outcomes[[1]]
+
+  model_xptr <- .svr_fit(
+    X = x,
+    y = as.numeric(y),
+    cost = as.numeric(cost),
+    kernel = kernel,
+    gamma = as.numeric(gamma),
+    coef0 = as.numeric(coef0),
+    degree = as.integer(degree),
+    tol = as.numeric(tol),
+    max_iter = as.integer(max_iter),
+    nochange_steps = as.integer(nochange_steps),
+    cache_size = as.numeric(cache_size),
+    epsilon = as.numeric(epsilon),
+    sample_weights = as.numeric(sample_weights),
+    verbosity = cuml_log_level
+  )
+
+  new_model(
+    cls = "cuml_svm",
+    mode = "regression",
+    xptr = model_xptr,
+    blueprint = processed$blueprint
+  )
+}
+
+#' @importFrom ellipsis check_dots_used
+#' @export
+predict.cuml_svm <- function(model, x, ...) {
+  check_dots_used()
+
+  processed <- hardhat::forge(x, model$blueprint)
+
+  predict_cuml_svm_bridge(model = model, processed = processed)
+}
+
+predict_cuml_svm_bridge <- function(model, processed) {
+  svm_predict_impl <- switch(
+    model$mode,
+    classification = (
+      if (model$multiclass) {
+        predict_cuml_svm_classification_multiclass_impl
+      } else {
+        predict_cuml_svm_classification_binary_impl
+      }),
+    regression = (
+      predict_cuml_svm_regression_impl
+    )
+  )
+
+  out <- svm_predict_impl(model = model, processed = processed)
+  hardhat::validate_prediction_size(out, processed$predictors)
+
+  out
+}
+
+predict_cuml_svm_classification_multiclass_impl <- function(model, processed) {
+  possible_outcomes <- get_model_outcome_levels(model)
+
+  scores <- seq_along(possible_outcomes) %>%
+    lapply(
+      function(label_idx) {
+        if (is.null(model$xptr[[label_idx]])) {
+          # None of the training data points had the current label.
+          rep(-Inf, nrow(processed$predictors))
+        } else {
+          .svc_predict(
+            model_xptr = model$xptr[[label_idx]]$xptr,
+            input = as.matrix(processed$predictors),
+            predict_class = FALSE
+          )
+        }
       }
     )
+
+  seq_len(nrow(processed$predictors)) %>%
+    sapply(
+      function(input_idx) {
+        seq_along(possible_outcomes) %>%
+          lapply(function(label_idx) scores[[label_idx]][[input_idx]]) %>%
+          which.max()
+      }
+    ) %>%
+    postprocess_classification_results(model)
+}
+
+predict_cuml_svm_classification_binary_impl <- function(model, processed) {
+  .svc_predict(
+    model_xptr = model$xptr,
+    input = as.matrix(processed$predictors),
+    predict_class = TRUE
+  ) %>%
+    postprocess_classification_results(model)
+}
+
+predict_cuml_svm_regression_impl <- function(model, processed) {
+  .svr_predict(
+    svr_xptr = model$xptr,
+    X = as.matrix(processed$predictors)
+  ) %>%
+    postprocess_regression_results()
 }

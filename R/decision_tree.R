@@ -1,7 +1,9 @@
-decision_tree_match_split_criterion <- function(criterion = c("gini", "entropy", "mse", "mae"), mode = "classification") {
+decision_tree_match_split_criterion <- function(criterion = c("gini", "entropy", "mse", "mae"),
+                                                classification = TRUE) {
+  criterion <- criterion %||% ifelse(classification, "gini", "mse")
   criterion <- match.arg(criterion)
 
-  if (identical(mode, "classification") && criterion %in% c("mse", "mae")) {
+  if (classification && criterion %in% c("mse", "mae")) {
     stop("'", criterion, "' is not a valid criterion for classification.")
   }
 

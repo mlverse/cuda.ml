@@ -61,21 +61,21 @@ BEGIN_RCPP
 END_RCPP
 }
 // fil_load_model
-SEXP fil_load_model(int const model_type, std::string const& filename, int const algo, bool const output_class, float const threshold, int const storage_type, int const blocks_per_sm, int const threads_per_tree, int const n_items);
-RcppExport SEXP _cuml4r_fil_load_model(SEXP model_typeSEXP, SEXP filenameSEXP, SEXP algoSEXP, SEXP output_classSEXP, SEXP thresholdSEXP, SEXP storage_typeSEXP, SEXP blocks_per_smSEXP, SEXP threads_per_treeSEXP, SEXP n_itemsSEXP) {
+SEXP fil_load_model(int const model_type, std::string const& filename, int const algo, bool const classification, float const threshold, int const storage_type, int const blocks_per_sm, int const threads_per_tree, int const n_items);
+RcppExport SEXP _cuml4r_fil_load_model(SEXP model_typeSEXP, SEXP filenameSEXP, SEXP algoSEXP, SEXP classificationSEXP, SEXP thresholdSEXP, SEXP storage_typeSEXP, SEXP blocks_per_smSEXP, SEXP threads_per_treeSEXP, SEXP n_itemsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int const >::type model_type(model_typeSEXP);
     Rcpp::traits::input_parameter< std::string const& >::type filename(filenameSEXP);
     Rcpp::traits::input_parameter< int const >::type algo(algoSEXP);
-    Rcpp::traits::input_parameter< bool const >::type output_class(output_classSEXP);
+    Rcpp::traits::input_parameter< bool const >::type classification(classificationSEXP);
     Rcpp::traits::input_parameter< float const >::type threshold(thresholdSEXP);
     Rcpp::traits::input_parameter< int const >::type storage_type(storage_typeSEXP);
     Rcpp::traits::input_parameter< int const >::type blocks_per_sm(blocks_per_smSEXP);
     Rcpp::traits::input_parameter< int const >::type threads_per_tree(threads_per_treeSEXP);
     Rcpp::traits::input_parameter< int const >::type n_items(n_itemsSEXP);
-    rcpp_result_gen = Rcpp::wrap(fil_load_model(model_type, filename, algo, output_class, threshold, storage_type, blocks_per_sm, threads_per_tree, n_items));
+    rcpp_result_gen = Rcpp::wrap(fil_load_model(model_type, filename, algo, classification, threshold, storage_type, blocks_per_sm, threads_per_tree, n_items));
     return rcpp_result_gen;
 END_RCPP
 }

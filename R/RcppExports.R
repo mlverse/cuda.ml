@@ -17,8 +17,8 @@
     .Call(`_cuml4r_fil_enabled`)
 }
 
-.fil_load_model <- function(model_type, filename, algo, output_class, threshold, storage_type, blocks_per_sm, threads_per_tree, n_items) {
-    .Call(`_cuml4r_fil_load_model`, model_type, filename, algo, output_class, threshold, storage_type, blocks_per_sm, threads_per_tree, n_items)
+.fil_load_model <- function(model_type, filename, algo, classification, threshold, storage_type, blocks_per_sm, threads_per_tree, n_items) {
+    .Call(`_cuml4r_fil_load_model`, model_type, filename, algo, classification, threshold, storage_type, blocks_per_sm, threads_per_tree, n_items)
 }
 
 .fil_predict <- function(model, x, output_probabilities) {

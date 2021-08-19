@@ -2,70 +2,136 @@
 % Please edit documentation in R/rand_forest.R
 \name{cuml_rand_forest}
 \alias{cuml_rand_forest}
+\alias{cuml_rand_forest.default}
+\alias{cuml_rand_forest.data.frame}
+\alias{cuml_rand_forest.matrix}
+\alias{cuml_rand_forest.formula}
+\alias{cuml_rand_forest.recipe}
 \title{Train a random forest model.}
 \usage{
-cuml_rand_forest(
+cuml_rand_forest(x, ...)
+
+\method{cuml_rand_forest}{default}(x, ...)
+
+\method{cuml_rand_forest}{data.frame}(
   x,
-  y = NULL,
-  formula = NULL,
-  mode = c("classification", "regression"),
+  y,
   mtry = NULL,
   trees = NULL,
-  min_n = NULL,
+  min_n = 2L,
   bootstrap = TRUE,
-  max_depth = 16,
-  max_leaves = -1,
+  max_depth = 16L,
+  max_leaves = Inf,
   max_predictors_per_note_split = NULL,
-  n_bins = 128,
-  min_samples_leaf = 1,
+  n_bins = 128L,
+  min_samples_leaf = 1L,
   split_criterion = NULL,
   min_impurity_decrease = 0,
-  max_batch_size = 128,
-  n_streams = 8,
-  cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")
+  max_batch_size = 128L,
+  n_streams = 8L,
+  cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+  ...
+)
+
+\method{cuml_rand_forest}{matrix}(
+  x,
+  y,
+  mtry = NULL,
+  trees = NULL,
+  min_n = 2L,
+  bootstrap = TRUE,
+  max_depth = 16L,
+  max_leaves = Inf,
+  max_predictors_per_note_split = NULL,
+  n_bins = 128L,
+  min_samples_leaf = 1L,
+  split_criterion = NULL,
+  min_impurity_decrease = 0,
+  max_batch_size = 128L,
+  n_streams = 8L,
+  cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+  ...
+)
+
+\method{cuml_rand_forest}{formula}(
+  formula,
+  data,
+  mtry = NULL,
+  trees = NULL,
+  min_n = 2L,
+  bootstrap = TRUE,
+  max_depth = 16L,
+  max_leaves = Inf,
+  max_predictors_per_note_split = NULL,
+  n_bins = 128L,
+  min_samples_leaf = 1L,
+  split_criterion = NULL,
+  min_impurity_decrease = 0,
+  max_batch_size = 128L,
+  n_streams = 8L,
+  cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+  ...
+)
+
+\method{cuml_rand_forest}{recipe}(
+  x,
+  data,
+  mtry = NULL,
+  trees = NULL,
+  min_n = 2L,
+  bootstrap = TRUE,
+  max_depth = 16L,
+  max_leaves = Inf,
+  max_predictors_per_note_split = NULL,
+  n_bins = 128L,
+  min_samples_leaf = 1L,
+  split_criterion = NULL,
+  min_impurity_decrease = 0,
+  max_batch_size = 128L,
+  n_streams = 8L,
+  cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+  ...
 )
 }
 \arguments{
-\item{x}{The input matrix or dataframe. Each data point should be a row
-and should consist of numeric values only.}
+\item{x}{Depending on the context:
 
-\item{y}{A numeric vector of desired responses.}
+  * A __data frame__ of predictors.
+  * A __matrix__ of predictors.
+  * A __recipe__ specifying a set of preprocessing steps
+  * created from [recipes::recipe()].
+  * A __formula__ specifying the predictors and the outcome.}
 
-\item{formula}{If 'x' is a dataframe, then a R formula syntax of the form
-'<response col> ~ .' or
-'<response col> ~ <predictor 1> + <predictor 2> + ...'
-may be used to specify the response column and the predictor column(s).}
-
-\item{mode}{Type of task to perform. Should be either "classification" or
-"regression".}
+\item{y}{A numeric vector (for regression) or factor (for classification) of
+desired responses.}
 
 \item{mtry}{The number of predictors that will be randomly sampled at each
 split when creating the tree models. Default: the square root of the total
 number of predictors.}
 
 \item{trees}{An integer for the number of trees contained in the ensemble.
-Default: 100.}
+Default: 100L.}
 
 \item{min_n}{An integer for the minimum number of data points in a node that
-are required for the node to be split further. Default: 2.}
+are required for the node to be split further. Default: 2L.}
 
 \item{bootstrap}{Whether to perform bootstrap.
 If TRUE, each tree in the forest is built on a bootstrapped sample with
 replacement.
 If FALSE, the whole dataset is used to build each tree.}
 
-\item{max_depth}{Maximum tree depth. Default: 16.}
+\item{max_depth}{Maximum tree depth. Default: 16L.}
 
-\item{max_leaves}{Maximum leaf nodes per tree. Soft constraint. Default: -1
+\item{max_leaves}{Maximum leaf nodes per tree. Soft constraint. Default: Inf
 (unlimited).}
 
 \item{max_predictors_per_note_split}{Number of predictor to consider per node
 split. Default: square root of the total number predictors.}
 
-\item{n_bins}{Number of bins used by the split algorithm. Default: 128.}
+\item{n_bins}{Number of bins used by the split algorithm. Default: 128L.}
 
 \item{min_samples_leaf}{The minimum number of data points in each leaf node.
-Default: 1.}
+Default: 1L.}
 
 \item{split_criterion}{The criterion used to split nodes, can be "gini" or
 "entropy" for classifications, and "mse" or "mae" for regressions.
@@ -75,14 +141,21 @@ Default: "gini" for classification; "mse" for regression.}
 to be spilt. Default: 0.}
 
 \item{max_batch_size}{Maximum number of nodes that can be processed in a
-given batch. Default: 128.}
+given batch. Default: 128L.}
 
 \item{n_streams}{Number of CUDA streams to use for building trees.
-Default: 8.}
+Default: 8L.}
 
 \item{cuml_log_level}{Log level within cuML library functions. Must be one of
 {"off", "critical", "error", "warn", "info", "debug", "trace"}.
 Default: off.}
+
+\item{formula}{A formula specifying the outcome terms on the left-hand side,
+and the predictor terms on the right-hand side.}
+
+\item{data}{When a __recipe__ or __formula__ is used, \code{data} is
+specified as a  __data frame__ containing the predictors and (if
+applicable) the outcome.}
 }
 \value{
 A random forest classifier / regressor object that can be used with
@@ -97,39 +170,20 @@ library(cuml4r)
 # Classification
 
 model <- cuml_rand_forest(
-  iris,
   formula = Species ~ .,
-  mode = "classification",
+  data = iris,
   trees = 100
 )
 
-predictions <- predict(model, iris)
-
-print(predictions)
-
-cat(
-  "Number of correct predictions: ",
-  sum(predictions == iris[, "Species"]),
-  "\n"
-)
+predictions <- predict(model, iris[-which(names(iris) == "Species")])
 
 # Regression
 
 model <- cuml_rand_forest(
-  iris,
-  formula = Species ~ .,
-  mode = "regression",
+  formula = mpg ~ .,
+  data = mtcars,
   trees = 100
 )
 
-predictions <- predict(model, iris)
-
-print(predictions)
-print(round(predictions))
-
-cat(
-  "Number of correct predictions: ",
-  sum(as.integer(round(predictions)) == as.integer(iris[, "Species"])),
-  "\n"
-)
+predictions <- predict(model, mtcars[-which(names(mtcars) == "mpg")])
 }

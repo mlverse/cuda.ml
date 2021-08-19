@@ -16,10 +16,10 @@ Description: The purpose of 'cuml4r' is to provide a simple and intuitive R
 License: Apache License (>= 2.0)
 Imports:
     ellipsis,
+    hardhat,
     magrittr,
     Rcpp (>= 1.0.6),
-    rlang (>= 0.1.4),
-    zeallot (>= 0.1.0)
+    rlang (>= 0.1.4)
 Suggests:
     MASS,
     mlbench,

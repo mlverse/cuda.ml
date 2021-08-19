@@ -2,40 +2,100 @@
 % Please edit documentation in R/svm.R
 \name{cuml_svm}
 \alias{cuml_svm}
+\alias{cuml_svm.default}
+\alias{cuml_svm.data.frame}
+\alias{cuml_svm.matrix}
+\alias{cuml_svm.formula}
+\alias{cuml_svm.recipe}
 \title{Train a SVM model.}
 \usage{
-cuml_svm(
+cuml_svm(x, ...)
+
+\method{cuml_svm}{default}(x, ...)
+
+\method{cuml_svm}{data.frame}(
   x,
-  y = NULL,
-  formula = NULL,
-  mode = c("classification", "regression"),
+  y,
   cost = 1,
   kernel = c("rbf", "tanh", "polynomial", "linear"),
-  gamma = 1/ncol(x),
+  gamma = NULL,
   coef0 = 0,
   degree = 3L,
   tol = 0.001,
-  max_iter = 100L * nrow(x),
+  max_iter = NULL,
   nochange_steps = 1000L,
   cache_size = 1024,
   epsilon = 0.1,
   sample_weights = NULL,
-  cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")
+  cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+  ...
+)
+
+\method{cuml_svm}{matrix}(
+  x,
+  y,
+  cost = 1,
+  kernel = c("rbf", "tanh", "polynomial", "linear"),
+  gamma = NULL,
+  coef0 = 0,
+  degree = 3L,
+  tol = 0.001,
+  max_iter = NULL,
+  nochange_steps = 1000L,
+  cache_size = 1024,
+  epsilon = 0.1,
+  sample_weights = NULL,
+  cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+  ...
+)
+
+\method{cuml_svm}{formula}(
+  formula,
+  data,
+  cost = 1,
+  kernel = c("rbf", "tanh", "polynomial", "linear"),
+  gamma = NULL,
+  coef0 = 0,
+  degree = 3L,
+  tol = 0.001,
+  max_iter = NULL,
+  nochange_steps = 1000L,
+  cache_size = 1024,
+  epsilon = 0.1,
+  sample_weights = NULL,
+  cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+  ...
+)
+
+\method{cuml_svm}{recipe}(
+  x,
+  data,
+  cost = 1,
+  kernel = c("rbf", "tanh", "polynomial", "linear"),
+  gamma = NULL,
+  coef0 = 0,
+  degree = 3L,
+  tol = 0.001,
+  max_iter = NULL,
+  nochange_steps = 1000L,
+  cache_size = 1024,
+  epsilon = 0.1,
+  sample_weights = NULL,
+  cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+  ...
 )
 }
 \arguments{
-\item{x}{The input matrix or dataframe. Each data point should be a row
-and should consist of numeric values only.}
+\item{x}{Depending on the context:
 
-\item{y}{A numeric vector of desired responses.}
+  * A __data frame__ of predictors.
+  * A __matrix__ of predictors.
+  * A __recipe__ specifying a set of preprocessing steps
+  * created from [recipes::recipe()].
+  * A __formula__ specifying the predictors and the outcome.}
 
-\item{formula}{If 'x' is a dataframe, then a R formula syntax of the form
-'<response col> ~ .' or
-'<response col> ~ <predictor 1> + <predictor 2> + ...'
-may be used to specify the response column and the predictor column(s).}
-
-\item{mode}{Type of task to perform. Should be either "classification" or
-"regression".}
+\item{y}{A numeric vector (for regression) or factor (for classification) of
+desired responses.}
 
 \item{cost}{A positive number for the cost of predicting a sample within or
 on the wrong side of the margin. Default: 1.}
@@ -94,6 +154,13 @@ tasks. Default: 0.1.}
 \item{cuml_log_level}{Log level within cuML library functions. Must be one of
 {"off", "critical", "error", "warn", "info", "debug", "trace"}.
 Default: off.}
+
+\item{formula}{A formula specifying the outcome terms on the left-hand side,
+and the predictor terms on the right-hand side.}
+
+\item{data}{When a __recipe__ or __formula__ is used, \code{data} is
+specified as a  __data frame__ containing the predictors and (if
+applicable) the outcome.}
 }
 \value{
 A Support Vector Machine classifier / regressor object that can be
@@ -106,25 +173,23 @@ Train a Support Vector Machine model for classification or regression tasks.
 
 library(cuml4r)
 
+# Classification
+
 model <- cuml_svm(
-  iris[1:100, ],
   formula = Species ~ .,
-  mode = "classification",
+  data = iris,
   kernel = "rbf"
 )
 
-predictions <- predict(model, iris[1:100, ])
+predictions <- predict(model, iris[-which(names(iris) == "Species")])
 
-cat("Iris species predictions: ", predictions, "\n")
+# Regression
 
 model <- cuml_svm(
-  mtcars,
   formula = mpg ~ .,
-  mode = "regression",
+  data = mtcars,
   kernel = "rbf"
 )
 
 predictions <- predict(model, mtcars)
-
-cat("MPG predictions:", predictions, "\n")
 }
