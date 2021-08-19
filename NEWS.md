@@ -17,6 +17,12 @@
   from lower-dimensional representation to the original feature space when
   applicable).
 
+### Nonlinear Models for Regression or Classification
+
+- Added R interface for CuML Forest Inference Library (FIL). Users can load any
+  existing XGBoost or LightGBM model using Treelite and use the model to perform
+  high-throughput batch inference using GPU acceleration provided by FIL.
+
 ### Concurrency
 
 - Fixed a missing `cudaEventRecord()` call in `cuml4r::async_copy()`.
