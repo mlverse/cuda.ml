@@ -21,12 +21,13 @@ namespace {
 struct ModelCtx {
   using model_t = ML::SVM::SVC<double>;
 
-  std::unique_ptr<model_t> const model_;
+  // model object must be destroyed first
   std::unique_ptr<raft::handle_t> const handle_;
+  std::unique_ptr<model_t> const model_;
 
-  __host__ ModelCtx(std::unique_ptr<model_t> model,
-                    std::unique_ptr<raft::handle_t> handle) noexcept
-    : model_(std::move(model)), handle_(std::move(handle)) {}
+  __host__ ModelCtx(std::unique_ptr<raft::handle_t> handle,
+                    std::unique_ptr<model_t> model) noexcept
+    : handle_(std::move(handle)), model_(std::move(model)) {}
 };
 
 }  // namespace
@@ -85,7 +86,7 @@ __host__ SEXP svc_fit(Rcpp::NumericMatrix const& input,
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
-  return Rcpp::XPtr<ModelCtx>(new ModelCtx(std::move(svc), std::move(handle)));
+  return Rcpp::XPtr<ModelCtx>(new ModelCtx(std::move(handle), std::move(svc)));
 }
 
 __host__ SEXP svc_predict(SEXP model_xptr, Rcpp::NumericMatrix const& input,
