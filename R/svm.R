@@ -453,3 +453,120 @@ predict_cuml_svm_regression_impl <- function(model, processed) {
   ) %>%
     postprocess_regression_results()
 }
+
+# register the CuML-based rand_forest model for parsnip
+register_svm_model <- function(pkgname) {
+  for (model in c(paste0("svm_", c("rbf", "poly", "linear")))) {
+    for (mode in c("classification", "regression")) {
+      parsnip::set_model_engine(model = model, mode = mode, eng = "cuml")
+    }
+    parsnip::set_dependency(model = model, eng = "cuml", pkg = pkgname)
+
+    parsnip::set_model_arg(
+      model = model,
+      eng = "cuml",
+      parsnip = "cost",
+      original = "cost",
+      func = list(pkg = "dials", fun = "cost", range = c(-10, 5)),
+      has_submodel = FALSE
+    )
+
+    parsnip::set_model_arg(
+      model = model,
+      eng = "cuml",
+      parsnip = "margin",
+      original = "epsilon",
+      func = list(pkg = "dials", fun = "svm_margin"),
+      has_submodel = FALSE
+    )
+  }
+
+  parsnip::set_model_arg(
+    model = "svm_rbf",
+    eng = "cuml",
+    parsnip = "rbf_sigma",
+    original = "gamma",
+    func = list(pkg = "dials", fun = "rbf_sigma"),
+    has_submodel = FALSE
+  )
+
+  parsnip::set_model_arg(
+    model = "svm_poly",
+    eng = "cuml",
+    parsnip = "degree",
+    original = "degree",
+    func = list(pkg = "dials", fun = "degree"),
+    has_submodel = FALSE
+  )
+
+  parsnip::set_model_arg(
+    model = "svm_poly",
+    eng = "cuml",
+    parsnip = "scale_factor",
+    original = "gamma",
+    func = list(pkg = "dials", fun = "scale_factor"),
+    has_submodel = FALSE
+  )
+
+  for (kernel in c("rbf", "poly", "linear")) {
+    model <- paste0("svm_", kernel)
+
+    for (mode in c("classification", "regression")) {
+      parsnip::set_fit(
+        model = model,
+        eng = "cuml",
+        mode = mode,
+        value = list(
+          interface = "formula",
+          protect = c("formula", "data"),
+          func = c(pkg = pkgname, fun = "cuml_svm"),
+          defaults = list(kernel = kernel)
+        )
+      )
+
+      parsnip::set_encoding(
+        model = model,
+        eng = "cuml",
+        mode = mode,
+        options = list(
+          predictor_indicators = "none",
+          compute_intercept = FALSE,
+          remove_intercept = FALSE,
+          allow_sparse_x = FALSE
+        )
+      )
+    }
+
+    parsnip::set_pred(
+      model = model,
+      eng = "cuml",
+      mode = "classification",
+      type = "class",
+      value = list(
+        pre = NULL,
+        post = NULL,
+        func = c(fun = "predict"),
+        args = list(
+          model = quote(object$fit),
+          x = quote(new_data)
+        )
+      )
+    )
+
+    parsnip::set_pred(
+      model = model,
+      eng = "cuml",
+      mode = "regression",
+      type = "numeric",
+      value = list(
+        pre = NULL,
+        post = NULL,
+        func = c(fun = "predict"),
+        args = list(
+          model = quote(object$fit),
+          x = quote(new_data)
+        )
+      )
+    )
+  }
+}

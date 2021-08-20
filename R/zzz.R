@@ -18,4 +18,7 @@
       pkgname, "'\n\n"
     )
   }
+
+  register_rand_forest_model(pkgname)
+  register_svm_model(pkgname)
 }

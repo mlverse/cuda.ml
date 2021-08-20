@@ -9,19 +9,12 @@ match_eig_algo <- function(eig_algo = c("dq", "jacobi")) {
 
 new_model <- function(cls,
                       mode = c("classification", "regression"),
-                      xptr = NULL, formula = NULL, resp_var = NULL, ...) {
+                      xptr = NULL, ...) {
   mode <- match.arg(mode)
   do.call(
     hardhat::new_model,
     c(
-      list(
-        class = cls,
-        mode = mode,
-        xptr = xptr,
-        formula = formula,
-        resp_var_cls = class(resp_var),
-        resp_var_attrs = attributes(resp_var)
-      ),
+      list(class = cls, mode = mode, xptr = xptr),
       rlang::dots_list(...)
     )
   )
