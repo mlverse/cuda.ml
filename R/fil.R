@@ -56,7 +56,6 @@ file_match_storage_type <- function(storage_type = c("auto", "dense", "sparse"))
 #' points using the GPU acceleration functionality from the CuML Forest
 #' Inference Library (FIL).
 #'
-#' @template supervised-model-classification-or-regression-mode
 #' @param filename Path to the saved model file.
 #' @param model_type Format of the saved model file. Notice if \code{filename}
 #'   ends with ".json" and \code{model_type} is "xgboost", then 'cuml4r' will
@@ -145,18 +144,19 @@ cuml_fil_load_model <- function(filename,
   algo <- fil_match_algo(algo)
   storage_type <- file_match_storage_type(storage_type)
 
-  model <- .fil_load_model(
+  xptr <- .fil_load_model(
     model_type = model_type,
     filename = filename,
     algo = algo,
-    output_class = identical(mode, "classification"),
+    classification = identical(mode, "classification"),
     threshold = as.numeric(threshold),
     storage_type = storage_type,
     threads_per_tree = as.integer(threads_per_tree),
     n_items = as.integer(n_items),
     blocks_per_sm = as.integer(blocks_per_sm)
   )
-  class(model) <- c(class(model), "cuml_fil")
+  model <- list(mode = mode, xptr = xptr)
+  class(model) <- c("cuml_fil", class(model))
 
   model
 }
@@ -173,9 +173,26 @@ cuml_fil_load_model <- function(filename,
 #'
 #' @export
 predict.cuml_fil <- function(model, x, output_probabilities = FALSE, ...) {
-  .fil_predict(
-    model = model,
+  preds <- .fil_predict(
+    model = model$xptr,
     x = as.matrix(x),
     output_probabilities = output_probabilities
   )
+
+  switch(
+    model$mode,
+    classification = {
+      if (output_probabilities) {
+        preds <- hardhat::spruce_prob(c("class_prob_0", "class_prob_1"), preds)
+      } else {
+        preds <- factor(preds)
+        preds <- hardhat::spruce_class(preds)
+      }
+    },
+    regression = {
+      preds <- hardhat::spruce_numeric(c(preds))
+    }
+  )
+
+  preds
 }

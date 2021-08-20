@@ -3,6 +3,3 @@ NULL
 
 #' @importFrom rlang %||%
 NULL
-
-#' @importFrom zeallot %<-%
-NULL
