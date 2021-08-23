@@ -20,7 +20,7 @@ cuml_fil_load_model(
 \item{filename}{Path to the saved model file.}
 
 \item{model_type}{Format of the saved model file. Notice if \code{filename}
-ends with ".json" and \code{model_type} is "xgboost", then 'cuml4r' will
+ends with ".json" and \code{model_type} is "xgboost", then {cuml} will
 assume the model file is in XGBoost JSON (instead of binary) format.
 Default: "xgboost".}
 
@@ -78,7 +78,7 @@ Inference Library (FIL).
 }
 \examples{
 
-library(cuml4r)
+library(cuml)
 library(xgboost)
 
 model_path <- file.path("", "tmp", "xgboost.model")

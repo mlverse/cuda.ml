@@ -13,7 +13,7 @@
 #'  assignment.
 #'
 #' @examples
-#' library(cuml4r)
+#' library(cuml)
 #' library(magrittr)
 #'
 #' gen_pts <- function() {

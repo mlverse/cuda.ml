@@ -84,7 +84,7 @@ umap_match_metric_type <- function(metric_type = c("categorical", "euclidean")) 
 #'   embedding of the input data.
 #'
 #' @examples
-#' library(cuml4r)
+#' library(cuml)
 #'
 #' model <- cuml_umap(
 #'   x = iris[1:4],

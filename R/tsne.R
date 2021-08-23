@@ -61,7 +61,7 @@ tsne_match_method <- function(method = c("barnes_hut", "fft", "exact")) {
 #'   Default: NULL.
 #'
 #' @examples
-#' library(cuml4r)
+#' library(cuml)
 #'
 #' embedding <- cuml_tsne(iris[1:4], method = "exact")
 #'

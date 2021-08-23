@@ -50,7 +50,7 @@ linkage distance.
 }
 \examples{
 
-library(cuml4r)
+library(cuml)
 library(MASS)
 library(magrittr)
 library(purrr)

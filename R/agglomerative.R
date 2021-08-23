@@ -42,7 +42,7 @@ agglomerative_clustering_match_metric <- function(metric = c("euclidean", "l1", 
 #'
 #' @examples
 #'
-#' library(cuml4r)
+#' library(cuml)
 #' library(MASS)
 #' library(magrittr)
 #' library(purrr)

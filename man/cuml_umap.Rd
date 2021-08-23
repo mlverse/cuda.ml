@@ -122,7 +122,7 @@ find a low dimensional embedding of the input data that approximates an
 underlying manifold.
 }
 \examples{
-library(cuml4r)
+library(cuml)
 
 model <- cuml_umap(
   x = iris[1:4],

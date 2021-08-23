@@ -32,7 +32,7 @@ Run the DBSCAN (Density-based spatial clustering of applications with noise)
 clustering algorithm.
 }
 \examples{
-library(cuml4r)
+library(cuml)
 library(magrittr)
 
 gen_pts <- function() {

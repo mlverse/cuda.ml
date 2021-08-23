@@ -1,4 +1,4 @@
-Package: cuml4r
+Package: cuml
 Type: Package
 Title: R Interface for the RAPIDS cuML Suite of Libraries
 Version: 0.1.0.9000
@@ -9,10 +9,9 @@ Authors@R:
            email = "yitao@rstudio.com",
            comment = c(ORCID = "0000-0002-1261-905X"))
 Maintainer: Yitao Li <yitao@rstudio.com>
-Description: The purpose of 'cuml4r' is to provide a simple and intuitive R
-    interface for cuML (<https://github.com/rapidsai/cuml>).
-    CuML is a suite of GPU-accelerated machine learning libraries powered by
-    CUDA (<https://en.wikipedia.org/wiki/CUDA>).
+Description: R interface for RAPIDS cuML (<https://github.com/rapidsai/cuml>),
+    a suite of GPU-accelerated machine learning libraries powered by CUDA
+    (<https://en.wikipedia.org/wiki/CUDA>).
 License: Apache License (>= 2.0)
 Imports:
     ellipsis,

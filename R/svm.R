@@ -65,7 +65,7 @@ svm_match_kernel_type <- function(kernel = c("rbf", "tanh", "polynomial", "linea
 #'
 #' @examples
 #'
-#' library(cuml4r)
+#' library(cuml)
 #'
 #' # Classification
 #'

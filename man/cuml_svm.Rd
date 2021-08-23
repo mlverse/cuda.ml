@@ -171,7 +171,7 @@ Train a Support Vector Machine model for classification or regression tasks.
 }
 \examples{
 
-library(cuml4r)
+library(cuml)
 
 # Classification
 

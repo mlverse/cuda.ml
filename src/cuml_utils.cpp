@@ -1,5 +1,5 @@
-// [[Rcpp::export(".has_cuml")]]
-bool has_cuml() {
+// [[Rcpp::export(".has_libcuml")]]
+bool has_libcuml() {
 #ifdef HAS_CUML
 
   return true;

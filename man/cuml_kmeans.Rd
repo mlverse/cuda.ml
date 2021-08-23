@@ -44,7 +44,7 @@ Run the K means clustering algorithm.
 }
 \examples{
 
-library(cuml4r)
+library(cuml)
 
 kclust <- cuml_kmeans(
   iris[, which(names(iris) != "Species")],

@@ -52,7 +52,7 @@ optionally transform input data to a projection in a lower dimension space
 using the generated random matrix.
 }
 \examples{
-library(cuml4r)
+library(cuml)
 library(mlbench)
 
 data(Vehicle)

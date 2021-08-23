@@ -28,7 +28,7 @@
 #'   projection of the input data.
 #'
 #' @examples
-#' library(cuml4r)
+#' library(cuml)
 #' library(mlbench)
 #'
 #' data(Vehicle)

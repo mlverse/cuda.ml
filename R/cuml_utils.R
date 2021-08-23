@@ -1,18 +1,18 @@
-#' Determine whether 'cuml4r' was linked to a valid version of the 'cuml' shared
-#' library.
+#' Determine whether {cuml} was linked to a valid version of the RAPIDS cuML
+#' shared library.
 #'
-#' Return TRUE if the current installation 'cuml4r' was linked to a valid
-#' version of the 'cuml' shared library, otherwise FALSE.
+#' Return TRUE if the current installation {cuml} was linked to a valid
+#' version of the RAPIDS cuML shared library, otherwise FALSE.
 #'
 #' @examples
 #'
-#' library(cuml4r)
+#' library(cuml)
 #'
-#' if (!cuml4r_has_cuml()) {
+#' if (!has_libcuml()) {
 #'   warning(
-#'     "`cuML` is missing, and `cuml4r` will not work as expected! ",
-#'     "Please install `cuML` first and then re-install `cuml4r`."
+#'     "Please install the RAPIDS cuML shared library first, and then re-",
+#'     "install {cuml}."
 #'   )
 #' }
 #' @export
-cuml4r_has_cuml <- .has_cuml
+has_libcuml <- .has_libcuml
