@@ -73,11 +73,15 @@ __host__ SEXP svr_fit(Rcpp::NumericMatrix const& X,
                          h_sample_weights.cend(), d_sample_weights.begin());
   }
 
-  ML::SVM::svmParameter param{
-    /*C=*/cost, cache_size,
-    max_iter,   nochange_steps,
-    tol,        verbosity,
-    epsilon,    /*svmType=*/ML::SVM::SvmType::EPSILON_SVR};
+  ML::SVM::svmParameter param;
+  param.C = cost;
+  param.cache_size = cache_size,
+  param.max_iter = max_iter;
+  param.nochange_steps = nochange_steps;
+  param.tol = tol;
+  param.verbosity = verbosity;
+  param.epsilon = epsilon;
+  param.svmType = ML::SVM::SvmType::EPSILON_SVR;
   MLCommon::Matrix::KernelParams kernel_params{
     /*kernel=*/static_cast<MLCommon::Matrix::KernelType>(kernel), degree, gamma,
     coef0};

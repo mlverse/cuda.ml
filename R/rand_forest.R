@@ -374,3 +374,111 @@ predict_cuml_rand_forest_regression_impl <- function(model, processed,
   ) %>%
     postprocess_regression_results()
 }
+
+# register the CuML-based rand_forest model for parsnip
+register_rand_forest_model <- function(pkgname) {
+  for (mode in c("classification", "regression")) {
+    parsnip::set_model_engine(
+      model = "rand_forest", mode = mode, eng = "cuml"
+    )
+  }
+
+  parsnip::set_dependency(model = "rand_forest", eng = "cuml", pkg = pkgname)
+
+  parsnip::set_model_arg(
+    model = "rand_forest",
+    eng = "cuml",
+    parsnip = "mtry",
+    original = "mtry",
+    func = list(pkg = "dials", fun = "mtry"),
+    has_submodel = FALSE
+  )
+
+  parsnip::set_model_arg(
+    model = "rand_forest",
+    eng = "cuml",
+    parsnip = "trees",
+    original = "trees",
+    func = list(pkg = "dials", fun = "trees"),
+    has_submodel = FALSE
+  )
+
+  parsnip::set_model_arg(
+    model = "rand_forest",
+    eng = "cuml",
+    parsnip = "min_n",
+    original = "min_n",
+    func = list(pkg = "dials", fun = "min_n"),
+    has_submodel = FALSE
+  )
+
+  for (mode in c("classification", "regression")) {
+    parsnip::set_fit(
+      model = "rand_forest",
+      eng = "cuml",
+      mode = mode,
+      value = list(
+        interface = "formula",
+        protect = c("formula", "data"),
+        func = c(pkg = pkgname, fun = "cuml_rand_forest"),
+        defaults = list(
+          bootstrap = TRUE,
+          max_depth = 16L,
+          max_leaves = Inf,
+          max_predictors_per_note_split = NULL,
+          n_bins = 128L,
+          min_samples_leaf = 1L,
+          split_criterion = NULL,
+          min_impurity_decrease = 0,
+          max_batch_size = 128L,
+          n_streams = 8L,
+          cuml_log_level = "off"
+        )
+      )
+    )
+
+    parsnip::set_encoding(
+      model = "rand_forest",
+      eng = "cuml",
+      mode = mode,
+      options = list(
+        predictor_indicators = "none",
+        compute_intercept = FALSE,
+        remove_intercept = FALSE,
+        allow_sparse_x = TRUE
+      )
+    )
+  }
+
+  parsnip::set_pred(
+    model = "rand_forest",
+    eng = "cuml",
+    mode = "classification",
+    type = "class",
+    value = list(
+      pre = NULL,
+      post = NULL,
+      func = c(fun = "predict"),
+      args = list(
+        model = quote(object$fit),
+        x = quote(new_data)
+      )
+    )
+  )
+
+  parsnip::set_pred(
+    model = "rand_forest",
+    eng = "cuml",
+    mode = "regression",
+    type = "numeric",
+    value = list(
+      pre = NULL,
+      post = NULL,
+      func = c(fun = "predict"),
+      args = list(
+        model = quote(object$fit),
+        x = quote(new_data)
+      )
+    )
+  )
+}
