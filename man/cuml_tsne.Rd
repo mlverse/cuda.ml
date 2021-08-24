@@ -102,7 +102,7 @@ t-distributed Stochastic Neighbor Embedding (TSNE) for visualizing high-
 dimensional data.
 }
 \examples{
-library(cuml4r)
+library(cuml)
 
 embedding <- cuml_tsne(iris[1:4], method = "exact")
 

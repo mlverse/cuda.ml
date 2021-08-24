@@ -38,7 +38,7 @@
 #'   the 'predict' S3 generic to make predictions on new data points.
 #'
 #' @examples
-#' library(cuml4r)
+#' library(cuml)
 #'
 #' # Classification
 #'

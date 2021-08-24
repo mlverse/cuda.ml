@@ -2,102 +2,102 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 .agglomerative_clustering <- function(x, pairwise_conn, metric, n_neighbors, n_clusters) {
-    .Call(`_cuml4r_agglomerative_clustering`, x, pairwise_conn, metric, n_neighbors, n_clusters)
+    .Call(`_cuml_agglomerative_clustering`, x, pairwise_conn, metric, n_neighbors, n_clusters)
 }
 
-.has_cuml <- function() {
-    .Call(`_cuml4r_has_cuml`)
+.has_libcuml <- function() {
+    .Call(`_cuml_has_libcuml`)
 }
 
 .dbscan <- function(x, min_pts, eps, max_bytes_per_batch, verbosity) {
-    .Call(`_cuml4r_dbscan`, x, min_pts, eps, max_bytes_per_batch, verbosity)
+    .Call(`_cuml_dbscan`, x, min_pts, eps, max_bytes_per_batch, verbosity)
 }
 
 .fil_enabled <- function() {
-    .Call(`_cuml4r_fil_enabled`)
+    .Call(`_cuml_fil_enabled`)
 }
 
 .fil_load_model <- function(model_type, filename, algo, classification, threshold, storage_type, blocks_per_sm, threads_per_tree, n_items) {
-    .Call(`_cuml4r_fil_load_model`, model_type, filename, algo, classification, threshold, storage_type, blocks_per_sm, threads_per_tree, n_items)
+    .Call(`_cuml_fil_load_model`, model_type, filename, algo, classification, threshold, storage_type, blocks_per_sm, threads_per_tree, n_items)
 }
 
 .fil_predict <- function(model, x, output_probabilities) {
-    .Call(`_cuml4r_fil_predict`, model, x, output_probabilities)
+    .Call(`_cuml_fil_predict`, model, x, output_probabilities)
 }
 
 .kmeans <- function(x, k, max_iters, tol, init_method, centroids, seed, verbosity) {
-    .Call(`_cuml4r_kmeans`, x, k, max_iters, tol, init_method, centroids, seed, verbosity)
+    .Call(`_cuml_kmeans`, x, k, max_iters, tol, init_method, centroids, seed, verbosity)
 }
 
 .pca_fit_transform <- function(x, tol, n_iters, verbosity, n_components, algo, whiten, transform_input) {
-    .Call(`_cuml4r_pca_fit_transform`, x, tol, n_iters, verbosity, n_components, algo, whiten, transform_input)
+    .Call(`_cuml_pca_fit_transform`, x, tol, n_iters, verbosity, n_components, algo, whiten, transform_input)
 }
 
 .pca_inverse_transform <- function(model, x) {
-    .Call(`_cuml4r_pca_inverse_transform`, model, x)
+    .Call(`_cuml_pca_inverse_transform`, model, x)
 }
 
 .rf_classifier_fit <- function(input, labels, n_trees, bootstrap, max_samples, n_streams, max_depth, max_leaves, max_features, n_bins, min_samples_leaf, min_samples_split, split_criterion, min_impurity_decrease, max_batch_size, verbosity) {
-    .Call(`_cuml4r_rf_classifier_fit`, input, labels, n_trees, bootstrap, max_samples, n_streams, max_depth, max_leaves, max_features, n_bins, min_samples_leaf, min_samples_split, split_criterion, min_impurity_decrease, max_batch_size, verbosity)
+    .Call(`_cuml_rf_classifier_fit`, input, labels, n_trees, bootstrap, max_samples, n_streams, max_depth, max_leaves, max_features, n_bins, min_samples_leaf, min_samples_split, split_criterion, min_impurity_decrease, max_batch_size, verbosity)
 }
 
 .rf_classifier_predict <- function(model_xptr, input, verbosity) {
-    .Call(`_cuml4r_rf_classifier_predict`, model_xptr, input, verbosity)
+    .Call(`_cuml_rf_classifier_predict`, model_xptr, input, verbosity)
 }
 
 .rf_regressor_fit <- function(input, responses, n_trees, bootstrap, max_samples, n_streams, max_depth, max_leaves, max_features, n_bins, min_samples_leaf, min_samples_split, split_criterion, min_impurity_decrease, max_batch_size, verbosity) {
-    .Call(`_cuml4r_rf_regressor_fit`, input, responses, n_trees, bootstrap, max_samples, n_streams, max_depth, max_leaves, max_features, n_bins, min_samples_leaf, min_samples_split, split_criterion, min_impurity_decrease, max_batch_size, verbosity)
+    .Call(`_cuml_rf_regressor_fit`, input, responses, n_trees, bootstrap, max_samples, n_streams, max_depth, max_leaves, max_features, n_bins, min_samples_leaf, min_samples_split, split_criterion, min_impurity_decrease, max_batch_size, verbosity)
 }
 
 .rf_regressor_predict <- function(model_xptr, input, verbosity) {
-    .Call(`_cuml4r_rf_regressor_predict`, model_xptr, input, verbosity)
+    .Call(`_cuml_rf_regressor_predict`, model_xptr, input, verbosity)
 }
 
 .rproj_johnson_lindenstrauss_min_dim <- function(n_samples, eps) {
-    .Call(`_cuml4r_rproj_johnson_lindenstrauss_min_dim`, n_samples, eps)
+    .Call(`_cuml_rproj_johnson_lindenstrauss_min_dim`, n_samples, eps)
 }
 
 .rproj_fit <- function(n_samples, n_features, n_components, eps, gaussian_method, density, random_state) {
-    .Call(`_cuml4r_rproj_fit`, n_samples, n_features, n_components, eps, gaussian_method, density, random_state)
+    .Call(`_cuml_rproj_fit`, n_samples, n_features, n_components, eps, gaussian_method, density, random_state)
 }
 
 .rproj_transform <- function(rproj_ctx_xptr, input) {
-    .Call(`_cuml4r_rproj_transform`, rproj_ctx_xptr, input)
+    .Call(`_cuml_rproj_transform`, rproj_ctx_xptr, input)
 }
 
 .svc_fit <- function(input, labels, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, sample_weights, verbosity) {
-    .Call(`_cuml4r_svc_fit`, input, labels, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, sample_weights, verbosity)
+    .Call(`_cuml_svc_fit`, input, labels, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, sample_weights, verbosity)
 }
 
 .svc_predict <- function(model_xptr, input, predict_class) {
-    .Call(`_cuml4r_svc_predict`, model_xptr, input, predict_class)
+    .Call(`_cuml_svc_predict`, model_xptr, input, predict_class)
 }
 
 .svr_fit <- function(X, y, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, epsilon, sample_weights, verbosity) {
-    .Call(`_cuml4r_svr_fit`, X, y, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, epsilon, sample_weights, verbosity)
+    .Call(`_cuml_svr_fit`, X, y, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, epsilon, sample_weights, verbosity)
 }
 
 .svr_predict <- function(svr_xptr, X) {
-    .Call(`_cuml4r_svr_predict`, svr_xptr, X)
+    .Call(`_cuml_svr_predict`, svr_xptr, X)
 }
 
 .tsne_fit <- function(x, dim, n_neighbors, theta, epssq, perplexity, perplexity_max_iter, perplexity_tol, early_exaggeration, late_exaggeration, exaggeration_iter, min_gain, pre_learning_rate, post_learning_rate, max_iter, min_grad_norm, pre_momentum, post_momentum, random_state, verbosity, initialize_embeddings, square_distances, algo) {
-    .Call(`_cuml4r_tsne_fit`, x, dim, n_neighbors, theta, epssq, perplexity, perplexity_max_iter, perplexity_tol, early_exaggeration, late_exaggeration, exaggeration_iter, min_gain, pre_learning_rate, post_learning_rate, max_iter, min_grad_norm, pre_momentum, post_momentum, random_state, verbosity, initialize_embeddings, square_distances, algo)
+    .Call(`_cuml_tsne_fit`, x, dim, n_neighbors, theta, epssq, perplexity, perplexity_max_iter, perplexity_tol, early_exaggeration, late_exaggeration, exaggeration_iter, min_gain, pre_learning_rate, post_learning_rate, max_iter, min_grad_norm, pre_momentum, post_momentum, random_state, verbosity, initialize_embeddings, square_distances, algo)
 }
 
 .tsvd_fit_transform <- function(x, tol, n_iters, verbosity, n_components, algo, transform_input) {
-    .Call(`_cuml4r_tsvd_fit_transform`, x, tol, n_iters, verbosity, n_components, algo, transform_input)
+    .Call(`_cuml_tsvd_fit_transform`, x, tol, n_iters, verbosity, n_components, algo, transform_input)
 }
 
 .tsvd_inverse_transform <- function(model, x) {
-    .Call(`_cuml4r_tsvd_inverse_transform`, model, x)
+    .Call(`_cuml_tsvd_inverse_transform`, model, x)
 }
 
 .umap_fit <- function(x, y, n_neighbors, n_components, n_epochs, learning_rate, min_dist, spread, set_op_mix_ratio, local_connectivity, repulsion_strength, negative_sample_rate, transform_queue_size, verbosity, a, b, init, target_n_neighbors, target_metric, target_weight, random_state, deterministic) {
-    .Call(`_cuml4r_umap_fit`, x, y, n_neighbors, n_components, n_epochs, learning_rate, min_dist, spread, set_op_mix_ratio, local_connectivity, repulsion_strength, negative_sample_rate, transform_queue_size, verbosity, a, b, init, target_n_neighbors, target_metric, target_weight, random_state, deterministic)
+    .Call(`_cuml_umap_fit`, x, y, n_neighbors, n_components, n_epochs, learning_rate, min_dist, spread, set_op_mix_ratio, local_connectivity, repulsion_strength, negative_sample_rate, transform_queue_size, verbosity, a, b, init, target_n_neighbors, target_metric, target_weight, random_state, deterministic)
 }
 
 .umap_transform <- function(model, x) {
-    .Call(`_cuml4r_umap_transform`, model, x)
+    .Call(`_cuml_umap_transform`, model, x)
 }
 

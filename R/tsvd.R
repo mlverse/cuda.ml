@@ -25,7 +25,7 @@
 #'      performing inverse transforms.
 #'
 #' @examples
-#' library(cuml4r)
+#' library(cuml)
 #'
 #' iris.tsvd <- cuml_tsvd(iris[1:4], n_components = 2)
 #' print(iris.tsvd)

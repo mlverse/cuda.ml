@@ -165,7 +165,7 @@ A random forest classifier / regressor object that can be used with
 Train a random forest model for classification or regression tasks.
 }
 \examples{
-library(cuml4r)
+library(cuml)
 
 # Classification
 

@@ -1,23 +1,24 @@
 #' Determine whether Forest Inference Library (FIL) functionalities are enabled
-#' in the current installation of `cuml4r`.
+#' in the current installation of {cuml}.
 #'
 #' CuML Forest Inference Library (FIL) functionalities (see
 #' https://github.com/rapidsai/cuml/tree/main/python/cuml/fil#readme) will
 #' require Treelite C API. If you need FIL to run tree-based model ensemble on
-#' GPU, and \code{cuml4r_fil_enabled()} returns FALSE, then please consider
-#' installing Treelite and then re-installing 'cuml4r'.
+#' GPU, and \code{fil_enabled()} returns FALSE, then please consider installing
+#' Treelite and then re-installing {cuml}.
 #'
 #' @examples
-#' if (cuml4r_fil_enabled()) {
+#' if (cuml_fil_enabled()) {
 #'   # run GPU-accelerated Forest Inference Library (FIL) functionalities
 #' } else {
 #'   message(
 #'     "FIL functionalities are disabled in the current installation of ",
-#'     "`cuml4r`."
+#'     "{cuml}. Please reinstall Treelite C library first, and then re-install",
+#'     " {cuml} to enable FIL."
 #'   )
 #' }
 #' @export
-cuml4r_fil_enabled <- .fil_enabled
+cuml_fil_enabled <- .fil_enabled
 
 fil_match_model_type <- function(filename, model_type = c("xgboost", "lightgbm")) {
   model_type <- match.arg(model_type)
@@ -58,7 +59,7 @@ file_match_storage_type <- function(storage_type = c("auto", "dense", "sparse"))
 #'
 #' @param filename Path to the saved model file.
 #' @param model_type Format of the saved model file. Notice if \code{filename}
-#'   ends with ".json" and \code{model_type} is "xgboost", then 'cuml4r' will
+#'   ends with ".json" and \code{model_type} is "xgboost", then {cuml} will
 #'   assume the model file is in XGBoost JSON (instead of binary) format.
 #'   Default: "xgboost".
 #' @param algo Type of the algorithm for inference, must be one of the
@@ -104,7 +105,7 @@ file_match_storage_type <- function(storage_type = c("auto", "dense", "sparse"))
 #'
 #' @examples
 #'
-#' library(cuml4r)
+#' library(cuml)
 #' library(xgboost)
 #'
 #' model_path <- file.path("", "tmp", "xgboost.model")

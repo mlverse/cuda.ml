@@ -73,7 +73,7 @@ place.
 }
 \examples{
 
-library(cuml4r)
+library(cuml)
 
 iris.pca <- cuml_pca(iris[1:4], n_components = 3)
 print(iris.pca)

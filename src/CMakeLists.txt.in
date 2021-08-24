@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
-project(cuml4r LANGUAGES CUDA CXX)
+project(cuml LANGUAGES CUDA CXX)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -34,7 +34,7 @@ include_directories(@RCPP_INCLUDE_DIR@)
 include_directories(${TREELITE_C_API_INCLUDE_DIR})
 
 add_library(
-  cuml4r
+  cuml
   SHARED
   # utils
   cuda_utils.cu
@@ -73,10 +73,10 @@ add_library(
 )
 
 # Need to set linker language to CUDA to link the CUDA Runtime
-set_target_properties(cuml4r PROPERTIES LINKER_LANGUAGE "CUDA")
-set_target_properties(cuml4r PROPERTIES PREFIX "")
+set_target_properties(cuml PROPERTIES LINKER_LANGUAGE "CUDA")
+set_target_properties(cuml PROPERTIES PREFIX "")
 
-set(CUML4R_LIBS cuml4r PRIVATE cuml++ cublas cusolver cudart cusparse)
+set(CUML4R_LIBS cuml PRIVATE cuml++ cublas cusolver cudart cusparse)
 
 find_package(Treelite)
 if(Treelite_FOUND)
@@ -87,9 +87,9 @@ else()
     WARNING
     "
     Unable to locate 'TreeLite' using CMake. Forest Inference Library (FIL)
-    functionalities from `cuml4r` will be disabled!
+    functionalities from {cuml} will be disabled!
 
-    Please install the treelite C API and re-install `cuml4r` if you want to
+    Please install the treelite C API and re-install {cuml} if you want to
     enable FIL functionalities.
     "
   )

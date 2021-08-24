@@ -37,7 +37,7 @@ kmeans_match_init_method <- function(m = c("kmeans++", "random")) {
 #'
 #' @examples
 #'
-#' library(cuml4r)
+#' library(cuml)
 #'
 #' kclust <- cuml_kmeans(
 #'   iris[, which(names(iris) != "Species")],

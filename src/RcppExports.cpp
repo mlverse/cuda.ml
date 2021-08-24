@@ -12,7 +12,7 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 
 // agglomerative_clustering
 Rcpp::List agglomerative_clustering(Rcpp::NumericMatrix const& x, bool const pairwise_conn, int const metric, int const n_neighbors, int const n_clusters);
-RcppExport SEXP _cuml4r_agglomerative_clustering(SEXP xSEXP, SEXP pairwise_connSEXP, SEXP metricSEXP, SEXP n_neighborsSEXP, SEXP n_clustersSEXP) {
+RcppExport SEXP _cuml_agglomerative_clustering(SEXP xSEXP, SEXP pairwise_connSEXP, SEXP metricSEXP, SEXP n_neighborsSEXP, SEXP n_clustersSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -25,19 +25,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// has_cuml
-bool has_cuml();
-RcppExport SEXP _cuml4r_has_cuml() {
+// has_libcuml
+bool has_libcuml();
+RcppExport SEXP _cuml_has_libcuml() {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(has_cuml());
+    rcpp_result_gen = Rcpp::wrap(has_libcuml());
     return rcpp_result_gen;
 END_RCPP
 }
 // dbscan
 Rcpp::List dbscan(Rcpp::NumericMatrix const& x, int const min_pts, double const eps, size_t const max_bytes_per_batch, int const verbosity);
-RcppExport SEXP _cuml4r_dbscan(SEXP xSEXP, SEXP min_ptsSEXP, SEXP epsSEXP, SEXP max_bytes_per_batchSEXP, SEXP verbositySEXP) {
+RcppExport SEXP _cuml_dbscan(SEXP xSEXP, SEXP min_ptsSEXP, SEXP epsSEXP, SEXP max_bytes_per_batchSEXP, SEXP verbositySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -52,7 +52,7 @@ END_RCPP
 }
 // fil_enabled
 bool fil_enabled();
-RcppExport SEXP _cuml4r_fil_enabled() {
+RcppExport SEXP _cuml_fil_enabled() {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -62,7 +62,7 @@ END_RCPP
 }
 // fil_load_model
 SEXP fil_load_model(int const model_type, std::string const& filename, int const algo, bool const classification, float const threshold, int const storage_type, int const blocks_per_sm, int const threads_per_tree, int const n_items);
-RcppExport SEXP _cuml4r_fil_load_model(SEXP model_typeSEXP, SEXP filenameSEXP, SEXP algoSEXP, SEXP classificationSEXP, SEXP thresholdSEXP, SEXP storage_typeSEXP, SEXP blocks_per_smSEXP, SEXP threads_per_treeSEXP, SEXP n_itemsSEXP) {
+RcppExport SEXP _cuml_fil_load_model(SEXP model_typeSEXP, SEXP filenameSEXP, SEXP algoSEXP, SEXP classificationSEXP, SEXP thresholdSEXP, SEXP storage_typeSEXP, SEXP blocks_per_smSEXP, SEXP threads_per_treeSEXP, SEXP n_itemsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -81,7 +81,7 @@ END_RCPP
 }
 // fil_predict
 Rcpp::NumericMatrix fil_predict(SEXP const& model, Rcpp::NumericMatrix const& x, bool const output_probabilities);
-RcppExport SEXP _cuml4r_fil_predict(SEXP modelSEXP, SEXP xSEXP, SEXP output_probabilitiesSEXP) {
+RcppExport SEXP _cuml_fil_predict(SEXP modelSEXP, SEXP xSEXP, SEXP output_probabilitiesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -94,7 +94,7 @@ END_RCPP
 }
 // kmeans
 Rcpp::List kmeans(Rcpp::NumericMatrix const& x, int const k, int const max_iters, double const tol, int const init_method, Rcpp::NumericMatrix const& centroids, int const seed, int const verbosity);
-RcppExport SEXP _cuml4r_kmeans(SEXP xSEXP, SEXP kSEXP, SEXP max_itersSEXP, SEXP tolSEXP, SEXP init_methodSEXP, SEXP centroidsSEXP, SEXP seedSEXP, SEXP verbositySEXP) {
+RcppExport SEXP _cuml_kmeans(SEXP xSEXP, SEXP kSEXP, SEXP max_itersSEXP, SEXP tolSEXP, SEXP init_methodSEXP, SEXP centroidsSEXP, SEXP seedSEXP, SEXP verbositySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -112,7 +112,7 @@ END_RCPP
 }
 // pca_fit_transform
 Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x, double const tol, int const n_iters, int const verbosity, int const n_components, int const algo, bool const whiten, bool const transform_input);
-RcppExport SEXP _cuml4r_pca_fit_transform(SEXP xSEXP, SEXP tolSEXP, SEXP n_itersSEXP, SEXP verbositySEXP, SEXP n_componentsSEXP, SEXP algoSEXP, SEXP whitenSEXP, SEXP transform_inputSEXP) {
+RcppExport SEXP _cuml_pca_fit_transform(SEXP xSEXP, SEXP tolSEXP, SEXP n_itersSEXP, SEXP verbositySEXP, SEXP n_componentsSEXP, SEXP algoSEXP, SEXP whitenSEXP, SEXP transform_inputSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -130,7 +130,7 @@ END_RCPP
 }
 // pca_inverse_transform
 Rcpp::NumericMatrix pca_inverse_transform(Rcpp::List model, Rcpp::NumericMatrix const& x);
-RcppExport SEXP _cuml4r_pca_inverse_transform(SEXP modelSEXP, SEXP xSEXP) {
+RcppExport SEXP _cuml_pca_inverse_transform(SEXP modelSEXP, SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -142,7 +142,7 @@ END_RCPP
 }
 // rf_classifier_fit
 SEXP rf_classifier_fit(Rcpp::NumericMatrix const& input, Rcpp::IntegerVector const& labels, int const n_trees, bool const bootstrap, float const max_samples, int const n_streams, int const max_depth, int const max_leaves, float const max_features, int const n_bins, int const min_samples_leaf, int const min_samples_split, int const split_criterion, float const min_impurity_decrease, int const max_batch_size, int const verbosity);
-RcppExport SEXP _cuml4r_rf_classifier_fit(SEXP inputSEXP, SEXP labelsSEXP, SEXP n_treesSEXP, SEXP bootstrapSEXP, SEXP max_samplesSEXP, SEXP n_streamsSEXP, SEXP max_depthSEXP, SEXP max_leavesSEXP, SEXP max_featuresSEXP, SEXP n_binsSEXP, SEXP min_samples_leafSEXP, SEXP min_samples_splitSEXP, SEXP split_criterionSEXP, SEXP min_impurity_decreaseSEXP, SEXP max_batch_sizeSEXP, SEXP verbositySEXP) {
+RcppExport SEXP _cuml_rf_classifier_fit(SEXP inputSEXP, SEXP labelsSEXP, SEXP n_treesSEXP, SEXP bootstrapSEXP, SEXP max_samplesSEXP, SEXP n_streamsSEXP, SEXP max_depthSEXP, SEXP max_leavesSEXP, SEXP max_featuresSEXP, SEXP n_binsSEXP, SEXP min_samples_leafSEXP, SEXP min_samples_splitSEXP, SEXP split_criterionSEXP, SEXP min_impurity_decreaseSEXP, SEXP max_batch_sizeSEXP, SEXP verbositySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -168,7 +168,7 @@ END_RCPP
 }
 // rf_classifier_predict
 Rcpp::IntegerVector rf_classifier_predict(SEXP model_xptr, Rcpp::NumericMatrix const& input, int const verbosity);
-RcppExport SEXP _cuml4r_rf_classifier_predict(SEXP model_xptrSEXP, SEXP inputSEXP, SEXP verbositySEXP) {
+RcppExport SEXP _cuml_rf_classifier_predict(SEXP model_xptrSEXP, SEXP inputSEXP, SEXP verbositySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -181,7 +181,7 @@ END_RCPP
 }
 // rf_regressor_fit
 SEXP rf_regressor_fit(Rcpp::NumericMatrix const& input, Rcpp::NumericVector const& responses, int const n_trees, bool const bootstrap, float const max_samples, int const n_streams, int const max_depth, int const max_leaves, float const max_features, int const n_bins, int const min_samples_leaf, int const min_samples_split, int const split_criterion, float const min_impurity_decrease, int const max_batch_size, int const verbosity);
-RcppExport SEXP _cuml4r_rf_regressor_fit(SEXP inputSEXP, SEXP responsesSEXP, SEXP n_treesSEXP, SEXP bootstrapSEXP, SEXP max_samplesSEXP, SEXP n_streamsSEXP, SEXP max_depthSEXP, SEXP max_leavesSEXP, SEXP max_featuresSEXP, SEXP n_binsSEXP, SEXP min_samples_leafSEXP, SEXP min_samples_splitSEXP, SEXP split_criterionSEXP, SEXP min_impurity_decreaseSEXP, SEXP max_batch_sizeSEXP, SEXP verbositySEXP) {
+RcppExport SEXP _cuml_rf_regressor_fit(SEXP inputSEXP, SEXP responsesSEXP, SEXP n_treesSEXP, SEXP bootstrapSEXP, SEXP max_samplesSEXP, SEXP n_streamsSEXP, SEXP max_depthSEXP, SEXP max_leavesSEXP, SEXP max_featuresSEXP, SEXP n_binsSEXP, SEXP min_samples_leafSEXP, SEXP min_samples_splitSEXP, SEXP split_criterionSEXP, SEXP min_impurity_decreaseSEXP, SEXP max_batch_sizeSEXP, SEXP verbositySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -207,7 +207,7 @@ END_RCPP
 }
 // rf_regressor_predict
 Rcpp::NumericVector rf_regressor_predict(SEXP model_xptr, Rcpp::NumericMatrix const& input, int const verbosity);
-RcppExport SEXP _cuml4r_rf_regressor_predict(SEXP model_xptrSEXP, SEXP inputSEXP, SEXP verbositySEXP) {
+RcppExport SEXP _cuml_rf_regressor_predict(SEXP model_xptrSEXP, SEXP inputSEXP, SEXP verbositySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -220,7 +220,7 @@ END_RCPP
 }
 // rproj_johnson_lindenstrauss_min_dim
 size_t rproj_johnson_lindenstrauss_min_dim(size_t const n_samples, double const eps);
-RcppExport SEXP _cuml4r_rproj_johnson_lindenstrauss_min_dim(SEXP n_samplesSEXP, SEXP epsSEXP) {
+RcppExport SEXP _cuml_rproj_johnson_lindenstrauss_min_dim(SEXP n_samplesSEXP, SEXP epsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -232,7 +232,7 @@ END_RCPP
 }
 // rproj_fit
 SEXP rproj_fit(int const n_samples, int const n_features, int const n_components, double const eps, bool const gaussian_method, double const density, int const random_state);
-RcppExport SEXP _cuml4r_rproj_fit(SEXP n_samplesSEXP, SEXP n_featuresSEXP, SEXP n_componentsSEXP, SEXP epsSEXP, SEXP gaussian_methodSEXP, SEXP densitySEXP, SEXP random_stateSEXP) {
+RcppExport SEXP _cuml_rproj_fit(SEXP n_samplesSEXP, SEXP n_featuresSEXP, SEXP n_componentsSEXP, SEXP epsSEXP, SEXP gaussian_methodSEXP, SEXP densitySEXP, SEXP random_stateSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -249,7 +249,7 @@ END_RCPP
 }
 // rproj_transform
 Rcpp::NumericMatrix rproj_transform(SEXP rproj_ctx_xptr, Rcpp::NumericMatrix const& input);
-RcppExport SEXP _cuml4r_rproj_transform(SEXP rproj_ctx_xptrSEXP, SEXP inputSEXP) {
+RcppExport SEXP _cuml_rproj_transform(SEXP rproj_ctx_xptrSEXP, SEXP inputSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -261,7 +261,7 @@ END_RCPP
 }
 // svc_fit
 SEXP svc_fit(Rcpp::NumericMatrix const& input, Rcpp::NumericVector const& labels, double const cost, int const kernel, double const gamma, double const coef0, int const degree, double const tol, int const max_iter, int const nochange_steps, double const cache_size, Rcpp::NumericVector const& sample_weights, int const verbosity);
-RcppExport SEXP _cuml4r_svc_fit(SEXP inputSEXP, SEXP labelsSEXP, SEXP costSEXP, SEXP kernelSEXP, SEXP gammaSEXP, SEXP coef0SEXP, SEXP degreeSEXP, SEXP tolSEXP, SEXP max_iterSEXP, SEXP nochange_stepsSEXP, SEXP cache_sizeSEXP, SEXP sample_weightsSEXP, SEXP verbositySEXP) {
+RcppExport SEXP _cuml_svc_fit(SEXP inputSEXP, SEXP labelsSEXP, SEXP costSEXP, SEXP kernelSEXP, SEXP gammaSEXP, SEXP coef0SEXP, SEXP degreeSEXP, SEXP tolSEXP, SEXP max_iterSEXP, SEXP nochange_stepsSEXP, SEXP cache_sizeSEXP, SEXP sample_weightsSEXP, SEXP verbositySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -284,7 +284,7 @@ END_RCPP
 }
 // svc_predict
 SEXP svc_predict(SEXP model_xptr, Rcpp::NumericMatrix const& input, bool predict_class);
-RcppExport SEXP _cuml4r_svc_predict(SEXP model_xptrSEXP, SEXP inputSEXP, SEXP predict_classSEXP) {
+RcppExport SEXP _cuml_svc_predict(SEXP model_xptrSEXP, SEXP inputSEXP, SEXP predict_classSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -297,7 +297,7 @@ END_RCPP
 }
 // svr_fit
 SEXP svr_fit(Rcpp::NumericMatrix const& X, Rcpp::NumericVector const& y, double const cost, int const kernel, double const gamma, double const coef0, int const degree, double const tol, int const max_iter, int const nochange_steps, double const cache_size, double epsilon, Rcpp::NumericVector const& sample_weights, int const verbosity);
-RcppExport SEXP _cuml4r_svr_fit(SEXP XSEXP, SEXP ySEXP, SEXP costSEXP, SEXP kernelSEXP, SEXP gammaSEXP, SEXP coef0SEXP, SEXP degreeSEXP, SEXP tolSEXP, SEXP max_iterSEXP, SEXP nochange_stepsSEXP, SEXP cache_sizeSEXP, SEXP epsilonSEXP, SEXP sample_weightsSEXP, SEXP verbositySEXP) {
+RcppExport SEXP _cuml_svr_fit(SEXP XSEXP, SEXP ySEXP, SEXP costSEXP, SEXP kernelSEXP, SEXP gammaSEXP, SEXP coef0SEXP, SEXP degreeSEXP, SEXP tolSEXP, SEXP max_iterSEXP, SEXP nochange_stepsSEXP, SEXP cache_sizeSEXP, SEXP epsilonSEXP, SEXP sample_weightsSEXP, SEXP verbositySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -321,7 +321,7 @@ END_RCPP
 }
 // svr_predict
 Rcpp::NumericVector svr_predict(SEXP svr_xptr, Rcpp::NumericMatrix const& X);
-RcppExport SEXP _cuml4r_svr_predict(SEXP svr_xptrSEXP, SEXP XSEXP) {
+RcppExport SEXP _cuml_svr_predict(SEXP svr_xptrSEXP, SEXP XSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -333,7 +333,7 @@ END_RCPP
 }
 // tsne_fit
 Rcpp::NumericMatrix tsne_fit(Rcpp::NumericMatrix const& x, int const dim, int const n_neighbors, float const theta, float const epssq, float const perplexity, int const perplexity_max_iter, float const perplexity_tol, float const early_exaggeration, float const late_exaggeration, int const exaggeration_iter, float const min_gain, float const pre_learning_rate, float const post_learning_rate, int const max_iter, float const min_grad_norm, float const pre_momentum, float const post_momentum, int64_t const random_state, int const verbosity, bool const initialize_embeddings, bool const square_distances, int const algo);
-RcppExport SEXP _cuml4r_tsne_fit(SEXP xSEXP, SEXP dimSEXP, SEXP n_neighborsSEXP, SEXP thetaSEXP, SEXP epssqSEXP, SEXP perplexitySEXP, SEXP perplexity_max_iterSEXP, SEXP perplexity_tolSEXP, SEXP early_exaggerationSEXP, SEXP late_exaggerationSEXP, SEXP exaggeration_iterSEXP, SEXP min_gainSEXP, SEXP pre_learning_rateSEXP, SEXP post_learning_rateSEXP, SEXP max_iterSEXP, SEXP min_grad_normSEXP, SEXP pre_momentumSEXP, SEXP post_momentumSEXP, SEXP random_stateSEXP, SEXP verbositySEXP, SEXP initialize_embeddingsSEXP, SEXP square_distancesSEXP, SEXP algoSEXP) {
+RcppExport SEXP _cuml_tsne_fit(SEXP xSEXP, SEXP dimSEXP, SEXP n_neighborsSEXP, SEXP thetaSEXP, SEXP epssqSEXP, SEXP perplexitySEXP, SEXP perplexity_max_iterSEXP, SEXP perplexity_tolSEXP, SEXP early_exaggerationSEXP, SEXP late_exaggerationSEXP, SEXP exaggeration_iterSEXP, SEXP min_gainSEXP, SEXP pre_learning_rateSEXP, SEXP post_learning_rateSEXP, SEXP max_iterSEXP, SEXP min_grad_normSEXP, SEXP pre_momentumSEXP, SEXP post_momentumSEXP, SEXP random_stateSEXP, SEXP verbositySEXP, SEXP initialize_embeddingsSEXP, SEXP square_distancesSEXP, SEXP algoSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -366,7 +366,7 @@ END_RCPP
 }
 // tsvd_fit_transform
 Rcpp::List tsvd_fit_transform(Rcpp::NumericMatrix const& x, double const tol, int const n_iters, int const verbosity, int const n_components, int const algo, bool const transform_input);
-RcppExport SEXP _cuml4r_tsvd_fit_transform(SEXP xSEXP, SEXP tolSEXP, SEXP n_itersSEXP, SEXP verbositySEXP, SEXP n_componentsSEXP, SEXP algoSEXP, SEXP transform_inputSEXP) {
+RcppExport SEXP _cuml_tsvd_fit_transform(SEXP xSEXP, SEXP tolSEXP, SEXP n_itersSEXP, SEXP verbositySEXP, SEXP n_componentsSEXP, SEXP algoSEXP, SEXP transform_inputSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -383,7 +383,7 @@ END_RCPP
 }
 // tsvd_inverse_transform
 Rcpp::NumericMatrix tsvd_inverse_transform(Rcpp::List model, Rcpp::NumericMatrix const& x);
-RcppExport SEXP _cuml4r_tsvd_inverse_transform(SEXP modelSEXP, SEXP xSEXP) {
+RcppExport SEXP _cuml_tsvd_inverse_transform(SEXP modelSEXP, SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -395,7 +395,7 @@ END_RCPP
 }
 // umap_fit
 Rcpp::List umap_fit(Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& y, int const n_neighbors, int const n_components, int const n_epochs, float const learning_rate, float const min_dist, float const spread, float const set_op_mix_ratio, int const local_connectivity, float const repulsion_strength, int const negative_sample_rate, float const transform_queue_size, int const verbosity, float const a, float const b, int const init, int const target_n_neighbors, int const target_metric, float const target_weight, uint64_t const random_state, bool const deterministic);
-RcppExport SEXP _cuml4r_umap_fit(SEXP xSEXP, SEXP ySEXP, SEXP n_neighborsSEXP, SEXP n_componentsSEXP, SEXP n_epochsSEXP, SEXP learning_rateSEXP, SEXP min_distSEXP, SEXP spreadSEXP, SEXP set_op_mix_ratioSEXP, SEXP local_connectivitySEXP, SEXP repulsion_strengthSEXP, SEXP negative_sample_rateSEXP, SEXP transform_queue_sizeSEXP, SEXP verbositySEXP, SEXP aSEXP, SEXP bSEXP, SEXP initSEXP, SEXP target_n_neighborsSEXP, SEXP target_metricSEXP, SEXP target_weightSEXP, SEXP random_stateSEXP, SEXP deterministicSEXP) {
+RcppExport SEXP _cuml_umap_fit(SEXP xSEXP, SEXP ySEXP, SEXP n_neighborsSEXP, SEXP n_componentsSEXP, SEXP n_epochsSEXP, SEXP learning_rateSEXP, SEXP min_distSEXP, SEXP spreadSEXP, SEXP set_op_mix_ratioSEXP, SEXP local_connectivitySEXP, SEXP repulsion_strengthSEXP, SEXP negative_sample_rateSEXP, SEXP transform_queue_sizeSEXP, SEXP verbositySEXP, SEXP aSEXP, SEXP bSEXP, SEXP initSEXP, SEXP target_n_neighborsSEXP, SEXP target_metricSEXP, SEXP target_weightSEXP, SEXP random_stateSEXP, SEXP deterministicSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -427,7 +427,7 @@ END_RCPP
 }
 // umap_transform
 Rcpp::NumericMatrix umap_transform(Rcpp::List const& model, Rcpp::NumericMatrix const& x);
-RcppExport SEXP _cuml4r_umap_transform(SEXP modelSEXP, SEXP xSEXP) {
+RcppExport SEXP _cuml_umap_transform(SEXP modelSEXP, SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -439,35 +439,35 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_cuml4r_agglomerative_clustering", (DL_FUNC) &_cuml4r_agglomerative_clustering, 5},
-    {"_cuml4r_has_cuml", (DL_FUNC) &_cuml4r_has_cuml, 0},
-    {"_cuml4r_dbscan", (DL_FUNC) &_cuml4r_dbscan, 5},
-    {"_cuml4r_fil_enabled", (DL_FUNC) &_cuml4r_fil_enabled, 0},
-    {"_cuml4r_fil_load_model", (DL_FUNC) &_cuml4r_fil_load_model, 9},
-    {"_cuml4r_fil_predict", (DL_FUNC) &_cuml4r_fil_predict, 3},
-    {"_cuml4r_kmeans", (DL_FUNC) &_cuml4r_kmeans, 8},
-    {"_cuml4r_pca_fit_transform", (DL_FUNC) &_cuml4r_pca_fit_transform, 8},
-    {"_cuml4r_pca_inverse_transform", (DL_FUNC) &_cuml4r_pca_inverse_transform, 2},
-    {"_cuml4r_rf_classifier_fit", (DL_FUNC) &_cuml4r_rf_classifier_fit, 16},
-    {"_cuml4r_rf_classifier_predict", (DL_FUNC) &_cuml4r_rf_classifier_predict, 3},
-    {"_cuml4r_rf_regressor_fit", (DL_FUNC) &_cuml4r_rf_regressor_fit, 16},
-    {"_cuml4r_rf_regressor_predict", (DL_FUNC) &_cuml4r_rf_regressor_predict, 3},
-    {"_cuml4r_rproj_johnson_lindenstrauss_min_dim", (DL_FUNC) &_cuml4r_rproj_johnson_lindenstrauss_min_dim, 2},
-    {"_cuml4r_rproj_fit", (DL_FUNC) &_cuml4r_rproj_fit, 7},
-    {"_cuml4r_rproj_transform", (DL_FUNC) &_cuml4r_rproj_transform, 2},
-    {"_cuml4r_svc_fit", (DL_FUNC) &_cuml4r_svc_fit, 13},
-    {"_cuml4r_svc_predict", (DL_FUNC) &_cuml4r_svc_predict, 3},
-    {"_cuml4r_svr_fit", (DL_FUNC) &_cuml4r_svr_fit, 14},
-    {"_cuml4r_svr_predict", (DL_FUNC) &_cuml4r_svr_predict, 2},
-    {"_cuml4r_tsne_fit", (DL_FUNC) &_cuml4r_tsne_fit, 23},
-    {"_cuml4r_tsvd_fit_transform", (DL_FUNC) &_cuml4r_tsvd_fit_transform, 7},
-    {"_cuml4r_tsvd_inverse_transform", (DL_FUNC) &_cuml4r_tsvd_inverse_transform, 2},
-    {"_cuml4r_umap_fit", (DL_FUNC) &_cuml4r_umap_fit, 22},
-    {"_cuml4r_umap_transform", (DL_FUNC) &_cuml4r_umap_transform, 2},
+    {"_cuml_agglomerative_clustering", (DL_FUNC) &_cuml_agglomerative_clustering, 5},
+    {"_cuml_has_libcuml", (DL_FUNC) &_cuml_has_libcuml, 0},
+    {"_cuml_dbscan", (DL_FUNC) &_cuml_dbscan, 5},
+    {"_cuml_fil_enabled", (DL_FUNC) &_cuml_fil_enabled, 0},
+    {"_cuml_fil_load_model", (DL_FUNC) &_cuml_fil_load_model, 9},
+    {"_cuml_fil_predict", (DL_FUNC) &_cuml_fil_predict, 3},
+    {"_cuml_kmeans", (DL_FUNC) &_cuml_kmeans, 8},
+    {"_cuml_pca_fit_transform", (DL_FUNC) &_cuml_pca_fit_transform, 8},
+    {"_cuml_pca_inverse_transform", (DL_FUNC) &_cuml_pca_inverse_transform, 2},
+    {"_cuml_rf_classifier_fit", (DL_FUNC) &_cuml_rf_classifier_fit, 16},
+    {"_cuml_rf_classifier_predict", (DL_FUNC) &_cuml_rf_classifier_predict, 3},
+    {"_cuml_rf_regressor_fit", (DL_FUNC) &_cuml_rf_regressor_fit, 16},
+    {"_cuml_rf_regressor_predict", (DL_FUNC) &_cuml_rf_regressor_predict, 3},
+    {"_cuml_rproj_johnson_lindenstrauss_min_dim", (DL_FUNC) &_cuml_rproj_johnson_lindenstrauss_min_dim, 2},
+    {"_cuml_rproj_fit", (DL_FUNC) &_cuml_rproj_fit, 7},
+    {"_cuml_rproj_transform", (DL_FUNC) &_cuml_rproj_transform, 2},
+    {"_cuml_svc_fit", (DL_FUNC) &_cuml_svc_fit, 13},
+    {"_cuml_svc_predict", (DL_FUNC) &_cuml_svc_predict, 3},
+    {"_cuml_svr_fit", (DL_FUNC) &_cuml_svr_fit, 14},
+    {"_cuml_svr_predict", (DL_FUNC) &_cuml_svr_predict, 2},
+    {"_cuml_tsne_fit", (DL_FUNC) &_cuml_tsne_fit, 23},
+    {"_cuml_tsvd_fit_transform", (DL_FUNC) &_cuml_tsvd_fit_transform, 7},
+    {"_cuml_tsvd_inverse_transform", (DL_FUNC) &_cuml_tsvd_inverse_transform, 2},
+    {"_cuml_umap_fit", (DL_FUNC) &_cuml_umap_fit, 22},
+    {"_cuml_umap_transform", (DL_FUNC) &_cuml_umap_transform, 2},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_cuml4r(DllInfo *dll) {
+RcppExport void R_init_cuml(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

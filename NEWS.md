@@ -1,4 +1,4 @@
-# cuml4r 0.1.0.9000
+# cuml 0.1.0.9000
 
 ### Clustering
 
@@ -31,7 +31,7 @@
 
 - Added `ellipsis::check_dots_used()` checks for all `...` parameters in R.
 
-# cuml4r 0.1.0
+# cuml 0.1.0
 
 ### Clustering
 
@@ -55,10 +55,11 @@
 - Included suggestions on how to build and install `cuML` libraries from source
   with or without multi-GPU support in
   https://github.com/yitao-li/cuml-installation-notes. All suggestions are known
-  to be working for `cuML` version 21.08. Please note the building-from-source
-  option is more for advanced use cases that require customizations of `cuML`
-  libraries' build parameters, compilers, etc, and is somewhat time-consuming
-  and not as beginner-friendly as installing `cuML` directly from conda.
+  to be working for RAPIDS cuML version 21.08. Please note the building-from-
+  source option is more for advanced use cases that require customizations of
+  RAPIDS cuML libraries' build parameters, compilers, etc, and is somewhat time-
+  consuming and not as beginner-friendly as installing `cuML` directly from
+  conda.
 
 - Found and fixed a few typos and inconsistencies.
 
@@ -66,11 +67,11 @@
 
 ### Misc
 
-- Configuration script was revised to work with `cuML` libraries installed via
-  conda or built from source. If `cuML` libraries could not be located during
-  the configuration process, then a warning message will be emitted.
+- Configuration script was revised to work with RAPIDS cuML libraries installed
+  via conda or built from source. If RAPIDS cuML libraries could not be located
+  during the configuration process, then a warning message will be emitted.
 
-- Improved on the initial prototype of `cuml4r` by utilizing modern C++
+- Improved on the initial prototype of {cuml} by utilizing modern C++
   constructs from `thrust` (https://github.com/NVIDIA/thrust), making the C++
   source code of this project more readable and maintainable.
 
@@ -79,10 +80,10 @@
   will not be formatted.
 
 - Caching of build artifacts using `ccache` can be enabled by setting the env
-  variable CUML4R_ENABLE_CCACHE (e.g., one can run `R CMD build cuml4r` followed
-  by `CUML4R_ENABLE_CCACHE=1 R CMD INSTALL cuml4r_0.1.0.tar.gz` to avoid re-
+  variable CUML4R_ENABLE_CCACHE (e.g., one can run `R CMD build cuml` followed
+  by `CUML4R_ENABLE_CCACHE=1 R CMD INSTALL cuml_0.1.0.tar.gz` to avoid re-
   compiling the same artifacts across builds. Notice this feature is intended
-  for `cuml4r` contributors or advanced users who need to build `cuml4r`
+  for {cuml} contributors or advanced users who need to build {cuml}
   frequently, and is not enabled by default for other users.
 
 - Some larger cpp files were split into more granular ones for faster build
