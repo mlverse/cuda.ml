@@ -33,6 +33,10 @@
     .Call(`_cuml_kmeans`, x, k, max_iters, tol, init_method, centroids, seed, verbosity)
 }
 
+.knn_fit <- function(x, n_neighbors, algo, metric, p, algo_params) {
+    .Call(`_cuml_knn_fit`, x, n_neighbors, algo, metric, p, algo_params)
+}
+
 .pca_fit_transform <- function(x, tol, n_iters, verbosity, n_components, algo, whiten, transform_input) {
     .Call(`_cuml_pca_fit_transform`, x, tol, n_iters, verbosity, n_components, algo, whiten, transform_input)
 }

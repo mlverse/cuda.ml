@@ -51,6 +51,8 @@ add_library(
   fil.cu
   kmeans.cpp
   kmeans.cu
+  knn.cpp
+  knn.cu
   pca.cpp
   pca.cu
   random_forest_classifier.cpp
