@@ -79,6 +79,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// fil_get_num_classes
+int fil_get_num_classes(SEXP const& model);
+RcppExport SEXP _cuml_fil_get_num_classes(SEXP modelSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP const& >::type model(modelSEXP);
+    rcpp_result_gen = Rcpp::wrap(fil_get_num_classes(model));
+    return rcpp_result_gen;
+END_RCPP
+}
 // fil_predict
 Rcpp::NumericMatrix fil_predict(SEXP const& model, Rcpp::NumericMatrix const& x, bool const output_probabilities);
 RcppExport SEXP _cuml_fil_predict(SEXP modelSEXP, SEXP xSEXP, SEXP output_probabilitiesSEXP) {
@@ -444,6 +455,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuml_dbscan", (DL_FUNC) &_cuml_dbscan, 5},
     {"_cuml_fil_enabled", (DL_FUNC) &_cuml_fil_enabled, 0},
     {"_cuml_fil_load_model", (DL_FUNC) &_cuml_fil_load_model, 9},
+    {"_cuml_fil_get_num_classes", (DL_FUNC) &_cuml_fil_get_num_classes, 1},
     {"_cuml_fil_predict", (DL_FUNC) &_cuml_fil_predict, 3},
     {"_cuml_kmeans", (DL_FUNC) &_cuml_kmeans, 8},
     {"_cuml_pca_fit_transform", (DL_FUNC) &_cuml_pca_fit_transform, 8},

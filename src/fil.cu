@@ -116,6 +116,11 @@ __host__ SEXP fil_load_model(int const model_type, std::string const& filename,
                                      .release());
 }
 
+__host__ int fil_get_num_classes(SEXP const& model) {
+  auto const model_xptr = Rcpp::XPtr<TreeliteModel>(model);
+  return model_xptr->numClasses_;
+}
+
 __host__ Rcpp::NumericMatrix fil_predict(SEXP const& model,
                                          Rcpp::NumericMatrix const& x,
                                          bool const output_probabilities) {

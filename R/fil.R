@@ -174,6 +174,7 @@ cuml_fil_load_model <- function(filename,
 #'
 #' @export
 predict.cuml_fil <- function(model, x, output_probabilities = FALSE, ...) {
+  num_classes <- .fil_get_num_classes(model = model$xptr)
   preds <- .fil_predict(
     model = model$xptr,
     x = as.matrix(x),
@@ -184,7 +185,9 @@ predict.cuml_fil <- function(model, x, output_probabilities = FALSE, ...) {
     model$mode,
     classification = {
       if (output_probabilities) {
-        preds <- hardhat::spruce_prob(c("class_prob_0", "class_prob_1"), preds)
+        preds <- hardhat::spruce_prob(
+          paste0("class_prob_", seq(num_classes) - 1L), preds
+        )
       } else {
         preds <- factor(preds)
         preds <- hardhat::spruce_class(preds)

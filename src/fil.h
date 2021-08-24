@@ -13,6 +13,8 @@ SEXP fil_load_model(int const model_type, std::string const& filename,
                     int const block_per_sm, int const threads_per_tree,
                     int const n_items);
 
+int fil_get_num_classes(SEXP const& model);
+
 Rcpp::NumericMatrix fil_predict(SEXP const& model, Rcpp::NumericMatrix const& x,
                                 bool const output_probabilities);
 

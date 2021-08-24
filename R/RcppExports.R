@@ -21,6 +21,10 @@
     .Call(`_cuml_fil_load_model`, model_type, filename, algo, classification, threshold, storage_type, blocks_per_sm, threads_per_tree, n_items)
 }
 
+.fil_get_num_classes <- function(model) {
+    .Call(`_cuml_fil_get_num_classes`, model)
+}
+
 .fil_predict <- function(model, x, output_probabilities) {
     .Call(`_cuml_fil_predict`, model, x, output_probabilities)
 }

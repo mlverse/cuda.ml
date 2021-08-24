@@ -32,6 +32,19 @@ SEXP fil_load_model(int const model_type, std::string const& filename,
 #endif
 }
 
+// [[Rcpp::export(".fil_get_num_classes")]]
+int fil_get_num_classes(SEXP const& model) {
+#ifndef CUML4R_TREELITE_C_API_MISSING
+
+  return cuml4r::fil_get_num_classes(model);
+
+#else
+
+  return -1;
+
+#endif
+}
+
 // [[Rcpp::export(".fil_predict")]]
 Rcpp::NumericMatrix fil_predict(SEXP const& model, Rcpp::NumericMatrix const& x,
                                 bool const output_probabilities) {
