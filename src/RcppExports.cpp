@@ -122,18 +122,31 @@ BEGIN_RCPP
 END_RCPP
 }
 // knn_fit
-SEXP knn_fit(Rcpp::NumericMatrix const& x, int const n_neighbors, int const algo, int const metric, float const p, Rcpp::List const& algo_params);
-RcppExport SEXP _cuml_knn_fit(SEXP xSEXP, SEXP n_neighborsSEXP, SEXP algoSEXP, SEXP metricSEXP, SEXP pSEXP, SEXP algo_paramsSEXP) {
+SEXP knn_fit(Rcpp::NumericMatrix const& x, Rcpp::IntegerVector const& y, int const algo, int const metric, float const p, Rcpp::List const& algo_params);
+RcppExport SEXP _cuml_knn_fit(SEXP xSEXP, SEXP ySEXP, SEXP algoSEXP, SEXP metricSEXP, SEXP pSEXP, SEXP algo_paramsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type x(xSEXP);
-    Rcpp::traits::input_parameter< int const >::type n_neighbors(n_neighborsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector const& >::type y(ySEXP);
     Rcpp::traits::input_parameter< int const >::type algo(algoSEXP);
     Rcpp::traits::input_parameter< int const >::type metric(metricSEXP);
     Rcpp::traits::input_parameter< float const >::type p(pSEXP);
     Rcpp::traits::input_parameter< Rcpp::List const& >::type algo_params(algo_paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(knn_fit(x, n_neighbors, algo, metric, p, algo_params));
+    rcpp_result_gen = Rcpp::wrap(knn_fit(x, y, algo, metric, p, algo_params));
+    return rcpp_result_gen;
+END_RCPP
+}
+// knn_classifier_predict
+Rcpp::IntegerVector knn_classifier_predict(Rcpp::List const& model, Rcpp::NumericMatrix const& x, int const n_neighbors);
+RcppExport SEXP _cuml_knn_classifier_predict(SEXP modelSEXP, SEXP xSEXP, SEXP n_neighborsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List const& >::type model(modelSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int const >::type n_neighbors(n_neighborsSEXP);
+    rcpp_result_gen = Rcpp::wrap(knn_classifier_predict(model, x, n_neighbors));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -475,6 +488,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuml_fil_predict", (DL_FUNC) &_cuml_fil_predict, 3},
     {"_cuml_kmeans", (DL_FUNC) &_cuml_kmeans, 8},
     {"_cuml_knn_fit", (DL_FUNC) &_cuml_knn_fit, 6},
+    {"_cuml_knn_classifier_predict", (DL_FUNC) &_cuml_knn_classifier_predict, 3},
     {"_cuml_pca_fit_transform", (DL_FUNC) &_cuml_pca_fit_transform, 8},
     {"_cuml_pca_inverse_transform", (DL_FUNC) &_cuml_pca_inverse_transform, 2},
     {"_cuml_rf_classifier_fit", (DL_FUNC) &_cuml_rf_classifier_fit, 16},
