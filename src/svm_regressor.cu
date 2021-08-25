@@ -75,8 +75,7 @@ __host__ SEXP svr_fit(Rcpp::NumericMatrix const& X,
 
   ML::SVM::svmParameter param;
   param.C = cost;
-  param.cache_size = cache_size,
-  param.max_iter = max_iter;
+  param.cache_size = cache_size, param.max_iter = max_iter;
   param.nochange_steps = nochange_steps;
   param.tol = tol;
   param.verbosity = verbosity;
