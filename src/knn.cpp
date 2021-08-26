@@ -32,3 +32,19 @@ Rcpp::IntegerVector knn_classifier_predict(Rcpp::List const& model,
 
 #endif
 }
+
+// [[Rcpp::export(".knn_classifier_predict_probabilities")]]
+Rcpp::NumericMatrix knn_classifier_predict_probabilities(
+  Rcpp::List const& model, Rcpp::NumericMatrix const& x,
+  int const n_neighbors) {
+#ifdef HAS_CUML
+
+  return cuml4r::knn_classifier_predict_probabilities(model, x, n_neighbors);
+#else
+
+#include "warn_cuml_missing.h"
+
+  return {};
+
+#endif
+}
