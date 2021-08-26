@@ -31,6 +31,12 @@
 
 - Added `ellipsis::check_dots_used()` checks for all `...` parameters in R.
 
+- Renamed this package from {cuml4r} to {cuml} per suggestion from
+  @lorenzwalthert (context: https://github.com/mlverse/cuml/issues/75). The new
+  name is shorter, and more importantly, is consistent with the mlverse naming
+  convention for R packages (e.g., {keras}, {tensorflow}, {torch}, {tabnet},
+  etc).
+
 # cuml 0.1.0
 
 ### Clustering
