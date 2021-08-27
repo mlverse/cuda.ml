@@ -20,6 +20,8 @@
 #include <unordered_map>
 #include <vector>
 
+namespace cuml4r {
+namespace knn {
 namespace {
 
 // string constants related to KNN params
@@ -55,10 +57,11 @@ struct ParamsDetails {
   int numCols_;
 };
 
-enum class KnnAlgo { BRUTE_FORCE = 0, IVFFLAT = 1, IVFPQ = 2, IVFSQ = 3 };
+enum class Algo { BRUTE_FORCE = 0, IVFFLAT = 1, IVFPQ = 2, IVFSQ = 3 };
 
-struct KnnQueryResult {
-  KnnQueryResult(int const n_samples, int const n_neighbors) {
+struct NearestNeighbors {
+  NearestNeighbors() {}
+  NearestNeighbors(int const n_samples, int const n_neighbors) {
     auto const n_entries = n_samples * n_neighbors;
     indices.resize(n_entries);
     dists.resize(n_entries);
@@ -66,6 +69,87 @@ struct KnnQueryResult {
 
   thrust::device_vector<int64_t> indices;
   thrust::device_vector<float> dists;
+};
+
+class PredictionCtx {
+ public:
+  __host__ PredictionCtx(Rcpp::List const& model, Rcpp::NumericMatrix const& x,
+                         int const n_neighbors)
+    : nSamples_(x.nrow()),
+      nFeatures_(x.ncol()),
+      modelKnnIndex_(Rcpp::XPtr<raft::spatial::knn::knnIndex>(
+        static_cast<SEXP>(model[KNN_INDEX]))),
+      modelAlgoType_(static_cast<knn::Algo>(Rcpp::as<int>(model[ALGO]))),
+      modelDistType_(static_cast<raft::distance::DistanceType>(
+        Rcpp::as<int>(model[METRIC]))),
+      modelP_(Rcpp::as<float>(model[P_VALUE])),
+      modelNSamples_(Rcpp::as<int>(model[N_SAMPLES])),
+      modelNDims_(Rcpp::as<int>(model[N_DIMS])),
+      streamView_(cuml4r::stream_allocator::getOrCreateStream()) {
+    cuml4r::handle_utils::initializeHandle(handle_, streamView_.value());
+    auto const input_m = cuml4r::Matrix<float>(x, /*transpose=*/false);
+    // KNN classifier input
+    auto const& h_x = input_m.values;
+    dX_.resize(h_x.size());
+    xH2D_ = cuml4r::async_copy(streamView_.value(), h_x.cbegin(), h_x.cend(),
+                               dX_.begin());
+    Rcpp::IntegerVector const model_labels(
+      Rcpp::as<Rcpp::IntegerVector>(model[LABELS]));
+    auto h_y = Rcpp::as<cuml4r::pinned_host_vector<int>>(model_labels);
+    dY_.resize(h_y.size());
+    yH2D_ = cuml4r::async_copy(streamView_.value(), h_y.cbegin(), h_y.cend(),
+                               dY_.begin());
+
+    nearestNeighbors_ = query_nearest_neighbors(n_neighbors);
+
+    CUDA_RT_CALL(cudaStreamSynchronize(streamView_.value()));
+  }
+
+  __host__ NearestNeighbors query_nearest_neighbors(int const n_neighbors) {
+    NearestNeighbors res(nSamples_, n_neighbors);
+    auto d_input = dX_.data().get();
+
+    if (modelAlgoType_ == Algo::BRUTE_FORCE) {
+      std::vector<float*> input{d_input};
+      std::vector<int> sizes{nSamples_};
+
+      ML::brute_force_knn(handle_, input, sizes, /*D=*/modelNDims_,
+                          /*search_items=*/d_input,
+                          /*n=*/nSamples_, /*res_I=*/res.indices.data().get(),
+                          /*res_D=*/res.dists.data().get(), /*k=*/n_neighbors,
+                          /*rowMajorIndex=*/true, /*rowMajorQuery=*/true,
+                          /*metric=*/modelDistType_, modelP_);
+    } else {
+      ML::approx_knn_search(handle_, /*distances=*/res.dists.data().get(),
+                            /*indices=*/res.indices.data().get(),
+                            /*index=*/modelKnnIndex_.get(), /*k=*/n_neighbors,
+                            /*query_array=*/d_input, /*n=*/nSamples_);
+    }
+
+    return res;
+  }
+
+  // input dimensions
+  int const nSamples_;
+  int const nFeatures_;
+  // attributes from the KNN model object
+  Rcpp::XPtr<raft::spatial::knn::knnIndex> const modelKnnIndex_;
+  Algo const modelAlgoType_;
+  raft::distance::DistanceType const modelDistType_;
+  float const modelP_;
+  int const modelNSamples_;
+  int const modelNDims_;
+  // CUDA stream, etc
+  rmm::cuda_stream_view streamView_;
+  raft::handle_t handle_;
+  // KNN classifier inputs
+  thrust::device_vector<float> dX_;
+  thrust::device_vector<int> dY_;
+  NearestNeighbors nearestNeighbors_;
+
+ private:
+  cuml4r::unique_marker xH2D_;
+  cuml4r::unique_marker yH2D_;
 };
 
 __host__ void validate_param_list(
@@ -77,14 +161,13 @@ __host__ void validate_param_list(
   }
 }
 
-__host__ void validate_algo_params(KnnAlgo const algo,
-                                   Rcpp::List const& params) {
-  if (algo == KnnAlgo::IVFFLAT) {
+__host__ void validate_algo_params(Algo const algo, Rcpp::List const& params) {
+  if (algo == Algo::IVFFLAT) {
     validate_param_list(params, {N_LIST, N_PROBE});
-  } else if (algo == KnnAlgo::IVFPQ) {
+  } else if (algo == Algo::IVFPQ) {
     validate_param_list(
       params, {N_LIST, N_PROBE, M_VALUE, N_BITS, USE_PRE_COMPUTED_TABLES});
-  } else if (algo == KnnAlgo::IVFSQ) {
+  } else if (algo == Algo::IVFSQ) {
     validate_param_list(params, {N_LIST, N_PROBE, Q_TYPE, ENCODE_RESIDUAL});
   }
 }
@@ -185,7 +268,7 @@ build_ivfsq_algo_params(Rcpp::List params, bool const automated) {
 }
 
 __host__ std::unique_ptr<raft::spatial::knn::knnIndexParam> build_algo_params(
-  KnnAlgo const algo, Rcpp::List const& params, ParamsDetails const& details) {
+  Algo const algo, Rcpp::List const& params, ParamsDetails const& details) {
   bool const automated = (params.size() == 0);
 
   if (!automated) {
@@ -193,11 +276,11 @@ __host__ std::unique_ptr<raft::spatial::knn::knnIndexParam> build_algo_params(
   }
 
   switch (algo) {
-    case KnnAlgo::IVFFLAT:
+    case Algo::IVFFLAT:
       return build_ivfflat_algo_params(params, automated);
-    case KnnAlgo::IVFPQ:
+    case Algo::IVFPQ:
       return build_ivfpq_algo_params(params, automated, details);
-    case KnnAlgo::IVFSQ:
+    case Algo::IVFSQ:
       return build_ivfsq_algo_params(params, automated);
     default:
       return nullptr;
@@ -206,13 +289,13 @@ __host__ std::unique_ptr<raft::spatial::knn::knnIndexParam> build_algo_params(
 
 __host__ std::unique_ptr<raft::spatial::knn::knnIndex> build_knn_index(
   raft::handle_t& handle, float* const d_input, int const n_samples,
-  int const n_features, KnnAlgo const algo_type,
+  int const n_features, Algo const algo_type,
   raft::distance::DistanceType const dist_type, float const p,
   Rcpp::List const& algo_params) {
   std::unique_ptr<raft::spatial::knn::knnIndex> knn_index(nullptr);
 
-  if (algo_type == KnnAlgo::IVFFLAT || algo_type == KnnAlgo::IVFPQ ||
-      algo_type == KnnAlgo::IVFSQ) {
+  if (algo_type == Algo::IVFFLAT || algo_type == Algo::IVFPQ ||
+      algo_type == Algo::IVFSQ) {
     ParamsDetails details;
     details.numRows_ = n_samples;
     details.numCols_ = n_features;
@@ -236,41 +319,14 @@ __host__ std::unique_ptr<raft::spatial::knn::knnIndex> build_knn_index(
   return knn_index;
 }
 
-__host__ KnnQueryResult query_nearest_neighbors(
-  raft::handle_t& handle, float* const d_input,
-  raft::spatial::knn::knnIndex* const knn_index, KnnAlgo const algo_type,
-  raft::distance::DistanceType const dist_type, float const p,
-  int const n_samples, int const n_dims, int const n_neighbors) {
-  KnnQueryResult res(n_samples, n_neighbors);
-
-  if (algo_type == KnnAlgo::BRUTE_FORCE) {
-    std::vector<float*> input{d_input};
-    std::vector<int> sizes{n_samples};
-
-    ML::brute_force_knn(
-      handle, input, sizes, /*D=*/n_dims, /*search_items=*/d_input,
-      /*n=*/n_samples, /*res_I=*/res.indices.data().get(),
-      /*res_D=*/res.dists.data().get(), /*k=*/n_neighbors,
-      /*rowMajorIndex=*/true, /*rowMajorQuery=*/true, /*metric=*/dist_type, p);
-  } else {
-    ML::approx_knn_search(handle, /*distances=*/res.dists.data().get(),
-                          /*indices=*/res.indices.data().get(),
-                          /*index=*/knn_index, /*k=*/n_neighbors,
-                          /*query_array=*/d_input, /*n=*/n_samples);
-  }
-
-  return res;
-}
-
 }  // namespace
-
-namespace cuml4r {
+}  // namespace knn
 
 __host__ SEXP knn_fit(Rcpp::NumericMatrix const& x,
                       Rcpp::IntegerVector const& y, int const algo,
                       int const metric, float const p,
                       Rcpp::List const& algo_params) {
-  auto const algo_type = static_cast<KnnAlgo>(algo);
+  auto const algo_type = static_cast<knn::Algo>(algo);
   auto const dist_type = static_cast<raft::distance::DistanceType>(metric);
 
   auto const input_m = cuml4r::Matrix<float>(x, /*transpose=*/false);
@@ -292,14 +348,14 @@ __host__ SEXP knn_fit(Rcpp::NumericMatrix const& x,
                     algo_type, dist_type, p, algo_params);
 
   Rcpp::List model;
-  model[KNN_INDEX] =
+  model[knn::KNN_INDEX] =
     Rcpp::XPtr<raft::spatial::knn::knnIndex>(knn_index.release());
-  model[ALGO] = algo;
-  model[METRIC] = metric;
-  model[P_VALUE] = p;
-  model[N_SAMPLES] = n_samples;
-  model[N_DIMS] = n_features;
-  model[LABELS] = y;
+  model[knn::ALGO] = algo;
+  model[knn::METRIC] = metric;
+  model[knn::P_VALUE] = p;
+  model[knn::N_SAMPLES] = n_samples;
+  model[knn::N_DIMS] = n_features;
+  model[knn::LABELS] = y;
 
   return model;
 }
@@ -307,54 +363,52 @@ __host__ SEXP knn_fit(Rcpp::NumericMatrix const& x,
 __host__ Rcpp::IntegerVector knn_classifier_predict(
   Rcpp::List const& model, Rcpp::NumericMatrix const& x,
   int const n_neighbors) {
-  auto const model_knn_index = Rcpp::XPtr<raft::spatial::knn::knnIndex>(
-    static_cast<SEXP>(model[KNN_INDEX]));
-  auto const model_algo_type = static_cast<KnnAlgo>(Rcpp::as<int>(model[ALGO]));
-  auto const model_dist_type =
-    static_cast<raft::distance::DistanceType>(Rcpp::as<int>(model[METRIC]));
-  auto const model_p = Rcpp::as<float>(model[P_VALUE]);
-  auto const model_n_samples = Rcpp::as<int>(model[N_SAMPLES]);
-  auto const model_n_dims = Rcpp::as<int>(model[N_DIMS]);
-  auto const model_labels = Rcpp::as<Rcpp::IntegerVector>(model[LABELS]);
-
-  auto const input_m = cuml4r::Matrix<float>(x, /*transpose=*/false);
-
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
-  raft::handle_t handle;
-  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
-
-  // KNN classifier input
-  auto const& h_x = input_m.values;
-  thrust::device_vector<float> d_x(h_x.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(x_h2d) = cuml4r::async_copy(
-    stream_view.value(), h_x.cbegin(), h_x.cend(), d_x.begin());
-  auto h_y = Rcpp::as<cuml4r::pinned_host_vector<int>>(model_labels);
-  thrust::device_vector<int> d_y(h_y.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(y_h2d) = cuml4r::async_copy(
-    stream_view.value(), h_y.cbegin(), h_y.cend(), d_y.begin());
-  std::vector<int*> y_vec{d_y.data().get()};
+  // KNN classifier input & pre-processing
+  knn::PredictionCtx ctx(model, x, n_neighbors);
+  std::vector<int*> y_vec{ctx.dY_.data().get()};
 
   // KNN classifier output
-  thrust::device_vector<int> d_out(input_m.numRows);
+  thrust::device_vector<int> d_out(ctx.nSamples_);
 
-  auto knn_query_res = query_nearest_neighbors(
-    handle, /*d_input=*/d_x.data().get(), /*knn_index=*/model_knn_index.get(),
-    /*algo_type=*/model_algo_type,
-    /*dist_type=*/model_dist_type, /*p=*/model_p, /*n_samples=*/input_m.numRows,
-    /*ndims=*/model_n_dims, n_neighbors);
-  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
-
-  ML::knn_classify(handle, /*out=*/d_out.data().get(),
-                   /*knn_indices=*/knn_query_res.indices.data().get(),
-                   /*y=*/y_vec, /*n_index_rows=*/model_n_samples,
-                   /*n_query_rows=*/input_m.numRows, /*k=*/n_neighbors);
+  ML::knn_classify(/*handle=*/ctx.handle_, /*out=*/d_out.data().get(),
+                   /*knn_indices=*/ctx.nearestNeighbors_.indices.data().get(),
+                   /*y=*/y_vec, /*n_index_rows=*/ctx.modelNSamples_,
+                   /*n_query_rows=*/ctx.nSamples_, /*k=*/n_neighbors);
 
   cuml4r::pinned_host_vector<int> h_out(d_out.size());
   auto CUML4R_ANONYMOUS_VARIABLE(out_d2h) = cuml4r::async_copy(
-    stream_view.value(), d_out.cbegin(), d_out.cend(), h_out.begin());
-  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
+    ctx.streamView_.value(), d_out.cbegin(), d_out.cend(), h_out.begin());
+  CUDA_RT_CALL(cudaStreamSynchronize(ctx.streamView_.value()));
 
   return Rcpp::IntegerVector(h_out.cbegin(), h_out.cend());
+}
+
+__host__ Rcpp::NumericMatrix knn_classifier_predict_probabilities(
+  Rcpp::List const& model, Rcpp::NumericMatrix const& x,
+  int const n_neighbors) {
+  // KNN classifier input & pre-processing
+  knn::PredictionCtx ctx(model, x, n_neighbors);
+  std::vector<int*> y_vec{ctx.dY_.data().get()};
+  int const n_classes =
+    Rcpp::unique(Rcpp::as<Rcpp::IntegerVector>(model[knn::LABELS])).size();
+
+  // KNN classifier output
+  thrust::device_vector<float> d_out(ctx.nSamples_ * n_classes);
+  std::vector<float*> out_vec{d_out.data().get()};
+
+  ML::knn_class_proba(
+    /*handle=*/ctx.handle_, /*out=*/out_vec,
+    /*knn_indices=*/ctx.nearestNeighbors_.indices.data().get(),
+    /*y=*/y_vec, /*n_index_rows=*/ctx.modelNSamples_,
+    /*n_query_rows=*/ctx.nSamples_, /*k=*/n_neighbors);
+
+  cuml4r::pinned_host_vector<float> h_out(d_out.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(out_d2h) = cuml4r::async_copy(
+    ctx.streamView_.value(), d_out.cbegin(), d_out.cend(), h_out.begin());
+  CUDA_RT_CALL(cudaStreamSynchronize(ctx.streamView_.value()));
+
+  return Rcpp::transpose(
+    Rcpp::NumericMatrix(n_classes, ctx.nSamples_, h_out.begin()));
 }
 
 }  // namespace cuml4r

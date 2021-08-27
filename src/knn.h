@@ -14,6 +14,9 @@ Rcpp::IntegerVector knn_classifier_predict(Rcpp::List const& model,
                                            Rcpp::NumericMatrix const& x,
                                            int const n_neighbors);
 
+Rcpp::NumericMatrix knn_classifier_predict_probabilities(
+  Rcpp::List const& model, Rcpp::NumericMatrix const& x, int const n_neighbors);
+
 }  // namespace cuml4r
 
 #else

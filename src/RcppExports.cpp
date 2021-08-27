@@ -150,6 +150,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// knn_classifier_predict_probabilities
+Rcpp::NumericMatrix knn_classifier_predict_probabilities(Rcpp::List const& model, Rcpp::NumericMatrix const& x, int const n_neighbors);
+RcppExport SEXP _cuml_knn_classifier_predict_probabilities(SEXP modelSEXP, SEXP xSEXP, SEXP n_neighborsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List const& >::type model(modelSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int const >::type n_neighbors(n_neighborsSEXP);
+    rcpp_result_gen = Rcpp::wrap(knn_classifier_predict_probabilities(model, x, n_neighbors));
+    return rcpp_result_gen;
+END_RCPP
+}
 // pca_fit_transform
 Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x, double const tol, int const n_iters, int const verbosity, int const n_components, int const algo, bool const whiten, bool const transform_input);
 RcppExport SEXP _cuml_pca_fit_transform(SEXP xSEXP, SEXP tolSEXP, SEXP n_itersSEXP, SEXP verbositySEXP, SEXP n_componentsSEXP, SEXP algoSEXP, SEXP whitenSEXP, SEXP transform_inputSEXP) {
@@ -489,6 +502,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuml_kmeans", (DL_FUNC) &_cuml_kmeans, 8},
     {"_cuml_knn_fit", (DL_FUNC) &_cuml_knn_fit, 6},
     {"_cuml_knn_classifier_predict", (DL_FUNC) &_cuml_knn_classifier_predict, 3},
+    {"_cuml_knn_classifier_predict_probabilities", (DL_FUNC) &_cuml_knn_classifier_predict_probabilities, 3},
     {"_cuml_pca_fit_transform", (DL_FUNC) &_cuml_pca_fit_transform, 8},
     {"_cuml_pca_inverse_transform", (DL_FUNC) &_cuml_pca_inverse_transform, 2},
     {"_cuml_rf_classifier_fit", (DL_FUNC) &_cuml_rf_classifier_fit, 16},
