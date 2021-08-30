@@ -45,6 +45,14 @@
     .Call(`_cuml_knn_classifier_predict_probabilities`, model, x, n_neighbors)
 }
 
+.knn_regressor_fit <- function(x, y, algo, metric, p, algo_params) {
+    .Call(`_cuml_knn_regressor_fit`, x, y, algo, metric, p, algo_params)
+}
+
+.knn_regressor_predict <- function(model, x, n_neighbors) {
+    .Call(`_cuml_knn_regressor_predict`, model, x, n_neighbors)
+}
+
 .pca_fit_transform <- function(x, tol, n_iters, verbosity, n_components, algo, whiten, transform_input) {
     .Call(`_cuml_pca_fit_transform`, x, tol, n_iters, verbosity, n_components, algo, whiten, transform_input)
 }

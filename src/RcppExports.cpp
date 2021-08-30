@@ -163,6 +163,35 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// knn_regressor_fit
+SEXP knn_regressor_fit(Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& y, int const algo, int const metric, float const p, Rcpp::List const& algo_params);
+RcppExport SEXP _cuml_knn_regressor_fit(SEXP xSEXP, SEXP ySEXP, SEXP algoSEXP, SEXP metricSEXP, SEXP pSEXP, SEXP algo_paramsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector const& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< int const >::type algo(algoSEXP);
+    Rcpp::traits::input_parameter< int const >::type metric(metricSEXP);
+    Rcpp::traits::input_parameter< float const >::type p(pSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List const& >::type algo_params(algo_paramsSEXP);
+    rcpp_result_gen = Rcpp::wrap(knn_regressor_fit(x, y, algo, metric, p, algo_params));
+    return rcpp_result_gen;
+END_RCPP
+}
+// knn_regressor_predict
+Rcpp::NumericVector knn_regressor_predict(Rcpp::List const& model, Rcpp::NumericMatrix const& x, int const n_neighbors);
+RcppExport SEXP _cuml_knn_regressor_predict(SEXP modelSEXP, SEXP xSEXP, SEXP n_neighborsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List const& >::type model(modelSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int const >::type n_neighbors(n_neighborsSEXP);
+    rcpp_result_gen = Rcpp::wrap(knn_regressor_predict(model, x, n_neighbors));
+    return rcpp_result_gen;
+END_RCPP
+}
 // pca_fit_transform
 Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x, double const tol, int const n_iters, int const verbosity, int const n_components, int const algo, bool const whiten, bool const transform_input);
 RcppExport SEXP _cuml_pca_fit_transform(SEXP xSEXP, SEXP tolSEXP, SEXP n_itersSEXP, SEXP verbositySEXP, SEXP n_componentsSEXP, SEXP algoSEXP, SEXP whitenSEXP, SEXP transform_inputSEXP) {
@@ -503,6 +532,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuml_knn_classifier_fit", (DL_FUNC) &_cuml_knn_classifier_fit, 6},
     {"_cuml_knn_classifier_predict", (DL_FUNC) &_cuml_knn_classifier_predict, 3},
     {"_cuml_knn_classifier_predict_probabilities", (DL_FUNC) &_cuml_knn_classifier_predict_probabilities, 3},
+    {"_cuml_knn_regressor_fit", (DL_FUNC) &_cuml_knn_regressor_fit, 6},
+    {"_cuml_knn_regressor_predict", (DL_FUNC) &_cuml_knn_regressor_predict, 3},
     {"_cuml_pca_fit_transform", (DL_FUNC) &_cuml_pca_fit_transform, 8},
     {"_cuml_pca_inverse_transform", (DL_FUNC) &_cuml_pca_inverse_transform, 2},
     {"_cuml_rf_classifier_fit", (DL_FUNC) &_cuml_rf_classifier_fit, 16},

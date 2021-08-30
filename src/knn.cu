@@ -413,4 +413,28 @@ __host__ Rcpp::NumericMatrix knn_classifier_predict_probabilities(
     Rcpp::NumericMatrix(n_classes, ctx.nSamples_, h_out.begin()));
 }
 
+Rcpp::NumericVector knn_regressor_predict(Rcpp::List const& model,
+                                          Rcpp::NumericMatrix const& x,
+                                          int const n_neighbors) {
+  // KNN regressor input & pre-processing
+  knn::PredictionCtx<float> ctx(model, x, n_neighbors);
+  std::vector<float*> y_vec{ctx.dY_.data().get()};
+
+  // KNN regressor output
+  thrust::device_vector<float> d_out(ctx.nSamples_);
+
+  ML::knn_regress(/*handle=*/ctx.handle_, /*out=*/d_out.data().get(),
+                  /*knn_indices=*/ctx.nearestNeighbors_.indices.data().get(),
+                  /*y=*/y_vec,
+                  /*n_rows=*/ctx.modelNSamples_,
+                  /*n_samples=*/ctx.nSamples_, /*k=*/n_neighbors);
+
+  cuml4r::pinned_host_vector<float> h_out(d_out.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(out_d2h) = cuml4r::async_copy(
+    ctx.streamView_.value(), d_out.cbegin(), d_out.cend(), h_out.begin());
+  CUDA_RT_CALL(cudaStreamSynchronize(ctx.streamView_.value()));
+
+  return Rcpp::NumericVector(h_out.begin(), h_out.end());
+}
+
 }  // namespace cuml4r
