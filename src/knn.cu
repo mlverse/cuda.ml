@@ -322,7 +322,7 @@ __host__ std::unique_ptr<raft::spatial::knn::knnIndex> build_knn_index(
 }  // namespace
 }  // namespace knn
 
-__host__ SEXP knn_fit(Rcpp::NumericMatrix const& x,
+__host__ SEXP knn_classifier_fit(Rcpp::NumericMatrix const& x,
                       Rcpp::IntegerVector const& y, int const algo,
                       int const metric, float const p,
                       Rcpp::List const& algo_params) {

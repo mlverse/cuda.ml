@@ -271,7 +271,7 @@ cuml_knn_bridge <- function(processed, algo, metric, p, neighbors) {
   metric <- knn_match_metric(metric)
 
   # TODO: handle regressor using a separate function
-  model_xptr <- .knn_fit(
+  model_xptr <- .knn_classifier_fit(
     x = x,
     y = as.integer(y),
     algo = algo_type,

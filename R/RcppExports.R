@@ -33,8 +33,8 @@
     .Call(`_cuml_kmeans`, x, k, max_iters, tol, init_method, centroids, seed, verbosity)
 }
 
-.knn_fit <- function(x, y, algo, metric, p, algo_params) {
-    .Call(`_cuml_knn_fit`, x, y, algo, metric, p, algo_params)
+.knn_classifier_fit <- function(x, y, algo, metric, p, algo_params) {
+    .Call(`_cuml_knn_classifier_fit`, x, y, algo, metric, p, algo_params)
 }
 
 .knn_classifier_predict <- function(model, x, n_neighbors) {

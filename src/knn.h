@@ -6,7 +6,7 @@
 
 namespace cuml4r {
 
-SEXP knn_fit(Rcpp::NumericMatrix const& x, Rcpp::IntegerVector const& y,
+SEXP knn_classifier_fit(Rcpp::NumericMatrix const& x, Rcpp::IntegerVector const& y,
              int const algo, int const metric, float const p,
              Rcpp::List const& algo_params);
 

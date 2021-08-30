@@ -1,12 +1,12 @@
 #include "knn.h"
 
-// [[Rcpp::export(".knn_fit")]]
-SEXP knn_fit(Rcpp::NumericMatrix const& x, Rcpp::IntegerVector const& y,
+// [[Rcpp::export(".knn_classifier_fit")]]
+SEXP knn_classifier_fit(Rcpp::NumericMatrix const& x, Rcpp::IntegerVector const& y,
              int const algo, int const metric, float const p,
              Rcpp::List const& algo_params) {
 #ifdef HAS_CUML
 
-  return cuml4r::knn_fit(x, y, algo, metric, p, algo_params);
+  return cuml4r::knn_classifier_fit(x, y, algo, metric, p, algo_params);
 
 #else
 
