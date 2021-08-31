@@ -270,19 +270,32 @@ cuml_knn_bridge <- function(processed, algo, metric, p, neighbors) {
   }
   metric <- knn_match_metric(metric)
 
-  # TODO: handle regressor using a separate function
-  model_xptr <- .knn_classifier_fit(
-    x = x,
-    y = as.integer(y),
-    algo = algo_type,
-    metric = metric,
-    p = as.numeric(p),
-    algo_params = algo_params
-  )
+  if (is.factor(y)) {
+    # classification
+    prediction_mode <- "classification"
+    model_xptr <- .knn_classifier_fit(
+      x = x,
+      y = as.integer(y),
+      algo = algo_type,
+      metric = metric,
+      p = as.numeric(p),
+      algo_params = algo_params
+    )
+  } else {
+    prediction_mode <- "regression"
+    model_xptr <- .knn_regressor_fit(
+      x = x,
+      y = as.numeric(y),
+      algo = algo_type,
+      metric = metric,
+      p = as.numeric(p),
+      algo_params = algo_params
+    )
+  }
 
   new_model(
     cls = "cuml_knn",
-    mode = "classification",
+    mode = prediction_mode,
     xptr = model_xptr,
     neighbors = as.integer(neighbors),
     blueprint = processed$blueprint
@@ -301,9 +314,8 @@ predict.cuml_knn <- function(model, x, ...) {
 
 predict_cuml_knn_bridge <- function(model, processed) {
   knn_predict_impl <- switch(model$mode,
-    classification = (
-      predict_cuml_knn_classification_impl
-    )
+    classification = predict_cuml_knn_classification_impl,
+    regression = predict_cuml_knn_regression_impl,
   )
 
   out <- knn_predict_impl(model = model, processed = processed)
@@ -319,4 +331,13 @@ predict_cuml_knn_classification_impl <- function(model, processed) {
     n_neighbors = model$neighbors
   ) %>%
     postprocess_classification_results(model)
+}
+
+predict_cuml_knn_regression_impl <- function(model, processed) {
+  .knn_regressor_predict(
+    model = model$xptr,
+    x = as.matrix(processed$predictors),
+    n_neighbors = model$neighbors
+  ) %>%
+    postprocess_regression_results()
 }
