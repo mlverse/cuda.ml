@@ -1,6 +1,7 @@
 #include "async_utils.cuh"
 #include "cuda_utils.h"
 #include "handle_utils.h"
+#include "knn_detail.h"
 #include "matrix_utils.h"
 #include "pinned_host_vector.h"
 #include "preprocessor.h"
@@ -39,7 +40,6 @@ char const* const P_VALUE = "p";
 char const* const METRIC = "metric";
 char const* const N_SAMPLES = "n_samples";
 char const* const N_DIMS = "n_dims";
-char const* const LABELS = "labels";
 
 std::unordered_map<std::string, raft::spatial::knn::QuantizerType> const
   kQuantizerTypes{
@@ -71,8 +71,10 @@ struct NearestNeighbors {
   thrust::device_vector<float> dists;
 };
 
+template <typename ResponseT>
 class PredictionCtx {
  public:
+  using ResponseVecT = typename knn::detail::RcppVector<ResponseT>::type;
   __host__ PredictionCtx(Rcpp::List const& model, Rcpp::NumericMatrix const& x,
                          int const n_neighbors)
     : nSamples_(x.nrow()),
@@ -93,9 +95,10 @@ class PredictionCtx {
     dX_.resize(h_x.size());
     xH2D_ = cuml4r::async_copy(streamView_.value(), h_x.cbegin(), h_x.cend(),
                                dX_.begin());
-    Rcpp::IntegerVector const model_labels(
-      Rcpp::as<Rcpp::IntegerVector>(model[LABELS]));
-    auto h_y = Rcpp::as<cuml4r::pinned_host_vector<int>>(model_labels);
+
+    ResponseVecT const model_resps(
+      Rcpp::as<ResponseVecT>(model[detail::kResponses]));
+    auto h_y = Rcpp::as<cuml4r::pinned_host_vector<ResponseT>>(model_resps);
     dY_.resize(h_y.size());
     yH2D_ = cuml4r::async_copy(streamView_.value(), h_y.cbegin(), h_y.cend(),
                                dY_.begin());
@@ -144,7 +147,7 @@ class PredictionCtx {
   raft::handle_t handle_;
   // KNN classifier inputs
   thrust::device_vector<float> dX_;
-  thrust::device_vector<int> dY_;
+  thrust::device_vector<ResponseT> dY_;
   NearestNeighbors nearestNeighbors_;
 
  private:
@@ -322,10 +325,9 @@ __host__ std::unique_ptr<raft::spatial::knn::knnIndex> build_knn_index(
 }  // namespace
 }  // namespace knn
 
-__host__ SEXP knn_classifier_fit(Rcpp::NumericMatrix const& x,
-                      Rcpp::IntegerVector const& y, int const algo,
-                      int const metric, float const p,
-                      Rcpp::List const& algo_params) {
+__host__ Rcpp::List knn_fit(Rcpp::NumericMatrix const& x, int const algo,
+                            int const metric, float const p,
+                            Rcpp::List const& algo_params) {
   auto const algo_type = static_cast<knn::Algo>(algo);
   auto const dist_type = static_cast<raft::distance::DistanceType>(metric);
 
@@ -355,7 +357,6 @@ __host__ SEXP knn_classifier_fit(Rcpp::NumericMatrix const& x,
   model[knn::P_VALUE] = p;
   model[knn::N_SAMPLES] = n_samples;
   model[knn::N_DIMS] = n_features;
-  model[knn::LABELS] = y;
 
   return model;
 }
@@ -364,7 +365,7 @@ __host__ Rcpp::IntegerVector knn_classifier_predict(
   Rcpp::List const& model, Rcpp::NumericMatrix const& x,
   int const n_neighbors) {
   // KNN classifier input & pre-processing
-  knn::PredictionCtx ctx(model, x, n_neighbors);
+  knn::PredictionCtx<int> ctx(model, x, n_neighbors);
   std::vector<int*> y_vec{ctx.dY_.data().get()};
 
   // KNN classifier output
@@ -387,10 +388,11 @@ __host__ Rcpp::NumericMatrix knn_classifier_predict_probabilities(
   Rcpp::List const& model, Rcpp::NumericMatrix const& x,
   int const n_neighbors) {
   // KNN classifier input & pre-processing
-  knn::PredictionCtx ctx(model, x, n_neighbors);
+  knn::PredictionCtx<int> ctx(model, x, n_neighbors);
   std::vector<int*> y_vec{ctx.dY_.data().get()};
   int const n_classes =
-    Rcpp::unique(Rcpp::as<Rcpp::IntegerVector>(model[knn::LABELS])).size();
+    Rcpp::unique(Rcpp::as<Rcpp::IntegerVector>(model[knn::detail::kResponses]))
+      .size();
 
   // KNN classifier output
   thrust::device_vector<float> d_out(ctx.nSamples_ * n_classes);

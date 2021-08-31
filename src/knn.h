@@ -1,14 +1,24 @@
 #pragma once
 
-#include <Rcpp.h>
+#include "knn_detail.h"
 
 #ifdef HAS_CUML
 
 namespace cuml4r {
 
-SEXP knn_classifier_fit(Rcpp::NumericMatrix const& x, Rcpp::IntegerVector const& y,
-             int const algo, int const metric, float const p,
-             Rcpp::List const& algo_params);
+Rcpp::List knn_fit(Rcpp::NumericMatrix const& x, int const algo,
+                   int const metric, float const p,
+                   Rcpp::List const& algo_params);
+
+template <typename ResponseT>
+Rcpp::List knn_fit(Rcpp::NumericMatrix const& x, ResponseT&& y, int const algo,
+                   int const metric, float const p,
+                   Rcpp::List const& algo_params) {
+  auto model = knn_fit(x, algo, metric, p, algo_params);
+  model[knn::detail::kResponses] = std::forward<ResponseT>(y);
+
+  return model;
+}
 
 Rcpp::IntegerVector knn_classifier_predict(Rcpp::List const& model,
                                            Rcpp::NumericMatrix const& x,
