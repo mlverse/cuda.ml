@@ -91,15 +91,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // fil_predict
-Rcpp::NumericMatrix fil_predict(SEXP const& model, Rcpp::NumericMatrix const& x, bool const output_probabilities);
-RcppExport SEXP _cuml_fil_predict(SEXP modelSEXP, SEXP xSEXP, SEXP output_probabilitiesSEXP) {
+Rcpp::NumericMatrix fil_predict(SEXP const& model, Rcpp::NumericMatrix const& x, bool const output_class_probabilities);
+RcppExport SEXP _cuml_fil_predict(SEXP modelSEXP, SEXP xSEXP, SEXP output_class_probabilitiesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP const& >::type model(modelSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type x(xSEXP);
-    Rcpp::traits::input_parameter< bool const >::type output_probabilities(output_probabilitiesSEXP);
-    rcpp_result_gen = Rcpp::wrap(fil_predict(model, x, output_probabilities));
+    Rcpp::traits::input_parameter< bool const >::type output_class_probabilities(output_class_probabilitiesSEXP);
+    rcpp_result_gen = Rcpp::wrap(fil_predict(model, x, output_class_probabilities));
     return rcpp_result_gen;
 END_RCPP
 }

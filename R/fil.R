@@ -169,22 +169,22 @@ cuml_fil_load_model <- function(filename,
 #'
 #' @template model-with-numeric-input
 #' @param model The model object.
-#' @param output_probabilities Whether to output class probabilities. Only
+#' @param output_class_probabilities Whether to output class probabilities. Only
 #'   applicable to binary classification tasks.
 #'
 #' @export
-predict.cuml_fil <- function(model, x, output_probabilities = FALSE, ...) {
+predict.cuml_fil <- function(model, x, output_class_probabilities = FALSE, ...) {
   num_classes <- .fil_get_num_classes(model = model$xptr)
   preds <- .fil_predict(
     model = model$xptr,
     x = as.matrix(x),
-    output_probabilities = output_probabilities
+    output_class_probabilities = output_class_probabilities
   )
 
   switch(
     model$mode,
     classification = {
-      if (output_probabilities) {
+      if (output_class_probabilities) {
         preds <- hardhat::spruce_prob(
           paste0("class_prob_", seq(num_classes) - 1L), preds
         )

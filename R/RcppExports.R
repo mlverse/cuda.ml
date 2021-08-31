@@ -25,8 +25,8 @@
     .Call(`_cuml_fil_get_num_classes`, model)
 }
 
-.fil_predict <- function(model, x, output_probabilities) {
-    .Call(`_cuml_fil_predict`, model, x, output_probabilities)
+.fil_predict <- function(model, x, output_class_probabilities) {
+    .Call(`_cuml_fil_predict`, model, x, output_class_probabilities)
 }
 
 .kmeans <- function(x, k, max_iters, tol, init_method, centroids, seed, verbosity) {

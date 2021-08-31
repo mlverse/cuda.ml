@@ -123,12 +123,12 @@ __host__ int fil_get_num_classes(SEXP const& model) {
 
 __host__ Rcpp::NumericMatrix fil_predict(SEXP const& model,
                                          Rcpp::NumericMatrix const& x,
-                                         bool const output_probabilities) {
+                                         bool const output_class_probabilities) {
   auto const model_xptr = Rcpp::XPtr<TreeliteModel>(model);
   auto const m = cuml4r::Matrix<float>(x, /*transpose=*/false);
 
-  if (output_probabilities && model_xptr->numClasses_ == 0) {
-    Rcpp::stop("'output_probabilities' is not applicable for regressions!");
+  if (output_class_probabilities && model_xptr->numClasses_ == 0) {
+    Rcpp::stop("'output_class_probabilities' is not applicable for regressions!");
   }
 
   auto& handle = *(model_xptr->handle_);
@@ -141,12 +141,12 @@ __host__ Rcpp::NumericMatrix fil_predict(SEXP const& model,
 
   // ensemble output
   thrust::device_vector<float> d_preds(
-    output_probabilities ? model_xptr->numClasses_ * m.numRows : m.numRows);
+    output_class_probabilities ? model_xptr->numClasses_ * m.numRows : m.numRows);
 
   ML::fil::predict(/*h=*/handle, /*f=*/model_xptr->forest_,
                    /*preds=*/d_preds.data().get(),
                    /*data=*/d_x.data().get(), /*num_rows=*/m.numRows,
-                   /*predict_proba=*/output_probabilities);
+                   /*predict_proba=*/output_class_probabilities);
 
   cuml4r::pinned_host_vector<float> h_preds(d_preds.size());
   auto CUML4R_ANONYMOUS_VARIABLE(preds_d2h) = cuml4r::async_copy(
@@ -155,7 +155,7 @@ __host__ Rcpp::NumericMatrix fil_predict(SEXP const& model,
   CUDA_RT_CALL(cudaStreamSynchronize(handle.get_stream()));
 
   return Rcpp::transpose(
-    Rcpp::NumericMatrix(output_probabilities ? model_xptr->numClasses_ : 1,
+    Rcpp::NumericMatrix(output_class_probabilities ? model_xptr->numClasses_ : 1,
                         m.numRows, h_preds.begin()));
 }
 

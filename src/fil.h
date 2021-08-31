@@ -16,7 +16,7 @@ SEXP fil_load_model(int const model_type, std::string const& filename,
 int fil_get_num_classes(SEXP const& model);
 
 Rcpp::NumericMatrix fil_predict(SEXP const& model, Rcpp::NumericMatrix const& x,
-                                bool const output_probabilities);
+                                bool const output_class_probabilities);
 
 }  // namespace cuml4r
 

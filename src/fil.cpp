@@ -47,10 +47,10 @@ int fil_get_num_classes(SEXP const& model) {
 
 // [[Rcpp::export(".fil_predict")]]
 Rcpp::NumericMatrix fil_predict(SEXP const& model, Rcpp::NumericMatrix const& x,
-                                bool const output_probabilities) {
+                                bool const output_class_probabilities) {
 #ifndef CUML4R_TREELITE_C_API_MISSING
 
-  return cuml4r::fil_predict(model, x, output_probabilities);
+  return cuml4r::fil_predict(model, x, output_class_probabilities);
 
 #else
 
