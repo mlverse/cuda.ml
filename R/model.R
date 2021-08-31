@@ -20,15 +20,15 @@ new_model <- function(cls,
   )
 }
 
-get_model_outcome_levels <- function(model) {
+get_pred_levels <- function(model) {
   levels(model$blueprint$ptypes$outcomes[[1]])
 }
 
 postprocess_classification_results <- function(predictions, model) {
   predictions <- as.integer(predictions)
-  ylevels <- get_model_outcome_levels(model)
-  predictions <- ylevels[predictions]
-  predictions <- factor(predictions, levels = ylevels)
+  pred_levels <- get_pred_levels(model)
+  predictions <- pred_levels[predictions]
+  predictions <- factor(predictions, levels = pred_levels)
   hardhat::spruce_class(predictions)
 }
 

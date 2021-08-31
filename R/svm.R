@@ -231,14 +231,12 @@ cuml_svm_bridge <- function(processed, cost, kernel, gamma, coef0, degree, tol,
       ylevels <- levels(y)
       if (length(ylevels) > 2) {
         cuml_svm_classification_multiclass_impl
-
       } else {
         cuml_svm_classification_binary_impl
       }
     } else {
       cuml_svm_regression_impl
-    }
-  )
+    })
 
   svm_fit_impl(
     processed = processed,
@@ -297,8 +295,7 @@ cuml_svm_classification_multiclass_impl <- function(processed, cost, kernel,
           mode = "classification",
           xptr <- model_xptr
         )
-      }
-    )
+      })
 
     models <- append(models, list(model))
   }
@@ -388,8 +385,7 @@ predict.cuml_svm <- function(model, x, ...) {
 }
 
 predict_cuml_svm_bridge <- function(model, processed) {
-  svm_predict_impl <- switch(
-    model$mode,
+  svm_predict_impl <- switch(model$mode,
     classification = (
       if (model$multiclass) {
         predict_cuml_svm_classification_multiclass_impl
@@ -408,9 +404,9 @@ predict_cuml_svm_bridge <- function(model, processed) {
 }
 
 predict_cuml_svm_classification_multiclass_impl <- function(model, processed) {
-  possible_outcomes <- get_model_outcome_levels(model)
+  pred_levels <- get_pred_levels(model)
 
-  scores <- seq_along(possible_outcomes) %>%
+  scores <- seq_along(pred_levels) %>%
     lapply(
       function(label_idx) {
         if (is.null(model$xptr[[label_idx]])) {
@@ -429,7 +425,7 @@ predict_cuml_svm_classification_multiclass_impl <- function(model, processed) {
   seq_len(nrow(processed$predictors)) %>%
     sapply(
       function(input_idx) {
-        seq_along(possible_outcomes) %>%
+        seq_along(pred_levels) %>%
           lapply(function(label_idx) scores[[label_idx]][[input_idx]]) %>%
           which.max()
       }

@@ -4,7 +4,7 @@
 \alias{predict.cuml_fil}
 \title{Predict using a model object created from \code{cuml_fil_load_model()}.}
 \usage{
-\method{predict}{cuml_fil}(model, x, output_probabilities = FALSE, ...)
+\method{predict}{cuml_fil}(model, x, output_class_probabilities = FALSE, ...)
 }
 \arguments{
 \item{model}{The model object.}
@@ -12,8 +12,8 @@
 \item{x}{The input matrix or dataframe. Each data point should be a row
 and should consist of numeric values only.}
 
-\item{output_probabilities}{Whether to output class probabilities. Only
-applicable to binary classification tasks.}
+\item{output_class_probabilities}{Whether to output class probabilities. Only
+applicable to classification tasks.}
 }
 \description{
 Perform GPU-accelerated high-throughput batch inference on new data points

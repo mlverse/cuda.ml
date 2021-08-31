@@ -302,35 +302,69 @@ cuml_knn_bridge <- function(processed, algo, metric, p, neighbors) {
   )
 }
 
+#' Predict using a model object created from \code{cuml_knn()}.
+#'
+#' Make predictions on new data points using a GPU-accelerated KNN model.
+#'
+#' @template model-with-numeric-input
+#' @template model-with-class-probabilities-output
+#' @param model The model object.
+#'
 #' @importFrom ellipsis check_dots_used
+#'
 #' @export
-predict.cuml_knn <- function(model, x, ...) {
+predict.cuml_knn <- function(model, x, output_class_probabilities = FALSE, ...) {
   check_dots_used()
 
   processed <- hardhat::forge(x, model$blueprint)
 
-  predict_cuml_knn_bridge(model = model, processed = processed)
+  predict_cuml_knn_bridge(
+    model = model,
+    processed = processed,
+    output_class_probabilities = output_class_probabilities
+  )
 }
 
-predict_cuml_knn_bridge <- function(model, processed) {
-  knn_predict_impl <- switch(model$mode,
-    classification = predict_cuml_knn_classification_impl,
-    regression = predict_cuml_knn_regression_impl,
+predict_cuml_knn_bridge <- function(model, processed, output_class_probabilities) {
+  out <- switch(model$mode,
+    classification =
+      predict_cuml_knn_classification_impl(
+        model = model,
+        processed = processed,
+        output_class_probabilitie = output_class_probabilities
+      ),
+    regression =
+      predict_cuml_knn_regression_impl(
+        model = model, processed = processed
+      )
   )
-
-  out <- knn_predict_impl(model = model, processed = processed)
   hardhat::validate_prediction_size(out, processed$predictors)
 
   out
 }
 
-predict_cuml_knn_classification_impl <- function(model, processed) {
-  .knn_classifier_predict(
-    model = model$xptr,
-    x = as.matrix(processed$predictors),
-    n_neighbors = model$neighbors
-  ) %>%
-    postprocess_classification_results(model)
+predict_cuml_knn_classification_impl <- function(model, processed, output_class_probabilities) {
+  if (output_class_probabilities) {
+    preds <- .knn_classifier_predict_probabilities(
+      model = model$xptr,
+      x = as.matrix(processed$predictors),
+      n_neighbors = model$neighbors
+    )
+    pred_levels <- get_pred_levels(model)
+    preds <- hardhat::spruce_prob(pred_levels, preds)
+
+    preds
+  } else {
+    if (output_class_probabilities) {
+      stop("'output_class_probabilities' is not applicable for regression tasks!")
+    }
+    .knn_classifier_predict(
+      model = model$xptr,
+      x = as.matrix(processed$predictors),
+      n_neighbors = model$neighbors
+    ) %>%
+      postprocess_classification_results(model)
+  }
 }
 
 predict_cuml_knn_regression_impl <- function(model, processed) {

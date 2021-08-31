@@ -168,9 +168,8 @@ cuml_fil_load_model <- function(filename,
 #' using a XGBoost or LightGBM model created from \code{cuml_fil_load_model()}.
 #'
 #' @template model-with-numeric-input
+#' @template model-with-class-probabilities-output
 #' @param model The model object.
-#' @param output_class_probabilities Whether to output class probabilities. Only
-#'   applicable to binary classification tasks.
 #'
 #' @export
 predict.cuml_fil <- function(model, x, output_class_probabilities = FALSE, ...) {
@@ -181,8 +180,7 @@ predict.cuml_fil <- function(model, x, output_class_probabilities = FALSE, ...) 
     output_class_probabilities = output_class_probabilities
   )
 
-  switch(
-    model$mode,
+  switch(model$mode,
     classification = {
       if (output_class_probabilities) {
         preds <- hardhat::spruce_prob(
