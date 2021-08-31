@@ -341,8 +341,7 @@ predict.cuml_rand_forest <- function(model, x, ...,
 predict_cuml_rand_forest_bridge <- function(model, processed, cuml_log_level) {
   cuml_log_level <- match_cuml_log_level(cuml_log_level)
 
-  rand_forest_predict_impl <- switch(
-    model$mode,
+  rand_forest_predict_impl <- switch(model$mode,
     classification = predict_cuml_rand_forest_classification_impl,
     regression = predict_cuml_rand_forest_regression_impl
   )

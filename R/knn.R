@@ -400,7 +400,7 @@ register_knn_model <- function(pkgname) {
     eng = "cuml",
     parsnip = "dist_power",
     original = "p",
-    func = list(pkg = "dials", fun = "dist_power", range = c(1/10, 2)),
+    func = list(pkg = "dials", fun = "dist_power", range = c(1 / 10, 2)),
     has_submodel = FALSE
   )
 
