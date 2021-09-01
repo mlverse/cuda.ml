@@ -4,6 +4,7 @@
 #'
 #' @template supervised-model-inputs
 #' @template supervised-model-output
+#' @template ellipsis-unused
 #' @template cuml-log-level
 #' @param mtry The number of predictors that will be randomly sampled at each
 #'   split when creating the tree models. Default: the square root of the total
@@ -327,14 +328,16 @@ cuml_rand_forest_impl_regression <- function(processed, mtry, trees, min_n,
 
 #' @importFrom ellipsis check_dots_used
 #' @export
-predict.cuml_rand_forest <- function(model, x, ...,
-                                     cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
+predict.cuml_rand_forest <- function(object, ...) {
   check_dots_used()
 
-  processed <- hardhat::forge(x, model$blueprint)
+  x <- ...elt(1)
+  cuml_log_level <- ifelse(...length() > 1, ...elt(2), "off")
+
+  processed <- hardhat::forge(x, object$blueprint)
 
   predict_cuml_rand_forest_bridge(
-    model = model, processed = processed, cuml_log_level = cuml_log_level
+    model = object, processed = processed, cuml_log_level = cuml_log_level
   )
 }
 
@@ -459,8 +462,8 @@ register_rand_forest_model <- function(pkgname) {
       post = NULL,
       func = c(fun = "predict"),
       args = list(
-        model = quote(object$fit),
-        x = quote(new_data)
+        quote(object$fit),
+        quote(new_data)
       )
     )
   )
@@ -475,8 +478,8 @@ register_rand_forest_model <- function(pkgname) {
       post = NULL,
       func = c(fun = "predict"),
       args = list(
-        model = quote(object$fit),
-        x = quote(new_data)
+        quote(object$fit),
+        quote(new_data)
       )
     )
   )

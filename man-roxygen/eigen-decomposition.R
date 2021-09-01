@@ -1,4 +1,4 @@
-#' @param algo Eigen decomposition algorithm to be applied to the covariance
+#' @param eig_algo Eigen decomposition algorithm to be applied to the covariance
 #'   matrix. Valid choices are "dq" (divid-and-conquer method for symmetric
 #'   matrices) and "jacobi" (the Jacobi method for symmetric matrices).
 #'   Default: "dq".

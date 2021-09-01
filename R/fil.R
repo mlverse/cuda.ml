@@ -58,6 +58,8 @@ file_match_storage_type <- function(storage_type = c("auto", "dense", "sparse"))
 #' Inference Library (FIL).
 #'
 #' @param filename Path to the saved model file.
+#' @param mode Type of task to be performed by the model. Must be one of
+#'   {"classification", "regression"}.
 #' @param model_type Format of the saved model file. Notice if \code{filename}
 #'   ends with ".json" and \code{model_type} is "xgboost", then {cuml} will
 #'   assume the model file is in XGBoost JSON (instead of binary) format.
@@ -162,25 +164,22 @@ cuml_fil_load_model <- function(filename,
   model
 }
 
-#' Predict using a model object created from \code{cuml_fil_load_model()}.
-#'
-#' Perform GPU-accelerated high-throughput batch inference on new data points
-#' using a XGBoost or LightGBM model created from \code{cuml_fil_load_model()}.
-#'
-#' @template model-with-numeric-input
-#' @template model-with-class-probabilities-output
-#' @param model The model object.
-#'
+#' @importFrom ellipsis check_dots_used
 #' @export
-predict.cuml_fil <- function(model, x, output_class_probabilities = FALSE, ...) {
-  num_classes <- .fil_get_num_classes(model = model$xptr)
+predict.cuml_fil <- function(object, ...) {
+  check_dots_used()
+
+  x <- ...elt(1)
+  output_class_probabilities <- ifelse(...length() > 1, ...elt(2), FALSE)
+
+  num_classes <- .fil_get_num_classes(model = object$xptr)
   preds <- .fil_predict(
-    model = model$xptr,
+    model = object$xptr,
     x = as.matrix(x),
     output_class_probabilities = output_class_probabilities
   )
 
-  switch(model$mode,
+  switch(object$mode,
     classification = {
       if (output_class_probabilities) {
         preds <- hardhat::spruce_prob(

@@ -22,11 +22,20 @@ and should consist of numeric values only.}
 \item{n_components}{Number of principal component(s) to keep. Default:
 min(nrow(x), ncol(x)).}
 
+\item{eig_algo}{Eigen decomposition algorithm to be applied to the covariance
+matrix. Valid choices are "dq" (divid-and-conquer method for symmetric
+matrices) and "jacobi" (the Jacobi method for symmetric matrices).
+Default: "dq".}
+
 \item{tol}{Tolerance for singular values computed by the Jacobi method.
 Default: 1e-7.}
 
 \item{n_iters}{Maximum number of iterations for the Jacobi method.
 Default: 15.}
+
+\item{whiten}{If TRUE, then de-correlate all components, making each
+component have unit variance  and removing multi-collinearity.
+Default: FALSE.}
 
 \item{transform_input}{If TRUE, then compute an approximate representation
 of the input data. Default: TRUE.}
@@ -34,15 +43,6 @@ of the input data. Default: TRUE.}
 \item{cuml_log_level}{Log level within cuML library functions. Must be one of
 {"off", "critical", "error", "warn", "info", "debug", "trace"}.
 Default: off.}
-
-\item{algo}{Eigen decomposition algorithm to be applied to the covariance
-matrix. Valid choices are "dq" (divid-and-conquer method for symmetric
-matrices) and "jacobi" (the Jacobi method for symmetric matrices).
-Default: "dq".}
-
-\item{whitening}{If TRUE, then de-correlate all components, making each
-component have unit variance  and removing multi-collinearity.
-Default: FALSE.}
 }
 \value{
 A PCA model object with the following attributes:

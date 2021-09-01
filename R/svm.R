@@ -16,6 +16,7 @@ svm_match_kernel_type <- function(kernel = c("rbf", "tanh", "polynomial", "linea
 #' @template supervised-model-inputs
 #' @template supervised-model-output
 #' @template cuml-log-level
+#' @template ellipsis-unused
 #' @param cost A positive number for the cost of predicting a sample within or
 #'   on the wrong side of the margin. Default: 1.
 #' @param kernel Type of the SVM kernel function (must be one of "rbf", "tanh",
@@ -376,12 +377,13 @@ cuml_svm_regression_impl <- function(processed, cost, kernel, gamma, coef0,
 
 #' @importFrom ellipsis check_dots_used
 #' @export
-predict.cuml_svm <- function(model, x, ...) {
+predict.cuml_svm <- function(object, ...) {
   check_dots_used()
 
-  processed <- hardhat::forge(x, model$blueprint)
+  x <- ...elt(1)
+  processed <- hardhat::forge(x, object$blueprint)
 
-  predict_cuml_svm_bridge(model = model, processed = processed)
+  predict_cuml_svm_bridge(model = object, processed = processed)
 }
 
 predict_cuml_svm_bridge <- function(model, processed) {
@@ -543,8 +545,8 @@ register_svm_model <- function(pkgname) {
         post = NULL,
         func = c(fun = "predict"),
         args = list(
-          model = quote(object$fit),
-          x = quote(new_data)
+          quote(object$fit),
+          quote(new_data)
         )
       )
     )
@@ -559,8 +561,8 @@ register_svm_model <- function(pkgname) {
         post = NULL,
         func = c(fun = "predict"),
         args = list(
-          model = quote(object$fit),
-          x = quote(new_data)
+          quote(object$fit),
+          quote(new_data)
         )
       )
     )

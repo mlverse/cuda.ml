@@ -100,6 +100,7 @@ cuml_knn_algo_ivfsq <- function(nlist, nprobe,
 #'
 #' @template supervised-model-inputs
 #' @template supervised-model-output
+#' @template ellipsis-unused
 #' @param algo The query algorithm to use. Must be one of
 #'   {"brute", "ivfflat", "ivfpq", "ivfsq"} or a KNN algorithm specification
 #'   constructed using the \code{cuml_knn_algo_*} family of functions.
@@ -302,24 +303,18 @@ cuml_knn_bridge <- function(processed, algo, metric, p, neighbors) {
   )
 }
 
-#' Predict using a model object created from \code{cuml_knn()}.
-#'
-#' Make predictions on new data points using a GPU-accelerated KNN model.
-#'
-#' @template model-with-numeric-input
-#' @template model-with-class-probabilities-output
-#' @param model The model object.
-#'
 #' @importFrom ellipsis check_dots_used
-#'
 #' @export
-predict.cuml_knn <- function(model, x, output_class_probabilities = FALSE, ...) {
+predict.cuml_knn <- function(object, ...) {
   check_dots_used()
 
-  processed <- hardhat::forge(x, model$blueprint)
+  x <- ...elt(1)
+  output_class_probabilities <- ifelse(...length() > 1, ...elt(2), FALSE)
+
+  processed <- hardhat::forge(x, object$blueprint)
 
   predict_cuml_knn_bridge(
-    model = model,
+    model = object,
     processed = processed,
     output_class_probabilities = output_class_probabilities
   )
@@ -331,7 +326,7 @@ predict_cuml_knn_bridge <- function(model, processed, output_class_probabilities
       predict_cuml_knn_classification_impl(
         model = model,
         processed = processed,
-        output_class_probabilitie = output_class_probabilities
+        output_class_probabilities = output_class_probabilities
       ),
     regression =
       predict_cuml_knn_regression_impl(
@@ -441,9 +436,9 @@ register_knn_model <- function(pkgname) {
         post = NULL,
         func = c(fun = "predict"),
         args = list(
-          model = quote(object$fit),
-          x = quote(new_data),
-          output_class_probabilities = identical(type, "prob")
+          quote(object$fit),
+          quote(new_data),
+          identical(type, "prob") # output_class_probabilities
         )
       )
     )
@@ -459,8 +454,8 @@ register_knn_model <- function(pkgname) {
       post = NULL,
       func = c(fun = "predict"),
       args = list(
-        model = quote(object$fit),
-        x = quote(new_data)
+        quote(object$fit),
+        quote(new_data)
       )
     )
   )

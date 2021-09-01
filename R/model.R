@@ -1,3 +1,6 @@
+#' @importFrom stats predict
+NULL
+
 match_eig_algo <- function(eig_algo = c("dq", "jacobi")) {
   eig_algo <- match.arg(eig_algo)
 

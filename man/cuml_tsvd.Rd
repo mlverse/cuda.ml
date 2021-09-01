@@ -22,6 +22,11 @@ and should consist of numeric values only.}
 less than \code{ncol(x)} (i.e., the number of features in input data).
 Default: 2.}
 
+\item{eig_algo}{Eigen decomposition algorithm to be applied to the covariance
+matrix. Valid choices are "dq" (divid-and-conquer method for symmetric
+matrices) and "jacobi" (the Jacobi method for symmetric matrices).
+Default: "dq".}
+
 \item{tol}{Tolerance for singular values computed by the Jacobi method.
 Default: 1e-7.}
 
@@ -34,11 +39,6 @@ of the input data. Default: TRUE.}
 \item{cuml_log_level}{Log level within cuML library functions. Must be one of
 {"off", "critical", "error", "warn", "info", "debug", "trace"}.
 Default: off.}
-
-\item{algo}{Eigen decomposition algorithm to be applied to the covariance
-matrix. Valid choices are "dq" (divid-and-conquer method for symmetric
-matrices) and "jacobi" (the Jacobi method for symmetric matrices).
-Default: "dq".}
 }
 \value{
 A TSVD model object with the following attributes:

@@ -10,7 +10,7 @@
 #' @template cuml-log-level
 #' @param n_components Number of principal component(s) to keep. Default:
 #'   min(nrow(x), ncol(x)).
-#' @param whitening If TRUE, then de-correlate all components, making each
+#' @param whiten If TRUE, then de-correlate all components, making each
 #'   component have unit variance  and removing multi-collinearity.
 #'   Default: FALSE.
 #'

@@ -23,7 +23,8 @@ Imports:
 Suggests:
     MASS,
     mlbench,
-    purrr
+    purrr,
+    xgboost
 LinkingTo: Rcpp
 Encoding: UTF-8
 RoxygenNote: 7.1.1

@@ -70,6 +70,8 @@ cuml_knn(x, ...)
   * created from [recipes::recipe()].
   * A __formula__ specifying the predictors and the outcome.}
 
+\item{...}{Optional arguments; currently unused.}
+
 \item{y}{A numeric vector (for regression) or factor (for classification) of
 desired responses.}
 
