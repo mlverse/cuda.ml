@@ -261,6 +261,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rf_classifier_predict_class_probabilities
+Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(SEXP model_xptr, Rcpp::NumericMatrix const& input);
+RcppExport SEXP _cuml_rf_classifier_predict_class_probabilities(SEXP model_xptrSEXP, SEXP inputSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type model_xptr(model_xptrSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type input(inputSEXP);
+    rcpp_result_gen = Rcpp::wrap(rf_classifier_predict_class_probabilities(model_xptr, input));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rf_regressor_fit
 SEXP rf_regressor_fit(Rcpp::NumericMatrix const& input, Rcpp::NumericVector const& responses, int const n_trees, bool const bootstrap, float const max_samples, int const n_streams, int const max_depth, int const max_leaves, float const max_features, int const n_bins, int const min_samples_leaf, int const min_samples_split, int const split_criterion, float const min_impurity_decrease, int const max_batch_size, int const verbosity);
 RcppExport SEXP _cuml_rf_regressor_fit(SEXP inputSEXP, SEXP responsesSEXP, SEXP n_treesSEXP, SEXP bootstrapSEXP, SEXP max_samplesSEXP, SEXP n_streamsSEXP, SEXP max_depthSEXP, SEXP max_leavesSEXP, SEXP max_featuresSEXP, SEXP n_binsSEXP, SEXP min_samples_leafSEXP, SEXP min_samples_splitSEXP, SEXP split_criterionSEXP, SEXP min_impurity_decreaseSEXP, SEXP max_batch_sizeSEXP, SEXP verbositySEXP) {
@@ -538,6 +550,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuml_pca_inverse_transform", (DL_FUNC) &_cuml_pca_inverse_transform, 2},
     {"_cuml_rf_classifier_fit", (DL_FUNC) &_cuml_rf_classifier_fit, 16},
     {"_cuml_rf_classifier_predict", (DL_FUNC) &_cuml_rf_classifier_predict, 3},
+    {"_cuml_rf_classifier_predict_class_probabilities", (DL_FUNC) &_cuml_rf_classifier_predict_class_probabilities, 2},
     {"_cuml_rf_regressor_fit", (DL_FUNC) &_cuml_rf_regressor_fit, 16},
     {"_cuml_rf_regressor_predict", (DL_FUNC) &_cuml_rf_regressor_predict, 3},
     {"_cuml_rproj_johnson_lindenstrauss_min_dim", (DL_FUNC) &_cuml_rproj_johnson_lindenstrauss_min_dim, 2},
