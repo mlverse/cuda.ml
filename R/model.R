@@ -17,7 +17,7 @@ new_model <- function(cls,
   do.call(
     hardhat::new_model,
     c(
-      list(class = cls, mode = mode, xptr = xptr),
+      list(class = c(cls, "cuml_model"), mode = mode, xptr = xptr),
       rlang::dots_list(...)
     )
   )
@@ -60,7 +60,6 @@ cuml_transform <- function(model, x, ...) {
   UseMethod("cuml_transform")
 }
 
-
 #' Apply the inverse transformation defined by a trained cuML model.
 #'
 #' Given a trained cuML model, apply the inverse transformation defined by that
@@ -73,4 +72,56 @@ cuml_transform <- function(model, x, ...) {
 cuml_inverse_transform <- function(model, x, ...) {
   check_dots_used()
   UseMethod("cuml_inverse_transform")
+}
+
+cuml_is_classifier <- function(model) {
+  identical(model$mode, "classifier")
+}
+
+#' Determine whether a CuML model can predict class probabilities.
+#'
+#' Given a trained CuML model, return \code{TRUE} if the model is a classifier
+#' and is capable of outputting class probabilities as prediction results (e.g.,
+#' if the model is a KNN or an ensemble classifier), otherwise return
+#' \code{FALSE}.
+#'
+#' @param model A trained CuML model.
+cuml_can_predict_class_probabilities <- function(model) {
+  UseMethod("cuml_can_predict_class_probabilities")
+}
+
+cuml_can_predict_class_probabilities.default <- function(model) {
+  report_undefined_fn("cuml_can_predict_class_probabilities", model)
+}
+
+cuml_can_predict_class_probabilities.cuml_model <- function(model) {
+  FALSE
+}
+
+cuml_can_predict_class_probabilities.cuml_fil <- cuml_is_classifier
+
+cuml_can_predict_class_probabilities.cuml_knn <- cuml_is_classifier
+
+cuml_can_predict_class_probabilities.cuml_rand_forest <- cuml_is_classifier
+
+#' Make predictions on new data points.
+#'
+#' Use a trained CuML model to make predictions on new data points.
+#' Notice calling \code{cuml_predict()} will be identical to calling the
+#' \code{predict()} S3 generic, except for \code{cuml_predict()} also comes
+#' with proper documentation on all possible predict options (such as
+#' \code{output_class_probabilities}) and will emit a sensible error message
+#' when a predict option is not applicable for a given model.
+#'
+#' @param model A trained CuML model.
+#' @param x A matrix or dataframe containing new data points.
+#' @param output_class_probabilities Whetoer to output class probabilities.
+#'   Setting \code{output_class_probabilities} to \code{TRUE} is only valid
+#'   when the model being applied is a classification model and supports class
+#'   probabilities output. CuML classification models that support class
+#'   probabilities include \code{knn}, \code{fil}, and \code{rand_forest}.
+#'
+#' @export
+cuml_predict <- function(model, x, output_class_probabilities = NULL, ...) {
+  # TODO:
 }
