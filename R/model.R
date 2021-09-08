@@ -32,7 +32,14 @@ postprocess_classification_results <- function(predictions, model) {
   pred_levels <- get_pred_levels(model)
   predictions <- pred_levels[predictions]
   predictions <- factor(predictions, levels = pred_levels)
+
   hardhat::spruce_class(predictions)
+}
+
+postprocess_class_probabilities <- function(predictions, model) {
+  pred_levels <- get_pred_levels(model)
+
+  hardhat::spruce_prob(pred_levels, predictions)
 }
 
 postprocess_regression_results <- function(predictions) {

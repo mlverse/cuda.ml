@@ -382,14 +382,11 @@ predict_cuml_rand_forest_classification_impl <- function(model,
                                                          output_class_probabilities,
                                                          cuml_log_level) {
   if (output_class_probabilities) {
-    preds <- .rf_classifier_predict_class_probabilities(
+    .rf_classifier_predict_class_probabilities(
       model_xptr = model$xptr,
       input = as.matrix(processed$predictors)
-    )
-    pred_levels <- get_pred_levels(model)
-    preds <- hardhat::spruce_prob(pred_levels, preds)
-
-    preds
+    ) %>%
+      postprocess_class_probabilities(model)
   } else {
     .rf_classifier_predict(
       model_xptr = model$xptr,

@@ -309,7 +309,7 @@ predict.cuml_knn <- function(object, ...) {
   check_dots_used()
 
   x <- ...elt(1)
-  output_class_probabilities <- ifelse(...length() > 1, ...elt(2), FALSE)
+  output_class_probabilities <- if (...length() > 1) ...elt(2) else NULL
 
   processed <- hardhat::forge(x, object$blueprint)
 
@@ -322,16 +322,22 @@ predict.cuml_knn <- function(object, ...) {
 
 predict_cuml_knn_bridge <- function(model, processed, output_class_probabilities) {
   out <- switch(model$mode,
-    classification =
+    classification = {
       predict_cuml_knn_classification_impl(
         model = model,
         processed = processed,
-        output_class_probabilities = output_class_probabilities
-      ),
-    regression =
+        output_class_probabilities = output_class_probabilities %||% FALSE
+      )
+    },
+    regression = {
+      if (!is.null(output_class_probabilities)) {
+        stop("'output_class_probabilities' is not applicable for regression tasks!")
+      }
+
       predict_cuml_knn_regression_impl(
         model = model, processed = processed
       )
+    }
   )
   hardhat::validate_prediction_size(out, processed$predictors)
 
@@ -340,19 +346,13 @@ predict_cuml_knn_bridge <- function(model, processed, output_class_probabilities
 
 predict_cuml_knn_classification_impl <- function(model, processed, output_class_probabilities) {
   if (output_class_probabilities) {
-    preds <- .knn_classifier_predict_probabilities(
+    .knn_classifier_predict_probabilities(
       model = model$xptr,
       x = as.matrix(processed$predictors),
       n_neighbors = model$neighbors
-    )
-    pred_levels <- get_pred_levels(model)
-    preds <- hardhat::spruce_prob(pred_levels, preds)
-
-    preds
+    ) %>%
+      postprocess_class_probabilities(model)
   } else {
-    if (output_class_probabilities) {
-      stop("'output_class_probabilities' is not applicable for regression tasks!")
-    }
     .knn_classifier_predict(
       model = model$xptr,
       x = as.matrix(processed$predictors),
