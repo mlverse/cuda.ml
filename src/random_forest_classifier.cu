@@ -7,8 +7,10 @@
 #include "random_forest.cuh"
 #include "stream_allocator.h"
 
+#include <cuml/fil/fil.h>
 #include <thrust/async/copy.h>
 #include <thrust/device_vector.h>
+#include <treelite/c_api.h>
 #include <cuml/ensemble/randomforest.hpp>
 
 #include <Rcpp.h>
@@ -172,6 +174,70 @@ __host__ Rcpp::IntegerVector rf_classifier_predict(
   postprocess_labels(h_predictions, model->inverseLabelsMap_);
 
   return Rcpp::IntegerVector(h_predictions.begin(), h_predictions.end());
+}
+
+__host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
+  SEXP model_xptr, Rcpp::NumericMatrix const& input) {
+#ifndef CUML4R_TREELITE_C_API_MISSING
+
+  auto const input_m = cuml4r::Matrix<float>(input, /*transpose=*/false);
+  int const n_samples = input_m.numRows;
+  int const n_features = input_m.numCols;
+
+  auto model = Rcpp::XPtr<RandomForestClassifierModel>(model_xptr);
+  int const num_classes = model->inverseLabelsMap_.size();
+
+  ModelHandle tl_handle;
+  ML::build_treelite_forest(
+    /*model=*/&tl_handle,
+    /*forest=*/model->rf_.get(),
+    /*num_features=*/n_features,
+    /*task_category=*/num_classes);
+
+  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  raft::handle_t handle;
+  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+
+  ML::fil::forest_t forest;
+  ML::fil::treelite_params_t params;
+  params.algo = ML::fil::algo_t::ALGO_AUTO;
+  // output class probabilities instead of classes
+  params.output_class = false;
+  params.storage_type = ML::fil::storage_type_t::AUTO;
+  params.blocks_per_sm = 0;
+  params.threads_per_tree = 1;
+  params.n_items = 0;
+  params.pforest_shape_str = nullptr;
+  ML::fil::from_treelite(handle, /*pforest=*/&forest,
+                         /*model=*/tl_handle, /*tl_params=*/&params);
+
+  // FIL input
+  auto const& h_x = input_m.values;
+  thrust::device_vector<float> d_x(h_x.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(x_h2d) = cuml4r::async_copy(
+    handle.get_stream(), h_x.cbegin(), h_x.cend(), d_x.begin());
+
+  // FIL output
+  thrust::device_vector<float> d_preds(num_classes * n_samples);
+
+  ML::fil::predict(/*h=*/handle, /*f=*/forest,
+                   /*preds=*/d_preds.data().get(),
+                   /*data=*/d_x.data().get(), /*num_rows=*/n_samples,
+                   /*predict_proba=*/true);
+
+  cuml4r::pinned_host_vector<float> h_preds(d_preds.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(preds_d2h) = cuml4r::async_copy(
+    handle.get_stream(), d_preds.cbegin(), d_preds.cend(), h_preds.begin());
+
+  CUDA_RT_CALL(cudaStreamSynchronize(handle.get_stream()));
+
+  return Rcpp::transpose(
+    Rcpp::NumericMatrix(num_classes, n_samples, h_preds.begin()));
+#else
+
+  return {};
+
+#endif
 }
 
 }  // namespace cuml4r

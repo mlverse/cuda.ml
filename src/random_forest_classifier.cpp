@@ -41,3 +41,19 @@ Rcpp::IntegerVector rf_classifier_predict(SEXP model_xptr,
 
 #endif
 }
+
+// [[Rcpp::export(".rf_classifier_predict_class_probabilities")]]
+Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
+  SEXP model_xptr, Rcpp::NumericMatrix const& input) {
+#ifdef HAS_CUML
+
+  return cuml4r::rf_classifier_predict_class_probabilities(model_xptr, input);
+
+#else
+
+#include "warn_cuml_missing.h"
+
+  return {};
+
+#endif
+}
