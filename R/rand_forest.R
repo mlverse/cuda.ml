@@ -332,39 +332,72 @@ predict.cuml_rand_forest <- function(object, ...) {
   check_dots_used()
 
   x <- ...elt(1)
-  cuml_log_level <- ifelse(...length() > 1, ...elt(2), "off")
+  output_class_probabilities <- if (...length() > 1) ...elt(2) else NULL
+  cuml_log_level <- ifelse(...length() > 2, ...elt(3), "off")
 
   processed <- hardhat::forge(x, object$blueprint)
 
   predict_cuml_rand_forest_bridge(
-    model = object, processed = processed, cuml_log_level = cuml_log_level
+    model = object,
+    processed = processed,
+    output_class_probabilities = output_class_probabilities,
+    cuml_log_level = cuml_log_level
   )
 }
 
-predict_cuml_rand_forest_bridge <- function(model, processed, cuml_log_level) {
+predict_cuml_rand_forest_bridge <- function(model,
+                                            processed,
+                                            output_class_probabilities,
+                                            cuml_log_level) {
   cuml_log_level <- match_cuml_log_level(cuml_log_level)
 
-  rand_forest_predict_impl <- switch(model$mode,
-    classification = predict_cuml_rand_forest_classification_impl,
-    regression = predict_cuml_rand_forest_regression_impl
-  )
+  out <- switch(model$mode,
+    classification = {
+      predict_cuml_rand_forest_classification_impl(
+        model = model,
+        processed = processed,
+        output_class_probabilities = output_class_probabilities %||% FALSE,
+        cuml_log_level = cuml_log_level
+      )
+    },
+    regression = {
+      if (!is.null(output_class_probabilities)) {
+        stop("'output_class_probabilities' is not applicable for regression tasks!")
+      }
 
-  out <- rand_forest_predict_impl(
-    model = model, processed = processed, cuml_log_level = cuml_log_level
+      predict_cuml_rand_forest_regression_impl(
+        model = model,
+        processed = processed,
+        cuml_log_level = cuml_log_level
+      )
+    }
   )
   hardhat::validate_prediction_size(out, processed$predictors)
 
   out
 }
 
-predict_cuml_rand_forest_classification_impl <- function(model, processed,
+predict_cuml_rand_forest_classification_impl <- function(model,
+                                                         processed,
+                                                         output_class_probabilities,
                                                          cuml_log_level) {
-  .rf_classifier_predict(
-    model_xptr = model$xptr,
-    input = as.matrix(processed$predictors),
-    verbosity = cuml_log_level
-  ) %>%
-    postprocess_classification_results(model)
+  if (output_class_probabilities) {
+    preds <- .rf_classifier_predict_class_probabilities(
+      model_xptr = model$xptr,
+      input = as.matrix(processed$predictors)
+    )
+    pred_levels <- get_pred_levels(model)
+    preds <- hardhat::spruce_prob(pred_levels, preds)
+
+    preds
+  } else {
+    .rf_classifier_predict(
+      model_xptr = model$xptr,
+      input = as.matrix(processed$predictors),
+      verbosity = cuml_log_level
+    ) %>%
+      postprocess_classification_results(model)
+  }
 }
 
 predict_cuml_rand_forest_regression_impl <- function(model, processed,
@@ -452,21 +485,24 @@ register_rand_forest_model <- function(pkgname) {
     )
   }
 
-  parsnip::set_pred(
-    model = "rand_forest",
-    eng = "cuml",
-    mode = "classification",
-    type = "class",
-    value = list(
-      pre = NULL,
-      post = NULL,
-      func = c(fun = "predict"),
-      args = list(
-        quote(object$fit),
-        quote(new_data)
+  for (type in c("class", "prob")) {
+    parsnip::set_pred(
+      model = "rand_forest",
+      eng = "cuml",
+      mode = "classification",
+      type = type,
+      value = list(
+        pre = NULL,
+        post = NULL,
+        func = c(fun = "predict"),
+        args = list(
+          quote(object$fit),
+          quote(new_data),
+          identical(type, "prob") # output_class_probabilities
+        )
       )
     )
-  )
+  }
 
   parsnip::set_pred(
     model = "rand_forest",
