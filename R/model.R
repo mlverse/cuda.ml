@@ -17,7 +17,7 @@ new_model <- function(cls,
   do.call(
     hardhat::new_model,
     c(
-      list(class = cls, mode = mode, xptr = xptr),
+      list(class = c(cls, "cuml_model"), mode = mode, xptr = xptr),
       rlang::dots_list(...)
     )
   )
@@ -67,7 +67,6 @@ cuml_transform <- function(model, x, ...) {
   UseMethod("cuml_transform")
 }
 
-
 #' Apply the inverse transformation defined by a trained cuML model.
 #'
 #' Given a trained cuML model, apply the inverse transformation defined by that
@@ -80,4 +79,113 @@ cuml_transform <- function(model, x, ...) {
 cuml_inverse_transform <- function(model, x, ...) {
   check_dots_used()
   UseMethod("cuml_inverse_transform")
+}
+
+#' Determine whether a CuML model is a classifier.
+#'
+#' Given a trained CuML model, return \code{TRUE} if the model is a classifier,
+#' otherwise \code{FALSE} (e.g., if the model is a regressor).
+#'
+#' @param model A trained CuML model.
+#'
+#' @export
+cuml_is_classifier <- function(model) {
+  UseMethod("cuml_is_classifier")
+}
+
+#' @export
+cuml_is_classifier.default <- function(model) {
+  report_undefined_fn("cuml_is_classifier", model)
+}
+
+#' @export
+cuml_is_classifier.cuml_model <- function(model) {
+  identical(model$mode, "classification")
+}
+
+#' Determine whether a CuML model can predict class probabilities.
+#'
+#' Given a trained CuML model, return \code{TRUE} if the model is a classifier
+#' and is capable of outputting class probabilities as prediction results (e.g.,
+#' if the model is a KNN or an ensemble classifier), otherwise return
+#' \code{FALSE}.
+#'
+#' @param model A trained CuML model.
+#'
+#' @export
+cuml_can_predict_class_probabilities <- function(model) {
+  UseMethod("cuml_can_predict_class_probabilities")
+}
+
+#' @export
+cuml_can_predict_class_probabilities.default <- function(model) {
+  report_undefined_fn("cuml_can_predict_class_probabilities", model)
+}
+
+#' @export
+cuml_can_predict_class_probabilities.cuml_model <- function(model) {
+  FALSE
+}
+
+cuml_can_predict_class_probabilities.cuml_fil <- cuml_is_classifier
+
+cuml_can_predict_class_probabilities.cuml_knn <- cuml_is_classifier
+
+cuml_can_predict_class_probabilities.cuml_rand_forest <- cuml_is_classifier
+
+#' Make predictions on new data points.
+#'
+#' Use a trained CuML model to make predictions on new data points.
+#' Notice calling \code{cuml_predict()} will be identical to calling the
+#' \code{predict()} S3 generic, except for \code{cuml_predict()} also comes
+#' with proper documentation on all possible predict options (such as
+#' \code{output_class_probabilities}) and will emit a sensible warning message
+#' when a predict option is not applicable for a given model.
+#'
+#' @param model A trained CuML model.
+#' @param x A matrix or dataframe containing new data points.
+#' @param output_class_probabilities Whether to output class probabilities.
+#'   NOTE: setting \code{output_class_probabilities} to \code{TRUE} is only
+#'   valid when the model being applied is a classification model and supports
+#'   class probabilities output. CuML classification models supporting class
+#'   probabilities include \code{knn}, \code{fil}, and \code{rand_forest}.
+#'   A warning message will be emitted if \code{output_class_probabilities}
+#'   is set to \code{TRUE} or \code{FALSE} but the model being applied does
+#'   not support class probabilities output.
+#' @param ... Additional arguments to \code{predict()}. Currently unused.
+#'
+#' @importFrom ellipsis check_dots_used
+#' @export
+cuml_predict <- function(model, x, output_class_probabilities = NULL, ...) {
+  check_dots_used()
+  UseMethod("cuml_predict")
+}
+
+#' @export
+cuml_predict.default <- function(model, x, output_class_probabilities = NULL, ...) {
+  report_undefined_fn("cuml_predict", model)
+}
+
+#' @export
+cuml_predict.cuml_model <- function(model, x, output_class_probabilities = NULL, ...) {
+  can_predict_class_probabilities <- cuml_can_predict_class_probabilities(model)
+
+  if (!can_predict_class_probabilities &&
+      identical(output_class_probabilities, TRUE)) {
+    model_cls <- class(model)
+    model_cls <- model_cls[which(startsWith(model_cls, "cuml_"))]
+    model_type <- ifelse(cuml_is_classifier(model), "Classifier", "Regressor")
+    warning(
+      model_type,
+      " of type '",
+      paste(model_cls, collapse = " "),
+      "' does not support outputting class probabilities!"
+    )
+  }
+
+  if (can_predict_class_probabilities && !is.null(output_class_probabilities)) {
+    predict(model, x, as.logical(output_class_probabilities), ...)
+  } else {
+    predict(model, x, ...)
+  }
 }

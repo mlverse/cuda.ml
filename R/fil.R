@@ -159,11 +159,17 @@ cuml_fil_load_model <- function(filename,
     blocks_per_sm = as.integer(blocks_per_sm)
   )
   model <- list(mode = mode, xptr = xptr)
-  class(model) <- c("cuml_fil", class(model))
+  class(model) <- c("cuml_fil", "cuml_model", class(model))
 
   model
 }
 
+#' Make predictions on new data points.
+#'
+#' Make predictions on new data points using a FIL model.
+#' See \code{\link{cuml_predict}} for full documentation of parameters.
+#'
+#' @seealso cuml_predict
 #' @importFrom ellipsis check_dots_used
 #' @export
 predict.cuml_fil <- function(object, ...) {
