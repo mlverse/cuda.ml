@@ -1,5 +1,19 @@
 # cuml 0.1.0.9000
 
+### R Interface Improvements
+
+- Re-wrote R interfaces of all supervised ML algorithms using {hardhat} to
+  support data-frame, matrix, formula, and recipe inputs, per suggestion from
+  @topepo in https://github.com/mlverse/cuml/issues/78 and
+  https://github.com/mlverse/cuml/issues/77.
+
+- Added {parsnip} bindings for random forest, SVM, and KNN models.
+
+- Improved warning message for missing linkage to the RAPIDS CuML shared
+  library. If the C++/CUDA source code of this package was not linked with a
+  valid version of the RAPIDS CuML shared library when the package was
+  installed, then a warning will be emitted whenever the package is loaded.
+
 ### Clustering
 
 - Added support K-Means initialization options (namely, "kmeans++", "random",
@@ -7,6 +21,8 @@
   `cuML`.
 
 - Added 'cuml_log_level' option to `cuml_dbscan()`.
+
+- Implemented R interface for single-linkage agglomerative clustering.
 
 ### Dimensionality Reduction
 
@@ -22,6 +38,9 @@
 - Added R interface for CuML Forest Inference Library (FIL). Users can load any
   existing XGBoost or LightGBM model using Treelite and use the model to perform
   high-throughput batch inference using GPU acceleration provided by FIL.
+
+- Implemented R interface for K-Nearest Neighbor (KNN) classification and
+  regression.
 
 ### Concurrency
 
@@ -65,16 +84,19 @@
   source option is more for advanced use cases that require customizations of
   RAPIDS cuML libraries' build parameters, compilers, etc, and is somewhat time-
   consuming and not as beginner-friendly as installing `cuML` directly from
-  conda.
+  Conda.
 
 - Found and fixed a few typos and inconsistencies.
 
 - Some examples were simplified.
 
+- Added documentation for `predict()` functions per suggestion from @topepo in
+  https://github.com/mlverse/cuml/issues/80.
+
 ### Misc
 
 - Configuration script was revised to work with RAPIDS cuML libraries installed
-  via conda or built from source. If RAPIDS cuML libraries could not be located
+  via Conda or built from source. If RAPIDS cuML libraries could not be located
   during the configuration process, then a warning message will be emitted.
 
 - Improved on the initial prototype of {cuml} by utilizing modern C++
