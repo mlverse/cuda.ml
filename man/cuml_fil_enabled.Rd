@@ -7,6 +7,10 @@ in the current installation of {cuml}.}
 \usage{
 cuml_fil_enabled()
 }
+\value{
+A logical value indicating whether the Forest Inference Library (FIL)
+  functionalities are enabled.
+}
 \description{
 CuML Forest Inference Library (FIL) functionalities (see
 https://github.com/rapidsai/cuml/tree/main/python/cuml/fil#readme) will

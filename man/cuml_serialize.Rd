@@ -14,6 +14,10 @@ model state is serialized to a raw vector.}
 
 \item{...}{Additional arguments to \code{base::serialize()}.}
 }
+\value{
+\code{NULL} unless \code{connection} is \code{NULL}, in which case
+  the serialized model state is returned as a raw vector.
+}
 \description{
 Given a CuML model, serialize its state into a connection.
 }

@@ -13,6 +13,9 @@ cuml_transform(model, x, ...)
 
 \item{...}{Additional model-specific parameters (if any).}
 }
+\value{
+The transformed data points.
+}
 \description{
 Given a trained cuML model, transform an input dataset using that model.
 }

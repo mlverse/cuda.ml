@@ -31,7 +31,7 @@ SEXP rproj_fit(int const n_samples, int const n_features,
 
 #include "warn_cuml_missing.h"
 
-  return nullptr;
+  return Rcpp::List();
 #endif
 }
 

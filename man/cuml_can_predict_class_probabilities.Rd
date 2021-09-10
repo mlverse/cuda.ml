@@ -9,6 +9,10 @@ cuml_can_predict_class_probabilities(model)
 \arguments{
 \item{model}{A trained CuML model.}
 }
+\value{
+A logical value indicating whether the model supports outputting
+  class probabilities.
+}
 \description{
 Given a trained CuML model, return \code{TRUE} if the model is a classifier
 and is capable of outputting class probabilities as prediction results (e.g.,

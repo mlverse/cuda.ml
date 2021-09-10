@@ -22,6 +22,9 @@ not support class probabilities output.}
 
 \item{...}{Additional arguments to \code{predict()}. Currently unused.}
 }
+\value{
+Predictions on new data points.
+}
 \description{
 Use a trained CuML model to make predictions on new data points.
 Notice calling \code{cuml_predict()} will be identical to calling the

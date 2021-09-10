@@ -88,6 +88,8 @@ cuml_inverse_transform <- function(model, x, ...) {
 #'
 #' @param model A trained CuML model.
 #'
+#' @return A logical value indicating whether the model is a classifier.
+#'
 #' @export
 cuml_is_classifier <- function(model) {
   UseMethod("cuml_is_classifier")
@@ -111,6 +113,9 @@ cuml_is_classifier.cuml_model <- function(model) {
 #' \code{FALSE}.
 #'
 #' @param model A trained CuML model.
+#'
+#' @return A logical value indicating whether the model supports outputting
+#'   class probabilities.
 #'
 #' @export
 cuml_can_predict_class_probabilities <- function(model) {
@@ -153,6 +158,8 @@ cuml_can_predict_class_probabilities.cuml_rand_forest <- cuml_is_classifier
 #'   is set to \code{TRUE} or \code{FALSE} but the model being applied does
 #'   not support class probabilities output.
 #' @param ... Additional arguments to \code{predict()}. Currently unused.
+#'
+#' @return Predictions on new data points.
 #'
 #' @importFrom ellipsis check_dots_used
 #' @export
@@ -199,6 +206,9 @@ cuml_predict.cuml_model <- function(model, x, output_class_probabilities = NULL,
 #'   model state is serialized to a raw vector.
 #' @param ... Additional arguments to \code{base::serialize()}.
 #'
+#' @return \code{NULL} unless \code{connection} is \code{NULL}, in which case
+#'   the serialized model state is returned as a raw vector.
+#'
 #' @seealso \code{\link[base]{serialize}}
 #'
 #' @export
@@ -232,6 +242,8 @@ cuml_serialize.cuml_model <- function(model, connection, ...) {
 #'
 #' @param connection An open connection or a raw vector.
 #' @param ... Additional arguments to \code{base::unserialize()}.
+#'
+#' @return A unserialized CuML model.
 #'
 #' @seealso \code{\link[base]{unserialize}}
 #'

@@ -165,8 +165,8 @@ specified as a  __data frame__ containing the predictors and (if
 applicable) the outcome.}
 }
 \value{
-A Support Vector Machine classifier / regressor object that can be
-  used with the 'predict' S3 generic to make predictions on new data points.
+A SVM classifier / regressor object that can be used with the
+  'predict' S3 generic to make predictions on new data points.
 }
 \description{
 Train a Support Vector Machine model for classification or regression tasks.

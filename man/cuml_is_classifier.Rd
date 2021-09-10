@@ -9,6 +9,9 @@ cuml_is_classifier(model)
 \arguments{
 \item{model}{A trained CuML model.}
 }
+\value{
+A logical value indicating whether the model is a classifier.
+}
 \description{
 Given a trained CuML model, return \code{TRUE} if the model is a classifier,
 otherwise \code{FALSE} (e.g., if the model is a regressor).

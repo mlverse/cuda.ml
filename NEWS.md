@@ -1,4 +1,4 @@
-# cuml 0.1.0.9000
+# cuml 0.2.0
 
 ### R Interface Improvements
 

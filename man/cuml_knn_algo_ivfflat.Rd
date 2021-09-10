@@ -12,6 +12,10 @@ cuml_knn_algo_ivfflat(nlist, nprobe)
 \item{nprobe}{At query time, the number of cells used for approximate nearest
 neighbor search.}
 }
+\value{
+An object encapsulating all required parameters of the "ivfflat" KNN
+  query algorithm.
+}
 \description{
 Build a specification of the flat-inverted-file KNN query algorithm, with all
 required parameters specified explicitly.

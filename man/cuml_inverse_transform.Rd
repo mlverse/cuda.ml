@@ -13,6 +13,9 @@ cuml_inverse_transform(model, x, ...)
 
 \item{...}{Additional model-specific parameters (if any).}
 }
+\value{
+The transformed data points.
+}
 \description{
 Given a trained cuML model, apply the inverse transformation defined by that
 model to an input dataset.
