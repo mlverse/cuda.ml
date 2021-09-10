@@ -32,7 +32,7 @@ Rcpp::NumericVector svr_predict(SEXP svr_xptr, Rcpp::NumericMatrix const& X) {
 
 #include "warn_cuml_missing.h"
 
-  return {};
+  return Rcpp::NumericVector(X.nrow());
 
 #endif
 }

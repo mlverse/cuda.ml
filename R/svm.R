@@ -380,6 +380,8 @@ cuml_svm_regression_impl <- function(processed, cost, kernel, gamma, coef0,
 #' Make predictions on new data points using a CuML SVM model.
 #' See \code{\link{cuml_predict}} for full documentation of parameters.
 #'
+#' @template predict
+#'
 #' @seealso cuml_predict
 #' @importFrom ellipsis check_dots_used
 #' @export

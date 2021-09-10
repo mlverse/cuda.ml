@@ -37,7 +37,7 @@ Rcpp::IntegerVector rf_classifier_predict(SEXP model_xptr,
 
 #include "warn_cuml_missing.h"
 
-  return {};
+  return Rcpp::IntegerVector(input.nrow(), 1);
 
 #endif
 }
@@ -53,7 +53,7 @@ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
 
 #include "warn_cuml_missing.h"
 
-  return {};
+  return Rcpp::NumericMatrix(input.nrow(), 2);
 
 #endif
 }

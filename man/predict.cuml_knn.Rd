@@ -6,6 +6,12 @@
 \usage{
 \method{predict}{cuml_knn}(object, ...)
 }
+\arguments{
+\item{object}{A trained CuML model.}
+
+\item{...}{See \code{\link{cuml_predict}} for full documentation of all other
+parameters.}
+}
 \description{
 Make predictions on new data points using a CuML KNN model.
 See \code{\link{cuml_predict}} for full documentation of parameters.

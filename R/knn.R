@@ -308,6 +308,8 @@ cuml_knn_bridge <- function(processed, algo, metric, p, neighbors) {
 #' Make predictions on new data points using a CuML KNN model.
 #' See \code{\link{cuml_predict}} for full documentation of parameters.
 #'
+#' @template predict
+#'
 #' @seealso cuml_predict
 #' @importFrom ellipsis check_dots_used
 #' @export

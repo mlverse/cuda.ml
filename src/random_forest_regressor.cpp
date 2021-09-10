@@ -36,7 +36,7 @@ Rcpp::NumericVector rf_regressor_predict(SEXP model_xptr,
 
 #include "warn_cuml_missing.h"
 
-  return {};
+  return Rcpp::NumericVector(input.nrow());
 
 #endif
 }

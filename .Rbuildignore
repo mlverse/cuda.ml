@@ -1,5 +1,5 @@
 ^\.gitignore$
-^man-roxygen/
+^man-roxygen$
 ^README\.md$
 ^NEWS\.md$
 ^src/\.gitignore$

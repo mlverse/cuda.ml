@@ -33,7 +33,7 @@ SEXP svc_predict(SEXP model_xptr, Rcpp::NumericMatrix const& input,
 
 #include "warn_cuml_missing.h"
 
-  return Rcpp::IntegerVector();
+  return Rcpp::IntegerVector(input.nrow(), 1);
 
 #endif
 }

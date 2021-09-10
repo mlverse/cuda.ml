@@ -25,7 +25,8 @@ Rcpp::NumericMatrix tsne_fit(
 
 #include "warn_cuml_missing.h"
 
-  return {};
+  // dummy values with distinct data points
+  return Rcpp::NumericMatrix::diag(x.nrow(), 1);
 
 #endif
 }

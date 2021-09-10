@@ -27,7 +27,7 @@ SEXP fil_load_model(int const model_type, std::string const& filename,
 
 #else
 
-  return nullptr;
+  return Rcpp::List();
 
 #endif
 }
@@ -54,7 +54,8 @@ Rcpp::NumericMatrix fil_predict(SEXP const& model, Rcpp::NumericMatrix const& x,
 
 #else
 
-  return {};
+  Rcpp::NumericVector const preds(x.nrow(), 1.0);
+  return Rcpp::NumericMatrix(x.nrow(), 1, preds.cbegin());
 
 #endif
 }

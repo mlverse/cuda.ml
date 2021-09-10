@@ -13,7 +13,7 @@ SEXP knn_classifier_fit(Rcpp::NumericMatrix const& x,
 
 #include "warn_cuml_missing.h"
 
-  return nullptr;
+  return Rcpp::List();
 
 #endif
 }
@@ -29,7 +29,7 @@ Rcpp::IntegerVector knn_classifier_predict(Rcpp::List const& model,
 
 #include "warn_cuml_missing.h"
 
-  return {};
+  return Rcpp::IntegerVector(x.nrow(), 1);
 
 #endif
 }
@@ -45,7 +45,7 @@ Rcpp::NumericMatrix knn_classifier_predict_probabilities(
 
 #include "warn_cuml_missing.h"
 
-  return {};
+  return Rcpp::NumericMatrix(x.nrow(), 2);
 
 #endif
 }
@@ -79,7 +79,7 @@ Rcpp::NumericVector knn_regressor_predict(Rcpp::List const& model,
 
 #include "warn_cuml_missing.h"
 
-  return {};
+  return Rcpp::NumericVector(x.nrow());
 
 #endif
 }
