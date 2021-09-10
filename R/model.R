@@ -171,7 +171,7 @@ cuml_predict.cuml_model <- function(model, x, output_class_probabilities = NULL,
   can_predict_class_probabilities <- cuml_can_predict_class_probabilities(model)
 
   if (!can_predict_class_probabilities &&
-      identical(output_class_probabilities, TRUE)) {
+    identical(output_class_probabilities, TRUE)) {
     model_cls <- class(model)
     model_cls <- model_cls[which(startsWith(model_cls, "cuml_"))]
     model_type <- ifelse(cuml_is_classifier(model), "Classifier", "Regressor")
