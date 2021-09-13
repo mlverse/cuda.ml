@@ -49,3 +49,33 @@ Rcpp::NumericMatrix umap_transform(Rcpp::List const& model,
 
 #endif
 }
+
+// [[Rcpp::export(".cuml_umap_get_state")]]
+Rcpp::List umap_get_state(Rcpp::List const& model) {
+#ifdef HAS_CUML
+
+  return cuml4r::umap_get_state(model);
+
+#else
+
+#include "warn_cuml_missing.h"
+
+  return Rcpp::List();
+
+#endif
+}
+
+// [[Rcpp::export(".cuml_umap_set_state")]]
+Rcpp::List umap_set_state(Rcpp::List const& state) {
+#ifdef HAS_CUML
+
+  return cuml4r::umap_set_state(state);
+
+#else
+
+#include "warn_cuml_missing.h"
+
+  return Rcpp::List();
+
+#endif
+}

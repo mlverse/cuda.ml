@@ -2,6 +2,7 @@
 #include "cuda_utils.h"
 #include "handle_utils.h"
 #include "matrix_utils.h"
+#include "model_constants.h"
 #include "pinned_host_vector.h"
 #include "preprocessor.h"
 #include "stream_allocator.h"
@@ -45,6 +46,36 @@ __host__ void set_target_weight(
 }  // namespace
 
 namespace cuml4r {
+
+namespace {
+
+constexpr auto kModelParamNumNeighbors = "n_neighbors";
+constexpr auto kModelParamNumComponents = "n_components";
+constexpr auto kModelParamNumEpochs = "n_epochs";
+constexpr auto kModelParamsLearningRate = "learning_rate";
+constexpr auto kModelParamsMinDist = "min_dist";
+constexpr auto kModelParamsSpread = "spread";
+constexpr auto kModelParamsSetOpMixRatio = "set_op_mix_ratio";
+constexpr auto kModelParamsLocalConnectivity = "local_connectivity";
+constexpr auto kModelParamsRepulsionStrength = "repulsion_strength";
+constexpr auto kModelParamsNegativeLearningRate = "negative_sample_rate";
+constexpr auto kModelParamsTransformQueueSize = "transform_queue_size";
+constexpr auto kModelParamsVerbosity = "verbosity";
+constexpr auto kModelParamsA = "a";
+constexpr auto kModelParamsB = "b";
+constexpr auto kModelParamsInit = "init";
+constexpr auto kModelParamsTargetNumNeighbors = "target_n_neighbors";
+constexpr auto kModelParamsTargetMetric = "target_metric";
+constexpr auto kModelParamsTargetWeight = "target_weight";
+constexpr auto kModelParamsRandomState = "random_state";
+constexpr auto kModelParamsDeterministic = "deterministic";
+
+constexpr auto kUmapParams = "umap_params";
+constexpr auto kEmbedding = "embedding";
+constexpr auto kNumSamples = "n_samples";
+constexpr auto kX = "x";
+
+}  // namespace
 
 __host__ Rcpp::List umap_fit(
   Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& y,
@@ -126,11 +157,11 @@ __host__ Rcpp::List umap_fit(
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
-  model["umap_params"] = Rcpp::XPtr<ML::UMAPParams>(params.release());
-  model["embedding"] = Rcpp::transpose(
+  model[kUmapParams] = Rcpp::XPtr<ML::UMAPParams>(params.release());
+  model[kEmbedding] = Rcpp::transpose(
     Rcpp::NumericMatrix(n_components, n_samples, h_embedding.begin()));
-  model["n_samples"] = n_samples;
-  model["x"] = x;
+  model[kNumSamples] = n_samples;
+  model[kX] = x;
 
   return model;
 }
@@ -140,10 +171,10 @@ __host__ Rcpp::NumericMatrix umap_transform(Rcpp::List const& model,
   auto const m_x = cuml4r::Matrix<float>(x, /*transpose=*/false);
   auto const n_samples = m_x.numRows;
   auto const n_features = m_x.numCols;
-  auto const m_orig = cuml4r::Matrix<float>(model["x"], /*transpose=*/false);
+  auto const m_orig = cuml4r::Matrix<float>(model[kX], /*transpose=*/false);
   auto const m_embedding =
-    cuml4r::Matrix<float>(model["embedding"], /*transpose=*/false);
-  Rcpp::XPtr<ML::UMAPParams> params = model["umap_params"];
+    cuml4r::Matrix<float>(model[kEmbedding], /*transpose=*/false);
+  Rcpp::XPtr<ML::UMAPParams> params = model[kUmapParams];
 
   auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
   raft::handle_t handle;
@@ -184,6 +215,92 @@ __host__ Rcpp::NumericMatrix umap_transform(Rcpp::List const& model,
 
   return Rcpp::transpose(
     Rcpp::NumericMatrix(m_embedding.numCols, n_samples, h_transformed.begin()));
+}
+
+Rcpp::List umap_get_state(Rcpp::List const& model) {
+  Rcpp::List state;
+
+  {
+    Rcpp::List umap_params_list;
+    Rcpp::XPtr<ML::UMAPParams const> const umap_params = model[kUmapParams];
+
+    umap_params_list[kModelParamNumNeighbors] = umap_params->n_neighbors;
+    umap_params_list[kModelParamNumComponents] = umap_params->n_components;
+    umap_params_list[kModelParamNumEpochs] = umap_params->n_epochs;
+    umap_params_list[kModelParamsLearningRate] = umap_params->learning_rate;
+    umap_params_list[kModelParamsMinDist] = umap_params->min_dist;
+    umap_params_list[kModelParamsSpread] = umap_params->spread;
+    umap_params_list[kModelParamsSetOpMixRatio] = umap_params->set_op_mix_ratio;
+    umap_params_list[kModelParamsLocalConnectivity] =
+      umap_params->local_connectivity;
+    umap_params_list[kModelParamsRepulsionStrength] =
+      umap_params->repulsion_strength;
+    umap_params_list[kModelParamsNegativeLearningRate] =
+      umap_params->negative_sample_rate;
+    umap_params_list[kModelParamsTransformQueueSize] =
+      umap_params->transform_queue_size;
+    umap_params_list[kModelParamsVerbosity] = umap_params->verbosity;
+    umap_params_list[kModelParamsA] = umap_params->a;
+    umap_params_list[kModelParamsB] = umap_params->b;
+    umap_params_list[kModelParamsInit] = umap_params->init;
+    umap_params_list[kModelParamsTargetNumNeighbors] =
+      umap_params->target_n_neighbors;
+    umap_params_list[kModelParamsTargetMetric] =
+      static_cast<int>(umap_params->target_metric);
+    umap_params_list[kModelParamsTargetWeight] =
+      static_cast<int>(umap_params->target_weight);
+    umap_params_list[kModelParamsRandomState] = umap_params->random_state;
+    umap_params_list[kModelParamsDeterministic] = umap_params->deterministic;
+    state[kUmapParams] = std::move(umap_params_list);
+  }
+  state[kEmbedding] = model[kEmbedding];
+  state[kNumSamples] = model[kNumSamples];
+  state[kX] = model[kX];
+  state.attr(kModelType) = "cuml_umap";
+
+  return state;
+}
+
+Rcpp::List umap_set_state(Rcpp::List const& state) {
+  Rcpp::List model;
+
+  {
+    auto umap_params = std::make_unique<ML::UMAPParams>();
+    Rcpp::List const& umap_params_list = state[kUmapParams];
+
+    umap_params->n_neighbors = umap_params_list[kModelParamNumNeighbors];
+    umap_params->n_components = umap_params_list[kModelParamNumComponents];
+    umap_params->n_epochs = umap_params_list[kModelParamNumEpochs];
+    umap_params->learning_rate = umap_params_list[kModelParamsLearningRate];
+    umap_params->min_dist = umap_params_list[kModelParamsMinDist];
+    umap_params->spread = umap_params_list[kModelParamsSpread];
+    umap_params->set_op_mix_ratio = umap_params_list[kModelParamsSetOpMixRatio];
+    umap_params->local_connectivity =
+      umap_params_list[kModelParamsLocalConnectivity];
+    umap_params->repulsion_strength =
+      umap_params_list[kModelParamsRepulsionStrength];
+    umap_params->negative_sample_rate =
+      umap_params_list[kModelParamsNegativeLearningRate];
+    umap_params->transform_queue_size =
+      umap_params_list[kModelParamsTransformQueueSize];
+    umap_params->verbosity = umap_params_list[kModelParamsVerbosity];
+    umap_params->a = umap_params_list[kModelParamsA];
+    umap_params->b = umap_params_list[kModelParamsB];
+    umap_params->init = umap_params_list[kModelParamsInit];
+    umap_params->target_n_neighbors =
+      umap_params_list[kModelParamsTargetNumNeighbors];
+    umap_params->target_metric = static_cast<ML::UMAPParams::MetricType>(
+      Rcpp::as<int>(umap_params_list[kModelParamsTargetMetric]));
+    umap_params->target_weight = umap_params_list[kModelParamsTargetWeight];
+    umap_params->random_state = umap_params_list[kModelParamsRandomState];
+    umap_params->deterministic = umap_params_list[kModelParamsDeterministic];
+    model[kUmapParams] = Rcpp::XPtr<ML::UMAPParams>(umap_params.release());
+  }
+  model[kEmbedding] = state[kEmbedding];
+  model[kNumSamples] = state[kNumSamples];
+  model[kX] = state[kX];
+
+  return model;
 }
 
 }  // namespace cuml4r
