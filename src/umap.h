@@ -20,4 +20,7 @@ Rcpp::List umap_fit(Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& y,
 Rcpp::NumericMatrix umap_transform(Rcpp::List const& model,
                                    Rcpp::NumericMatrix const& x);
 
+Rcpp::List umap_get_state(Rcpp::List const& model);
+Rcpp::List umap_set_state(Rcpp::List const& state);
+
 }  // namespace cuml4r

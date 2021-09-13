@@ -129,3 +129,11 @@
     .Call(`_cuml_umap_transform`, model, x)
 }
 
+.cuml_umap_get_state <- function(model) {
+    .Call(`_cuml_umap_get_state`, model)
+}
+
+.cuml_umap_set_state <- function(state) {
+    .Call(`_cuml_umap_set_state`, state)
+}
+
