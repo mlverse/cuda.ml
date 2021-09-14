@@ -215,9 +215,7 @@ cuml_serialize.default <- function(model, connection, ...) {
 cuml_serialize.cuml_model <- function(model, connection, ...) {
   model_type <- class(model)[[1]]
   get_state_impl <- tryCatch(
-    get(
-      paste0(".", model_type, "_get_state", envir = asNamespace("cuml"))
-    ),
+    get(paste0(".", model_type, "_get_state")),
     error = function(e) {
       stop("Model of type '", model_type, "' does not support serialization.")
     }
@@ -239,22 +237,10 @@ cuml_serialize.cuml_model <- function(model, connection, ...) {
 #'
 #' @export
 cuml_unserialize <- function(connection, ...) {
-  UseMethod("cuml_unserialize")
-}
-
-#' @export
-cuml_unserialize.default <- function(connection, ...) {
-  report_undefined_fn("cuml_unserialize", model)
-}
-
-#' @export
-cuml_unserialize.cuml_model <- function(connection, ...) {
   state <- unserialize(connection, ...)
   model_type <- attributes(state)$model_type
   set_state_impl <- tryCatch(
-    get(
-      paste0(".", model_type, "_set_state", envir = asNamespace("cuml"))
-    ),
+    get(paste0(".", model_type, "_set_state")),
     error = function(e) {
       stop("Model of type '", model_type, "' does not support unserialization.")
     }
