@@ -189,3 +189,79 @@ cuml_predict.cuml_model <- function(model, x, output_class_probabilities = NULL,
     predict(model, x, ...)
   }
 }
+
+#' Serialize a CuML model
+#'
+#' Given a CuML model, serialize its state into a connection.
+#'
+#' @param model The model object.
+#' @param connection An open connection or \code{NULL}. If \code{NULL}, then the
+#'   model state is serialized to a raw vector.
+#' @param ... Additional arguments to \code{base::serialize()}.
+#'
+#' @seealso \code{\link[base]{serialize}}
+#'
+#' @export
+cuml_serialize <- function(model, connection, ...) {
+  UseMethod("cuml_serialize")
+}
+
+#' @export
+cuml_serialize.default <- function(model, connection, ...) {
+  report_undefined_fn("cuml_serialize", model)
+}
+
+#' @export
+cuml_serialize.cuml_model <- function(model, connection, ...) {
+  model_type <- class(model)[[1]]
+  get_state_impl <- tryCatch(
+    get(
+      paste0(".", model_type, "_get_state", envir = asNamespace("cuml"))
+    ),
+    error = function(e) {
+      stop("Model of type '", model_type, "' does not support serialization.")
+    }
+  )
+
+  model %>%
+    get_state_impl() %>%
+    serialize(connection, ...)
+}
+
+#' Unserialize a CuML model state
+#'
+#' Unserialize a CuML model state into a CuML model object.
+#'
+#' @param connection An open connection or a raw vector.
+#' @param ... Additional arguments to \code{base::unserialize()}.
+#'
+#' @seealso \code{\link[base]{unserialize}}
+#'
+#' @export
+cuml_unserialize <- function(connection, ...) {
+  UseMethod("cuml_unserialize")
+}
+
+#' @export
+cuml_unserialize.default <- function(connection, ...) {
+  report_undefined_fn("cuml_unserialize", model)
+}
+
+#' @export
+cuml_unserialize.cuml_model <- function(connection, ...) {
+  state <- unserialize(connection, ...)
+  model_type <- attributes(state)$model_type
+  set_state_impl <- tryCatch(
+    get(
+      paste0(".", model_type, "_set_state", envir = asNamespace("cuml"))
+    ),
+    error = function(e) {
+      stop("Model of type '", model_type, "' does not support unserialization.")
+    }
+  )
+
+  model <- set_state_impl(state)
+  class(model) <- c(model_type, "cuml_model", class(model))
+
+  model
+}

@@ -135,7 +135,7 @@ cuml_umap <- function(x, y = NULL, n_components = 2L, n_neighbors = 15L,
     deterministic = !is.null(seed),
     verbosity = cuml_log_level
   )
-  class(model) <- c("cuml_umap", class(model))
+  class(model) <- c("cuml_umap", "cuml_model", class(model))
 
   if (transform_input) {
     model$transformed_data <- cuml_transform(model, x)
