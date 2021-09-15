@@ -531,6 +531,28 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// umap_get_state
+Rcpp::List umap_get_state(Rcpp::List const& model);
+RcppExport SEXP _cuml_umap_get_state(SEXP modelSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List const& >::type model(modelSEXP);
+    rcpp_result_gen = Rcpp::wrap(umap_get_state(model));
+    return rcpp_result_gen;
+END_RCPP
+}
+// umap_set_state
+Rcpp::List umap_set_state(Rcpp::List const& state);
+RcppExport SEXP _cuml_umap_set_state(SEXP stateSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List const& >::type state(stateSEXP);
+    rcpp_result_gen = Rcpp::wrap(umap_set_state(state));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_cuml_agglomerative_clustering", (DL_FUNC) &_cuml_agglomerative_clustering, 5},
@@ -565,6 +587,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuml_tsvd_inverse_transform", (DL_FUNC) &_cuml_tsvd_inverse_transform, 2},
     {"_cuml_umap_fit", (DL_FUNC) &_cuml_umap_fit, 22},
     {"_cuml_umap_transform", (DL_FUNC) &_cuml_umap_transform, 2},
+    {"_cuml_umap_get_state", (DL_FUNC) &_cuml_umap_get_state, 1},
+    {"_cuml_umap_set_state", (DL_FUNC) &_cuml_umap_set_state, 1},
     {NULL, NULL, 0}
 };
 
