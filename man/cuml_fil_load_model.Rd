@@ -73,6 +73,10 @@ blocks to lauch for the inference kernel.
   is not guaranteed that \code{blocks_per_sm} blocks will run on an SM
   concurrently.}
 }
+\value{
+A GPU-accelerated FIL model that can be used with the 'predict' S3
+  generic to make predictions on new data points.
+}
 \description{
 Load a XGBoost or LightGBM model file using Treelite. The resulting model
 object can be used to perform high-throughput batch inference on new data

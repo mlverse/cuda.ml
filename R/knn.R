@@ -38,6 +38,9 @@ knn_match_metric <- function(metric = c("euclidean", "l2", "l1", "cityblock", "t
 #'
 #' @template knn-algo-common
 #'
+#' @return An object encapsulating all required parameters of the "ivfflat" KNN
+#'   query algorithm.
+#'
 #' @export
 cuml_knn_algo_ivfflat <- function(nlist, nprobe) {
   list(
@@ -56,6 +59,9 @@ cuml_knn_algo_ivfflat <- function(nlist, nprobe) {
 #'
 #' @template knn-algo-common
 #' @template knn-algo-ivfpq
+#'
+#' @return An object encapsulating all required parameters of the "ivfpq" KNN
+#'   query algorithm.
 #'
 #' @export
 cuml_knn_algo_ivfpq <- function(nlist, nprobe, m, n_bits,
@@ -78,6 +84,9 @@ cuml_knn_algo_ivfpq <- function(nlist, nprobe, m, n_bits,
 #'
 #' @template knn-algo-common
 #' @template knn-algo-ivfsq
+#'
+#' @return An object encapsulating all required parameters of the "ivfsq" KNN
+#'   query algorithm.
 #'
 #' @export
 cuml_knn_algo_ivfsq <- function(nlist, nprobe,
@@ -132,6 +141,16 @@ cuml_knn_algo_ivfsq <- function(nlist, nprobe,
 #'   equivalent to manhattan distance (l1). If p = 2, the metric is equivalent
 #'   to euclidean distance (l2).
 #' @param neighbors Number of nearest neighbors to query. Default: 5L.
+#'
+#' @return A KNN model that can be used with the 'predict' S3 generic to make
+#'   predictions on new data points.
+#'   The model object contains the following:
+#'     - "knn_index": a GPU pointer to the KNN index.
+#'     - "algo": enum value of the algorithm being used for the KNN query.
+#'     - "metric": enum value of the distance metric used in KNN computations.
+#'     - "p": parameter for the Minkowski metric.
+#'     - "n_samples": number of input data points.
+#'     - "n_dims": dimension of each input data point.
 #'
 #' @examples
 #'
@@ -311,6 +330,7 @@ cuml_knn_bridge <- function(processed, algo, metric, p, neighbors) {
 #' @template predict
 #'
 #' @seealso cuml_predict
+#'
 #' @importFrom ellipsis check_dots_used
 #' @export
 predict.cuml_knn <- function(object, ...) {

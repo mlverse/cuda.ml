@@ -117,6 +117,17 @@ and the predictor terms on the right-hand side.}
 specified as a  __data frame__ containing the predictors and (if
 applicable) the outcome.}
 }
+\value{
+A KNN model that can be used with the 'predict' S3 generic to make
+  predictions on new data points.
+  The model object contains the following:
+    - "knn_index": a GPU pointer to the KNN index.
+    - "algo": enum value of the algorithm being used for the KNN query.
+    - "metric": enum value of the distance metric used in KNN computations.
+    - "p": parameter for the Minkowski metric.
+    - "n_samples": number of input data points.
+    - "n_dims": dimension of each input data point.
+}
 \description{
 Build a k-nearest-model for classification or regression tasks.
 }

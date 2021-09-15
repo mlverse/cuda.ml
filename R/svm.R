@@ -61,8 +61,8 @@ svm_match_kernel_type <- function(kernel = c("rbf", "tanh", "polynomial", "linea
 #'   tasks. Default: 0.1.
 #' @param sample_weights Optional weight assigned to each input data point.
 #'
-#' @return A Support Vector Machine classifier / regressor object that can be
-#'   used with the 'predict' S3 generic to make predictions on new data points.
+#' @return A SVM classifier / regressor object that can be used with the
+#'   'predict' S3 generic to make predictions on new data points.
 #'
 #' @examples
 #'

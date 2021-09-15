@@ -60,6 +60,9 @@ tsne_match_method <- function(method = c("barnes_hut", "fft", "exact")) {
 #'   runs, even with the same \code{seed} being used for each run.
 #'   Default: NULL.
 #'
+#' @return A matrix containing the embedding of the input data in a low-
+#'   dimensional space, with each row representing an embedded data point.
+#'
 #' @examples
 #' library(cuml)
 #'

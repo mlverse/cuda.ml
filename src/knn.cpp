@@ -63,7 +63,7 @@ SEXP knn_regressor_fit(Rcpp::NumericMatrix const& x,
 
 #include "warn_cuml_missing.h"
 
-  return nullptr;
+  return Rcpp::List();
 
 #endif
 }

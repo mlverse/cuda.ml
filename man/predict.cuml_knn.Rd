@@ -12,6 +12,9 @@
 \item{...}{See \code{\link{cuml_predict}} for full documentation of all other
 parameters.}
 }
+\value{
+Predictions on new data points.
+}
 \description{
 Make predictions on new data points using a CuML KNN model.
 See \code{\link{cuml_predict}} for full documentation of parameters.

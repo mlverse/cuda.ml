@@ -11,6 +11,9 @@ cuml_unserialize(connection, ...)
 
 \item{...}{Additional arguments to \code{base::unserialize()}.}
 }
+\value{
+A unserialized CuML model.
+}
 \description{
 Unserialize a CuML model state into a CuML model object.
 }

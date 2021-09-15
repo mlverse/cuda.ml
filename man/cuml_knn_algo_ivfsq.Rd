@@ -24,6 +24,10 @@ neighbor search.}
 
 \item{encode_residual}{Whether to encode residuals.}
 }
+\value{
+An object encapsulating all required parameters of the "ivfsq" KNN
+  query algorithm.
+}
 \description{
 Build a specification of the inverted-file-scalar-quantization KNN query
 algorithm, with all required parameters specified explicitly.

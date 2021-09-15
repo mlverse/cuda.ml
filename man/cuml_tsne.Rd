@@ -97,6 +97,10 @@ Default: NULL.}
 {"off", "critical", "error", "warn", "info", "debug", "trace"}.
 Default: off.}
 }
+\value{
+A matrix containing the embedding of the input data in a low-
+  dimensional space, with each row representing an embedded data point.
+}
 \description{
 t-distributed Stochastic Neighbor Embedding (TSNE) for visualizing high-
 dimensional data.

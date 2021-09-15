@@ -7,9 +7,13 @@ shared library.}
 \usage{
 has_libcuml()
 }
+\value{
+A logical value indicating whether the current installation {cuml}
+  was linked to a valid version of the RAPIDS cuML shared library.
+}
 \description{
-Return TRUE if the current installation {cuml} was linked to a valid
-version of the RAPIDS cuML shared library, otherwise FALSE.
+Determine whether {cuml} was linked to a valid version of the RAPIDS cuML
+shared library.
 }
 \examples{
 

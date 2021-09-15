@@ -1,8 +1,8 @@
 #' Determine whether {cuml} was linked to a valid version of the RAPIDS cuML
 #' shared library.
 #'
-#' Return TRUE if the current installation {cuml} was linked to a valid
-#' version of the RAPIDS cuML shared library, otherwise FALSE.
+#' @return A logical value indicating whether the current installation {cuml}
+#'   was linked to a valid version of the RAPIDS cuML shared library.
 #'
 #' @examples
 #'

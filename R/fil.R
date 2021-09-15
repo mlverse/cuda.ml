@@ -7,6 +7,9 @@
 #' GPU, and \code{fil_enabled()} returns FALSE, then please consider installing
 #' Treelite and then re-installing {cuml}.
 #'
+#' @return A logical value indicating whether the Forest Inference Library (FIL)
+#'   functionalities are enabled.
+#'
 #' @examples
 #' if (cuml_fil_enabled()) {
 #'   # run GPU-accelerated Forest Inference Library (FIL) functionalities
@@ -104,6 +107,9 @@ file_match_storage_type <- function(storage_type = c("auto", "dense", "sparse"))
 #'     the maximum supported number of threads per GPU. Even if successful, it
 #'     is not guaranteed that \code{blocks_per_sm} blocks will run on an SM
 #'     concurrently.
+#'
+#' @return A GPU-accelerated FIL model that can be used with the 'predict' S3
+#'   generic to make predictions on new data points.
 #'
 #' @examples
 #'

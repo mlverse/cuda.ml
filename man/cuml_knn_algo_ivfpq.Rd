@@ -18,6 +18,10 @@ neighbor search.}
 
 \item{use_precomputed_tables}{Whether to use precomputed tables.}
 }
+\value{
+An object encapsulating all required parameters of the "ivfpq" KNN
+  query algorithm.
+}
 \description{
 Build a specification of the inverted-file-product-quantization KNN query
 algorithm, with all required parameters specified explicitly.
