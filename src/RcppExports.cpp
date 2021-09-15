@@ -389,6 +389,28 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// svc_get_state
+Rcpp::List svc_get_state(SEXP model);
+RcppExport SEXP _cuml_svc_get_state(SEXP modelSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type model(modelSEXP);
+    rcpp_result_gen = Rcpp::wrap(svc_get_state(model));
+    return rcpp_result_gen;
+END_RCPP
+}
+// svc_set_state
+SEXP svc_set_state(Rcpp::List const& state);
+RcppExport SEXP _cuml_svc_set_state(SEXP stateSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List const& >::type state(stateSEXP);
+    rcpp_result_gen = Rcpp::wrap(svc_set_state(state));
+    return rcpp_result_gen;
+END_RCPP
+}
 // svr_fit
 SEXP svr_fit(Rcpp::NumericMatrix const& X, Rcpp::NumericVector const& y, double const cost, int const kernel, double const gamma, double const coef0, int const degree, double const tol, int const max_iter, int const nochange_steps, double const cache_size, double epsilon, Rcpp::NumericVector const& sample_weights, int const verbosity);
 RcppExport SEXP _cuml_svr_fit(SEXP XSEXP, SEXP ySEXP, SEXP costSEXP, SEXP kernelSEXP, SEXP gammaSEXP, SEXP coef0SEXP, SEXP degreeSEXP, SEXP tolSEXP, SEXP max_iterSEXP, SEXP nochange_stepsSEXP, SEXP cache_sizeSEXP, SEXP epsilonSEXP, SEXP sample_weightsSEXP, SEXP verbositySEXP) {
@@ -580,6 +602,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuml_rproj_transform", (DL_FUNC) &_cuml_rproj_transform, 2},
     {"_cuml_svc_fit", (DL_FUNC) &_cuml_svc_fit, 13},
     {"_cuml_svc_predict", (DL_FUNC) &_cuml_svc_predict, 3},
+    {"_cuml_svc_get_state", (DL_FUNC) &_cuml_svc_get_state, 1},
+    {"_cuml_svc_set_state", (DL_FUNC) &_cuml_svc_set_state, 1},
     {"_cuml_svr_fit", (DL_FUNC) &_cuml_svr_fit, 14},
     {"_cuml_svr_predict", (DL_FUNC) &_cuml_svr_predict, 2},
     {"_cuml_tsne_fit", (DL_FUNC) &_cuml_tsne_fit, 23},

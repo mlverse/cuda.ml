@@ -101,6 +101,14 @@
     .Call(`_cuml_svc_predict`, model_xptr, input, predict_class)
 }
 
+.svc_get_state <- function(model) {
+    .Call(`_cuml_svc_get_state`, model)
+}
+
+.svc_set_state <- function(state) {
+    .Call(`_cuml_svc_set_state`, state)
+}
+
 .svr_fit <- function(X, y, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, epsilon, sample_weights, verbosity) {
     .Call(`_cuml_svr_fit`, X, y, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, epsilon, sample_weights, verbosity)
 }
