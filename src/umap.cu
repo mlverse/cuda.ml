@@ -186,7 +186,7 @@ __host__ Rcpp::NumericMatrix umap_transform(Rcpp::List const& model,
     Rcpp::NumericMatrix(m_embedding.numCols, n_samples, h_transformed.begin()));
 }
 
-Rcpp::List umap_get_state(Rcpp::List const& model) {
+__host__ Rcpp::List umap_get_state(Rcpp::List const& model) {
   Rcpp::List state;
 
   {
@@ -202,15 +202,19 @@ Rcpp::List umap_get_state(Rcpp::List const& model) {
     umap_params_list["set_op_mix_ratio"] = umap_params->set_op_mix_ratio;
     umap_params_list["local_connectivity"] = umap_params->local_connectivity;
     umap_params_list["repulsion_strength"] = umap_params->repulsion_strength;
-    umap_params_list["negative_sample_rate"] = umap_params->negative_sample_rate;
-    umap_params_list["transform_queue_size"] = umap_params->transform_queue_size;
-    umap_params_list["verbosity" ] = umap_params->verbosity;
+    umap_params_list["negative_sample_rate"] =
+      umap_params->negative_sample_rate;
+    umap_params_list["transform_queue_size"] =
+      umap_params->transform_queue_size;
+    umap_params_list["verbosity"] = umap_params->verbosity;
     umap_params_list["a"] = umap_params->a;
     umap_params_list["b"] = umap_params->b;
     umap_params_list["init"] = umap_params->init;
     umap_params_list["target_n_neighbors"] = umap_params->target_n_neighbors;
-    umap_params_list["target_metric"] = static_cast<int>(umap_params->target_metric);
-    umap_params_list["target_weight"] = static_cast<int>(umap_params->target_weight);
+    umap_params_list["target_metric"] =
+      static_cast<int>(umap_params->target_metric);
+    umap_params_list["target_weight"] =
+      static_cast<int>(umap_params->target_weight);
     umap_params_list["random_state"] = umap_params->random_state;
     umap_params_list["deterministic"] = umap_params->deterministic;
     state["umap_params"] = std::move(umap_params_list);
@@ -223,7 +227,7 @@ Rcpp::List umap_get_state(Rcpp::List const& model) {
   return state;
 }
 
-Rcpp::List umap_set_state(Rcpp::List const& state) {
+__host__ Rcpp::List umap_set_state(Rcpp::List const& state) {
   Rcpp::List model;
 
   {
@@ -232,21 +236,24 @@ Rcpp::List umap_set_state(Rcpp::List const& state) {
 
     umap_params->n_neighbors = umap_params_list["n_neighbors"];
     umap_params->n_components = umap_params_list["n_components"];
-    umap_params->n_epochs= umap_params_list["n_epochs"];
+    umap_params->n_epochs = umap_params_list["n_epochs"];
     umap_params->learning_rate = umap_params_list["learning_rate"];
     umap_params->min_dist = umap_params_list["min_dist"];
     umap_params->spread = umap_params_list["spread"];
     umap_params->set_op_mix_ratio = umap_params_list["set_op_mix_ratio"];
     umap_params->local_connectivity = umap_params_list["local_connectivity"];
     umap_params->repulsion_strength = umap_params_list["repulsion_strength"];
-    umap_params->negative_sample_rate = umap_params_list["negative_sample_rate"];
-    umap_params->transform_queue_size = umap_params_list["transform_queue_size"];
-    umap_params->verbosity = umap_params_list["verbosity" ];
+    umap_params->negative_sample_rate =
+      umap_params_list["negative_sample_rate"];
+    umap_params->transform_queue_size =
+      umap_params_list["transform_queue_size"];
+    umap_params->verbosity = umap_params_list["verbosity"];
     umap_params->a = umap_params_list["a"];
     umap_params->b = umap_params_list["b"];
     umap_params->init = umap_params_list["init"];
     umap_params->target_n_neighbors = umap_params_list["target_n_neighbors"];
-    umap_params->target_metric = static_cast<ML::UMAPParams::MetricType>(Rcpp::as<int>(umap_params_list["target_metric"]));
+    umap_params->target_metric = static_cast<ML::UMAPParams::MetricType>(
+      Rcpp::as<int>(umap_params_list["target_metric"]));
     umap_params->target_weight = umap_params_list["target_weight"];
     umap_params->random_state = umap_params_list["random_state"];
     umap_params->deterministic = umap_params_list["deterministic"];
