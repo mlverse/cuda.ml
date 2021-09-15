@@ -16,6 +16,10 @@ SEXP svc_fit(Rcpp::NumericMatrix const& input,
 SEXP svc_predict(SEXP model_xptr, Rcpp::NumericMatrix const& input,
                  bool predict_class);
 
+Rcpp::List svc_get_state(SEXP model);
+
+SEXP svc_set_state(Rcpp::List const& state);
+
 }  // namespace cuml4r
 
 #else

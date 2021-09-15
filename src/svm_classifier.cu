@@ -10,6 +10,7 @@
 #include <thrust/async/copy.h>
 #include <thrust/device_vector.h>
 #include <cuml/svm/svc.hpp>
+#include <rmm/device_uvector.hpp>
 
 #include <Rcpp.h>
 
@@ -18,7 +19,219 @@
 
 namespace {
 
-struct ModelCtx {
+namespace detail {
+
+constexpr auto kSvcKernelParams = "kernel_params";
+constexpr auto kKernelParamsType = "type";
+constexpr auto kKernelParamsDegree = "degree";
+constexpr auto kKernelParamsGamma = "gamma";
+constexpr auto kKernelParamsCoef0 = "coef0";
+constexpr auto kSvcSvmParams = "svm_params";
+constexpr auto kSvmParamsC = "C";
+constexpr auto kSvmParamsCacheSize = "cache_size";
+constexpr auto kSvmParamsMaxIter = "max_iter";
+constexpr auto kSvmParamsNoChangeSteps = "nochange_steps";
+constexpr auto kSvmParamsTol = "tol";
+constexpr auto kSvmParamsVerbosity = "verbosity";
+constexpr auto kSvmParamsEpsilon = "epsilon";
+constexpr auto kSvmParamsType = "type";
+constexpr auto kSvcModel = "model";
+constexpr auto kSvmModelNumSupportVectors = "n_support";
+constexpr auto kSvmModelNumCols = "n_cols";
+constexpr auto kSvmModelB = "b";
+constexpr auto kSvmModelDualCoefs = "dual_coefs";
+constexpr auto kSvmModelSupportVectors = "x_support";
+constexpr auto kSvmModelSupportIdxes = "support_idx";
+constexpr auto kSvmModelNumClasses = "n_classes";
+constexpr auto kSvmModelUniqueLabels = "unique_labels";
+
+template <typename T>
+__host__ Rcpp::List getState(T const&) = delete;
+
+template <typename T>
+__host__ Rcpp::List getState(T const&, raft::handle_t const&) = delete;
+
+template <>
+__host__ Rcpp::List getState(
+  MLCommon::Matrix::KernelParams const& kernel_params) {
+  Rcpp::List state;
+
+  state[kKernelParamsType] = static_cast<int>(kernel_params.kernel);
+  state[kKernelParamsDegree] = kernel_params.degree;
+  state[kKernelParamsGamma] = kernel_params.gamma;
+  state[kKernelParamsCoef0] = kernel_params.coef0;
+
+  return state;
+}
+
+template <>
+__host__ Rcpp::List getState(ML::SVM::svmParameter const& svm_params) {
+  Rcpp::List state;
+
+  state[kSvmParamsC] = svm_params.C;
+  state[kSvmParamsCacheSize] = svm_params.cache_size;
+  state[kSvmParamsMaxIter] = svm_params.max_iter;
+  state[kSvmParamsNoChangeSteps] = svm_params.nochange_steps;
+  state[kSvmParamsTol] = svm_params.tol;
+  state[kSvmParamsVerbosity] = svm_params.verbosity;
+  state[kSvmParamsEpsilon] = svm_params.epsilon;
+  state[kSvmParamsType] = static_cast<int>(svm_params.svmType);
+
+  return state;
+}
+
+template <>
+__host__ Rcpp::List getState(ML::SVM::svmModel<double> const& svm_model,
+                             raft::handle_t const& handle) {
+  Rcpp::List state;
+  auto* const stream = handle.get_stream();
+
+  cuml4r::pinned_host_vector<double> h_dual_coefs(svm_model.n_support);
+  CUDA_RT_CALL(cudaMemcpyAsync(
+    /*dst=*/h_dual_coefs.data(),
+    /*src=*/svm_model.dual_coefs,
+    /*count=*/svm_model.n_support * sizeof(double),
+    /*kind=*/cudaMemcpyDeviceToHost, stream));
+
+  cuml4r::pinned_host_vector<double> h_x_support(svm_model.n_support *
+                                                 svm_model.n_cols);
+  CUDA_RT_CALL(cudaMemcpyAsync(
+    /*dst=*/h_x_support.data(),
+    /*src=*/svm_model.x_support,
+    /*count=*/svm_model.n_support * svm_model.n_cols * sizeof(double),
+    /*kind=*/cudaMemcpyDeviceToHost, stream));
+
+  cuml4r::pinned_host_vector<int> h_support_idx(svm_model.n_support);
+  CUDA_RT_CALL(cudaMemcpyAsync(
+    /*dst=*/h_support_idx.data(),
+    /*src=*/svm_model.support_idx,
+    /*count=*/svm_model.n_support * sizeof(int),
+    /*kind=*/cudaMemcpyDeviceToHost, stream));
+
+  cuml4r::pinned_host_vector<double> h_unique_labels(svm_model.n_classes);
+  CUDA_RT_CALL(cudaMemcpyAsync(
+    /*dst=*/h_unique_labels.data(),
+    /*src=*/svm_model.unique_labels,
+    /*count=*/svm_model.n_classes * sizeof(double),
+    /*kind=*/cudaMemcpyDeviceToHost, stream));
+
+  CUDA_RT_CALL(cudaStreamSynchronize(stream));
+
+  state[kSvmModelNumSupportVectors] = svm_model.n_support;
+  state[kSvmModelNumCols] = svm_model.n_cols;
+  state[kSvmModelB] = svm_model.b;
+  state[kSvmModelDualCoefs] =
+    Rcpp::NumericVector(h_dual_coefs.begin(), h_dual_coefs.end());
+  state[kSvmModelSupportVectors] =
+    Rcpp::NumericVector(h_x_support.begin(), h_x_support.end());
+  state[kSvmModelSupportIdxes] =
+    Rcpp::IntegerVector(h_support_idx.begin(), h_support_idx.end());
+  state[kSvmModelNumClasses] = svm_model.n_classes;
+  state[kSvmModelUniqueLabels] =
+    Rcpp::NumericVector(h_unique_labels.begin(), h_unique_labels.end());
+
+  return state;
+}
+
+template <typename T>
+__host__ void setState(T&, Rcpp::List const&) = delete;
+
+template <typename T>
+__host__ void setState(T&, raft::handle_t const&, Rcpp::List const&) = delete;
+
+template <>
+__host__ void setState(
+  MLCommon::Matrix::KernelParams& kernel_params, Rcpp::List const& state) {
+  kernel_params.kernel = static_cast<MLCommon::Matrix::KernelType>(Rcpp::as<int>(state[kKernelParamsType]));
+  kernel_params.degree = state[kKernelParamsDegree];
+  kernel_params.gamma = state[kKernelParamsGamma];
+  kernel_params.coef0 = state[kKernelParamsCoef0];
+}
+
+template <>
+__host__ void setState(ML::SVM::svmParameter& svm_params, Rcpp::List const& state) {
+  svm_params.C = state[kSvmParamsC];
+  svm_params.cache_size = state[kSvmParamsCacheSize];
+  svm_params.max_iter = state[kSvmParamsMaxIter];
+  svm_params.nochange_steps = state[kSvmParamsNoChangeSteps];
+  svm_params.tol = state[kSvmParamsTol];
+  svm_params.verbosity = state[kSvmParamsVerbosity];
+  svm_params.epsilon = state[kSvmParamsEpsilon];
+  svm_params.svmType = static_cast<ML::SVM::SvmType>(Rcpp::as<int>(state[kSvmParamsType]));
+}
+
+template <>
+__host__ void setState(ML::SVM::svmModel<double>& svm_model,
+                       raft::handle_t const& handle, Rcpp::List const& state) {
+  int const n_support = state[kSvmModelNumSupportVectors];
+  int const n_cols = state[kSvmModelNumCols];
+
+  svm_model.n_support = n_support;
+  svm_model.n_cols = n_cols;
+  svm_model.b = state[kSvmModelB];
+
+  auto const stream_view = handle.get_stream_view();
+
+  auto d_dual_coefs = rmm::device_uvector<double>(n_support, stream_view);
+  auto const h_dual_coefs = Rcpp::as<cuml4r::pinned_host_vector<double>>(state[kSvmModelDualCoefs]);
+  CUDA_RT_CALL(
+    cudaMemcpyAsync(
+      /*dst=*/d_dual_coefs.data(),
+      /*src=*/h_dual_coefs.data(),
+      /*count=*/n_support * sizeof(double),
+      /*kind=*/cudaMemcpyHostToDevice,
+      /*stream=*/stream_view.value()
+    )
+  );
+  svm_model.dual_coefs = reinterpret_cast<double*>(d_dual_coefs.release().data());
+
+  auto d_x_support = rmm::device_uvector<double>(n_support * n_cols, stream_view);
+  auto const h_x_support = Rcpp::as<cuml4r::pinned_host_vector<double>>(state[kSvmModelSupportVectors]);
+  CUDA_RT_CALL(
+    cudaMemcpyAsync(
+      /*dst=*/d_x_support.data(),
+      /*src=*/h_x_support.data(),
+      /*count=*/n_support *n_cols * sizeof(double),
+      /*kind=*/cudaMemcpyHostToDevice,
+      /*stream=*/stream_view.value()
+    )
+  );
+  svm_model.x_support = reinterpret_cast<double*>(d_x_support.release().data());
+
+  auto d_support_idx = rmm::device_uvector<int>(n_support, stream_view);
+  auto const h_support_idx = Rcpp::as<cuml4r::pinned_host_vector<int>>(state[kSvmModelSupportIdxes]);
+  CUDA_RT_CALL(
+    cudaMemcpyAsync(
+      /*dst=*/d_support_idx.data(),
+      /*src=*/h_support_idx.data(),
+      /*count=*/n_support * sizeof(int),
+      /*kind=*/cudaMemcpyHostToDevice,
+      /*stream=*/stream_view.value()
+    )
+  );
+  svm_model.support_idx = reinterpret_cast<int*>(d_support_idx.release().data());
+
+  int const n_classes = state[kSvmModelNumClasses];
+  svm_model.n_classes = n_classes;
+
+  auto d_unique_labels = rmm::device_uvector<double>(n_classes, stream_view);
+  auto const h_unique_labels = Rcpp::as<cuml4r::pinned_host_vector<double>>(state[kSvmModelUniqueLabels]);
+  CUDA_RT_CALL(
+    cudaMemcpyAsync(
+      /*dst=*/d_unique_labels.data(),
+      /*src=*/h_unique_labels.data(),
+      /*count=*/n_classes * sizeof(double),
+      /*kind=*/cudaMemcpyHostToDevice,
+      /*stream=*/stream_view.value()
+    )
+  );
+  svm_model.unique_labels = static_cast<double*>(d_unique_labels.release().data());
+}
+
+}  // namespace detail
+
+class ModelCtx {
+ public:
   using model_t = ML::SVM::SVC<double>;
 
   // model object must be destroyed first
@@ -28,6 +241,22 @@ struct ModelCtx {
   __host__ ModelCtx(std::unique_ptr<raft::handle_t> handle,
                     std::unique_ptr<model_t> model) noexcept
     : handle_(std::move(handle)), model_(std::move(model)) {}
+
+  __host__ Rcpp::List getState() const {
+    Rcpp::List state;
+
+    state[detail::kSvcKernelParams] = detail::getState(model_->kernel_params);
+    state[detail::kSvcSvmParams] = detail::getState(model_->param);
+    state[detail::kSvcModel] = detail::getState(model_->model, *handle_);
+
+    return state;
+  }
+
+  __host__ void setState(Rcpp::List const& state) {
+    detail::setState(model_->kernel_params, state[detail::kSvcKernelParams]);
+    detail::setState(model_->param, state[detail::kSvcSvmParams]);
+    detail::setState(model_->model, *handle_, state[detail::kSvcModel]);
+  }
 };
 
 }  // namespace
@@ -126,6 +355,25 @@ __host__ SEXP svc_predict(SEXP model_xptr, Rcpp::NumericMatrix const& input,
   CUDA_RT_CALL(cudaStreamSynchronize(stream));
 
   return Rcpp::NumericVector(h_preds.begin(), h_preds.end());
+}
+
+__host__ Rcpp::List svc_get_state(SEXP model) {
+  return Rcpp::XPtr<ModelCtx>(model)->getState();
+}
+
+__host__ SEXP svc_set_state(Rcpp::List const& state) {
+  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  auto handle = std::make_unique<raft::handle_t>();
+  cuml4r::handle_utils::initializeHandle(*handle, stream_view.value());
+
+  auto model = std::make_unique<ML::SVM::SVC<double>>(*handle);
+
+  auto model_ctx = std::make_unique<ModelCtx>(
+    /*handle=*/std::move(handle), /*model=*/std::move(model)
+  );
+  model_ctx->setState(state);
+
+  return Rcpp::XPtr<ModelCtx>(model_ctx.release());
 }
 
 }  // namespace cuml4r
