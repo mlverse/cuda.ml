@@ -141,7 +141,7 @@
     .Call(`_cuml_umap_get_state`, model)
 }
 
-.cuml_umap_set_state <- function(state) {
+.umap_set_state <- function(state) {
     .Call(`_cuml_umap_set_state`, state)
 }
 
