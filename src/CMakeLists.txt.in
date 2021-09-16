@@ -71,6 +71,9 @@ add_library(
   tsvd.cu
   umap.cpp
   umap.cu
+  # model (de)serialization helper functions
+  svm_serde.cu
+  # Rcpp exports
   RcppExports.cpp
 )
 

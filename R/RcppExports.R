@@ -117,6 +117,14 @@
     .Call(`_cuml_svr_predict`, svr_xptr, X)
 }
 
+.svr_get_state <- function(model) {
+    .Call(`_cuml_svr_get_state`, model)
+}
+
+.svr_set_state <- function(state) {
+    .Call(`_cuml_svr_set_state`, state)
+}
+
 .tsne_fit <- function(x, dim, n_neighbors, theta, epssq, perplexity, perplexity_max_iter, perplexity_tol, early_exaggeration, late_exaggeration, exaggeration_iter, min_gain, pre_learning_rate, post_learning_rate, max_iter, min_grad_norm, pre_momentum, post_momentum, random_state, verbosity, initialize_embeddings, square_distances, algo) {
     .Call(`_cuml_tsne_fit`, x, dim, n_neighbors, theta, epssq, perplexity, perplexity_max_iter, perplexity_tol, early_exaggeration, late_exaggeration, exaggeration_iter, min_gain, pre_learning_rate, post_learning_rate, max_iter, min_grad_norm, pre_momentum, post_momentum, random_state, verbosity, initialize_embeddings, square_distances, algo)
 }
