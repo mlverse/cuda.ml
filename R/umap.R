@@ -144,6 +144,13 @@ cuml_umap <- function(x, y = NULL, n_components = 2L, n_neighbors = 15L,
   model
 }
 
+.cuml_umap_set_state <- function(state) {
+  model <- .umap_set_state(state)
+  class(model) <- c("cuml_umap", "cuml_model", class(model))
+
+  model
+}
+
 #' @export
 cuml_transform.cuml_umap <- function(model, x, ...) {
   .umap_transform(model = model, x = as.matrix(x))

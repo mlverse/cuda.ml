@@ -65,7 +65,7 @@ Rcpp::List umap_get_state(Rcpp::List const& model) {
 #endif
 }
 
-// [[Rcpp::export(".cuml_umap_set_state")]]
+// [[Rcpp::export(".umap_set_state")]]
 Rcpp::List umap_set_state(Rcpp::List const& state) {
 #ifdef HAS_CUML
 
