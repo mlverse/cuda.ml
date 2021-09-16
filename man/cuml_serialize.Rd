@@ -4,13 +4,13 @@
 \alias{cuml_serialize}
 \title{Serialize a CuML model}
 \usage{
-cuml_serialize(model, connection, ...)
+cuml_serialize(model, connection = NULL, ...)
 }
 \arguments{
 \item{model}{The model object.}
 
 \item{connection}{An open connection or \code{NULL}. If \code{NULL}, then the
-model state is serialized to a raw vector.}
+model state is serialized to a raw vector. Default: NULL.}
 
 \item{...}{Additional arguments to \code{base::serialize()}.}
 }

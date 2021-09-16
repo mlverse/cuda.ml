@@ -222,7 +222,6 @@ __host__ Rcpp::List umap_get_state(Rcpp::List const& model) {
   state["embedding"] = model["embedding"];
   state["n_samples"] = model["n_samples"];
   state["x"] = model["x"];
-  state.attr("model_type") = "cuml_umap";
 
   return state;
 }
