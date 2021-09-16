@@ -50,7 +50,7 @@ Rcpp::NumericMatrix umap_transform(Rcpp::List const& model,
 #endif
 }
 
-// [[Rcpp::export(".cuml_umap_get_state")]]
+// [[Rcpp::export(".umap_get_state")]]
 Rcpp::List umap_get_state(Rcpp::List const& model) {
 #ifdef HAS_CUML
 

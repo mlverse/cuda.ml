@@ -137,7 +137,7 @@
     .Call(`_cuml_umap_transform`, model, x)
 }
 
-.cuml_umap_get_state <- function(model) {
+.umap_get_state <- function(model) {
     .Call(`_cuml_umap_get_state`, model)
 }
 

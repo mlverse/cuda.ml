@@ -310,18 +310,21 @@ cuml_svm_classification_multiclass_impl <- function(processed, cost, kernel,
   )
 }
 
-.cuml_svc_ovr_get_state <- function(model) {
-  list(
-    models = lapply(model$xptr, .cuml_svc_get_state),
+cuml_get_state.cuml_svc_ovr <- function(model) {
+  model_state <- list(
+    models = lapply(model$xptr, cuml_get_state),
     blueprint = model$blueprint
   )
+  class(model_state) <- c("svc_ovr_model_state", class(model_state))
+
+  model_state
 }
 
-.cuml_svc_ovr_set_state <- function(state) {
+cuml_set_state.svc_ovr_model_state <- function(model_state) {
   new_model(
     cls = c("cuml_svc_ovr", "cuml_svm"),
     mode = "classification",
-    xptr = lapply(state$models, .cuml_svc_set_state),
+    xptr = lapply(state$models, cuml_set_state),
     multiclass = TRUE,
     blueprint = state$blueprint
   )
@@ -360,20 +363,23 @@ cuml_svm_classification_binary_impl <- function(processed, cost, kernel, gamma,
   )
 }
 
-.cuml_svc_get_state <- function(model) {
-  list(
+cuml_get_state.cuml_svc <- function(model) {
+  model_state <- list(
     model = .svc_get_state(model$xptr),
     blueprint = model$blueprint
   )
+  class(model_state) <- c("svc_model_state", class(model_state))
+
+  model_state
 }
 
-.cuml_svc_set_state <- function(state) {
+cuml_set_state.svc_model_state <- function(model_state) {
   new_model(
     cls = c("cuml_svc", "cuml_svm"),
     mode = "classification",
-    xptr = .svc_set_state(state$model),
+    xptr = .svc_set_state(model_state$model),
     multiclass = FALSE,
-    blueprint = state$blueprint
+    blueprint = model_state$blueprint
   )
 }
 
