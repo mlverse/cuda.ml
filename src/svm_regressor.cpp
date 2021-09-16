@@ -36,3 +36,33 @@ Rcpp::NumericVector svr_predict(SEXP svr_xptr, Rcpp::NumericMatrix const& X) {
 
 #endif
 }
+
+// [[Rcpp::export(".svr_get_state")]]
+Rcpp::List svr_get_state(SEXP model) {
+#ifdef HAS_CUML
+
+  return cuml4r::svr_get_state(model);
+
+#else
+
+#include "warn_cuml_missing.h"
+
+  return R_NilValue;
+
+#endif
+}
+
+// [[Rcpp::export(".svr_set_state")]]
+SEXP svr_set_state(Rcpp::List const& state) {
+#ifdef HAS_CUML
+
+  return cuml4r::svr_set_state(state);
+
+#else
+
+#include "warn_cuml_missing.h"
+
+  return {};
+
+#endif
+}

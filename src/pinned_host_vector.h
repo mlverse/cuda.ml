@@ -5,6 +5,8 @@
 #include <thrust/host_vector.h>
 #include <thrust/system/cuda/experimental/pinned_allocator.h>
 
+#include <Rcpp.h>
+
 namespace cuml4r {
 
 template <typename T>

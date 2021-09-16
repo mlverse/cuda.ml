@@ -447,6 +447,28 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// svr_get_state
+Rcpp::List svr_get_state(SEXP model);
+RcppExport SEXP _cuml_svr_get_state(SEXP modelSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type model(modelSEXP);
+    rcpp_result_gen = Rcpp::wrap(svr_get_state(model));
+    return rcpp_result_gen;
+END_RCPP
+}
+// svr_set_state
+SEXP svr_set_state(Rcpp::List const& state);
+RcppExport SEXP _cuml_svr_set_state(SEXP stateSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List const& >::type state(stateSEXP);
+    rcpp_result_gen = Rcpp::wrap(svr_set_state(state));
+    return rcpp_result_gen;
+END_RCPP
+}
 // tsne_fit
 Rcpp::NumericMatrix tsne_fit(Rcpp::NumericMatrix const& x, int const dim, int const n_neighbors, float const theta, float const epssq, float const perplexity, int const perplexity_max_iter, float const perplexity_tol, float const early_exaggeration, float const late_exaggeration, int const exaggeration_iter, float const min_gain, float const pre_learning_rate, float const post_learning_rate, int const max_iter, float const min_grad_norm, float const pre_momentum, float const post_momentum, int64_t const random_state, int const verbosity, bool const initialize_embeddings, bool const square_distances, int const algo);
 RcppExport SEXP _cuml_tsne_fit(SEXP xSEXP, SEXP dimSEXP, SEXP n_neighborsSEXP, SEXP thetaSEXP, SEXP epssqSEXP, SEXP perplexitySEXP, SEXP perplexity_max_iterSEXP, SEXP perplexity_tolSEXP, SEXP early_exaggerationSEXP, SEXP late_exaggerationSEXP, SEXP exaggeration_iterSEXP, SEXP min_gainSEXP, SEXP pre_learning_rateSEXP, SEXP post_learning_rateSEXP, SEXP max_iterSEXP, SEXP min_grad_normSEXP, SEXP pre_momentumSEXP, SEXP post_momentumSEXP, SEXP random_stateSEXP, SEXP verbositySEXP, SEXP initialize_embeddingsSEXP, SEXP square_distancesSEXP, SEXP algoSEXP) {
@@ -606,6 +628,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuml_svc_set_state", (DL_FUNC) &_cuml_svc_set_state, 1},
     {"_cuml_svr_fit", (DL_FUNC) &_cuml_svr_fit, 14},
     {"_cuml_svr_predict", (DL_FUNC) &_cuml_svr_predict, 2},
+    {"_cuml_svr_get_state", (DL_FUNC) &_cuml_svr_get_state, 1},
+    {"_cuml_svr_set_state", (DL_FUNC) &_cuml_svr_set_state, 1},
     {"_cuml_tsne_fit", (DL_FUNC) &_cuml_tsne_fit, 23},
     {"_cuml_tsvd_fit_transform", (DL_FUNC) &_cuml_tsvd_fit_transform, 7},
     {"_cuml_tsvd_inverse_transform", (DL_FUNC) &_cuml_tsvd_inverse_transform, 2},
