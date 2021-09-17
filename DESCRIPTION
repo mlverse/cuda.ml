@@ -24,6 +24,7 @@ Suggests:
     MASS,
     mlbench,
     purrr,
+    testthat,
     xgboost
 LinkingTo: Rcpp
 Encoding: UTF-8
