@@ -415,6 +415,25 @@ cuml_svm_regression_impl <- function(processed, cost, kernel, gamma, coef0,
   )
 }
 
+cuml_get_state.cuml_svr <- function(model) {
+  model_state <- list(
+    model_state = .svr_get_state(model$xptr),
+    blueprint = model$blueprint
+  )
+  class(model_state) <- c("cuml_svr_model_state", class(model_state))
+
+  model_state
+}
+
+cuml_set_state.cuml_svr_model_state <- function(model_state) {
+  new_model(
+    cls = c("cuml_svr", "cuml_svm"),
+    mode = "regression",
+    xptr = .svr_set_state(model_state$model_state),
+    blueprint = model_state$blueprint
+  )
+}
+
 #' Make predictions on new data points.
 #'
 #' Make predictions on new data points using a CuML SVM model.
