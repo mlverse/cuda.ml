@@ -216,6 +216,11 @@ cuml_serialize <- function(model, connection = NULL, ...) {
   UseMethod("cuml_serialize")
 }
 
+#' @rdname cuml_serialize
+#'
+#' @export
+cuml_serialise <- cuml_serialize
+
 #' @export
 cuml_serialize.default <- function(model, connection = NULL, ...) {
   report_undefined_fn("cuml_serialize", model)
@@ -256,6 +261,12 @@ cuml_unserialize <- function(connection, ...) {
 
   cuml_set_state(model_state)
 }
+
+#' @rdname cuml_unserialize
+#'
+#' @export
+cuml_unserialise <- cuml_unserialize
+
 
 cuml_set_state <- function(model_state) {
   UseMethod("cuml_set_state")
