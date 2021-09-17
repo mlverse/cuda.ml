@@ -1,1 +1,4 @@
 *\.swp
+.Rproj.user
+tests/testthat/testthat-problems.rds
+.Rhistory

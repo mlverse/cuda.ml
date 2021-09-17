@@ -401,90 +401,92 @@ predict_cuml_knn_regression_impl <- function(model, processed) {
 
 # register the CuML-based knn model for parsnip
 register_knn_model <- function(pkgname) {
-  for (mode in c("classification", "regression")) {
-    parsnip::set_model_engine(
-      model = "nearest_neighbor", mode = mode, eng = "cuml"
-    )
-  }
+  if (!"cuml" %in% parsnip::get_fit("nearest_neighbor")$engine) {
+    for (mode in c("classification", "regression")) {
+      parsnip::set_model_engine(
+        model = "nearest_neighbor", mode = mode, eng = "cuml"
+      )
+    }
 
-  parsnip::set_dependency(model = "nearest_neighbor", eng = "cuml", pkg = pkgname)
+    parsnip::set_dependency(model = "nearest_neighbor", eng = "cuml", pkg = pkgname)
 
-  parsnip::set_model_arg(
-    model = "nearest_neighbor",
-    eng = "cuml",
-    parsnip = "neighbors",
-    original = "neighbors",
-    func = list(pkg = "dials", fun = "neighbors", range = c(1, 15)),
-    has_submodel = FALSE
-  )
-
-  parsnip::set_model_arg(
-    model = "nearest_neighbor",
-    eng = "cuml",
-    parsnip = "dist_power",
-    original = "p",
-    func = list(pkg = "dials", fun = "dist_power", range = c(1 / 10, 2)),
-    has_submodel = FALSE
-  )
-
-  for (mode in c("classification", "regression")) {
-    parsnip::set_fit(
+    parsnip::set_model_arg(
       model = "nearest_neighbor",
       eng = "cuml",
-      mode = mode,
-      value = list(
-        interface = "formula",
-        protect = c("formula", "data"),
-        func = c(pkg = pkgname, fun = "cuml_knn"),
-        defaults = list(algo = "ivfflat", metric = "euclidean")
-      )
+      parsnip = "neighbors",
+      original = "neighbors",
+      func = list(pkg = "dials", fun = "neighbors", range = c(1, 15)),
+      has_submodel = FALSE
     )
 
-    parsnip::set_encoding(
+    parsnip::set_model_arg(
       model = "nearest_neighbor",
       eng = "cuml",
-      mode = mode,
-      options = list(
-        predictor_indicators = "none",
-        compute_intercept = FALSE,
-        remove_intercept = FALSE,
-        allow_sparse_x = TRUE
-      )
+      parsnip = "dist_power",
+      original = "p",
+      func = list(pkg = "dials", fun = "dist_power", range = c(1 / 10, 2)),
+      has_submodel = FALSE
     )
-  }
 
-  for (type in c("class", "prob")) {
+    for (mode in c("classification", "regression")) {
+      parsnip::set_fit(
+        model = "nearest_neighbor",
+        eng = "cuml",
+        mode = mode,
+        value = list(
+          interface = "formula",
+          protect = c("formula", "data"),
+          func = c(pkg = pkgname, fun = "cuml_knn"),
+          defaults = list(algo = "ivfflat", metric = "euclidean")
+        )
+      )
+
+      parsnip::set_encoding(
+        model = "nearest_neighbor",
+        eng = "cuml",
+        mode = mode,
+        options = list(
+          predictor_indicators = "none",
+          compute_intercept = FALSE,
+          remove_intercept = FALSE,
+          allow_sparse_x = TRUE
+        )
+      )
+    }
+
+    for (type in c("class", "prob")) {
+      parsnip::set_pred(
+        model = "nearest_neighbor",
+        eng = "cuml",
+        mode = "classification",
+        type = type,
+        value = list(
+          pre = NULL,
+          post = NULL,
+          func = c(fun = "predict"),
+          args = list(
+            quote(object$fit),
+            quote(new_data),
+            identical(type, "prob") # output_class_probabilities
+          )
+        )
+      )
+    }
+
     parsnip::set_pred(
       model = "nearest_neighbor",
       eng = "cuml",
-      mode = "classification",
-      type = type,
+      mode = "regression",
+      type = "numeric",
       value = list(
         pre = NULL,
         post = NULL,
         func = c(fun = "predict"),
         args = list(
           quote(object$fit),
-          quote(new_data),
-          identical(type, "prob") # output_class_probabilities
+          quote(new_data)
         )
       )
     )
   }
-
-  parsnip::set_pred(
-    model = "nearest_neighbor",
-    eng = "cuml",
-    mode = "regression",
-    type = "numeric",
-    value = list(
-      pre = NULL,
-      post = NULL,
-      func = c(fun = "predict"),
-      args = list(
-        quote(object$fit),
-        quote(new_data)
-      )
-    )
-  )
 }

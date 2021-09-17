@@ -13,3 +13,7 @@
 ^src/\.clang-format$
 ^.*\.swp
 ^\.clang-format.sh$
+^.*\.Rproj$
+^\.Rproj\.user$
+^tests/testthat/testthat-problems.rds$
+^\.Rhistory$

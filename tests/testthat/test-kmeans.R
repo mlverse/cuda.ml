@@ -47,4 +47,3 @@ test_that("cuml_kmeans() works as expected with user-specified initial cluster c
   verify_cluster_centers(cuml_kclust$centroids)
   expect_equal(cuml_kclust$n_iter, 1)
 })
-
