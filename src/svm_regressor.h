@@ -15,6 +15,10 @@ SEXP svr_fit(Rcpp::NumericMatrix const& X, Rcpp::NumericVector const& y,
 
 Rcpp::NumericVector svr_predict(SEXP svr_xptr, Rcpp::NumericMatrix const& X);
 
+Rcpp::List svr_get_state(SEXP model);
+
+SEXP svr_set_state(Rcpp::List const& state);
+
 }  // namespace cuml4r
 
 #else

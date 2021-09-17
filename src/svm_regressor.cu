@@ -5,6 +5,7 @@
 #include "pinned_host_vector.h"
 #include "preprocessor.h"
 #include "stream_allocator.h"
+#include "svm_serde.h"
 
 #include <cuml/svm/svm_parameter.h>
 #include <thrust/async/copy.h>
@@ -17,24 +18,50 @@
 #include <memory>
 #include <vector>
 
+namespace cuml4r {
+
 namespace {
 
+constexpr auto kSvrModel = "model";
+constexpr auto kSvrKernelParams = "kernel_params";
+constexpr auto kSvrCacheSize = "cache_size";
+
 struct SVR {
+  std::unique_ptr<raft::handle_t> const handle_;
   std::unique_ptr<ML::SVM::svmModel<double>> const model_;
   MLCommon::Matrix::KernelParams kernelParams_;
-  double const cacheSize_;
+  double cacheSize_;
 
-  __host__ SVR(std::unique_ptr<ML::SVM::svmModel<double>> model,
+  __host__ SVR(std::unique_ptr<raft::handle_t> handle,
+               std::unique_ptr<ML::SVM::svmModel<double>> model,
                MLCommon::Matrix::KernelParams kernel_params,
                double const cache_size) noexcept
-    : model_(std::move(model)),
+    : handle_(std::move(handle)),
+      model_(std::move(model)),
       kernelParams_(std::move(kernel_params)),
       cacheSize_(cache_size) {}
+
+  __host__ Rcpp::List getState() const {
+    Rcpp::List state;
+
+    state[kSvrModel] =
+      detail::getState(/*svm_model=*/*model_, /*handle=*/*handle_);
+    state[kSvrKernelParams] = detail::getState(kernelParams_);
+    state[kSvrCacheSize] = cacheSize_;
+
+    return state;
+  }
+
+  __host__ void setState(Rcpp::List const& state) {
+    detail::setState(/*svm_model=*/*model_, /*handle=*/*handle_,
+                     /*state=*/state[kSvrModel]);
+    detail::setState(/*kernel_params=*/kernelParams_,
+                     /*state=*/state[kSvrKernelParams]);
+    cacheSize_ = state[kSvrCacheSize];
+  }
 };
 
 }  // namespace
-
-namespace cuml4r {
 
 __host__ SEXP svr_fit(Rcpp::NumericMatrix const& X,
                       Rcpp::NumericVector const& y, double const cost,
@@ -48,8 +75,8 @@ __host__ SEXP svr_fit(Rcpp::NumericMatrix const& X,
   auto const n_features = m.numRows;
 
   auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
-  raft::handle_t handle;
-  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+  auto handle = std::make_unique<raft::handle_t>();
+  cuml4r::handle_utils::initializeHandle(*handle, stream_view.value());
 
   // SVM input
   auto const& h_X = m.values;
@@ -89,15 +116,18 @@ __host__ SEXP svr_fit(Rcpp::NumericMatrix const& X,
   auto model = std::make_unique<ML::SVM::svmModel<double>>();
 
   ML::SVM::svrFit(
-    handle, d_X.data().get(),
+    *handle, d_X.data().get(),
     /*n_rows=*/n_samples,
     /*n_cols=*/n_features, d_y.data().get(), param, kernel_params, *model,
     d_sample_weights.empty() ? nullptr : d_sample_weights.data().get());
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
-  auto svr = std::make_unique<SVR>(std::move(model), std::move(kernel_params),
-                                   cache_size);
+  auto svr = std::make_unique<SVR>(
+    /*handle=*/std::move(handle),
+    /*model=*/std::move(model),
+    /*kernel_params=*/std::move(kernel_params),
+    /*cache_size=*/cache_size);
 
   return Rcpp::XPtr<SVR>(svr.release());
 }
@@ -135,6 +165,25 @@ __host__ Rcpp::NumericVector svr_predict(SEXP svr_xptr,
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
   return Rcpp::NumericVector(h_y.begin(), h_y.end());
+}
+
+__host__ Rcpp::List svr_get_state(SEXP model) {
+  return Rcpp::XPtr<SVR>(model)->getState();
+}
+
+__host__ SEXP svr_set_state(Rcpp::List const& state) {
+  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  auto handle = std::make_unique<raft::handle_t>();
+  cuml4r::handle_utils::initializeHandle(*handle, stream_view.value());
+
+  auto model = std::make_unique<SVR>(
+    /*handle=*/std::move(handle),
+    /*model=*/std::make_unique<ML::SVM::svmModel<double>>(),
+    /*kernel_params=*/MLCommon::Matrix::KernelParams(),
+    /*cache_size=*/0);
+  model->setState(state);
+
+  return Rcpp::XPtr<SVR>(model.release());
 }
 
 }  // namespace cuml4r
