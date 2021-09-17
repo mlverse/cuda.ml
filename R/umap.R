@@ -146,12 +146,12 @@ cuml_umap <- function(x, y = NULL, n_components = 2L, n_neighbors = 15L,
 
 cuml_get_state.cuml_umap <- function(model) {
   model_state <- .umap_get_state(model)
-  class(model_state) <- c("umap_model_state", class(model_state))
+  class(model_state) <- c("cuml_umap_model_state", class(model_state))
 
   model_state
 }
 
-cuml_set_state.umap_model_state <- function(model_state) {
+cuml_set_state.cuml_umap_model_state <- function(model_state) {
   model <- .umap_set_state(model_state)
   class(model) <- c("cuml_umap", "cuml_model", class(model))
 

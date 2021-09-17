@@ -315,12 +315,12 @@ cuml_get_state.cuml_svc_ovr <- function(model) {
     ovr_model_states = lapply(model$xptr, function(x) cuml_get_state(x)),
     blueprint = model$blueprint
   )
-  class(model_state) <- c("svc_ovr_model_state", class(model_state))
+  class(model_state) <- c("cuml_svc_ovr_model_state", class(model_state))
 
   model_state
 }
 
-cuml_set_state.svc_ovr_model_state <- function(model_state) {
+cuml_set_state.cuml_svc_ovr_model_state <- function(model_state) {
   new_model(
     cls = c("cuml_svc_ovr", "cuml_svm"),
     mode = "classification",
@@ -368,12 +368,12 @@ cuml_get_state.cuml_svc <- function(model) {
     model_state = .svc_get_state(model$xptr),
     blueprint = model$blueprint
   )
-  class(model_state) <- c("svc_model_state", class(model_state))
+  class(model_state) <- c("cuml_svc_model_state", class(model_state))
 
   model_state
 }
 
-cuml_set_state.svc_model_state <- function(model_state) {
+cuml_set_state.cuml_svc_model_state <- function(model_state) {
   new_model(
     cls = c("cuml_svc", "cuml_svm"),
     mode = "classification",
