@@ -1,8 +1,8 @@
 R interface for cuML
 ================
 
-[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/cuml4r)](https://cran.r-project.org/package=cuml4r)
-<a href="https://www.r-pkg.org/pkg/cuml4r"><img src="https://cranlogs.r-pkg.org/badges/cuml4r?color=brightgreen" style=""></a>
+[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/cuml)](https://cran.r-project.org/package=cuml)
+<a href="https://www.r-pkg.org/pkg/cuml"><img src="https://cranlogs.r-pkg.org/badges/cuml?color=brightgreen" style=""></a>
 
 This package provides a simple and intuitive R interface for RAPIDS
 [cuML](https://github.com/rapidsai/cuml), a suite of GPU-accelerated machine
