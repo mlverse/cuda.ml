@@ -3,7 +3,13 @@ library(magrittr)
 library(reticulate)
 library(rlang)
 
-sklearn <- import("sklearn")
+
+
+sklearn <- tryCatch(reticulate::import("sklearn"),
+                    error = function(e) {
+                      reticulate::py_install("sklearn", pip=TRUE)
+                      reticulate::import("sklearn")
+                    })
 sklearn_iris_dataset <- sklearn$datasets$load_iris()
 
 #' Sort matrix rows by all columns or by a subset of columns.
