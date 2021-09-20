@@ -2,9 +2,12 @@
 % Please edit documentation in R/model.R
 \name{cuml_unserialize}
 \alias{cuml_unserialize}
+\alias{cuml_unserialise}
 \title{Unserialize a CuML model state}
 \usage{
 cuml_unserialize(connection, ...)
+
+cuml_unserialise(connection, ...)
 }
 \arguments{
 \item{connection}{An open connection or a raw vector.}

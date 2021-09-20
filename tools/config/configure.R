@@ -46,6 +46,23 @@ has_cuml <- function() {
 cuml_missing <- !has_cuml()
 
 run_cmake <- function() {
+  rc <- system2("which", "nvcc")
+
+  if (rc != 0) {
+    stop(
+      "\n\n\n",
+      "*********************************************************\n",
+      "*                                                    \t*\n",
+      "*    Unable to locate a CUDA compiler (nvcc).      \t*\n",
+      "*                                                  \t*\n",
+      "*    Please ensure it is present in PATH (e.g., run \t*\n",
+      "*    `export PATH=\"${PATH}:/usr/local/cuda/bin\"` or  \t*\n",
+      "*    similar) and try again.                       \t*\n",
+      "*                                                    \t*\n",
+      "*********************************************************\n\n\n"
+    )
+  }
+
   define(R_INCLUDE_DIR = R.home("include"))
   define(RCPP_INCLUDE_DIR = system.file("include", package = "Rcpp"))
   configure_file(file.path("src", "CMakeLists.txt.in"))
@@ -56,7 +73,7 @@ run_cmake <- function() {
 
   cuda_path <- get_cuda_path()
 
-  system2(
+  rc <- system2(
     "cmake",
     args = c(
       paste0("-DCUML_INCLUDE_DIR=", file.path(cuda_path, "include")),
@@ -68,6 +85,10 @@ run_cmake <- function() {
       "."
     )
   )
+
+  if (rc != 0) {
+    stop("Failed to run 'cmake'!")
+  }
 }
 
 if (!cuml_missing) {

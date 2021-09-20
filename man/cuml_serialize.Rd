@@ -2,9 +2,12 @@
 % Please edit documentation in R/model.R
 \name{cuml_serialize}
 \alias{cuml_serialize}
+\alias{cuml_serialise}
 \title{Serialize a CuML model}
 \usage{
 cuml_serialize(model, connection = NULL, ...)
+
+cuml_serialise(model, connection = NULL, ...)
 }
 \arguments{
 \item{model}{The model object.}

@@ -522,6 +522,10 @@ predict_cuml_svm_regression_impl <- function(model, processed) {
 # register the CuML-based rand_forest model for parsnip
 register_svm_model <- function(pkgname) {
   for (model in c(paste0("svm_", c("rbf", "poly", "linear")))) {
+    if ("cuml" %in% parsnip::get_fit(model)$engine) {
+      next
+    }
+
     for (mode in c("classification", "regression")) {
       parsnip::set_model_engine(model = model, mode = mode, eng = "cuml")
     }
@@ -575,6 +579,10 @@ register_svm_model <- function(pkgname) {
 
   for (kernel in c("rbf", "poly", "linear")) {
     model <- paste0("svm_", kernel)
+
+    if ("cuml" %in% parsnip::get_fit(model)$engine) {
+      next
+    }
 
     for (mode in c("classification", "regression")) {
       parsnip::set_fit(
