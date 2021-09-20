@@ -116,7 +116,7 @@ file_match_storage_type <- function(storage_type = c("auto", "dense", "sparse"))
 #' library(cuml)
 #' library(xgboost)
 #'
-#' model_path <- file.path("", "tmp", "xgboost.model")
+#' model_path <- file.path(tempdir(), "xgboost.model")
 #'
 #' model <- xgboost(
 #'   data = as.matrix(mtcars[which(names(mtcars) != "mpg")]),

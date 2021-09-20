@@ -88,7 +88,7 @@ Inference Library (FIL).
 library(cuml)
 library(xgboost)
 
-model_path <- file.path("", "tmp", "xgboost.model")
+model_path <- file.path(tempdir(), "xgboost.model")
 
 model <- xgboost(
   data = as.matrix(mtcars[which(names(mtcars) != "mpg")]),
