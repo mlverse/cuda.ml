@@ -13,3 +13,5 @@
 ^src/\.clang-format$
 ^.*\.swp
 ^\.clang-format.sh$
+^.*\.Rproj$
+^\.Rproj\.user$
