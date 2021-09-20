@@ -12,6 +12,10 @@
 #endif
 #endif
 
+#ifndef cudaEventWaitDefault
+#define cudaEventWaitDefault 0x00
+#endif
+
 namespace Rcpp {
 
 template <typename... Args>
