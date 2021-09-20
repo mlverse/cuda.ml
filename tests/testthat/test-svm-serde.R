@@ -13,7 +13,8 @@ test_that("SVM regressor can be serialized and unserialized correctly", {
 
       predict(model, mtcars)
     },
-    args = list(model_state = model_state)
+    args = list(model_state = model_state),
+    stdout = "", stderr = ""
   )
 
   expect_equal(expected_preds, actual_preds)
