@@ -24,6 +24,7 @@ Suggests:
     MASS,
     mlbench,
     purrr,
+    reticulate,
     testthat,
     xgboost
 LinkingTo: Rcpp
