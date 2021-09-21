@@ -422,9 +422,9 @@ register_rand_forest_model <- function(pkgname) {
       model = "rand_forest", mode = mode, eng = "cuml"
     )
   }
-  
+
   parsnip::set_dependency(model = "rand_forest", eng = "cuml", pkg = pkgname)
-  
+
   parsnip::set_model_arg(
     model = "rand_forest",
     eng = "cuml",
@@ -433,7 +433,7 @@ register_rand_forest_model <- function(pkgname) {
     func = list(pkg = "dials", fun = "mtry"),
     has_submodel = FALSE
   )
-  
+
   parsnip::set_model_arg(
     model = "rand_forest",
     eng = "cuml",
@@ -442,7 +442,7 @@ register_rand_forest_model <- function(pkgname) {
     func = list(pkg = "dials", fun = "trees"),
     has_submodel = FALSE
   )
-  
+
   parsnip::set_model_arg(
     model = "rand_forest",
     eng = "cuml",
@@ -451,7 +451,7 @@ register_rand_forest_model <- function(pkgname) {
     func = list(pkg = "dials", fun = "min_n"),
     has_submodel = FALSE
   )
-  
+
   for (mode in c("classification", "regression")) {
     parsnip::set_fit(
       model = "rand_forest",
@@ -476,7 +476,7 @@ register_rand_forest_model <- function(pkgname) {
         )
       )
     )
-  
+
     parsnip::set_encoding(
       model = "rand_forest",
       eng = "cuml",
@@ -489,7 +489,7 @@ register_rand_forest_model <- function(pkgname) {
       )
     )
   }
-  
+
   for (type in c("class", "prob")) {
     parsnip::set_pred(
       model = "rand_forest",
@@ -508,7 +508,7 @@ register_rand_forest_model <- function(pkgname) {
       )
     )
   }
-  
+
   parsnip::set_pred(
     model = "rand_forest",
     eng = "cuml",

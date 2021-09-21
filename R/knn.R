@@ -406,9 +406,9 @@ register_knn_model <- function(pkgname) {
       model = "nearest_neighbor", mode = mode, eng = "cuml"
     )
   }
-  
+
   parsnip::set_dependency(model = "nearest_neighbor", eng = "cuml", pkg = pkgname)
-  
+
   parsnip::set_model_arg(
     model = "nearest_neighbor",
     eng = "cuml",
@@ -417,7 +417,7 @@ register_knn_model <- function(pkgname) {
     func = list(pkg = "dials", fun = "neighbors", range = c(1, 15)),
     has_submodel = FALSE
   )
-  
+
   parsnip::set_model_arg(
     model = "nearest_neighbor",
     eng = "cuml",
@@ -426,7 +426,7 @@ register_knn_model <- function(pkgname) {
     func = list(pkg = "dials", fun = "dist_power", range = c(1 / 10, 2)),
     has_submodel = FALSE
   )
-  
+
   for (mode in c("classification", "regression")) {
     parsnip::set_fit(
       model = "nearest_neighbor",
@@ -439,7 +439,7 @@ register_knn_model <- function(pkgname) {
         defaults = list(algo = "ivfflat", metric = "euclidean")
       )
     )
-  
+
     parsnip::set_encoding(
       model = "nearest_neighbor",
       eng = "cuml",
@@ -452,7 +452,7 @@ register_knn_model <- function(pkgname) {
       )
     )
   }
-  
+
   for (type in c("class", "prob")) {
     parsnip::set_pred(
       model = "nearest_neighbor",
@@ -471,7 +471,7 @@ register_knn_model <- function(pkgname) {
       )
     )
   }
-  
+
   parsnip::set_pred(
     model = "nearest_neighbor",
     eng = "cuml",
