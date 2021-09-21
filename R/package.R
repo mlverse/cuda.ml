@@ -9,8 +9,6 @@
 #' @name cuml
 NULL
 
-.cuml_parsnip_init_done <- FALSE
-
 .onLoad <- function(libname, pkgname) {
   if (!has_libcuml()) {
     if (is.na(Sys.getenv("_R_CHECK_CRAN_INCOMING_", unset = NA))) {
@@ -34,10 +32,7 @@ NULL
     }
   }
 
-  if (identical(.cuml_parsnip_init_done, FALSE)) {
-    register_rand_forest_model(pkgname)
-    register_svm_model(pkgname)
-    register_knn_model(pkgname)
-    .cuml_parsnip_init_done <<- TRUE
-  }
+  register_rand_forest_model(pkgname)
+  register_svm_model(pkgname)
+  register_knn_model(pkgname)
 }
