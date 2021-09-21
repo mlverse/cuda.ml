@@ -42,13 +42,8 @@ predict_in_sub_proc <- function(model_state, data, expected_mode,
     expect_libcuml_impl()
 
     model <- cuml_unserialize(model_state)
-    missing_cls <- setdiff(expected_model_cls, class(model))
-    if (length(missing_cls) > 0) {
-      stop(
-        "Unserialized model is missing the following classes:\b",
-        paste(missing_cls, collapse = " "),
-        "\n"
-      )
+    for (cls in expected_model_cls) {
+      testthat::expect_s3_class(model, cls)
     }
     stopifnot(identical(model$mode, expected_mode))
 
