@@ -3,13 +3,25 @@ library(magrittr)
 library(reticulate)
 library(rlang)
 
+expect_libcuml <- function() {
+  if (!has_libcuml()) {
+    stop(
+      "The current installation of {cuml} is not linked with a valid copy of ",
+      "libcuml!\n",
+      ".libPaths:\n",
+      paste(.libPaths(), collapse = "\n")
+    )
+  }
+}
 
+expect_libcuml()
 
 sklearn <- tryCatch(reticulate::import("sklearn"),
-                    error = function(e) {
-                      reticulate::py_install("sklearn", pip=TRUE)
-                      reticulate::import("sklearn")
-                    })
+  error = function(e) {
+    reticulate::py_install("sklearn", pip = TRUE)
+    reticulate::import("sklearn")
+  }
+)
 sklearn_iris_dataset <- sklearn$datasets$load_iris()
 
 #' Sort matrix rows by all columns or by a subset of columns.
@@ -17,4 +29,42 @@ sklearn_iris_dataset <- sklearn$datasets$load_iris()
 #' @param cols Indices of columns used for sorting.
 sort_mat <- function(m, cols = seq(ncol(m))) {
   m[do.call(order, lapply(cols, function(x) m[, x])), ]
+}
+
+#' Attempt to unserialize a CuML model within a sub-process and use the
+#' unserialized model to make predictions.
+predict_in_sub_proc <- function(model_state, data, expected_mode,
+                                expected_model_cls = NULL,
+                                additional_predict_args = list()) {
+  impl <- function(expect_libcuml_impl, model_state, data, expected_mode,
+                   expected_model_cls, additional_predict_args) {
+    library(cuml)
+    expect_libcuml_impl()
+
+    model <- cuml_unserialize(model_state)
+    missing_cls <- setdiff(expected_model_cls, class(model))
+    if (length(missing_cls) > 0) {
+      stop(
+        "Unserialized model is missing the following classes:\b",
+        paste(missing_cls, collapse = " "),
+        "\n"
+      )
+    }
+    stopifnot(identical(model$mode, expected_mode))
+
+    do.call(predict, append(list(model, data), additional_predict_args))
+  }
+
+  callr::r(
+    impl,
+    args = list(
+      expect_libcuml_impl = expect_libcuml,
+      model_state = model_state,
+      data = data,
+      expected_mode = expected_mode,
+      expected_model_cls = expected_model_cls,
+      additional_predict_args = additional_predict_args
+    ),
+    stdout = "", stderr = ""
+  )
 }

@@ -3,18 +3,11 @@ test_that("SVM regressor can be serialized and unserialized correctly", {
   model_state <- cuml_serialize(model)
 
   expected_preds <- predict(model, mtcars)
-  actual_preds <- callr::r(
-    function(model_state) {
-      library(cuml)
-
-      model <- cuml_unserialize(model_state)
-      stopifnot("cuml_svr" %in% class(model))
-      stopifnot(identical(model$mode, "regression"))
-
-      predict(model, mtcars)
-    },
-    args = list(model_state = model_state),
-    stdout = "", stderr = ""
+  actual_preds <- predict_in_sub_proc(
+    model_state,
+    data = mtcars,
+    expected_mode = "regression",
+    expected_model_cls = "cuml_svr"
   )
 
   expect_equal(expected_preds, actual_preds)
