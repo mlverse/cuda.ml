@@ -73,6 +73,14 @@
     .Call(`_cuml_rf_classifier_predict_class_probabilities`, model_xptr, input)
 }
 
+.rf_classifier_get_state <- function(model) {
+    .Call(`_cuml_rf_classifier_get_state`, model)
+}
+
+.rf_classifier_set_state <- function(state) {
+    .Call(`_cuml_rf_classifier_set_state`, state)
+}
+
 .rf_regressor_fit <- function(input, responses, n_trees, bootstrap, max_samples, n_streams, max_depth, max_leaves, max_features, n_bins, min_samples_leaf, min_samples_split, split_criterion, min_impurity_decrease, max_batch_size, verbosity) {
     .Call(`_cuml_rf_regressor_fit`, input, responses, n_trees, bootstrap, max_samples, n_streams, max_depth, max_leaves, max_features, n_bins, min_samples_leaf, min_samples_split, split_criterion, min_impurity_decrease, max_batch_size, verbosity)
 }

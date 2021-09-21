@@ -23,6 +23,10 @@ Rcpp::IntegerVector rf_classifier_predict(SEXP model_xptr,
 Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
   SEXP model_xptr, Rcpp::NumericMatrix const& input);
 
+Rcpp::List rf_classifier_get_state(SEXP model);
+
+SEXP rf_classifier_set_state(Rcpp::List const& state);
+
 }  // namespace cuml4r
 
 #else

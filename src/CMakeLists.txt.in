@@ -59,6 +59,7 @@ add_library(
   random_forest_classifier.cu
   random_forest_regressor.cpp
   random_forest_regressor.cu
+  random_forest_serde.cu
   random_projection.cpp
   random_projection.cu
   svm_classifier.cpp

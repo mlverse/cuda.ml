@@ -5,17 +5,17 @@
 #include "pinned_host_vector.h"
 #include "preprocessor.h"
 #include "random_forest.cuh"
+#include "random_forest_serde.cuh"
 #include "stream_allocator.h"
 
 #include <cuml/fil/fil.h>
 #include <thrust/async/copy.h>
 #include <thrust/device_vector.h>
-#include <treelite/c_api.h>
-#include <cuml/ensemble/randomforest.hpp>
 
 #include <Rcpp.h>
 
 #include <chrono>
+#include <functional>
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -24,15 +24,93 @@ using RandomForestClassifierUPtr =
   std::unique_ptr<ML::RandomForestClassifierD,
                   cuml4r::RandomForestMetaDataDeleter<double, int>>;
 
+namespace cuml4r {
 namespace {
 
-struct RandomForestClassifierModel {
-  RandomForestClassifierUPtr const rf_;
-  std::unordered_map<int, int> const inverseLabelsMap_;
+constexpr auto kRfClassiferNumFeatures = "n_features";
+constexpr auto kRfClassifierForest = "forest";
+constexpr auto kRfClassifierInvLabelsMap = "inv_labels_map";
+
+class RandomForestClassifierModel {
+ public:
   __host__ RandomForestClassifierModel(
-    RandomForestClassifierUPtr rf,
-    std::unordered_map<int, int>&& inverse_labels_map) noexcept
-    : rf_(std::move(rf)), inverseLabelsMap_(std::move(inverse_labels_map)) {}
+    int const n_features, std::unordered_map<int, int>&& inv_labels_map,
+    RandomForestClassifierUPtr rf) noexcept
+    : nFeatures_(n_features),
+      invLabelsMap_(std::move(inv_labels_map)),
+      rf_(std::move(rf)) {}
+
+#ifndef CUML4R_TREELITE_C_API_MISSING
+
+  __host__ explicit RandomForestClassifierModel(Rcpp::List const& state)
+    : nFeatures_(state[kRfClassiferNumFeatures]), rf_(nullptr) {
+    {
+      Rcpp::List inv_labels_map = state[kRfClassifierInvLabelsMap];
+      for (auto const& p : inv_labels_map) {
+        auto const kv = Rcpp::as<Rcpp::IntegerVector>(p);
+        invLabelsMap_.emplace(kv[0], kv[1]);
+      }
+    }
+    {
+      std::unique_ptr<treelite::Model> model;
+      std::vector<detail::PyBufFrameContent> py_buf_frames_content;
+      detail::setState(model, py_buf_frames_content,
+                       /*state=*/state[kRfClassifierForest]);
+      tlHandle_ = model.release();
+      pyBufFramesContent_ = std::move(py_buf_frames_content);
+    }
+  }
+
+  __host__ Rcpp::List getState() {
+    Rcpp::List state;
+
+    state[kRfClassiferNumFeatures] = nFeatures_;
+    {
+      auto const& treelite_handle = getTreeliteHandle();
+
+      state[kRfClassifierForest] = detail::getState(
+        *reinterpret_cast<treelite::Model const*>(*treelite_handle.get()));
+    }
+    {
+      Rcpp::List inv_labels_map;
+      for (auto const& p : invLabelsMap_) {
+        inv_labels_map.push_back(
+          Rcpp::IntegerVector::create(p.first, p.second));
+      }
+      state[kRfClassifierInvLabelsMap] = std::move(inv_labels_map);
+    }
+
+    return state;
+  }
+
+#endif
+
+  int const nFeatures_;
+  std::unordered_map<int, int> invLabelsMap_;
+  RandomForestClassifierUPtr const rf_;
+
+#ifndef CUML4R_TREELITE_C_API_MISSING
+
+ public:
+  TreeliteHandle const& getTreeliteHandle() {
+    if (tlHandle_.empty()) {
+      tlHandle_ = detail::build_treelite_forest(
+        /*forest=*/rf_.get(),
+        /*n_features=*/nFeatures_, /*n_classes=*/invLabelsMap_.size());
+    }
+
+    return tlHandle_;
+  }
+
+ private:
+  // `pyBufFramesContent_` is needed for storing non-POD PyBufFrame states on
+  // the heap when calling setState(). It is otherwise unused.
+  // NOTE: destruction of `tlHandle_` must precede the destruction of
+  // `pyBufFrameContent_`.
+  std::vector<detail::PyBufFrameContent> pyBufFramesContent_;
+  TreeliteHandle tlHandle_;
+
+#endif
 };
 
 // map labels into consecutive integral values in [0, to n_unique_labels)
@@ -54,12 +132,13 @@ __host__ cuml4r::pinned_host_vector<int> preprocess_labels(
 }
 
 // reverse the mapping done by preprocess_labels
+template <typename T>
 __host__ void postprocess_labels(
-  cuml4r::pinned_host_vector<int>& labels,
-  std::unordered_map<int, int> const& inverse_labels_map) {
+  cuml4r::pinned_host_vector<T>& labels,
+  std::unordered_map<int, int> const& inv_labels_map) {
   for (auto& label : labels) {
-    auto iter = inverse_labels_map.find(label);
-    if (iter != inverse_labels_map.cend()) {
+    auto iter = inv_labels_map.find(static_cast<int>(label));
+    if (iter != inv_labels_map.cend()) {
       label = iter->second;
     } else {
       label = 0;
@@ -77,38 +156,45 @@ __host__ std::unordered_map<int, int> reverse(
   return r;
 }
 
-class TreeLiteModelHandle {
- public:
-  __host__ explicit TreeLiteModelHandle(ModelHandle const handle) noexcept
-    : handle_(handle) {}
+template <typename InputT, typename OutputT>
+__host__ Rcpp::IntegerVector rf_classifier_predict(
+  Rcpp::XPtr<RandomForestClassifierModel> const& model,
+  Rcpp::NumericMatrix const& input,
+  std::function<void(raft::handle_t const&, InputT*, OutputT*)> const&
+    predict_impl) {
+  auto const input_m = cuml4r::Matrix<InputT>(input, /*transpose=*/false);
+  auto const n_samples = input_m.numRows;
 
-  __host__ ~TreeLiteModelHandle() {
-    if (handle_ != nullptr) {
-      TreeliteFreeModel(handle_);
-    }
-  }
+  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  raft::handle_t handle;
+  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
 
-  __host__ ModelHandle* get() noexcept { return &handle_; }
+  // inputs
+  auto const& h_input = input_m.values;
+  thrust::device_vector<InputT> d_input(h_input.size());
+  unique_marker __attribute__((unused)) input_h2d;
+  input_h2d = cuml4r::async_copy(stream_view.value(), h_input.cbegin(),
+                                 h_input.cend(), d_input.begin());
 
- private:
-  ModelHandle handle_;
-};
+  // outputs
+  thrust::device_vector<OutputT> d_predictions(n_samples);
 
-template <typename T, typename L>
-__host__ auto build_treelite_forest(
-  ML::RandomForestMetaData<T, L> const* forest, int const n_features,
-  int const n_classes) {
-  auto tl_handle = std::make_unique<TreeLiteModelHandle>(nullptr);
-  ML::build_treelite_forest(/*model=*/tl_handle->get(), forest,
-                            /*num_features=*/n_features,
-                            /*task_category=*/n_classes);
+  predict_impl(handle, d_input.data().get(), d_predictions.data().get());
 
-  return tl_handle;
+  cuml4r::pinned_host_vector<OutputT> h_predictions(n_samples);
+  unique_marker __attribute__((unused)) preds_d2h;
+  preds_d2h = cuml4r::async_copy(stream_view.value(), d_predictions.cbegin(),
+                                 d_predictions.cend(), h_predictions.begin());
+
+  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
+
+  // post-process prediction labels
+  postprocess_labels(h_predictions, model->invLabelsMap_);
+
+  return Rcpp::IntegerVector(h_predictions.begin(), h_predictions.end());
 }
 
 }  // namespace
-
-namespace cuml4r {
 
 __host__ SEXP rf_classifier_fit(
   Rcpp::NumericMatrix const& input, Rcpp::IntegerVector const& labels,
@@ -163,46 +249,61 @@ __host__ SEXP rf_classifier_fit(
     }
   }
 
-  return Rcpp::XPtr<RandomForestClassifierModel>(
-    new RandomForestClassifierModel(std::move(rf), reverse(labels_map)));
+  auto model = std::make_unique<RandomForestClassifierModel>(
+    n_features, reverse(labels_map), std::move(rf));
+
+  return Rcpp::XPtr<RandomForestClassifierModel>(model.release());
 }
 
 __host__ Rcpp::IntegerVector rf_classifier_predict(
   SEXP model_xptr, Rcpp::NumericMatrix const& input, int const verbosity) {
-  auto const input_m = cuml4r::Matrix<>(input, /*transpose=*/false);
-  int const n_samples = input_m.numRows;
-  int const n_features = input_m.numCols;
-
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
-  raft::handle_t handle;
-  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
-
+  int const n_samples = input.nrow();
+  int const n_features = input.ncol();
   auto model = Rcpp::XPtr<RandomForestClassifierModel>(model_xptr);
 
-  // inputs
-  auto const& h_input = input_m.values;
-  thrust::device_vector<double> d_input(h_input.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(input_h2d) = cuml4r::async_copy(
-    stream_view.value(), h_input.cbegin(), h_input.cend(), d_input.begin());
+  if (model->rf_ != nullptr) {
+    return rf_classifier_predict<double, int>(
+      model, input,
+      /*predict_impl=*/
+      [n_samples, n_features, verbosity, rf = model->rf_.get()](
+        raft::handle_t const& handle, double* d_input, int* d_preds) {
+        ML::predict(handle, /*forest=*/rf, d_input, n_samples, n_features,
+                    /*predictions=*/d_preds, verbosity);
+      });
+  } else {
+    return rf_classifier_predict<float, float>(
+      model, input,
+      /*predict_impl=*/
+      [&model, n_samples, n_features](raft::handle_t const& handle,
+                                      float* d_input, float* d_preds) {
+#ifndef CUML4R_TREELITE_C_API_MISSING
+        auto const& tl_handle = model->getTreeliteHandle();
 
-  // outputs
-  thrust::device_vector<int> d_predictions(n_samples);
+        ML::fil::forest_t forest;
+        ML::fil::treelite_params_t params;
+        params.algo = ML::fil::algo_t::ALGO_AUTO;
+        params.output_class = true;
+        params.storage_type = ML::fil::storage_type_t::AUTO;
+        params.blocks_per_sm = 0;
+        params.threads_per_tree = 1;
+        params.n_items = 0;
+        params.pforest_shape_str = nullptr;
+        ML::fil::from_treelite(handle, /*pforest=*/&forest,
+                               /*model=*/*tl_handle.get(),
+                               /*tl_params=*/&params);
 
-  ML::predict(handle, /*forest=*/model->rf_.get(), d_input.data().get(),
-              n_samples, n_features, /*predictions=*/d_predictions.data().get(),
-              /*verbosity=*/verbosity);
+        ML::fil::predict(/*h=*/handle, /*f=*/forest, /*preds=*/d_preds,
+                         /*data=*/d_input, /*num_rows=*/n_samples,
+                         /*predict_proba=*/false);
 
-  cuml4r::pinned_host_vector<int> h_predictions(n_samples);
-  auto CUML4R_ANONYMOUS_VARIABLE(predictions_d2h) =
-    cuml4r::async_copy(stream_view.value(), d_predictions.cbegin(),
-                       d_predictions.cend(), h_predictions.begin());
+#else
+        Rcpp::stop(
+          "Treelite C API is required for predictions using unserialized "
+          "rand_forest model!");
 
-  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
-
-  // post-process prediction labels
-  postprocess_labels(h_predictions, model->inverseLabelsMap_);
-
-  return Rcpp::IntegerVector(h_predictions.begin(), h_predictions.end());
+#endif
+      });
+  }
 }
 
 __host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
@@ -211,13 +312,11 @@ __host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
 
   auto const input_m = cuml4r::Matrix<float>(input, /*transpose=*/false);
   int const n_samples = input_m.numRows;
-  int const n_features = input_m.numCols;
 
   auto model = Rcpp::XPtr<RandomForestClassifierModel>(model_xptr);
-  int const n_classes = model->inverseLabelsMap_.size();
+  int const n_classes = model->invLabelsMap_.size();
 
-  auto tl_handle =
-    build_treelite_forest(/*forest=*/model->rf_.get(), n_features, n_classes);
+  auto const& tl_handle = model->getTreeliteHandle();
 
   auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
   raft::handle_t handle;
@@ -234,7 +333,7 @@ __host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
   params.n_items = 0;
   params.pforest_shape_str = nullptr;
   ML::fil::from_treelite(handle, /*pforest=*/&forest,
-                         /*model=*/*(tl_handle->get()), /*tl_params=*/&params);
+                         /*model=*/*tl_handle.get(), /*tl_params=*/&params);
 
   // FIL input
   auto const& h_x = input_m.values;
@@ -263,6 +362,23 @@ __host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
   return {};
 
 #endif
+}
+
+__host__ Rcpp::List rf_classifier_get_state(SEXP model) {
+#ifndef CUML4R_TREELITE_C_API_MISSING
+
+  return Rcpp::XPtr<RandomForestClassifierModel>(model)->getState();
+
+#else
+
+  return {};
+
+#endif
+}
+
+__host__ SEXP rf_classifier_set_state(Rcpp::List const& state) {
+  auto model = std::make_unique<RandomForestClassifierModel>(state);
+  return Rcpp::XPtr<RandomForestClassifierModel>(model.release());
 }
 
 }  // namespace cuml4r
