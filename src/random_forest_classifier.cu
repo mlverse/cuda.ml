@@ -77,6 +77,35 @@ __host__ std::unordered_map<int, int> reverse(
   return r;
 }
 
+class TreeLiteModelHandle {
+ public:
+  __host__ explicit TreeLiteModelHandle(ModelHandle const handle) noexcept
+    : handle_(handle) {}
+
+  __host__ ~TreeLiteModelHandle() {
+    if (handle_ != nullptr) {
+      TreeliteFreeModel(handle_);
+    }
+  }
+
+  __host__ ModelHandle* get() noexcept { return &handle_; }
+
+ private:
+  ModelHandle handle_;
+};
+
+template <typename T, typename L>
+__host__ auto build_treelite_forest(
+  ML::RandomForestMetaData<T, L> const* forest, int const n_features,
+  int const n_classes) {
+  auto tl_handle = std::make_unique<TreeLiteModelHandle>(nullptr);
+  ML::build_treelite_forest(/*model=*/tl_handle->get(), forest,
+                            /*num_features=*/n_features,
+                            /*task_category=*/n_classes);
+
+  return tl_handle;
+}
+
 }  // namespace
 
 namespace cuml4r {
@@ -185,14 +214,10 @@ __host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
   int const n_features = input_m.numCols;
 
   auto model = Rcpp::XPtr<RandomForestClassifierModel>(model_xptr);
-  int const num_classes = model->inverseLabelsMap_.size();
+  int const n_classes = model->inverseLabelsMap_.size();
 
-  ModelHandle tl_handle;
-  ML::build_treelite_forest(
-    /*model=*/&tl_handle,
-    /*forest=*/model->rf_.get(),
-    /*num_features=*/n_features,
-    /*task_category=*/num_classes);
+  auto tl_handle =
+    build_treelite_forest(/*forest=*/model->rf_.get(), n_features, n_classes);
 
   auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
   raft::handle_t handle;
@@ -209,7 +234,7 @@ __host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
   params.n_items = 0;
   params.pforest_shape_str = nullptr;
   ML::fil::from_treelite(handle, /*pforest=*/&forest,
-                         /*model=*/tl_handle, /*tl_params=*/&params);
+                         /*model=*/*(tl_handle->get()), /*tl_params=*/&params);
 
   // FIL input
   auto const& h_x = input_m.values;
@@ -218,7 +243,7 @@ __host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
     handle.get_stream(), h_x.cbegin(), h_x.cend(), d_x.begin());
 
   // FIL output
-  thrust::device_vector<float> d_preds(num_classes * n_samples);
+  thrust::device_vector<float> d_preds(n_classes * n_samples);
 
   ML::fil::predict(/*h=*/handle, /*f=*/forest,
                    /*preds=*/d_preds.data().get(),
@@ -232,7 +257,7 @@ __host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
   CUDA_RT_CALL(cudaStreamSynchronize(handle.get_stream()));
 
   return Rcpp::transpose(
-    Rcpp::NumericMatrix(num_classes, n_samples, h_preds.begin()));
+    Rcpp::NumericMatrix(n_classes, n_samples, h_preds.begin()));
 #else
 
   return {};
