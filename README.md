@@ -53,7 +53,7 @@ sudo apt-get -y install cuda
 # Add cuda executables to path 
 (nvcc is needed for cuml installation)
 ```bash
-echo "export PATH=/usr/local/cuda/bin:$PATH" >> ~/.bashrc
+echo "export PATH=$PATH:/usr/local/cuda/bin" >> ~/.bashrc
 source ~/.bashrc
 ```
 
