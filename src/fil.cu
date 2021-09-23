@@ -1,10 +1,12 @@
 #include "async_utils.cuh"
 #include "cuda_utils.h"
+#include "fil_utils.h"
 #include "handle_utils.h"
 #include "matrix_utils.h"
 #include "pinned_host_vector.h"
 #include "preprocessor.h"
 #include "stream_allocator.h"
+#include "treelite_utils.cuh"
 
 #include <cuml/fil/fil.h>
 #include <thrust/async/copy.h>
@@ -21,37 +23,31 @@ namespace {
 enum class ModelType { XGBoost, XGBoostJSON, LightGBM };
 
 __host__ int treeliteLoadModel(ModelType const model_type, char const* filename,
-                               ModelHandle& model_handle) {
+                               cuml4r::TreeliteHandle& tl_handle) {
   switch (model_type) {
     case ModelType::XGBoost:
-      return TreeliteLoadXGBoostModel(filename, &model_handle);
+      return TreeliteLoadXGBoostModel(filename, tl_handle.get());
     case ModelType::XGBoostJSON:
-      return TreeliteLoadXGBoostJSON(filename, &model_handle);
+      return TreeliteLoadXGBoostJSON(filename, tl_handle.get());
     case ModelType::LightGBM:
-      return TreeliteLoadLightGBMModel(filename, &model_handle);
+      return TreeliteLoadLightGBMModel(filename, tl_handle.get());
   }
 
   // unreachable
   return -1;
 }
 
-struct TreeliteModel {
-  __host__ TreeliteModel(std::unique_ptr<raft::handle_t> handle,
-                         ML::fil::forest_t const forest,
-                         ModelHandle const model, size_t const num_classes)
+struct FILModel {
+  __host__ FILModel(std::unique_ptr<raft::handle_t> handle,
+                    cuml4r::fil::forest_uptr forest, size_t const num_classes)
     : handle_(std::move(handle)),
-      forest_(forest),
-      model_(model),
+      forest_(std::move(forest)),
       numClasses_(num_classes) {}
-  ~TreeliteModel() {
-    if (forest_ != nullptr) {
-      ML::fil::free(*handle_, forest_);
-    }
-  }
 
   std::unique_ptr<raft::handle_t> const handle_;
-  ML::fil::forest_t const forest_;
-  ModelHandle const model_;
+  // NOTE: the destruction of `forest_` must precede the destruction of
+  // `handle_`.
+  cuml4r::fil::forest_uptr forest_;
   size_t const numClasses_;
 };
 
@@ -66,11 +62,11 @@ __host__ SEXP fil_load_model(int const model_type, std::string const& filename,
                              int const threads_per_tree, int const n_items) {
   Rcpp::List model;
 
-  ModelHandle model_handle;
+  TreeliteHandle tl_handle;
   {
     auto const rc = treeliteLoadModel(
       /*model_type=*/static_cast<ModelType>(model_type),
-      /*filename=*/filename.c_str(), model_handle);
+      /*filename=*/filename.c_str(), tl_handle);
     if (rc < 0) {
       char const* err = TreeliteGetLastError();
       Rcpp::stop("Failed to load XGBoost model file '%s': %s.",
@@ -92,15 +88,18 @@ __host__ SEXP fil_load_model(int const model_type, std::string const& filename,
   auto handle = std::make_unique<raft::handle_t>();
   cuml4r::handle_utils::initializeHandle(*handle, stream_view.value());
 
-  ML::fil::forest_t forest;
-
-  ML::fil::from_treelite(/*handle=*/*handle, /*pforest=*/&forest,
-                         /*model=*/model_handle, /*tl_params=*/&params);
+  auto forest = fil::make_forest(*handle, /*src=*/[&] {
+    ML::fil::forest* f;
+    ML::fil::from_treelite(/*handle=*/*handle, /*pforest=*/&f,
+                           /*model=*/*tl_handle.get(),
+                           /*tl_params=*/&params);
+    return f;
+  });
 
   size_t num_classes = 0;
   if (classification) {
-    auto const rc =
-      TreeliteQueryNumClass(/*handle=*/model_handle, /*out=*/&num_classes);
+    auto const rc = TreeliteQueryNumClass(/*handle=*/*tl_handle.get(),
+                                          /*out=*/&num_classes);
     if (rc < 0) {
       char const* err = TreeliteGetLastError();
       Rcpp::stop("TreeliteQueryNumClass failed: %s.", err);
@@ -110,21 +109,21 @@ __host__ SEXP fil_load_model(int const model_type, std::string const& filename,
     num_classes = std::max(num_classes, size_t(2));
   }
 
-  return Rcpp::XPtr<TreeliteModel>(std::make_unique<TreeliteModel>(
-                                     /*handle=*/std::move(handle), forest,
-                                     /*model=*/model_handle, num_classes)
-                                     .release());
+  return Rcpp::XPtr<FILModel>(
+    std::make_unique<FILModel>(
+      /*handle=*/std::move(handle), std::move(forest), num_classes)
+      .release());
 }
 
 __host__ int fil_get_num_classes(SEXP const& model) {
-  auto const model_xptr = Rcpp::XPtr<TreeliteModel>(model);
+  auto const model_xptr = Rcpp::XPtr<FILModel>(model);
   return model_xptr->numClasses_;
 }
 
 __host__ Rcpp::NumericMatrix fil_predict(
   SEXP const& model, Rcpp::NumericMatrix const& x,
   bool const output_class_probabilities) {
-  auto const model_xptr = Rcpp::XPtr<TreeliteModel>(model);
+  auto const model_xptr = Rcpp::XPtr<FILModel>(model);
   auto const m = cuml4r::Matrix<float>(x, /*transpose=*/false);
 
   if (output_class_probabilities && model_xptr->numClasses_ == 0) {
@@ -145,7 +144,7 @@ __host__ Rcpp::NumericMatrix fil_predict(
                                          ? model_xptr->numClasses_ * m.numRows
                                          : m.numRows);
 
-  ML::fil::predict(/*h=*/handle, /*f=*/model_xptr->forest_,
+  ML::fil::predict(/*h=*/handle, /*f=*/model_xptr->forest_.get(),
                    /*preds=*/d_preds.data().get(),
                    /*data=*/d_x.data().get(), /*num_rows=*/m.numRows,
                    /*predict_proba=*/output_class_probabilities);
