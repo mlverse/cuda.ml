@@ -9,7 +9,6 @@
 
 #include <thrust/async/copy.h>
 #include <thrust/device_vector.h>
-#include <cuml/ensemble/randomforest.hpp>
 
 #include <Rcpp.h>
 

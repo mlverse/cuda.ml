@@ -57,3 +57,33 @@ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
 
 #endif
 }
+
+// [[Rcpp::export(".rf_classifier_get_state")]]
+Rcpp::List rf_classifier_get_state(SEXP model) {
+#ifdef HAS_CUML
+
+  return cuml4r::rf_classifier_get_state(model);
+
+#else
+
+#include "warn_cuml_missing.h"
+
+  return {};
+
+#endif
+}
+
+// [[Rcpp::export(".rf_classifier_set_state")]]
+SEXP rf_classifier_set_state(Rcpp::List const& state) {
+#ifdef HAS_CUML
+
+  return cuml4r::rf_classifier_set_state(state);
+
+#else
+
+#include "warn_cuml_missing.h"
+
+  return R_NilValue;
+
+#endif
+}
