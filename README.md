@@ -30,17 +30,24 @@ It is under active development, and currently implements R interfaces for algori
 |  | Epsilon-Support Vector Regression (SVR) | |
 
 
+# Quick note on installing the RAPIDS cuML library:
 
+Although Conda is the only officially supported distribution channel at the
+moment for RAPIDS cuML (i.e., see https://rapids.ai/start.html#get-rapids),
+one can still build and install this library from source without relying on
+Conda.
+See https://github.com/yitao-li/cuml-installation-notes for build-from-source
+instructions.
 
-Quick install instructions for Ubuntu 20-04:
+# Quick install instructions for Ubuntu 20-04:
 
-Install deps:
+## Install deps:
 ```
 sudo apt install -y cmake
 ```
 
 
-Install CUDA
+## Install CUDA
 ```bash
 wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
 sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
@@ -50,14 +57,14 @@ sudo apt-key add /var/cuda-repo-ubuntu2004-11-4-local/7fa2af80.pub
 sudo apt-get update
 sudo apt-get -y install cuda
 ```
-# Add cuda executables to path 
+## Add cuda executables to path
 (nvcc is needed for cuml installation)
 ```bash
 echo "export PATH=$PATH:/usr/local/cuda/bin" >> ~/.bashrc
 source ~/.bashrc
 ```
 
-Install Miniconda:
+## Install Miniconda:
 ```bash
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 chmod +x Miniconda3-latest-Linux-x86_64.sh
@@ -65,21 +72,33 @@ chmod +x Miniconda3-latest-Linux-x86_64.sh
 # consult https://rapids.ai/start.html for alternatives
 ```
 
-Create and configure the conda env
+## Create and configure the conda env
 ```
 # This is a relatively big download, may take a while
 ~/miniconda3/bin/conda create -n rapids-21.08 -c rapidsai -c nvidia -c conda-forge \
     rapids-blazing=21.08 python=3.8 cudatoolkit=11.2
 ```
 
-Activate the conda env:
+## Activate the conda env:
 ```bash
 . ~/miniconda3/bin/activate
 conda activate rapids-21.08
 ```
 
+## Consider adjusting `LD_LIBRARY_PATH`
 
-Install cuml the R package:
+The subsequent steps may (or may not) fail without the following:
+
+```bash
+export LD_LIBRARY_PATH=~/miniconda3/envs/rapids-21.08/lib
+
+```
+
+If you get some error indicating a GLIBC version mismatch in the subsequent
+steps, then please try adjusting `LD_LIBRARY_PATH` as a workaround.
+
+## Install cuml the R package:
+
 CRAN release:
 ```R
 Rscript -e 'install.packages("cuml")'
