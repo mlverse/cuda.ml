@@ -1,5 +1,6 @@
 #include "async_utils.cuh"
 #include "cuda_utils.h"
+#include "fil_utils.h"
 #include "handle_utils.h"
 #include "matrix_utils.h"
 #include "pinned_host_vector.h"
@@ -279,7 +280,6 @@ __host__ Rcpp::IntegerVector rf_classifier_predict(
 #ifndef CUML4R_TREELITE_C_API_MISSING
         auto const& tl_handle = model->getTreeliteHandle();
 
-        ML::fil::forest_t forest;
         ML::fil::treelite_params_t params;
         params.algo = ML::fil::algo_t::ALGO_AUTO;
         params.output_class = true;
@@ -288,11 +288,16 @@ __host__ Rcpp::IntegerVector rf_classifier_predict(
         params.threads_per_tree = 1;
         params.n_items = 0;
         params.pforest_shape_str = nullptr;
-        ML::fil::from_treelite(handle, /*pforest=*/&forest,
-                               /*model=*/*tl_handle.get(),
-                               /*tl_params=*/&params);
-
-        ML::fil::predict(/*h=*/handle, /*f=*/forest, /*preds=*/d_preds,
+        auto forest =
+          fil::make_forest(handle,
+                           /*src=*/[&] {
+                             ML::fil::forest* f;
+                             ML::fil::from_treelite(handle, /*pforest=*/&f,
+                                                    /*model=*/*tl_handle.get(),
+                                                    /*tl_params=*/&params);
+                             return f;
+                           });
+        ML::fil::predict(/*h=*/handle, /*f=*/forest.get(), /*preds=*/d_preds,
                          /*data=*/d_input, /*num_rows=*/n_samples,
                          /*predict_proba=*/false);
 
@@ -322,7 +327,6 @@ __host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
   raft::handle_t handle;
   cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
 
-  ML::fil::forest_t forest;
   ML::fil::treelite_params_t params;
   params.algo = ML::fil::algo_t::ALGO_AUTO;
   // output class probabilities instead of classes
@@ -332,8 +336,14 @@ __host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
   params.threads_per_tree = 1;
   params.n_items = 0;
   params.pforest_shape_str = nullptr;
-  ML::fil::from_treelite(handle, /*pforest=*/&forest,
-                         /*model=*/*tl_handle.get(), /*tl_params=*/&params);
+  auto forest = fil::make_forest(
+    handle,
+    /*src=*/[&] {
+      ML::fil::forest* f;
+      ML::fil::from_treelite(handle, /*pforest=*/&f,
+                             /*model=*/*tl_handle.get(), /*tl_params=*/&params);
+      return f;
+    });
 
   // FIL input
   auto const& h_x = input_m.values;
@@ -344,7 +354,7 @@ __host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
   // FIL output
   thrust::device_vector<float> d_preds(n_classes * n_samples);
 
-  ML::fil::predict(/*h=*/handle, /*f=*/forest,
+  ML::fil::predict(/*h=*/handle, /*f=*/forest.get(),
                    /*preds=*/d_preds.data().get(),
                    /*data=*/d_x.data().get(), /*num_rows=*/n_samples,
                    /*predict_proba=*/true);
