@@ -89,6 +89,14 @@
     .Call(`_cuda_ml_rf_regressor_predict`, model_xptr, input, verbosity)
 }
 
+.rf_regressor_get_state <- function(model) {
+    .Call(`_cuda_ml_rf_regressor_get_state`, model)
+}
+
+.rf_regressor_set_state <- function(state) {
+    .Call(`_cuda_ml_rf_regressor_set_state`, state)
+}
+
 .rproj_johnson_lindenstrauss_min_dim <- function(n_samples, eps) {
     .Call(`_cuda_ml_rproj_johnson_lindenstrauss_min_dim`, n_samples, eps)
 }

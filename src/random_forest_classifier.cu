@@ -32,18 +32,18 @@ constexpr auto kRfClassiferNumFeatures = "n_features";
 constexpr auto kRfClassifierForest = "forest";
 constexpr auto kRfClassifierInvLabelsMap = "inv_labels_map";
 
-class RandomForestClassifierModel {
+class RandomForestClassifier {
  public:
-  __host__ RandomForestClassifierModel(
-    int const n_features, std::unordered_map<int, int>&& inv_labels_map,
-    RandomForestClassifierUPtr rf) noexcept
+  __host__ RandomForestClassifier(int const n_features,
+                                  std::unordered_map<int, int>&& inv_labels_map,
+                                  RandomForestClassifierUPtr rf) noexcept
     : nFeatures_(n_features),
       invLabelsMap_(std::move(inv_labels_map)),
       rf_(std::move(rf)) {}
 
 #ifndef CUML4R_TREELITE_C_API_MISSING
 
-  __host__ explicit RandomForestClassifierModel(Rcpp::List const& state)
+  __host__ explicit RandomForestClassifier(Rcpp::List const& state)
     : nFeatures_(state[kRfClassiferNumFeatures]), rf_(nullptr) {
     {
       Rcpp::List inv_labels_map = state[kRfClassifierInvLabelsMap];
@@ -159,10 +159,10 @@ __host__ std::unordered_map<int, int> reverse(
 
 template <typename InputT, typename OutputT>
 __host__ Rcpp::IntegerVector rf_classifier_predict(
-  Rcpp::XPtr<RandomForestClassifierModel> const& model,
+  Rcpp::XPtr<RandomForestClassifier> const& model,
   Rcpp::NumericMatrix const& input,
-  std::function<void(raft::handle_t const&, InputT*, OutputT*)> const&
-    predict_impl) {
+  std::function<void(raft::handle_t const&, InputT* const,
+                     OutputT* const)> const& predict_impl) {
   auto const input_m = cuml4r::Matrix<InputT>(input, /*transpose=*/false);
   auto const n_samples = input_m.numRows;
 
@@ -250,24 +250,25 @@ __host__ SEXP rf_classifier_fit(
     }
   }
 
-  auto model = std::make_unique<RandomForestClassifierModel>(
+  auto model = std::make_unique<RandomForestClassifier>(
     n_features, reverse(labels_map), std::move(rf));
 
-  return Rcpp::XPtr<RandomForestClassifierModel>(model.release());
+  return Rcpp::XPtr<RandomForestClassifier>(model.release());
 }
 
 __host__ Rcpp::IntegerVector rf_classifier_predict(
   SEXP model_xptr, Rcpp::NumericMatrix const& input, int const verbosity) {
   int const n_samples = input.nrow();
   int const n_features = input.ncol();
-  auto model = Rcpp::XPtr<RandomForestClassifierModel>(model_xptr);
+  auto const model = Rcpp::XPtr<RandomForestClassifier>(model_xptr);
 
   if (model->rf_ != nullptr) {
     return rf_classifier_predict<double, int>(
       model, input,
       /*predict_impl=*/
       [n_samples, n_features, verbosity, rf = model->rf_.get()](
-        raft::handle_t const& handle, double* d_input, int* d_preds) {
+        raft::handle_t const& handle, double* const d_input,
+        int* const d_preds) {
         ML::predict(handle, /*forest=*/rf, d_input, n_samples, n_features,
                     /*predictions=*/d_preds, verbosity);
       });
@@ -276,7 +277,8 @@ __host__ Rcpp::IntegerVector rf_classifier_predict(
       model, input,
       /*predict_impl=*/
       [&model, n_samples, n_features](raft::handle_t const& handle,
-                                      float* d_input, float* d_preds) {
+                                      float* const d_input,
+                                      float* const d_preds) {
 #ifndef CUML4R_TREELITE_C_API_MISSING
         auto const& tl_handle = model->getTreeliteHandle();
 
@@ -318,7 +320,7 @@ __host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
   auto const input_m = cuml4r::Matrix<float>(input, /*transpose=*/false);
   int const n_samples = input_m.numRows;
 
-  auto model = Rcpp::XPtr<RandomForestClassifierModel>(model_xptr);
+  auto model = Rcpp::XPtr<RandomForestClassifier>(model_xptr);
   int const n_classes = model->invLabelsMap_.size();
 
   auto const& tl_handle = model->getTreeliteHandle();
@@ -377,7 +379,7 @@ __host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
 __host__ Rcpp::List rf_classifier_get_state(SEXP model) {
 #ifndef CUML4R_TREELITE_C_API_MISSING
 
-  return Rcpp::XPtr<RandomForestClassifierModel>(model)->getState();
+  return Rcpp::XPtr<RandomForestClassifier>(model)->getState();
 
 #else
 
@@ -387,8 +389,16 @@ __host__ Rcpp::List rf_classifier_get_state(SEXP model) {
 }
 
 __host__ SEXP rf_classifier_set_state(Rcpp::List const& state) {
-  auto model = std::make_unique<RandomForestClassifierModel>(state);
-  return Rcpp::XPtr<RandomForestClassifierModel>(model.release());
+#ifndef CUML4R_TREELITE_C_API_MISSING
+
+  auto model = std::make_unique<RandomForestClassifier>(state);
+  return Rcpp::XPtr<RandomForestClassifier>(model.release());
+
+#else
+
+  return R_NilValue;
+
+#endif
 }
 
 }  // namespace cuml4r

@@ -334,6 +334,28 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rf_regressor_get_state
+Rcpp::List rf_regressor_get_state(SEXP model);
+RcppExport SEXP _cuda_ml_rf_regressor_get_state(SEXP modelSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type model(modelSEXP);
+    rcpp_result_gen = Rcpp::wrap(rf_regressor_get_state(model));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rf_regressor_set_state
+SEXP rf_regressor_set_state(Rcpp::List const& state);
+RcppExport SEXP _cuda_ml_rf_regressor_set_state(SEXP stateSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List const& >::type state(stateSEXP);
+    rcpp_result_gen = Rcpp::wrap(rf_regressor_set_state(state));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rproj_johnson_lindenstrauss_min_dim
 size_t rproj_johnson_lindenstrauss_min_dim(size_t const n_samples, double const eps);
 RcppExport SEXP _cuda_ml_rproj_johnson_lindenstrauss_min_dim(SEXP n_samplesSEXP, SEXP epsSEXP) {
@@ -643,6 +665,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuda_ml_rf_classifier_set_state", (DL_FUNC) &_cuda_ml_rf_classifier_set_state, 1},
     {"_cuda_ml_rf_regressor_fit", (DL_FUNC) &_cuda_ml_rf_regressor_fit, 16},
     {"_cuda_ml_rf_regressor_predict", (DL_FUNC) &_cuda_ml_rf_regressor_predict, 3},
+    {"_cuda_ml_rf_regressor_get_state", (DL_FUNC) &_cuda_ml_rf_regressor_get_state, 1},
+    {"_cuda_ml_rf_regressor_set_state", (DL_FUNC) &_cuda_ml_rf_regressor_set_state, 1},
     {"_cuda_ml_rproj_johnson_lindenstrauss_min_dim", (DL_FUNC) &_cuda_ml_rproj_johnson_lindenstrauss_min_dim, 2},
     {"_cuda_ml_rproj_fit", (DL_FUNC) &_cuda_ml_rproj_fit, 7},
     {"_cuda_ml_rproj_transform", (DL_FUNC) &_cuda_ml_rproj_transform, 2},

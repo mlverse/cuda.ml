@@ -1,10 +1,12 @@
 #include "async_utils.cuh"
 #include "cuda_utils.h"
+#include "fil_utils.h"
 #include "handle_utils.h"
 #include "matrix_utils.h"
 #include "pinned_host_vector.h"
 #include "preprocessor.h"
 #include "random_forest.cuh"
+#include "random_forest_serde.cuh"
 #include "stream_allocator.h"
 
 #include <thrust/async/copy.h>
@@ -22,6 +24,104 @@ namespace cuml4r {
 using RandomForestRegressorUPtr =
   std::unique_ptr<ML::RandomForestRegressorD,
                   RandomForestMetaDataDeleter<double, double>>;
+
+namespace {
+
+constexpr auto kRfRegressorNumFeatures = "n_features";
+constexpr auto kRfRegressorForest = "forest";
+
+class RandomForestRegressor {
+ public:
+  __host__ RandomForestRegressor(RandomForestRegressorUPtr rf,
+                                 int const n_features)
+    : rf_(std::move(rf)), nFeatures_(n_features) {}
+
+#ifndef CUML4R_TREELITE_C_API_MISSING
+  __host__ explicit RandomForestRegressor(Rcpp::List const& state)
+    : nFeatures_(state[kRfRegressorNumFeatures]), rf_(nullptr) {
+    std::unique_ptr<treelite::Model> model;
+    std::vector<detail::PyBufFrameContent> py_buf_frames_content;
+    detail::setState(model, py_buf_frames_content,
+                     /*state=*/state[kRfRegressorForest]);
+    tlHandle_ = model.release();
+    pyBufFramesContent_ = std::move(py_buf_frames_content);
+  }
+
+  __host__ Rcpp::List getState() {
+    Rcpp::List state;
+
+    state[kRfRegressorNumFeatures] = nFeatures_;
+
+    auto const& treelite_handle = getTreeliteHandle();
+    state[kRfRegressorForest] = detail::getState(
+      *reinterpret_cast<treelite::Model const*>(*treelite_handle.get()));
+
+    return state;
+  }
+#endif
+
+  RandomForestRegressorUPtr const rf_;
+  int const nFeatures_;
+
+#ifndef CUML4R_TREELITE_C_API_MISSING
+
+ public:
+  TreeliteHandle const& getTreeliteHandle() {
+    if (tlHandle_.empty()) {
+      tlHandle_ = detail::build_treelite_forest(
+        /*forest=*/rf_.get(),
+        /*n_features=*/nFeatures_, /*n_classes=*/1);
+    }
+
+    return tlHandle_;
+  }
+
+ private:
+  // `pyBufFramesContent_` is needed for storing non-POD PyBufFrame states on
+  // the heap when calling setState(). It is otherwise unused.
+  // NOTE: destruction of `tlHandle_` must precede the destruction of
+  // `pyBufFrameContent_`.
+  std::vector<detail::PyBufFrameContent> pyBufFramesContent_;
+  TreeliteHandle tlHandle_;
+
+#endif
+};
+
+template <typename InputT, typename OutputT>
+__host__ Rcpp::NumericVector rf_regressor_predict(
+  Rcpp::NumericMatrix const& input,
+  std::function<void(raft::handle_t const&, InputT* const,
+                     OutputT* const)> const& predict_impl) {
+  auto const input_m = cuml4r::Matrix<InputT>(input, /*transpose=*/false);
+  int const n_samples = input_m.numRows;
+
+  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  raft::handle_t handle;
+  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+
+  // inputs
+  auto const& h_input = input_m.values;
+  thrust::device_vector<InputT> d_input(h_input.size());
+  unique_marker __attribute__((unused)) input_h2d;
+  input_h2d = cuml4r::async_copy(stream_view.value(), h_input.cbegin(),
+                                 h_input.cend(), d_input.begin());
+
+  // outputs
+  thrust::device_vector<OutputT> d_preds(n_samples);
+
+  predict_impl(handle, d_input.data().get(), d_preds.data().get());
+
+  cuml4r::pinned_host_vector<OutputT> h_preds(n_samples);
+  unique_marker __attribute__((unused)) preds_d2h;
+  preds_d2h = cuml4r::async_copy(stream_view.value(), d_preds.cbegin(),
+                                 d_preds.cend(), h_preds.begin());
+
+  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
+
+  return Rcpp::NumericVector(h_preds.begin(), h_preds.end());
+}
+
+}  // namespace
 
 __host__ SEXP rf_regressor_fit(
   Rcpp::NumericMatrix const& input, Rcpp::NumericVector const& responses,
@@ -74,43 +174,91 @@ __host__ SEXP rf_regressor_fit(
       rf = RandomForestRegressorUPtr(rf_ptr);
     }
   }
-
-  return Rcpp::XPtr<ML::RandomForestRegressorD>(rf.release());
+  return Rcpp::XPtr<RandomForestRegressor>(
+    std::make_unique<RandomForestRegressor>(/*rf=*/std::move(rf), n_features)
+      .release());
 }
 
 __host__ Rcpp::NumericVector rf_regressor_predict(
   SEXP model_xptr, Rcpp::NumericMatrix const& input, int const verbosity) {
-  auto const input_m = cuml4r::Matrix<>(input, /*transpose=*/false);
-  int const n_samples = input_m.numRows;
-  int const n_features = input_m.numCols;
+  int const n_samples = input.nrow();
+  int const n_features = input.ncol();
+  auto const model = Rcpp::XPtr<RandomForestRegressor>(model_xptr);
 
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
-  raft::handle_t handle;
-  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+  if (model->rf_ != nullptr) {
+    return rf_regressor_predict<double, double>(
+      input,
+      /*predict_impl=*/
+      [n_samples, n_features, verbosity, rf = model->rf_.get()](
+        raft::handle_t const& handle, double* const d_input,
+        double* const d_preds) {
+        ML::predict(handle, /*forest=*/rf, d_input, n_samples, n_features,
+                    /*predictions=*/d_preds, verbosity);
+      });
+  } else {
+    return rf_regressor_predict<float, float>(
+      input,
+      /*predict_impl=*/
+      [&model, n_samples, n_features](raft::handle_t const& handle,
+                                      float* const d_input,
+                                      float* const d_preds) {
+#ifndef CUML4R_TREELITE_C_API_MISSING
+        auto const& tl_handle = model->getTreeliteHandle();
 
-  auto model = Rcpp::XPtr<ML::RandomForestRegressorD>(model_xptr);
+        ML::fil::treelite_params_t params;
+        params.algo = ML::fil::algo_t::ALGO_AUTO;
+        params.output_class = false;
+        params.storage_type = ML::fil::storage_type_t::AUTO;
+        params.blocks_per_sm = 0;
+        params.threads_per_tree = 1;
+        params.n_items = 0;
+        params.pforest_shape_str = nullptr;
+        auto forest =
+          fil::make_forest(handle,
+                           /*src=*/[&] {
+                             ML::fil::forest* f;
+                             ML::fil::from_treelite(handle, /*pforest=*/&f,
+                                                    /*model=*/*tl_handle.get(),
+                                                    /*tl_params=*/&params);
+                             return f;
+                           });
+        ML::fil::predict(/*h=*/handle, /*f=*/forest.get(), /*preds=*/d_preds,
+                         /*data=*/d_input, /*num_rows=*/n_samples,
+                         /*predict_proba=*/false);
 
-  // inputs
-  auto const& h_input = input_m.values;
-  thrust::device_vector<double> d_input(h_input.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(input_h2d) = cuml4r::async_copy(
-    stream_view.value(), h_input.cbegin(), h_input.cend(), d_input.begin());
+#else
+        Rcpp::stop(
+          "Treelite C API is required for predictions using unserialized "
+          "rand_forest model!");
 
-  // outputs
-  thrust::device_vector<double> d_predictions(n_samples);
+#endif
+      });
+  }
+}
 
-  ML::predict(handle, /*forest=*/model.get(), d_input.data().get(), n_samples,
-              n_features, /*predictions=*/d_predictions.data().get(),
-              /*verbosity=*/verbosity);
+__host__ Rcpp::List rf_regressor_get_state(SEXP model) {
+#ifndef CUML4R_TREELITE_C_API_MISSING
 
-  cuml4r::pinned_host_vector<double> h_predictions(n_samples);
-  auto CUML4R_ANONYMOUS_VARIABLE(predictions_d2h) =
-    cuml4r::async_copy(stream_view.value(), d_predictions.cbegin(),
-                       d_predictions.cend(), h_predictions.begin());
+  return Rcpp::XPtr<RandomForestRegressor>(model)->getState();
 
-  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
+#else
 
-  return Rcpp::NumericVector(h_predictions.begin(), h_predictions.end());
+  return {};
+
+#endif
+}
+
+__host__ SEXP rf_regressor_set_state(Rcpp::List const& state) {
+#ifndef CUML4R_TREELITE_C_API_MISSING
+
+  auto model = std::make_unique<RandomForestRegressor>(state);
+  return Rcpp::XPtr<RandomForestRegressor>(model.release());
+
+#else
+
+  return R_NilValue;
+
+#endif
 }
 
 }  // namespace cuml4r

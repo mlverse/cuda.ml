@@ -20,6 +20,10 @@ Rcpp::NumericVector rf_regressor_predict(SEXP model_xptr,
                                          Rcpp::NumericMatrix const& input,
                                          int const verbosity);
 
+Rcpp::List rf_regressor_get_state(SEXP model);
+
+SEXP rf_regressor_set_state(Rcpp::List const& state);
+
 }  // namespace cuml4r
 
 #else
