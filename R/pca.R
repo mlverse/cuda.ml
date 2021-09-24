@@ -43,12 +43,12 @@
 #' print(iris.pca)
 #' @export
 cuda_ml_pca <- function(x,
-                     n_components = NULL,
-                     eig_algo = c("dq", "jacobi"),
-                     tol = 1e-7, n_iters = 15L,
-                     whiten = FALSE,
-                     transform_input = TRUE,
-                     cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
+                        n_components = NULL,
+                        eig_algo = c("dq", "jacobi"),
+                        tol = 1e-7, n_iters = 15L,
+                        whiten = FALSE,
+                        transform_input = TRUE,
+                        cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
   n_components <- n_components %||% min(nrow(x), ncol(x))
   eig_algo <- match_eig_algo(eig_algo)
   cuda_ml_log_level <- match_cuda_ml_log_level(cuda_ml_log_level)

@@ -141,13 +141,13 @@ file_match_storage_type <- function(storage_type = c("auto", "dense", "sparse"))
 #' print(preds)
 #' @export
 cuda_ml_fil_load_model <- function(filename,
-                                mode = c("classification", "regression"),
-                                model_type = c("xgboost", "lightgbm"),
-                                algo = c("auto", "naive", "tree_reorg", "batch_tree_reorg"),
-                                threshold = 0.5,
-                                storage_type = c("auto", "dense", "sparse"),
-                                threads_per_tree = 1L, n_items = 0L,
-                                blocks_per_sm = 0L) {
+                                   mode = c("classification", "regression"),
+                                   model_type = c("xgboost", "lightgbm"),
+                                   algo = c("auto", "naive", "tree_reorg", "batch_tree_reorg"),
+                                   threshold = 0.5,
+                                   storage_type = c("auto", "dense", "sparse"),
+                                   threads_per_tree = 1L, n_items = 0L,
+                                   blocks_per_sm = 0L) {
   mode <- match.arg(mode)
   model_type <- fil_match_model_type(filename, model_type)
   algo <- fil_match_algo(algo)

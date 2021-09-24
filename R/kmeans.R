@@ -48,9 +48,9 @@ kmeans_match_init_method <- function(m = c("kmeans++", "random")) {
 #' print(kclust)
 #' @export
 cuda_ml_kmeans <- function(x, k, max_iters = 300, tol = 0,
-                        init_method = c("kmeans++", "random"),
-                        seed = 0L,
-                        cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
+                           init_method = c("kmeans++", "random"),
+                           seed = 0L,
+                           cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
   init_method_enum <- kmeans_match_init_method(init_method)
   centroids <- matrix(numeric(0))
   if (is.matrix(init_method)) {

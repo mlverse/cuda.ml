@@ -65,7 +65,7 @@ cuda_ml_knn_algo_ivfflat <- function(nlist, nprobe) {
 #'
 #' @export
 cuda_ml_knn_algo_ivfpq <- function(nlist, nprobe, m, n_bits,
-                                use_precomputed_tables = FALSE) {
+                                   use_precomputed_tables = FALSE) {
   list(
     type = 2L,
     params = list(
@@ -90,8 +90,8 @@ cuda_ml_knn_algo_ivfpq <- function(nlist, nprobe, m, n_bits,
 #'
 #' @export
 cuda_ml_knn_algo_ivfsq <- function(nlist, nprobe,
-                                qtype = c("QT_8bit", "QT_4bit", "QT_8bit_uniform", "QT_4bit_uniform", "QT_fp16", "QT_8bit_direct", "QT_6bit"),
-                                encode_residual = FALSE) {
+                                   qtype = c("QT_8bit", "QT_4bit", "QT_8bit_uniform", "QT_4bit_uniform", "QT_fp16", "QT_8bit_direct", "QT_6bit"),
+                                   encode_residual = FALSE) {
   list(
     type = 3L,
     params = list(
@@ -203,11 +203,11 @@ cuda_ml_knn.default <- function(x, ...) {
 #' @rdname cuda_ml_knn
 #' @export
 cuda_ml_knn.data.frame <- function(x, y,
-                                algo = c("brute", "ivfflat", "ivfpq", "ivfsq"),
-                                metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis", "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine", "correlation"),
-                                p = 2.0,
-                                neighbors = 5L,
-                                ...) {
+                                   algo = c("brute", "ivfflat", "ivfpq", "ivfsq"),
+                                   metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis", "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine", "correlation"),
+                                   p = 2.0,
+                                   neighbors = 5L,
+                                   ...) {
   processed <- hardhat::mold(x, y)
 
   cuda_ml_knn_bridge(
@@ -222,11 +222,11 @@ cuda_ml_knn.data.frame <- function(x, y,
 #' @rdname cuda_ml_knn
 #' @export
 cuda_ml_knn.matrix <- function(x, y,
-                            algo = c("brute", "ivfflat", "ivfpq", "ivfsq"),
-                            metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis", "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine", "correlation"),
-                            p = 2.0,
-                            neighbors = 5L,
-                            ...) {
+                               algo = c("brute", "ivfflat", "ivfpq", "ivfsq"),
+                               metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis", "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine", "correlation"),
+                               p = 2.0,
+                               neighbors = 5L,
+                               ...) {
   processed <- hardhat::mold(x, y)
 
   cuda_ml_knn_bridge(
@@ -241,11 +241,11 @@ cuda_ml_knn.matrix <- function(x, y,
 #' @rdname cuda_ml_knn
 #' @export
 cuda_ml_knn.formula <- function(formula, data,
-                             algo = c("brute", "ivfflat", "ivfpq", "ivfsq"),
-                             metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis", "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine", "correlation"),
-                             p = 2.0,
-                             neighbors = 5L,
-                             ...) {
+                                algo = c("brute", "ivfflat", "ivfpq", "ivfsq"),
+                                metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis", "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine", "correlation"),
+                                p = 2.0,
+                                neighbors = 5L,
+                                ...) {
   processed <- hardhat::mold(formula, data)
 
   cuda_ml_knn_bridge(
@@ -260,11 +260,11 @@ cuda_ml_knn.formula <- function(formula, data,
 #' @rdname cuda_ml_knn
 #' @export
 cuda_ml_knn.recipe <- function(x, data,
-                            algo = c("brute", "ivfflat", "ivfpq", "ivfsq"),
-                            metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis", "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine", "correlation"),
-                            p = 2.0,
-                            neighbors = 5L,
-                            ...) {
+                               algo = c("brute", "ivfflat", "ivfpq", "ivfsq"),
+                               metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis", "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine", "correlation"),
+                               p = 2.0,
+                               neighbors = 5L,
+                               ...) {
   processed <- hardhat::mold(x, data)
 
   cuda_ml_knn_bridge(

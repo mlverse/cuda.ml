@@ -33,9 +33,9 @@
 #' print(clusters)
 #' @export
 cuda_ml_dbscan <- function(x,
-                        min_pts,
-                        eps,
-                        cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
+                           min_pts,
+                           eps,
+                           cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
   cuda_ml_log_level <- match_cuda_ml_log_level(cuda_ml_log_level)
 
   res <- .dbscan(

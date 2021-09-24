@@ -74,15 +74,15 @@ cuda_ml_rand_forest.default <- function(x, ...) {
 #' @rdname cuda_ml_rand_forest
 #' @export
 cuda_ml_rand_forest.data.frame <- function(x, y, mtry = NULL, trees = NULL,
-                                        min_n = 2L, bootstrap = TRUE,
-                                        max_depth = 16L, max_leaves = Inf,
-                                        max_predictors_per_note_split = NULL,
-                                        n_bins = 128L, min_samples_leaf = 1L,
-                                        split_criterion = NULL,
-                                        min_impurity_decrease = 0,
-                                        max_batch_size = 128L, n_streams = 8L,
-                                        cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
-                                        ...) {
+                                           min_n = 2L, bootstrap = TRUE,
+                                           max_depth = 16L, max_leaves = Inf,
+                                           max_predictors_per_note_split = NULL,
+                                           n_bins = 128L, min_samples_leaf = 1L,
+                                           split_criterion = NULL,
+                                           min_impurity_decrease = 0,
+                                           max_batch_size = 128L, n_streams = 8L,
+                                           cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                                           ...) {
   processed <- hardhat::mold(x, y)
 
   cuda_ml_rand_forest_bridge(
@@ -107,15 +107,15 @@ cuda_ml_rand_forest.data.frame <- function(x, y, mtry = NULL, trees = NULL,
 #' @rdname cuda_ml_rand_forest
 #' @export
 cuda_ml_rand_forest.matrix <- function(x, y, mtry = NULL, trees = NULL, min_n = 2L,
-                                    bootstrap = TRUE, max_depth = 16L,
-                                    max_leaves = Inf,
-                                    max_predictors_per_note_split = NULL,
-                                    n_bins = 128L, min_samples_leaf = 1L,
-                                    split_criterion = NULL,
-                                    min_impurity_decrease = 0,
-                                    max_batch_size = 128L, n_streams = 8L,
-                                    cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
-                                    ...) {
+                                       bootstrap = TRUE, max_depth = 16L,
+                                       max_leaves = Inf,
+                                       max_predictors_per_note_split = NULL,
+                                       n_bins = 128L, min_samples_leaf = 1L,
+                                       split_criterion = NULL,
+                                       min_impurity_decrease = 0,
+                                       max_batch_size = 128L, n_streams = 8L,
+                                       cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                                       ...) {
   processed <- hardhat::mold(x, y)
 
   cuda_ml_rand_forest_bridge(
@@ -140,15 +140,15 @@ cuda_ml_rand_forest.matrix <- function(x, y, mtry = NULL, trees = NULL, min_n = 
 #' @rdname cuda_ml_rand_forest
 #' @export
 cuda_ml_rand_forest.formula <- function(formula, data, mtry = NULL, trees = NULL,
-                                     min_n = 2L, bootstrap = TRUE,
-                                     max_depth = 16L, max_leaves = Inf,
-                                     max_predictors_per_note_split = NULL,
-                                     n_bins = 128L, min_samples_leaf = 1L,
-                                     split_criterion = NULL,
-                                     min_impurity_decrease = 0,
-                                     max_batch_size = 128L, n_streams = 8L,
-                                     cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
-                                     ...) {
+                                        min_n = 2L, bootstrap = TRUE,
+                                        max_depth = 16L, max_leaves = Inf,
+                                        max_predictors_per_note_split = NULL,
+                                        n_bins = 128L, min_samples_leaf = 1L,
+                                        split_criterion = NULL,
+                                        min_impurity_decrease = 0,
+                                        max_batch_size = 128L, n_streams = 8L,
+                                        cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                                        ...) {
   processed <- hardhat::mold(formula, data)
 
   cuda_ml_rand_forest_bridge(
@@ -173,15 +173,15 @@ cuda_ml_rand_forest.formula <- function(formula, data, mtry = NULL, trees = NULL
 #' @rdname cuda_ml_rand_forest
 #' @export
 cuda_ml_rand_forest.recipe <- function(x, data, mtry = NULL, trees = NULL,
-                                    min_n = 2L, bootstrap = TRUE,
-                                    max_depth = 16L, max_leaves = Inf,
-                                    max_predictors_per_note_split = NULL,
-                                    n_bins = 128L, min_samples_leaf = 1L,
-                                    split_criterion = NULL,
-                                    min_impurity_decrease = 0,
-                                    max_batch_size = 128L, n_streams = 8L,
-                                    cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
-                                    ...) {
+                                       min_n = 2L, bootstrap = TRUE,
+                                       max_depth = 16L, max_leaves = Inf,
+                                       max_predictors_per_note_split = NULL,
+                                       n_bins = 128L, min_samples_leaf = 1L,
+                                       split_criterion = NULL,
+                                       min_impurity_decrease = 0,
+                                       max_batch_size = 128L, n_streams = 8L,
+                                       cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                                       ...) {
   processed <- hardhat::mold(x, data)
 
   cuda_ml_rand_forest_bridge(
@@ -204,11 +204,11 @@ cuda_ml_rand_forest.recipe <- function(x, data, mtry = NULL, trees = NULL,
 }
 
 cuda_ml_rand_forest_bridge <- function(processed, mtry, trees, min_n, bootstrap,
-                                    max_depth, max_leaves,
-                                    max_predictors_per_note_split, n_bins,
-                                    min_samples_leaf, split_criterion,
-                                    min_impurity_decrease, max_batch_size,
-                                    n_streams, cuda_ml_log_level) {
+                                       max_depth, max_leaves,
+                                       max_predictors_per_note_split, n_bins,
+                                       min_samples_leaf, split_criterion,
+                                       min_impurity_decrease, max_batch_size,
+                                       n_streams, cuda_ml_log_level) {
   hardhat::validate_outcomes_are_univariate(processed$outcomes)
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
@@ -251,14 +251,14 @@ cuda_ml_rand_forest_bridge <- function(processed, mtry, trees, min_n, bootstrap,
 }
 
 cuda_ml_rand_forest_impl_classification <- function(processed, mtry, trees, min_n,
-                                                 bootstrap, max_depth,
-                                                 max_leaves,
-                                                 max_predictors_per_note_split,
-                                                 n_bins, min_samples_leaf,
-                                                 split_criterion,
-                                                 min_impurity_decrease,
-                                                 max_batch_size, n_streams,
-                                                 cuda_ml_log_level) {
+                                                    bootstrap, max_depth,
+                                                    max_leaves,
+                                                    max_predictors_per_note_split,
+                                                    n_bins, min_samples_leaf,
+                                                    split_criterion,
+                                                    min_impurity_decrease,
+                                                    max_batch_size, n_streams,
+                                                    cuda_ml_log_level) {
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
 
@@ -290,13 +290,13 @@ cuda_ml_rand_forest_impl_classification <- function(processed, mtry, trees, min_
 }
 
 cuda_ml_rand_forest_impl_regression <- function(processed, mtry, trees, min_n,
-                                             bootstrap, max_depth, max_leaves,
-                                             max_predictors_per_note_split,
-                                             n_bins, min_samples_leaf,
-                                             split_criterion,
-                                             min_impurity_decrease,
-                                             max_batch_size, n_streams,
-                                             cuda_ml_log_level) {
+                                                bootstrap, max_depth, max_leaves,
+                                                max_predictors_per_note_split,
+                                                n_bins, min_samples_leaf,
+                                                split_criterion,
+                                                min_impurity_decrease,
+                                                max_batch_size, n_streams,
+                                                cuda_ml_log_level) {
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
 
@@ -354,9 +354,9 @@ predict.cuda_ml_rand_forest <- function(object, ...) {
 }
 
 predict_cuda_ml_rand_forest_bridge <- function(model,
-                                            processed,
-                                            output_class_probabilities,
-                                            cuda_ml_log_level) {
+                                               processed,
+                                               output_class_probabilities,
+                                               cuda_ml_log_level) {
   cuda_ml_log_level <- match_cuda_ml_log_level(cuda_ml_log_level)
 
   out <- switch(model$mode,
@@ -386,9 +386,9 @@ predict_cuda_ml_rand_forest_bridge <- function(model,
 }
 
 predict_cuda_ml_rand_forest_classification_impl <- function(model,
-                                                         processed,
-                                                         output_class_probabilities,
-                                                         cuda_ml_log_level) {
+                                                            processed,
+                                                            output_class_probabilities,
+                                                            cuda_ml_log_level) {
   if (output_class_probabilities) {
     .rf_classifier_predict_class_probabilities(
       model_xptr = model$xptr,
@@ -406,7 +406,7 @@ predict_cuda_ml_rand_forest_classification_impl <- function(model,
 }
 
 predict_cuda_ml_rand_forest_regression_impl <- function(model, processed,
-                                                     cuda_ml_log_level) {
+                                                        cuda_ml_log_level) {
   .rf_regressor_predict(
     model_xptr = model$xptr,
     input = as.matrix(processed$predictors),

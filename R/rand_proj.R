@@ -40,8 +40,8 @@
 #' print(kmeans(ctx$transformed_data, centers = 4, iter.max = 1000))
 #' @export
 cuda_ml_rand_proj <- function(x, n_components = NULL, eps = 0.1,
-                           gaussian_method = TRUE, density = NULL,
-                           transform_input = TRUE, seed = 0L) {
+                              gaussian_method = TRUE, density = NULL,
+                              transform_input = TRUE, seed = 0L) {
   n_components <- n_components %||%
     .rproj_johnson_lindenstrauss_min_dim(
       n_samples = nrow(x), eps = as.numeric(eps)

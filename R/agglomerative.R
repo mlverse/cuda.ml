@@ -66,9 +66,9 @@ agglomerative_clustering_match_metric <- function(metric = c("euclidean", "l1", 
 #' print(clust$labels)
 #' @export
 cuda_ml_agglomerative_clustering <- function(x, n_clusters = 2L,
-                                          metric = c("euclidean", "l1", "l2", "manhattan", "cosine"),
-                                          connectivity = c("pairwise", "knn"),
-                                          n_neighbors = 15L) {
+                                             metric = c("euclidean", "l1", "l2", "manhattan", "cosine"),
+                                             connectivity = c("pairwise", "knn"),
+                                             n_neighbors = 15L) {
   metric <- agglomerative_clustering_match_metric(metric)
   connectivity <- match.arg(connectivity)
 

@@ -31,11 +31,11 @@
 #' print(iris.tsvd)
 #' @export
 cuda_ml_tsvd <- function(x,
-                      n_components = 2L,
-                      eig_algo = c("dq", "jacobi"),
-                      tol = 1e-7, n_iters = 15L,
-                      transform_input = TRUE,
-                      cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
+                         n_components = 2L,
+                         eig_algo = c("dq", "jacobi"),
+                         tol = 1e-7, n_iters = 15L,
+                         transform_input = TRUE,
+                         cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
   eig_algo <- match_eig_algo(eig_algo)
   cuda_ml_log_level <- match_cuda_ml_log_level(cuda_ml_log_level)
 

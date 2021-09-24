@@ -72,16 +72,16 @@ tsne_match_method <- function(method = c("barnes_hut", "fft", "exact")) {
 #' print(kmeans(embedding, centers = 3))
 #' @export
 cuda_ml_tsne <- function(x, n_components = 2L,
-                      n_neighbors = ceiling(3 * perplexity),
-                      method = c("barnes_hut", "fft", "exact"), angle = 0.5,
-                      n_iter = 1000L, learning_rate = 200.0,
-                      learning_rate_method = c("adaptive", "none"),
-                      perplexity = 30.0, perplexity_max_iter = 100L,
-                      perplexity_tol = 1e-5, early_exaggeration = 12.0,
-                      late_exaggeration = 1.0, exaggeration_iter = 250L,
-                      min_grad_norm = 1e-7, pre_momentum = 0.5,
-                      post_momentum = 0.8, square_distances = TRUE, seed = NULL,
-                      cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
+                         n_neighbors = ceiling(3 * perplexity),
+                         method = c("barnes_hut", "fft", "exact"), angle = 0.5,
+                         n_iter = 1000L, learning_rate = 200.0,
+                         learning_rate_method = c("adaptive", "none"),
+                         perplexity = 30.0, perplexity_max_iter = 100L,
+                         perplexity_tol = 1e-5, early_exaggeration = 12.0,
+                         late_exaggeration = 1.0, exaggeration_iter = 250L,
+                         min_grad_norm = 1e-7, pre_momentum = 0.5,
+                         post_momentum = 0.8, square_distances = TRUE, seed = NULL,
+                         cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
   learning_rate_method <- match.arg(learning_rate_method)
 
   if (identical(learning_rate_method, "adaptive") &&

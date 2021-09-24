@@ -98,15 +98,15 @@ umap_match_metric_type <- function(metric_type = c("categorical", "euclidean")) 
 #' print(kmeans(model$transformed, iter.max = 100, centers = 3))
 #' @export
 cuda_ml_umap <- function(x, y = NULL, n_components = 2L, n_neighbors = 15L,
-                      n_epochs = 500L, learning_rate = 1.0,
-                      init = c("spectral", "random"), min_dist = 0.1,
-                      spread = 1.0, set_op_mix_ratio = 1.0,
-                      local_connectivity = 1L, repulsion_strength = 1.0,
-                      negative_sample_rate = 5L, transform_queue_size = 4.0,
-                      a = NULL, b = NULL, target_n_neighbors = n_neighbors,
-                      target_metric = c("categorical", "euclidean"),
-                      target_weight = 0.5, transform_input = TRUE, seed = NULL,
-                      cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
+                         n_epochs = 500L, learning_rate = 1.0,
+                         init = c("spectral", "random"), min_dist = 0.1,
+                         spread = 1.0, set_op_mix_ratio = 1.0,
+                         local_connectivity = 1L, repulsion_strength = 1.0,
+                         negative_sample_rate = 5L, transform_queue_size = 4.0,
+                         a = NULL, b = NULL, target_n_neighbors = n_neighbors,
+                         target_metric = c("categorical", "euclidean"),
+                         target_weight = 0.5, transform_input = TRUE, seed = NULL,
+                         cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
   init <- umap_match_init_mode(init)
   target_metric <- umap_match_metric_type(target_metric)
   cuda_ml_log_level <- match_cuda_ml_log_level(cuda_ml_log_level)

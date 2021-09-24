@@ -101,13 +101,13 @@ cuda_ml_svm.default <- function(x, ...) {
 #' @rdname cuda_ml_svm
 #' @export
 cuda_ml_svm.data.frame <- function(x, y, cost = 1,
-                                kernel = c("rbf", "tanh", "polynomial", "linear"),
-                                gamma = NULL, coef0 = 0, degree = 3L,
-                                tol = 1e-3, max_iter = NULL,
-                                nochange_steps = 1000L, cache_size = 1024,
-                                epsilon = 0.1, sample_weights = NULL,
-                                cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
-                                ...) {
+                                   kernel = c("rbf", "tanh", "polynomial", "linear"),
+                                   gamma = NULL, coef0 = 0, degree = 3L,
+                                   tol = 1e-3, max_iter = NULL,
+                                   nochange_steps = 1000L, cache_size = 1024,
+                                   epsilon = 0.1, sample_weights = NULL,
+                                   cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                                   ...) {
   processed <- hardhat::mold(x, y)
 
   cuda_ml_svm_bridge(
@@ -130,13 +130,13 @@ cuda_ml_svm.data.frame <- function(x, y, cost = 1,
 #' @rdname cuda_ml_svm
 #' @export
 cuda_ml_svm.matrix <- function(x, y, cost = 1,
-                            kernel = c("rbf", "tanh", "polynomial", "linear"),
-                            gamma = NULL, coef0 = 0, degree = 3L, tol = 1e-3,
-                            max_iter = NULL, nochange_steps = 1000L,
-                            cache_size = 1024, epsilon = 0.1,
-                            sample_weights = NULL,
-                            cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
-                            ...) {
+                               kernel = c("rbf", "tanh", "polynomial", "linear"),
+                               gamma = NULL, coef0 = 0, degree = 3L, tol = 1e-3,
+                               max_iter = NULL, nochange_steps = 1000L,
+                               cache_size = 1024, epsilon = 0.1,
+                               sample_weights = NULL,
+                               cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                               ...) {
   processed <- hardhat::mold(x, y)
 
   cuda_ml_svm_bridge(
@@ -159,13 +159,13 @@ cuda_ml_svm.matrix <- function(x, y, cost = 1,
 #' @rdname cuda_ml_svm
 #' @export
 cuda_ml_svm.formula <- function(formula, data, cost = 1,
-                             kernel = c("rbf", "tanh", "polynomial", "linear"),
-                             gamma = NULL, coef0 = 0, degree = 3L, tol = 1e-3,
-                             max_iter = NULL, nochange_steps = 1000L,
-                             cache_size = 1024, epsilon = 0.1,
-                             sample_weights = NULL,
-                             cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
-                             ...) {
+                                kernel = c("rbf", "tanh", "polynomial", "linear"),
+                                gamma = NULL, coef0 = 0, degree = 3L, tol = 1e-3,
+                                max_iter = NULL, nochange_steps = 1000L,
+                                cache_size = 1024, epsilon = 0.1,
+                                sample_weights = NULL,
+                                cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                                ...) {
   processed <- hardhat::mold(formula, data)
 
   cuda_ml_svm_bridge(
@@ -188,13 +188,13 @@ cuda_ml_svm.formula <- function(formula, data, cost = 1,
 #' @rdname cuda_ml_svm
 #' @export
 cuda_ml_svm.recipe <- function(x, data, cost = 1,
-                            kernel = c("rbf", "tanh", "polynomial", "linear"),
-                            gamma = NULL, coef0 = 0, degree = 3L, tol = 1e-3,
-                            max_iter = NULL, nochange_steps = 1000L,
-                            cache_size = 1024, epsilon = 0.1,
-                            sample_weights = NULL,
-                            cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
-                            ...) {
+                               kernel = c("rbf", "tanh", "polynomial", "linear"),
+                               gamma = NULL, coef0 = 0, degree = 3L, tol = 1e-3,
+                               max_iter = NULL, nochange_steps = 1000L,
+                               cache_size = 1024, epsilon = 0.1,
+                               sample_weights = NULL,
+                               cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                               ...) {
   processed <- hardhat::mold(x, data)
 
   cuda_ml_svm_bridge(
@@ -215,8 +215,8 @@ cuda_ml_svm.recipe <- function(x, data, cost = 1,
 }
 
 cuda_ml_svm_bridge <- function(processed, cost, kernel, gamma, coef0, degree, tol,
-                            max_iter, nochange_steps, cache_size, epsilon,
-                            sample_weights, cuda_ml_log_level) {
+                               max_iter, nochange_steps, cache_size, epsilon,
+                               sample_weights, cuda_ml_log_level) {
   hardhat::validate_outcomes_are_univariate(processed$outcomes)
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
@@ -257,10 +257,10 @@ cuda_ml_svm_bridge <- function(processed, cost, kernel, gamma, coef0, degree, to
 }
 
 cuda_ml_svm_classification_multiclass_impl <- function(processed, cost, kernel,
-                                                    gamma, coef0, degree, tol,
-                                                    max_iter, nochange_steps,
-                                                    cache_size, epsilon,
-                                                    sample_weights, cuda_ml_log_level) {
+                                                       gamma, coef0, degree, tol,
+                                                       max_iter, nochange_steps,
+                                                       cache_size, epsilon,
+                                                       sample_weights, cuda_ml_log_level) {
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
   ylevels <- levels(y)
@@ -331,10 +331,10 @@ cuda_ml_set_state.cuda_ml_svc_ovr_model_state <- function(model_state) {
 }
 
 cuda_ml_svm_classification_binary_impl <- function(processed, cost, kernel, gamma,
-                                                coef0, degree, tol, max_iter,
-                                                nochange_steps, cache_size,
-                                                epsilon, sample_weights,
-                                                cuda_ml_log_level) {
+                                                   coef0, degree, tol, max_iter,
+                                                   nochange_steps, cache_size,
+                                                   epsilon, sample_weights,
+                                                   cuda_ml_log_level) {
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
 
@@ -384,9 +384,9 @@ cuda_ml_set_state.cuda_ml_svc_model_state <- function(model_state) {
 }
 
 cuda_ml_svm_regression_impl <- function(processed, cost, kernel, gamma, coef0,
-                                     degree, tol, max_iter, nochange_steps,
-                                     cache_size, epsilon, sample_weights,
-                                     cuda_ml_log_level) {
+                                        degree, tol, max_iter, nochange_steps,
+                                        cache_size, epsilon, sample_weights,
+                                        cuda_ml_log_level) {
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
 
