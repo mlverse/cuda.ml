@@ -10,6 +10,6 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
     SummaryReporter$new(show_praise = FALSE)
   ))
 
-  test_check("cuml", filter = filter, reporter = reporter)
+  test_check("cuda.ml", filter = filter, reporter = reporter)
 }
 

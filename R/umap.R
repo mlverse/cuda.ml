@@ -24,7 +24,7 @@ umap_match_metric_type <- function(metric_type = c("categorical", "euclidean")) 
 #'
 #' @template model-with-numeric-input
 #' @template transform-input
-#' @template cuml-log-level
+#' @template cudaml-log-level
 #' @param y An optional numeric vector of target values for supervised dimension
 #'   reduction. Default: NULL.
 #' @param n_components The dimension of the space to embed into. Default: 2.
@@ -78,15 +78,15 @@ umap_match_metric_type <- function(metric_type = c("categorical", "euclidean")) 
 #'   deterministic.
 #'
 #' @return A UMAP model object that can be used as input to the
-#'   \code{cuml_transform()} function.
+#'   \code{cuda_ml_transform()} function.
 #'   If \code{transform_input} is set to TRUE, then the model object will
 #'   contain a "transformed_data" attribute containing the lower dimensional
 #'   embedding of the input data.
 #'
 #' @examples
-#' library(cuml)
+#' library(cuda.ml)
 #'
-#' model <- cuml_umap(
+#' model <- cuda_ml_umap(
 #'   x = iris[1:4],
 #'   y = iris[[5]],
 #'   n_components = 2,
@@ -97,7 +97,7 @@ umap_match_metric_type <- function(metric_type = c("categorical", "euclidean")) 
 #' set.seed(0L)
 #' print(kmeans(model$transformed, iter.max = 100, centers = 3))
 #' @export
-cuml_umap <- function(x, y = NULL, n_components = 2L, n_neighbors = 15L,
+cuda_ml_umap <- function(x, y = NULL, n_components = 2L, n_neighbors = 15L,
                       n_epochs = 500L, learning_rate = 1.0,
                       init = c("spectral", "random"), min_dist = 0.1,
                       spread = 1.0, set_op_mix_ratio = 1.0,
@@ -106,10 +106,10 @@ cuml_umap <- function(x, y = NULL, n_components = 2L, n_neighbors = 15L,
                       a = NULL, b = NULL, target_n_neighbors = n_neighbors,
                       target_metric = c("categorical", "euclidean"),
                       target_weight = 0.5, transform_input = TRUE, seed = NULL,
-                      cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
+                      cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
   init <- umap_match_init_mode(init)
   target_metric <- umap_match_metric_type(target_metric)
-  cuml_log_level <- match_cuml_log_level(cuml_log_level)
+  cuda_ml_log_level <- match_cuda_ml_log_level(cuda_ml_log_level)
 
   model <- .umap_fit(
     x = as.matrix(x),
@@ -133,32 +133,32 @@ cuml_umap <- function(x, y = NULL, n_components = 2L, n_neighbors = 15L,
     target_weight = as.numeric(target_weight),
     random_state = as.integer(seed %||% 0L),
     deterministic = !is.null(seed),
-    verbosity = cuml_log_level
+    verbosity = cuda_ml_log_level
   )
-  class(model) <- c("cuml_umap", "cuml_model", class(model))
+  class(model) <- c("cuda_ml_umap", "cuda_ml_model", class(model))
 
   if (transform_input) {
-    model$transformed_data <- cuml_transform(model, x)
+    model$transformed_data <- cuda_ml_transform(model, x)
   }
 
   model
 }
 
-cuml_get_state.cuml_umap <- function(model) {
+cuda_ml_get_state.cuda_ml_umap <- function(model) {
   model_state <- .umap_get_state(model)
-  class(model_state) <- c("cuml_umap_model_state", class(model_state))
+  class(model_state) <- c("cuda_ml_umap_model_state", class(model_state))
 
   model_state
 }
 
-cuml_set_state.cuml_umap_model_state <- function(model_state) {
+cuda_ml_set_state.cuda_ml_umap_model_state <- function(model_state) {
   model <- .umap_set_state(model_state)
-  class(model) <- c("cuml_umap", "cuml_model", class(model))
+  class(model) <- c("cuda_ml_umap", "cuda_ml_model", class(model))
 
   model
 }
 
 #' @export
-cuml_transform.cuml_umap <- function(model, x, ...) {
+cuda_ml_transform.cuda_ml_umap <- function(model, x, ...) {
   .umap_transform(model = model, x = as.matrix(x))
 }

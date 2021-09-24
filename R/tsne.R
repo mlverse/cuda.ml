@@ -14,7 +14,7 @@ tsne_match_method <- function(method = c("barnes_hut", "fft", "exact")) {
 #' dimensional data.
 #'
 #' @template model-with-numeric-input
-#' @template cuml-log-level
+#' @template cudaml-log-level
 #' @param n_components Dimension of the embedded space.
 #' @param n_neighbors The number of datapoints to use in the attractive forces.
 #'   Default: ceiling(3 * perplexity).
@@ -64,14 +64,14 @@ tsne_match_method <- function(method = c("barnes_hut", "fft", "exact")) {
 #'   dimensional space, with each row representing an embedded data point.
 #'
 #' @examples
-#' library(cuml)
+#' library(cuda.ml)
 #'
-#' embedding <- cuml_tsne(iris[1:4], method = "exact")
+#' embedding <- cuda_ml_tsne(iris[1:4], method = "exact")
 #'
 #' set.seed(0L)
 #' print(kmeans(embedding, centers = 3))
 #' @export
-cuml_tsne <- function(x, n_components = 2L,
+cuda_ml_tsne <- function(x, n_components = 2L,
                       n_neighbors = ceiling(3 * perplexity),
                       method = c("barnes_hut", "fft", "exact"), angle = 0.5,
                       n_iter = 1000L, learning_rate = 200.0,
@@ -81,7 +81,7 @@ cuml_tsne <- function(x, n_components = 2L,
                       late_exaggeration = 1.0, exaggeration_iter = 250L,
                       min_grad_norm = 1e-7, pre_momentum = 0.5,
                       post_momentum = 0.8, square_distances = TRUE, seed = NULL,
-                      cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
+                      cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
   learning_rate_method <- match.arg(learning_rate_method)
 
   if (identical(learning_rate_method, "adaptive") &&
@@ -100,7 +100,7 @@ cuml_tsne <- function(x, n_components = 2L,
     post_learning_rate <- learning_rate * 2
   }
   algo <- tsne_match_method(method)
-  cuml_log_level <- match_cuml_log_level(cuml_log_level)
+  cuda_ml_log_level <- match_cuda_ml_log_level(cuda_ml_log_level)
 
   .tsne_fit(
     x = as.matrix(x),
@@ -125,6 +125,6 @@ cuml_tsne <- function(x, n_components = 2L,
     pre_momentum = as.numeric(pre_momentum),
     post_momentum = as.numeric(post_momentum),
     random_state = as.integer(seed %||% -1L),
-    verbosity = cuml_log_level
+    verbosity = cuda_ml_log_level
   )
 }

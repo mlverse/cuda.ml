@@ -7,7 +7,7 @@
 #' @template model-with-numeric-input
 #' @template eigen-decomposition
 #' @template transform-input
-#' @template cuml-log-level
+#' @template cudaml-log-level
 #' @param n_components Number of principal component(s) to keep. Default:
 #'   min(nrow(x), ncol(x)).
 #' @param whiten If TRUE, then de-correlate all components, making each
@@ -37,21 +37,21 @@
 #'
 #' @examples
 #'
-#' library(cuml)
+#' library(cuda.ml)
 #'
-#' iris.pca <- cuml_pca(iris[1:4], n_components = 3)
+#' iris.pca <- cuda_ml_pca(iris[1:4], n_components = 3)
 #' print(iris.pca)
 #' @export
-cuml_pca <- function(x,
+cuda_ml_pca <- function(x,
                      n_components = NULL,
                      eig_algo = c("dq", "jacobi"),
                      tol = 1e-7, n_iters = 15L,
                      whiten = FALSE,
                      transform_input = TRUE,
-                     cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
+                     cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
   n_components <- n_components %||% min(nrow(x), ncol(x))
   eig_algo <- match_eig_algo(eig_algo)
-  cuml_log_level <- match_cuml_log_level(cuml_log_level)
+  cuda_ml_log_level <- match_cuda_ml_log_level(cuda_ml_log_level)
 
   model <- .pca_fit_transform(
     x = as.matrix(x),
@@ -61,14 +61,14 @@ cuml_pca <- function(x,
     n_iters = as.integer(n_iters),
     whiten = whiten,
     transform_input = transform_input,
-    verbosity = cuml_log_level
+    verbosity = cuda_ml_log_level
   )
-  class(model) <- c("cuml_pca", class(model))
+  class(model) <- c("cuda_ml_pca", class(model))
 
   model
 }
 
 #' @export
-cuml_inverse_transform.cuml_pca <- function(model, x, ...) {
+cuda_ml_inverse_transform.cuda_ml_pca <- function(model, x, ...) {
   .pca_inverse_transform(model = model, x = as.matrix(x))
 }

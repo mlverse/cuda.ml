@@ -1,4 +1,4 @@
-library(cuml)
+library(cuda.ml)
 library(magrittr)
 library(reticulate)
 library(rlang)
@@ -6,8 +6,8 @@ library(rlang)
 expect_libcuml <- function() {
   if (!has_libcuml()) {
     stop(
-      "The current installation of {cuml} is not linked with a valid copy of ",
-      "libcuml!\n",
+      "The current installation of {cuda.ml} is not linked with a valid copy of",
+      " libcuml!\n",
       ".libPaths:\n",
       paste(.libPaths(), collapse = "\n")
     )
@@ -36,12 +36,12 @@ sort_mat <- function(m, cols = seq(ncol(m))) {
 predict_in_sub_proc <- function(model_state, data, expected_mode,
                                 expected_model_cls = NULL,
                                 additional_predict_args = list()) {
-  impl <- function(expect_libcuml_impl, model_state, data, expected_mode,
+  impl <- function(expect_libcuda_ml_impl, model_state, data, expected_mode,
                    expected_model_cls, additional_predict_args) {
-    library(cuml)
-    expect_libcuml_impl()
+    library(cuda.ml)
+    expect_libcuda_ml_impl()
 
-    model <- cuml_unserialize(model_state)
+    model <- cuda_ml_unserialize(model_state)
     for (cls in expected_model_cls) {
       testthat::expect_s3_class(model, cls)
     }
@@ -53,7 +53,7 @@ predict_in_sub_proc <- function(model_state, data, expected_mode,
   callr::r(
     impl,
     args = list(
-      expect_libcuml_impl = expect_libcuml,
+      expect_libcuda_ml_impl = expect_libcuml,
       model_state = model_state,
       data = data,
       expected_mode = expected_mode,
