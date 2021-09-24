@@ -5,7 +5,7 @@
 #' @template supervised-model-inputs
 #' @template supervised-model-output
 #' @template ellipsis-unused
-#' @template cuml-log-level
+#' @template cudaml-log-level
 #' @param mtry The number of predictors that will be randomly sampled at each
 #'   split when creating the tree models. Default: the square root of the total
 #'   number of predictors.
@@ -39,11 +39,11 @@
 #'   the 'predict' S3 generic to make predictions on new data points.
 #'
 #' @examples
-#' library(cuml)
+#' library(cuda.ml)
 #'
 #' # Classification
 #'
-#' model <- cuml_rand_forest(
+#' model <- cuda_ml_rand_forest(
 #'   formula = Species ~ .,
 #'   data = iris,
 #'   trees = 100
@@ -53,7 +53,7 @@
 #'
 #' # Regression
 #'
-#' model <- cuml_rand_forest(
+#' model <- cuda_ml_rand_forest(
 #'   formula = mpg ~ .,
 #'   data = mtcars,
 #'   trees = 100
@@ -61,19 +61,19 @@
 #'
 #' predictions <- predict(model, mtcars[-which(names(mtcars) == "mpg")])
 #' @export
-cuml_rand_forest <- function(x, ...) {
-  UseMethod("cuml_rand_forest")
+cuda_ml_rand_forest <- function(x, ...) {
+  UseMethod("cuda_ml_rand_forest")
 }
 
-#' @rdname cuml_rand_forest
+#' @rdname cuda_ml_rand_forest
 #' @export
-cuml_rand_forest.default <- function(x, ...) {
-  report_undefined_fn("cuml_rand_forest", x)
+cuda_ml_rand_forest.default <- function(x, ...) {
+  report_undefined_fn("cuda_ml_rand_forest", x)
 }
 
-#' @rdname cuml_rand_forest
+#' @rdname cuda_ml_rand_forest
 #' @export
-cuml_rand_forest.data.frame <- function(x, y, mtry = NULL, trees = NULL,
+cuda_ml_rand_forest.data.frame <- function(x, y, mtry = NULL, trees = NULL,
                                         min_n = 2L, bootstrap = TRUE,
                                         max_depth = 16L, max_leaves = Inf,
                                         max_predictors_per_note_split = NULL,
@@ -81,11 +81,11 @@ cuml_rand_forest.data.frame <- function(x, y, mtry = NULL, trees = NULL,
                                         split_criterion = NULL,
                                         min_impurity_decrease = 0,
                                         max_batch_size = 128L, n_streams = 8L,
-                                        cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                                        cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
                                         ...) {
   processed <- hardhat::mold(x, y)
 
-  cuml_rand_forest_bridge(
+  cuda_ml_rand_forest_bridge(
     processed = processed,
     mtry = mtry,
     trees = trees,
@@ -100,13 +100,13 @@ cuml_rand_forest.data.frame <- function(x, y, mtry = NULL, trees = NULL,
     min_impurity_decrease = min_impurity_decrease,
     max_batch_size = max_batch_size,
     n_streams = n_streams,
-    cuml_log_level = cuml_log_level
+    cuda_ml_log_level = cuda_ml_log_level
   )
 }
 
-#' @rdname cuml_rand_forest
+#' @rdname cuda_ml_rand_forest
 #' @export
-cuml_rand_forest.matrix <- function(x, y, mtry = NULL, trees = NULL, min_n = 2L,
+cuda_ml_rand_forest.matrix <- function(x, y, mtry = NULL, trees = NULL, min_n = 2L,
                                     bootstrap = TRUE, max_depth = 16L,
                                     max_leaves = Inf,
                                     max_predictors_per_note_split = NULL,
@@ -114,11 +114,11 @@ cuml_rand_forest.matrix <- function(x, y, mtry = NULL, trees = NULL, min_n = 2L,
                                     split_criterion = NULL,
                                     min_impurity_decrease = 0,
                                     max_batch_size = 128L, n_streams = 8L,
-                                    cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                                    cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
                                     ...) {
   processed <- hardhat::mold(x, y)
 
-  cuml_rand_forest_bridge(
+  cuda_ml_rand_forest_bridge(
     processed = processed,
     mtry = mtry,
     trees = trees,
@@ -133,13 +133,13 @@ cuml_rand_forest.matrix <- function(x, y, mtry = NULL, trees = NULL, min_n = 2L,
     min_impurity_decrease = min_impurity_decrease,
     max_batch_size = max_batch_size,
     n_streams = n_streams,
-    cuml_log_level = cuml_log_level
+    cuda_ml_log_level = cuda_ml_log_level
   )
 }
 
-#' @rdname cuml_rand_forest
+#' @rdname cuda_ml_rand_forest
 #' @export
-cuml_rand_forest.formula <- function(formula, data, mtry = NULL, trees = NULL,
+cuda_ml_rand_forest.formula <- function(formula, data, mtry = NULL, trees = NULL,
                                      min_n = 2L, bootstrap = TRUE,
                                      max_depth = 16L, max_leaves = Inf,
                                      max_predictors_per_note_split = NULL,
@@ -147,11 +147,11 @@ cuml_rand_forest.formula <- function(formula, data, mtry = NULL, trees = NULL,
                                      split_criterion = NULL,
                                      min_impurity_decrease = 0,
                                      max_batch_size = 128L, n_streams = 8L,
-                                     cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                                     cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
                                      ...) {
   processed <- hardhat::mold(formula, data)
 
-  cuml_rand_forest_bridge(
+  cuda_ml_rand_forest_bridge(
     processed = processed,
     mtry = mtry,
     trees = trees,
@@ -166,13 +166,13 @@ cuml_rand_forest.formula <- function(formula, data, mtry = NULL, trees = NULL,
     min_impurity_decrease = min_impurity_decrease,
     max_batch_size = max_batch_size,
     n_streams = n_streams,
-    cuml_log_level = cuml_log_level
+    cuda_ml_log_level = cuda_ml_log_level
   )
 }
 
-#' @rdname cuml_rand_forest
+#' @rdname cuda_ml_rand_forest
 #' @export
-cuml_rand_forest.recipe <- function(x, data, mtry = NULL, trees = NULL,
+cuda_ml_rand_forest.recipe <- function(x, data, mtry = NULL, trees = NULL,
                                     min_n = 2L, bootstrap = TRUE,
                                     max_depth = 16L, max_leaves = Inf,
                                     max_predictors_per_note_split = NULL,
@@ -180,11 +180,11 @@ cuml_rand_forest.recipe <- function(x, data, mtry = NULL, trees = NULL,
                                     split_criterion = NULL,
                                     min_impurity_decrease = 0,
                                     max_batch_size = 128L, n_streams = 8L,
-                                    cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                                    cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
                                     ...) {
   processed <- hardhat::mold(x, data)
 
-  cuml_rand_forest_bridge(
+  cuda_ml_rand_forest_bridge(
     processed = processed,
     mtry = mtry,
     trees = trees,
@@ -199,16 +199,16 @@ cuml_rand_forest.recipe <- function(x, data, mtry = NULL, trees = NULL,
     min_impurity_decrease = min_impurity_decrease,
     max_batch_size = max_batch_size,
     n_streams = n_streams,
-    cuml_log_level = cuml_log_level
+    cuda_ml_log_level = cuda_ml_log_level
   )
 }
 
-cuml_rand_forest_bridge <- function(processed, mtry, trees, min_n, bootstrap,
+cuda_ml_rand_forest_bridge <- function(processed, mtry, trees, min_n, bootstrap,
                                     max_depth, max_leaves,
                                     max_predictors_per_note_split, n_bins,
                                     min_samples_leaf, split_criterion,
                                     min_impurity_decrease, max_batch_size,
-                                    n_streams, cuml_log_level) {
+                                    n_streams, cuda_ml_log_level) {
   hardhat::validate_outcomes_are_univariate(processed$outcomes)
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
@@ -223,12 +223,12 @@ cuml_rand_forest_bridge <- function(processed, mtry, trees, min_n, bootstrap,
     split_criterion,
     classification
   )
-  cuml_log_level <- match_cuml_log_level(cuml_log_level)
+  cuda_ml_log_level <- match_cuda_ml_log_level(cuda_ml_log_level)
 
   rand_forest_fit_impl <- ifelse(
     classification,
-    cuml_rand_forest_impl_classification,
-    cuml_rand_forest_impl_regression
+    cuda_ml_rand_forest_impl_classification,
+    cuda_ml_rand_forest_impl_regression
   )
 
   rand_forest_fit_impl(
@@ -246,11 +246,11 @@ cuml_rand_forest_bridge <- function(processed, mtry, trees, min_n, bootstrap,
     min_impurity_decrease = min_impurity_decrease,
     max_batch_size = max_batch_size,
     n_streams = n_streams,
-    cuml_log_level = cuml_log_level
+    cuda_ml_log_level = cuda_ml_log_level
   )
 }
 
-cuml_rand_forest_impl_classification <- function(processed, mtry, trees, min_n,
+cuda_ml_rand_forest_impl_classification <- function(processed, mtry, trees, min_n,
                                                  bootstrap, max_depth,
                                                  max_leaves,
                                                  max_predictors_per_note_split,
@@ -258,7 +258,7 @@ cuml_rand_forest_impl_classification <- function(processed, mtry, trees, min_n,
                                                  split_criterion,
                                                  min_impurity_decrease,
                                                  max_batch_size, n_streams,
-                                                 cuml_log_level) {
+                                                 cuda_ml_log_level) {
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
 
@@ -278,25 +278,25 @@ cuml_rand_forest_impl_classification <- function(processed, mtry, trees, min_n,
     split_criterion = split_criterion,
     min_impurity_decrease = as.numeric(min_impurity_decrease),
     max_batch_size = as.integer(max_batch_size),
-    verbosity = cuml_log_level
+    verbosity = cuda_ml_log_level
   )
 
   new_model(
-    cls = "cuml_rand_forest",
+    cls = "cuda_ml_rand_forest",
     mode = "classification",
     xptr = model_xptr,
     blueprint = processed$blueprint
   )
 }
 
-cuml_rand_forest_impl_regression <- function(processed, mtry, trees, min_n,
+cuda_ml_rand_forest_impl_regression <- function(processed, mtry, trees, min_n,
                                              bootstrap, max_depth, max_leaves,
                                              max_predictors_per_note_split,
                                              n_bins, min_samples_leaf,
                                              split_criterion,
                                              min_impurity_decrease,
                                              max_batch_size, n_streams,
-                                             cuml_log_level) {
+                                             cuda_ml_log_level) {
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
 
@@ -316,10 +316,10 @@ cuml_rand_forest_impl_regression <- function(processed, mtry, trees, min_n,
     split_criterion = split_criterion,
     min_impurity_decrease = as.numeric(min_impurity_decrease),
     max_batch_size = as.integer(max_batch_size),
-    verbosity = cuml_log_level
+    verbosity = cuda_ml_log_level
   )
   new_model(
-    cls = "cuml_rand_forest",
+    cls = "cuda_ml_rand_forest",
     mode = "regression",
     xptr = model_xptr,
     blueprint = processed$blueprint
@@ -329,43 +329,43 @@ cuml_rand_forest_impl_regression <- function(processed, mtry, trees, min_n,
 #' Make predictions on new data points.
 #'
 #' Make predictions on new data points using a CuML random forest model.
-#' See \code{\link{cuml_predict}} for full documentation of parameters.
+#' See \code{\link{cuda_ml_predict}} for full documentation of parameters.
 #'
 #' @template predict
 #'
-#' @seealso cuml_predict
+#' @seealso cuda_ml_predict
 #' @importFrom ellipsis check_dots_used
 #' @export
-predict.cuml_rand_forest <- function(object, ...) {
+predict.cuda_ml_rand_forest <- function(object, ...) {
   check_dots_used()
 
   x <- ...elt(1)
   output_class_probabilities <- if (...length() > 1) ...elt(2) else NULL
-  cuml_log_level <- ifelse(...length() > 2, ...elt(3), "off")
+  cuda_ml_log_level <- ifelse(...length() > 2, ...elt(3), "off")
 
   processed <- hardhat::forge(x, object$blueprint)
 
-  predict_cuml_rand_forest_bridge(
+  predict_cuda_ml_rand_forest_bridge(
     model = object,
     processed = processed,
     output_class_probabilities = output_class_probabilities,
-    cuml_log_level = cuml_log_level
+    cuda_ml_log_level = cuda_ml_log_level
   )
 }
 
-predict_cuml_rand_forest_bridge <- function(model,
+predict_cuda_ml_rand_forest_bridge <- function(model,
                                             processed,
                                             output_class_probabilities,
-                                            cuml_log_level) {
-  cuml_log_level <- match_cuml_log_level(cuml_log_level)
+                                            cuda_ml_log_level) {
+  cuda_ml_log_level <- match_cuda_ml_log_level(cuda_ml_log_level)
 
   out <- switch(model$mode,
     classification = {
-      predict_cuml_rand_forest_classification_impl(
+      predict_cuda_ml_rand_forest_classification_impl(
         model = model,
         processed = processed,
         output_class_probabilities = output_class_probabilities %||% FALSE,
-        cuml_log_level = cuml_log_level
+        cuda_ml_log_level = cuda_ml_log_level
       )
     },
     regression = {
@@ -373,10 +373,10 @@ predict_cuml_rand_forest_bridge <- function(model,
         stop("'output_class_probabilities' is not applicable for regression tasks!")
       }
 
-      predict_cuml_rand_forest_regression_impl(
+      predict_cuda_ml_rand_forest_regression_impl(
         model = model,
         processed = processed,
-        cuml_log_level = cuml_log_level
+        cuda_ml_log_level = cuda_ml_log_level
       )
     }
   )
@@ -385,10 +385,10 @@ predict_cuml_rand_forest_bridge <- function(model,
   out
 }
 
-predict_cuml_rand_forest_classification_impl <- function(model,
+predict_cuda_ml_rand_forest_classification_impl <- function(model,
                                                          processed,
                                                          output_class_probabilities,
-                                                         cuml_log_level) {
+                                                         cuda_ml_log_level) {
   if (output_class_probabilities) {
     .rf_classifier_predict_class_probabilities(
       model_xptr = model$xptr,
@@ -399,18 +399,18 @@ predict_cuml_rand_forest_classification_impl <- function(model,
     .rf_classifier_predict(
       model_xptr = model$xptr,
       input = as.matrix(processed$predictors),
-      verbosity = cuml_log_level
+      verbosity = cuda_ml_log_level
     ) %>%
       postprocess_classification_results(model)
   }
 }
 
-predict_cuml_rand_forest_regression_impl <- function(model, processed,
-                                                     cuml_log_level) {
+predict_cuda_ml_rand_forest_regression_impl <- function(model, processed,
+                                                     cuda_ml_log_level) {
   .rf_regressor_predict(
     model_xptr = model$xptr,
     input = as.matrix(processed$predictors),
-    verbosity = cuml_log_level
+    verbosity = cuda_ml_log_level
   ) %>%
     postprocess_regression_results()
 }
@@ -419,15 +419,15 @@ predict_cuml_rand_forest_regression_impl <- function(model, processed,
 register_rand_forest_model <- function(pkgname) {
   for (mode in c("classification", "regression")) {
     parsnip::set_model_engine(
-      model = "rand_forest", mode = mode, eng = "cuml"
+      model = "rand_forest", mode = mode, eng = pkgname
     )
   }
 
-  parsnip::set_dependency(model = "rand_forest", eng = "cuml", pkg = pkgname)
+  parsnip::set_dependency(model = "rand_forest", eng = pkgname, pkg = pkgname)
 
   parsnip::set_model_arg(
     model = "rand_forest",
-    eng = "cuml",
+    eng = pkgname,
     parsnip = "mtry",
     original = "mtry",
     func = list(pkg = "dials", fun = "mtry"),
@@ -436,7 +436,7 @@ register_rand_forest_model <- function(pkgname) {
 
   parsnip::set_model_arg(
     model = "rand_forest",
-    eng = "cuml",
+    eng = pkgname,
     parsnip = "trees",
     original = "trees",
     func = list(pkg = "dials", fun = "trees"),
@@ -445,7 +445,7 @@ register_rand_forest_model <- function(pkgname) {
 
   parsnip::set_model_arg(
     model = "rand_forest",
-    eng = "cuml",
+    eng = pkgname,
     parsnip = "min_n",
     original = "min_n",
     func = list(pkg = "dials", fun = "min_n"),
@@ -455,12 +455,12 @@ register_rand_forest_model <- function(pkgname) {
   for (mode in c("classification", "regression")) {
     parsnip::set_fit(
       model = "rand_forest",
-      eng = "cuml",
+      eng = pkgname,
       mode = mode,
       value = list(
         interface = "formula",
         protect = c("formula", "data"),
-        func = c(pkg = pkgname, fun = "cuml_rand_forest"),
+        func = c(pkg = pkgname, fun = "cuda_ml_rand_forest"),
         defaults = list(
           bootstrap = TRUE,
           max_depth = 16L,
@@ -472,14 +472,14 @@ register_rand_forest_model <- function(pkgname) {
           min_impurity_decrease = 0,
           max_batch_size = 128L,
           n_streams = 8L,
-          cuml_log_level = "off"
+          cuda_ml_log_level = "off"
         )
       )
     )
 
     parsnip::set_encoding(
       model = "rand_forest",
-      eng = "cuml",
+      eng = pkgname,
       mode = mode,
       options = list(
         predictor_indicators = "none",
@@ -493,7 +493,7 @@ register_rand_forest_model <- function(pkgname) {
   for (type in c("class", "prob")) {
     parsnip::set_pred(
       model = "rand_forest",
-      eng = "cuml",
+      eng = pkgname,
       mode = "classification",
       type = type,
       value = list(
@@ -511,7 +511,7 @@ register_rand_forest_model <- function(pkgname) {
 
   parsnip::set_pred(
     model = "rand_forest",
-    eng = "cuml",
+    eng = pkgname,
     mode = "regression",
     type = "numeric",
     value = list(

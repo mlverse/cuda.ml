@@ -42,7 +42,7 @@ knn_match_metric <- function(metric = c("euclidean", "l2", "l1", "cityblock", "t
 #'   query algorithm.
 #'
 #' @export
-cuml_knn_algo_ivfflat <- function(nlist, nprobe) {
+cuda_ml_knn_algo_ivfflat <- function(nlist, nprobe) {
   list(
     type = 1L,
     params = list(
@@ -64,7 +64,7 @@ cuml_knn_algo_ivfflat <- function(nlist, nprobe) {
 #'   query algorithm.
 #'
 #' @export
-cuml_knn_algo_ivfpq <- function(nlist, nprobe, m, n_bits,
+cuda_ml_knn_algo_ivfpq <- function(nlist, nprobe, m, n_bits,
                                 use_precomputed_tables = FALSE) {
   list(
     type = 2L,
@@ -89,7 +89,7 @@ cuml_knn_algo_ivfpq <- function(nlist, nprobe, m, n_bits,
 #'   query algorithm.
 #'
 #' @export
-cuml_knn_algo_ivfsq <- function(nlist, nprobe,
+cuda_ml_knn_algo_ivfsq <- function(nlist, nprobe,
                                 qtype = c("QT_8bit", "QT_4bit", "QT_8bit_uniform", "QT_4bit_uniform", "QT_fp16", "QT_8bit_direct", "QT_6bit"),
                                 encode_residual = FALSE) {
   list(
@@ -112,8 +112,8 @@ cuml_knn_algo_ivfsq <- function(nlist, nprobe,
 #' @template ellipsis-unused
 #' @param algo The query algorithm to use. Must be one of
 #'   {"brute", "ivfflat", "ivfpq", "ivfsq"} or a KNN algorithm specification
-#'   constructed using the \code{cuml_knn_algo_*} family of functions.
-#'   If the algorithm is specified by one of the \code{cuml_knn_algo_*}
+#'   constructed using the \code{cuda_ml_knn_algo_*} family of functions.
+#'   If the algorithm is specified by one of the \code{cuda_ml_knn_algo_*}
 #'   functions, then values of all required parameters of the algorithm will
 #'   need to be specified explicitly.
 #'   If the algorithm is specified by a character vector, then parameters for
@@ -154,7 +154,7 @@ cuml_knn_algo_ivfsq <- function(nlist, nprobe,
 #'
 #' @examples
 #'
-#' library(cuml)
+#' library(cuda.ml)
 #' library(MASS)
 #' library(magrittr)
 #' library(purrr)
@@ -182,7 +182,7 @@ cuml_knn_algo_ivfsq <- function(nlist, nprobe,
 #'   label = gen_labels(sample_cluster_sz)
 #' )
 #'
-#' model <- cuml_knn(label ~ ., sample_pts, algo = "ivfflat", metric = "euclidean")
+#' model <- cuda_ml_knn(label ~ ., sample_pts, algo = "ivfflat", metric = "euclidean")
 #'
 #' test_cluster_sz <- 10
 #' test_pts <- gen_pts(test_cluster_sz) %>% as.data.frame()
@@ -190,19 +190,19 @@ cuml_knn_algo_ivfsq <- function(nlist, nprobe,
 #' predictions <- predict(model, test_pts)
 #' print(predictions, n = 30)
 #' @export
-cuml_knn <- function(x, ...) {
-  UseMethod("cuml_knn")
+cuda_ml_knn <- function(x, ...) {
+  UseMethod("cuda_ml_knn")
 }
 
-#' @rdname cuml_knn
+#' @rdname cuda_ml_knn
 #' @export
-cuml_knn.default <- function(x, ...) {
-  report_undefined_fn("cuml_knn", x)
+cuda_ml_knn.default <- function(x, ...) {
+  report_undefined_fn("cuda_ml_knn", x)
 }
 
-#' @rdname cuml_knn
+#' @rdname cuda_ml_knn
 #' @export
-cuml_knn.data.frame <- function(x, y,
+cuda_ml_knn.data.frame <- function(x, y,
                                 algo = c("brute", "ivfflat", "ivfpq", "ivfsq"),
                                 metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis", "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine", "correlation"),
                                 p = 2.0,
@@ -210,7 +210,7 @@ cuml_knn.data.frame <- function(x, y,
                                 ...) {
   processed <- hardhat::mold(x, y)
 
-  cuml_knn_bridge(
+  cuda_ml_knn_bridge(
     processed = processed,
     algo = algo,
     metric = metric,
@@ -219,9 +219,9 @@ cuml_knn.data.frame <- function(x, y,
   )
 }
 
-#' @rdname cuml_knn
+#' @rdname cuda_ml_knn
 #' @export
-cuml_knn.matrix <- function(x, y,
+cuda_ml_knn.matrix <- function(x, y,
                             algo = c("brute", "ivfflat", "ivfpq", "ivfsq"),
                             metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis", "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine", "correlation"),
                             p = 2.0,
@@ -229,7 +229,7 @@ cuml_knn.matrix <- function(x, y,
                             ...) {
   processed <- hardhat::mold(x, y)
 
-  cuml_knn_bridge(
+  cuda_ml_knn_bridge(
     processed = processed,
     algo = algo,
     metric = metric,
@@ -238,9 +238,9 @@ cuml_knn.matrix <- function(x, y,
   )
 }
 
-#' @rdname cuml_knn
+#' @rdname cuda_ml_knn
 #' @export
-cuml_knn.formula <- function(formula, data,
+cuda_ml_knn.formula <- function(formula, data,
                              algo = c("brute", "ivfflat", "ivfpq", "ivfsq"),
                              metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis", "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine", "correlation"),
                              p = 2.0,
@@ -248,7 +248,7 @@ cuml_knn.formula <- function(formula, data,
                              ...) {
   processed <- hardhat::mold(formula, data)
 
-  cuml_knn_bridge(
+  cuda_ml_knn_bridge(
     processed = processed,
     algo = algo,
     metric = metric,
@@ -257,9 +257,9 @@ cuml_knn.formula <- function(formula, data,
   )
 }
 
-#' @rdname cuml_knn
+#' @rdname cuda_ml_knn
 #' @export
-cuml_knn.recipe <- function(x, data,
+cuda_ml_knn.recipe <- function(x, data,
                             algo = c("brute", "ivfflat", "ivfpq", "ivfsq"),
                             metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis", "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine", "correlation"),
                             p = 2.0,
@@ -267,7 +267,7 @@ cuml_knn.recipe <- function(x, data,
                             ...) {
   processed <- hardhat::mold(x, data)
 
-  cuml_knn_bridge(
+  cuda_ml_knn_bridge(
     processed = processed,
     algo = algo,
     metric = metric,
@@ -276,7 +276,7 @@ cuml_knn.recipe <- function(x, data,
   )
 }
 
-cuml_knn_bridge <- function(processed, algo, metric, p, neighbors) {
+cuda_ml_knn_bridge <- function(processed, algo, metric, p, neighbors) {
   hardhat::validate_outcomes_are_univariate(processed$outcomes)
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
@@ -314,7 +314,7 @@ cuml_knn_bridge <- function(processed, algo, metric, p, neighbors) {
   }
 
   new_model(
-    cls = "cuml_knn",
+    cls = "cuda_ml_knn",
     mode = prediction_mode,
     xptr = model_xptr,
     neighbors = as.integer(neighbors),
@@ -325,15 +325,15 @@ cuml_knn_bridge <- function(processed, algo, metric, p, neighbors) {
 #' Make predictions on new data points.
 #'
 #' Make predictions on new data points using a CuML KNN model.
-#' See \code{\link{cuml_predict}} for full documentation of parameters.
+#' See \code{\link{cuda_ml_predict}} for full documentation of parameters.
 #'
 #' @template predict
 #'
-#' @seealso cuml_predict
+#' @seealso cuda_ml_predict
 #'
 #' @importFrom ellipsis check_dots_used
 #' @export
-predict.cuml_knn <- function(object, ...) {
+predict.cuda_ml_knn <- function(object, ...) {
   check_dots_used()
 
   x <- ...elt(1)
@@ -341,17 +341,17 @@ predict.cuml_knn <- function(object, ...) {
 
   processed <- hardhat::forge(x, object$blueprint)
 
-  predict_cuml_knn_bridge(
+  predict_cuda_ml_knn_bridge(
     model = object,
     processed = processed,
     output_class_probabilities = output_class_probabilities
   )
 }
 
-predict_cuml_knn_bridge <- function(model, processed, output_class_probabilities) {
+predict_cuda_ml_knn_bridge <- function(model, processed, output_class_probabilities) {
   out <- switch(model$mode,
     classification = {
-      predict_cuml_knn_classification_impl(
+      predict_cuda_ml_knn_classification_impl(
         model = model,
         processed = processed,
         output_class_probabilities = output_class_probabilities %||% FALSE
@@ -362,7 +362,7 @@ predict_cuml_knn_bridge <- function(model, processed, output_class_probabilities
         stop("'output_class_probabilities' is not applicable for regression tasks!")
       }
 
-      predict_cuml_knn_regression_impl(
+      predict_cuda_ml_knn_regression_impl(
         model = model, processed = processed
       )
     }
@@ -372,7 +372,7 @@ predict_cuml_knn_bridge <- function(model, processed, output_class_probabilities
   out
 }
 
-predict_cuml_knn_classification_impl <- function(model, processed, output_class_probabilities) {
+predict_cuda_ml_knn_classification_impl <- function(model, processed, output_class_probabilities) {
   if (output_class_probabilities) {
     .knn_classifier_predict_probabilities(
       model = model$xptr,
@@ -390,7 +390,7 @@ predict_cuml_knn_classification_impl <- function(model, processed, output_class_
   }
 }
 
-predict_cuml_knn_regression_impl <- function(model, processed) {
+predict_cuda_ml_knn_regression_impl <- function(model, processed) {
   .knn_regressor_predict(
     model = model$xptr,
     x = as.matrix(processed$predictors),
@@ -403,15 +403,15 @@ predict_cuml_knn_regression_impl <- function(model, processed) {
 register_knn_model <- function(pkgname) {
   for (mode in c("classification", "regression")) {
     parsnip::set_model_engine(
-      model = "nearest_neighbor", mode = mode, eng = "cuml"
+      model = "nearest_neighbor", mode = mode, eng = pkgname
     )
   }
 
-  parsnip::set_dependency(model = "nearest_neighbor", eng = "cuml", pkg = pkgname)
+  parsnip::set_dependency(model = "nearest_neighbor", eng = pkgname, pkg = pkgname)
 
   parsnip::set_model_arg(
     model = "nearest_neighbor",
-    eng = "cuml",
+    eng = pkgname,
     parsnip = "neighbors",
     original = "neighbors",
     func = list(pkg = "dials", fun = "neighbors", range = c(1, 15)),
@@ -420,7 +420,7 @@ register_knn_model <- function(pkgname) {
 
   parsnip::set_model_arg(
     model = "nearest_neighbor",
-    eng = "cuml",
+    eng = pkgname,
     parsnip = "dist_power",
     original = "p",
     func = list(pkg = "dials", fun = "dist_power", range = c(1 / 10, 2)),
@@ -430,19 +430,19 @@ register_knn_model <- function(pkgname) {
   for (mode in c("classification", "regression")) {
     parsnip::set_fit(
       model = "nearest_neighbor",
-      eng = "cuml",
+      eng = pkgname,
       mode = mode,
       value = list(
         interface = "formula",
         protect = c("formula", "data"),
-        func = c(pkg = pkgname, fun = "cuml_knn"),
+        func = c(pkg = pkgname, fun = "cuda_ml_knn"),
         defaults = list(algo = "ivfflat", metric = "euclidean")
       )
     )
 
     parsnip::set_encoding(
       model = "nearest_neighbor",
-      eng = "cuml",
+      eng = pkgname,
       mode = mode,
       options = list(
         predictor_indicators = "none",
@@ -456,7 +456,7 @@ register_knn_model <- function(pkgname) {
   for (type in c("class", "prob")) {
     parsnip::set_pred(
       model = "nearest_neighbor",
-      eng = "cuml",
+      eng = pkgname,
       mode = "classification",
       type = type,
       value = list(
@@ -474,7 +474,7 @@ register_knn_model <- function(pkgname) {
 
   parsnip::set_pred(
     model = "nearest_neighbor",
-    eng = "cuml",
+    eng = pkgname,
     mode = "regression",
     type = "numeric",
     value = list(

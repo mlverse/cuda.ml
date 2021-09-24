@@ -5,7 +5,7 @@
 #' @template model-with-numeric-input
 #' @template eigen-decomposition
 #' @template transform-input
-#' @template cuml-log-level
+#' @template cudaml-log-level
 #' @param n_components Desired dimensionality of output data. Must be strictly
 #'   less than \code{ncol(x)} (i.e., the number of features in input data).
 #'   Default: 2.
@@ -25,19 +25,19 @@
 #'      performing inverse transforms.
 #'
 #' @examples
-#' library(cuml)
+#' library(cuda.ml)
 #'
-#' iris.tsvd <- cuml_tsvd(iris[1:4], n_components = 2)
+#' iris.tsvd <- cuda_ml_tsvd(iris[1:4], n_components = 2)
 #' print(iris.tsvd)
 #' @export
-cuml_tsvd <- function(x,
+cuda_ml_tsvd <- function(x,
                       n_components = 2L,
                       eig_algo = c("dq", "jacobi"),
                       tol = 1e-7, n_iters = 15L,
                       transform_input = TRUE,
-                      cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
+                      cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
   eig_algo <- match_eig_algo(eig_algo)
-  cuml_log_level <- match_cuml_log_level(cuml_log_level)
+  cuda_ml_log_level <- match_cuda_ml_log_level(cuda_ml_log_level)
 
   model <- .tsvd_fit_transform(
     x = as.matrix(x),
@@ -46,14 +46,14 @@ cuml_tsvd <- function(x,
     tol = as.numeric(tol),
     n_iters = as.integer(n_iters),
     transform_input = transform_input,
-    verbosity = cuml_log_level
+    verbosity = cuda_ml_log_level
   )
-  class(model) <- c("cuml_tsvd", class(model))
+  class(model) <- c("cuda_ml_tsvd", class(model))
 
   model
 }
 
 #' @export
-cuml_inverse_transform.cuml_tsvd <- function(model, x, ...) {
+cuda_ml_inverse_transform.cuda_ml_tsvd <- function(model, x, ...) {
   .tsvd_inverse_transform(model = model, x = as.matrix(x))
 }

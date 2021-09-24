@@ -15,7 +15,7 @@ svm_match_kernel_type <- function(kernel = c("rbf", "tanh", "polynomial", "linea
 #'
 #' @template supervised-model-inputs
 #' @template supervised-model-output
-#' @template cuml-log-level
+#' @template cudaml-log-level
 #' @template ellipsis-unused
 #' @param cost A positive number for the cost of predicting a sample within or
 #'   on the wrong side of the margin. Default: 1.
@@ -66,11 +66,11 @@ svm_match_kernel_type <- function(kernel = c("rbf", "tanh", "polynomial", "linea
 #'
 #' @examples
 #'
-#' library(cuml)
+#' library(cuda.ml)
 #'
 #' # Classification
 #'
-#' model <- cuml_svm(
+#' model <- cuda_ml_svm(
 #'   formula = Species ~ .,
 #'   data = iris,
 #'   kernel = "rbf"
@@ -80,7 +80,7 @@ svm_match_kernel_type <- function(kernel = c("rbf", "tanh", "polynomial", "linea
 #'
 #' # Regression
 #'
-#' model <- cuml_svm(
+#' model <- cuda_ml_svm(
 #'   formula = mpg ~ .,
 #'   data = mtcars,
 #'   kernel = "rbf"
@@ -88,29 +88,29 @@ svm_match_kernel_type <- function(kernel = c("rbf", "tanh", "polynomial", "linea
 #'
 #' predictions <- predict(model, mtcars)
 #' @export
-cuml_svm <- function(x, ...) {
-  UseMethod("cuml_svm")
+cuda_ml_svm <- function(x, ...) {
+  UseMethod("cuda_ml_svm")
 }
 
-#' @rdname cuml_svm
+#' @rdname cuda_ml_svm
 #' @export
-cuml_svm.default <- function(x, ...) {
-  report_undefined_fn("cuml_svm", x)
+cuda_ml_svm.default <- function(x, ...) {
+  report_undefined_fn("cuda_ml_svm", x)
 }
 
-#' @rdname cuml_svm
+#' @rdname cuda_ml_svm
 #' @export
-cuml_svm.data.frame <- function(x, y, cost = 1,
+cuda_ml_svm.data.frame <- function(x, y, cost = 1,
                                 kernel = c("rbf", "tanh", "polynomial", "linear"),
                                 gamma = NULL, coef0 = 0, degree = 3L,
                                 tol = 1e-3, max_iter = NULL,
                                 nochange_steps = 1000L, cache_size = 1024,
                                 epsilon = 0.1, sample_weights = NULL,
-                                cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                                cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
                                 ...) {
   processed <- hardhat::mold(x, y)
 
-  cuml_svm_bridge(
+  cuda_ml_svm_bridge(
     processed = processed,
     cost = cost,
     kernel = kernel,
@@ -123,23 +123,23 @@ cuml_svm.data.frame <- function(x, y, cost = 1,
     cache_size = cache_size,
     epsilon = epsilon,
     sample_weights = sample_weights,
-    cuml_log_level = cuml_log_level
+    cuda_ml_log_level = cuda_ml_log_level
   )
 }
 
-#' @rdname cuml_svm
+#' @rdname cuda_ml_svm
 #' @export
-cuml_svm.matrix <- function(x, y, cost = 1,
+cuda_ml_svm.matrix <- function(x, y, cost = 1,
                             kernel = c("rbf", "tanh", "polynomial", "linear"),
                             gamma = NULL, coef0 = 0, degree = 3L, tol = 1e-3,
                             max_iter = NULL, nochange_steps = 1000L,
                             cache_size = 1024, epsilon = 0.1,
                             sample_weights = NULL,
-                            cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                            cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
                             ...) {
   processed <- hardhat::mold(x, y)
 
-  cuml_svm_bridge(
+  cuda_ml_svm_bridge(
     processed,
     cost = cost,
     kernel = kernel,
@@ -152,23 +152,23 @@ cuml_svm.matrix <- function(x, y, cost = 1,
     cache_size = cache_size,
     epsilon = epsilon,
     sample_weights = sample_weights,
-    cuml_log_level = cuml_log_level
+    cuda_ml_log_level = cuda_ml_log_level
   )
 }
 
-#' @rdname cuml_svm
+#' @rdname cuda_ml_svm
 #' @export
-cuml_svm.formula <- function(formula, data, cost = 1,
+cuda_ml_svm.formula <- function(formula, data, cost = 1,
                              kernel = c("rbf", "tanh", "polynomial", "linear"),
                              gamma = NULL, coef0 = 0, degree = 3L, tol = 1e-3,
                              max_iter = NULL, nochange_steps = 1000L,
                              cache_size = 1024, epsilon = 0.1,
                              sample_weights = NULL,
-                             cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                             cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
                              ...) {
   processed <- hardhat::mold(formula, data)
 
-  cuml_svm_bridge(
+  cuda_ml_svm_bridge(
     processed,
     cost = cost,
     kernel = kernel,
@@ -181,23 +181,23 @@ cuml_svm.formula <- function(formula, data, cost = 1,
     cache_size = cache_size,
     epsilon = epsilon,
     sample_weights = sample_weights,
-    cuml_log_level = cuml_log_level
+    cuda_ml_log_level = cuda_ml_log_level
   )
 }
 
-#' @rdname cuml_svm
+#' @rdname cuda_ml_svm
 #' @export
-cuml_svm.recipe <- function(x, data, cost = 1,
+cuda_ml_svm.recipe <- function(x, data, cost = 1,
                             kernel = c("rbf", "tanh", "polynomial", "linear"),
                             gamma = NULL, coef0 = 0, degree = 3L, tol = 1e-3,
                             max_iter = NULL, nochange_steps = 1000L,
                             cache_size = 1024, epsilon = 0.1,
                             sample_weights = NULL,
-                            cuml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                            cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
                             ...) {
   processed <- hardhat::mold(x, data)
 
-  cuml_svm_bridge(
+  cuda_ml_svm_bridge(
     processed,
     cost = cost,
     kernel = kernel,
@@ -210,13 +210,13 @@ cuml_svm.recipe <- function(x, data, cost = 1,
     cache_size = cache_size,
     epsilon = epsilon,
     sample_weights = sample_weights,
-    cuml_log_level = cuml_log_level
+    cuda_ml_log_level = cuda_ml_log_level
   )
 }
 
-cuml_svm_bridge <- function(processed, cost, kernel, gamma, coef0, degree, tol,
+cuda_ml_svm_bridge <- function(processed, cost, kernel, gamma, coef0, degree, tol,
                             max_iter, nochange_steps, cache_size, epsilon,
-                            sample_weights, cuml_log_level) {
+                            sample_weights, cuda_ml_log_level) {
   hardhat::validate_outcomes_are_univariate(processed$outcomes)
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
@@ -224,19 +224,19 @@ cuml_svm_bridge <- function(processed, cost, kernel, gamma, coef0, degree, tol,
   gamma <- gamma %||% 1.0 / ncol(x)
   max_iter <- max_iter %||% 100L * nrow(x)
   kernel <- svm_match_kernel_type(kernel)
-  cuml_log_level <- match_cuml_log_level(cuml_log_level)
+  cuda_ml_log_level <- match_cuda_ml_log_level(cuda_ml_log_level)
 
   svm_fit_impl <- (
     if (is.factor(y)) {
       # classification
       ylevels <- levels(y)
       if (length(ylevels) > 2) {
-        cuml_svm_classification_multiclass_impl
+        cuda_ml_svm_classification_multiclass_impl
       } else {
-        cuml_svm_classification_binary_impl
+        cuda_ml_svm_classification_binary_impl
       }
     } else {
-      cuml_svm_regression_impl
+      cuda_ml_svm_regression_impl
     })
 
   svm_fit_impl(
@@ -252,15 +252,15 @@ cuml_svm_bridge <- function(processed, cost, kernel, gamma, coef0, degree, tol,
     cache_size = cache_size,
     epsilon = epsilon,
     sample_weights = sample_weights,
-    cuml_log_level = cuml_log_level
+    cuda_ml_log_level = cuda_ml_log_level
   )
 }
 
-cuml_svm_classification_multiclass_impl <- function(processed, cost, kernel,
+cuda_ml_svm_classification_multiclass_impl <- function(processed, cost, kernel,
                                                     gamma, coef0, degree, tol,
                                                     max_iter, nochange_steps,
                                                     cache_size, epsilon,
-                                                    sample_weights, cuml_log_level) {
+                                                    sample_weights, cuda_ml_log_level) {
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
   ylevels <- levels(y)
@@ -288,11 +288,11 @@ cuml_svm_classification_multiclass_impl <- function(processed, cost, kernel,
           nochange_steps = as.integer(nochange_steps),
           cache_size = as.numeric(cache_size),
           sample_weights = as.numeric(sample_weights),
-          verbosity = cuml_log_level
+          verbosity = cuda_ml_log_level
         )
 
         new_model(
-          cls = c("cuml_svc", "cuml_svm"),
+          cls = c("cuda_ml_svc", "cuda_ml_svm"),
           mode = "classification",
           xptr <- model_xptr
         )
@@ -302,7 +302,7 @@ cuml_svm_classification_multiclass_impl <- function(processed, cost, kernel,
   }
 
   new_model(
-    cls = c("cuml_svc_ovr", "cuml_svm"),
+    cls = c("cuda_ml_svc_ovr", "cuda_ml_svm"),
     mode = "classification",
     xptr = models,
     multiclass = TRUE,
@@ -310,31 +310,31 @@ cuml_svm_classification_multiclass_impl <- function(processed, cost, kernel,
   )
 }
 
-cuml_get_state.cuml_svc_ovr <- function(model) {
+cuda_ml_get_state.cuda_ml_svc_ovr <- function(model) {
   model_state <- list(
-    ovr_model_states = lapply(model$xptr, function(x) cuml_get_state(x)),
+    ovr_model_states = lapply(model$xptr, function(x) cuda_ml_get_state(x)),
     blueprint = model$blueprint
   )
-  class(model_state) <- c("cuml_svc_ovr_model_state", class(model_state))
+  class(model_state) <- c("cuda_ml_svc_ovr_model_state", class(model_state))
 
   model_state
 }
 
-cuml_set_state.cuml_svc_ovr_model_state <- function(model_state) {
+cuda_ml_set_state.cuda_ml_svc_ovr_model_state <- function(model_state) {
   new_model(
-    cls = c("cuml_svc_ovr", "cuml_svm"),
+    cls = c("cuda_ml_svc_ovr", "cuda_ml_svm"),
     mode = "classification",
-    xptr = lapply(model_state$ovr_model_states, function(x) cuml_set_state(x)),
+    xptr = lapply(model_state$ovr_model_states, function(x) cuda_ml_set_state(x)),
     multiclass = TRUE,
     blueprint = model_state$blueprint
   )
 }
 
-cuml_svm_classification_binary_impl <- function(processed, cost, kernel, gamma,
+cuda_ml_svm_classification_binary_impl <- function(processed, cost, kernel, gamma,
                                                 coef0, degree, tol, max_iter,
                                                 nochange_steps, cache_size,
                                                 epsilon, sample_weights,
-                                                cuml_log_level) {
+                                                cuda_ml_log_level) {
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
 
@@ -351,11 +351,11 @@ cuml_svm_classification_binary_impl <- function(processed, cost, kernel, gamma,
     nochange_steps = as.integer(nochange_steps),
     cache_size = as.numeric(cache_size),
     sample_weights = as.numeric(sample_weights),
-    verbosity = cuml_log_level
+    verbosity = cuda_ml_log_level
   )
 
   new_model(
-    cls = c("cuml_svc", "cuml_svm"),
+    cls = c("cuda_ml_svc", "cuda_ml_svm"),
     mode = "classification",
     xptr = model_xptr,
     multiclass = FALSE,
@@ -363,19 +363,19 @@ cuml_svm_classification_binary_impl <- function(processed, cost, kernel, gamma,
   )
 }
 
-cuml_get_state.cuml_svc <- function(model) {
+cuda_ml_get_state.cuda_ml_svc <- function(model) {
   model_state <- list(
     model_state = .svc_get_state(model$xptr),
     blueprint = model$blueprint
   )
-  class(model_state) <- c("cuml_svc_model_state", class(model_state))
+  class(model_state) <- c("cuda_ml_svc_model_state", class(model_state))
 
   model_state
 }
 
-cuml_set_state.cuml_svc_model_state <- function(model_state) {
+cuda_ml_set_state.cuda_ml_svc_model_state <- function(model_state) {
   new_model(
-    cls = c("cuml_svc", "cuml_svm"),
+    cls = c("cuda_ml_svc", "cuda_ml_svm"),
     mode = "classification",
     xptr = .svc_set_state(model_state$model_state),
     multiclass = FALSE,
@@ -383,10 +383,10 @@ cuml_set_state.cuml_svc_model_state <- function(model_state) {
   )
 }
 
-cuml_svm_regression_impl <- function(processed, cost, kernel, gamma, coef0,
+cuda_ml_svm_regression_impl <- function(processed, cost, kernel, gamma, coef0,
                                      degree, tol, max_iter, nochange_steps,
                                      cache_size, epsilon, sample_weights,
-                                     cuml_log_level) {
+                                     cuda_ml_log_level) {
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
 
@@ -404,30 +404,30 @@ cuml_svm_regression_impl <- function(processed, cost, kernel, gamma, coef0,
     cache_size = as.numeric(cache_size),
     epsilon = as.numeric(epsilon),
     sample_weights = as.numeric(sample_weights),
-    verbosity = cuml_log_level
+    verbosity = cuda_ml_log_level
   )
 
   new_model(
-    cls = c("cuml_svr", "cuml_svm"),
+    cls = c("cuda_ml_svr", "cuda_ml_svm"),
     mode = "regression",
     xptr = model_xptr,
     blueprint = processed$blueprint
   )
 }
 
-cuml_get_state.cuml_svr <- function(model) {
+cuda_ml_get_state.cuda_ml_svr <- function(model) {
   model_state <- list(
     model_state = .svr_get_state(model$xptr),
     blueprint = model$blueprint
   )
-  class(model_state) <- c("cuml_svr_model_state", class(model_state))
+  class(model_state) <- c("cuda_ml_svr_model_state", class(model_state))
 
   model_state
 }
 
-cuml_set_state.cuml_svr_model_state <- function(model_state) {
+cuda_ml_set_state.cuda_ml_svr_model_state <- function(model_state) {
   new_model(
-    cls = c("cuml_svr", "cuml_svm"),
+    cls = c("cuda_ml_svr", "cuda_ml_svm"),
     mode = "regression",
     xptr = .svr_set_state(model_state$model_state),
     blueprint = model_state$blueprint
@@ -437,32 +437,32 @@ cuml_set_state.cuml_svr_model_state <- function(model_state) {
 #' Make predictions on new data points.
 #'
 #' Make predictions on new data points using a CuML SVM model.
-#' See \code{\link{cuml_predict}} for full documentation of parameters.
+#' See \code{\link{cuda_ml_predict}} for full documentation of parameters.
 #'
 #' @template predict
 #'
-#' @seealso cuml_predict
+#' @seealso cuda_ml_predict
 #' @importFrom ellipsis check_dots_used
 #' @export
-predict.cuml_svm <- function(object, ...) {
+predict.cuda_ml_svm <- function(object, ...) {
   check_dots_used()
 
   x <- ...elt(1)
   processed <- hardhat::forge(x, object$blueprint)
 
-  predict_cuml_svm_bridge(model = object, processed = processed)
+  predict_cuda_ml_svm_bridge(model = object, processed = processed)
 }
 
-predict_cuml_svm_bridge <- function(model, processed) {
+predict_cuda_ml_svm_bridge <- function(model, processed) {
   svm_predict_impl <- switch(model$mode,
     classification = (
       if (model$multiclass) {
-        predict_cuml_svm_classification_multiclass_impl
+        predict_cuda_ml_svm_classification_multiclass_impl
       } else {
-        predict_cuml_svm_classification_binary_impl
+        predict_cuda_ml_svm_classification_binary_impl
       }),
     regression = (
-      predict_cuml_svm_regression_impl
+      predict_cuda_ml_svm_regression_impl
     )
   )
 
@@ -472,7 +472,7 @@ predict_cuml_svm_bridge <- function(model, processed) {
   out
 }
 
-predict_cuml_svm_classification_multiclass_impl <- function(model, processed) {
+predict_cuda_ml_svm_classification_multiclass_impl <- function(model, processed) {
   pred_levels <- get_pred_levels(model)
 
   scores <- seq_along(pred_levels) %>%
@@ -502,7 +502,7 @@ predict_cuml_svm_classification_multiclass_impl <- function(model, processed) {
     postprocess_classification_results(model)
 }
 
-predict_cuml_svm_classification_binary_impl <- function(model, processed) {
+predict_cuda_ml_svm_classification_binary_impl <- function(model, processed) {
   .svc_predict(
     model_xptr = model$xptr,
     input = as.matrix(processed$predictors),
@@ -511,7 +511,7 @@ predict_cuml_svm_classification_binary_impl <- function(model, processed) {
     postprocess_classification_results(model)
 }
 
-predict_cuml_svm_regression_impl <- function(model, processed) {
+predict_cuda_ml_svm_regression_impl <- function(model, processed) {
   .svr_predict(
     svr_xptr = model$xptr,
     X = as.matrix(processed$predictors)
@@ -523,13 +523,13 @@ predict_cuml_svm_regression_impl <- function(model, processed) {
 register_svm_model <- function(pkgname) {
   for (model in c(paste0("svm_", c("rbf", "poly", "linear")))) {
     for (mode in c("classification", "regression")) {
-      parsnip::set_model_engine(model = model, mode = mode, eng = "cuml")
+      parsnip::set_model_engine(model = model, mode = mode, eng = pkgname)
     }
-    parsnip::set_dependency(model = model, eng = "cuml", pkg = pkgname)
+    parsnip::set_dependency(model = model, eng = pkgname, pkg = pkgname)
 
     parsnip::set_model_arg(
       model = model,
-      eng = "cuml",
+      eng = pkgname,
       parsnip = "cost",
       original = "cost",
       func = list(pkg = "dials", fun = "cost", range = c(-10, 5)),
@@ -538,7 +538,7 @@ register_svm_model <- function(pkgname) {
 
     parsnip::set_model_arg(
       model = model,
-      eng = "cuml",
+      eng = pkgname,
       parsnip = "margin",
       original = "epsilon",
       func = list(pkg = "dials", fun = "svm_margin"),
@@ -548,7 +548,7 @@ register_svm_model <- function(pkgname) {
 
   parsnip::set_model_arg(
     model = "svm_rbf",
-    eng = "cuml",
+    eng = pkgname,
     parsnip = "rbf_sigma",
     original = "gamma",
     func = list(pkg = "dials", fun = "rbf_sigma"),
@@ -557,7 +557,7 @@ register_svm_model <- function(pkgname) {
 
   parsnip::set_model_arg(
     model = "svm_poly",
-    eng = "cuml",
+    eng = pkgname,
     parsnip = "degree",
     original = "degree",
     func = list(pkg = "dials", fun = "degree"),
@@ -566,7 +566,7 @@ register_svm_model <- function(pkgname) {
 
   parsnip::set_model_arg(
     model = "svm_poly",
-    eng = "cuml",
+    eng = pkgname,
     parsnip = "scale_factor",
     original = "gamma",
     func = list(pkg = "dials", fun = "scale_factor"),
@@ -579,19 +579,19 @@ register_svm_model <- function(pkgname) {
     for (mode in c("classification", "regression")) {
       parsnip::set_fit(
         model = model,
-        eng = "cuml",
+        eng = pkgname,
         mode = mode,
         value = list(
           interface = "formula",
           protect = c("formula", "data"),
-          func = c(pkg = pkgname, fun = "cuml_svm"),
+          func = c(pkg = pkgname, fun = "cuda_ml_svm"),
           defaults = list(kernel = kernel)
         )
       )
 
       parsnip::set_encoding(
         model = model,
-        eng = "cuml",
+        eng = pkgname,
         mode = mode,
         options = list(
           predictor_indicators = "none",
@@ -604,7 +604,7 @@ register_svm_model <- function(pkgname) {
 
     parsnip::set_pred(
       model = model,
-      eng = "cuml",
+      eng = pkgname,
       mode = "classification",
       type = "class",
       value = list(
@@ -620,7 +620,7 @@ register_svm_model <- function(pkgname) {
 
     parsnip::set_pred(
       model = model,
-      eng = "cuml",
+      eng = pkgname,
       mode = "regression",
       type = "numeric",
       value = list(

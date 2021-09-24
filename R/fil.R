@@ -1,27 +1,27 @@
 #' Determine whether Forest Inference Library (FIL) functionalities are enabled
-#' in the current installation of {cuml}.
+#' in the current installation of {cuda.ml}.
 #'
 #' CuML Forest Inference Library (FIL) functionalities (see
 #' https://github.com/rapidsai/cuml/tree/main/python/cuml/fil#readme) will
 #' require Treelite C API. If you need FIL to run tree-based model ensemble on
 #' GPU, and \code{fil_enabled()} returns FALSE, then please consider installing
-#' Treelite and then re-installing {cuml}.
+#' Treelite and then re-installing {cuda.ml}.
 #'
 #' @return A logical value indicating whether the Forest Inference Library (FIL)
 #'   functionalities are enabled.
 #'
 #' @examples
-#' if (cuml_fil_enabled()) {
+#' if (cuda_ml_fil_enabled()) {
 #'   # run GPU-accelerated Forest Inference Library (FIL) functionalities
 #' } else {
 #'   message(
 #'     "FIL functionalities are disabled in the current installation of ",
-#'     "{cuml}. Please reinstall Treelite C library first, and then re-install",
-#'     " {cuml} to enable FIL."
+#'     "{cuda.ml}. Please reinstall Treelite C library first, and then re-install",
+#'     " {cuda.ml} to enable FIL."
 #'   )
 #' }
 #' @export
-cuml_fil_enabled <- .fil_enabled
+cuda_ml_fil_enabled <- .fil_enabled
 
 fil_match_model_type <- function(filename, model_type = c("xgboost", "lightgbm")) {
   model_type <- match.arg(model_type)
@@ -64,7 +64,7 @@ file_match_storage_type <- function(storage_type = c("auto", "dense", "sparse"))
 #' @param mode Type of task to be performed by the model. Must be one of
 #'   {"classification", "regression"}.
 #' @param model_type Format of the saved model file. Notice if \code{filename}
-#'   ends with ".json" and \code{model_type} is "xgboost", then {cuml} will
+#'   ends with ".json" and \code{model_type} is "xgboost", then {cuda.ml} will
 #'   assume the model file is in XGBoost JSON (instead of binary) format.
 #'   Default: "xgboost".
 #' @param algo Type of the algorithm for inference, must be one of the
@@ -113,7 +113,7 @@ file_match_storage_type <- function(storage_type = c("auto", "dense", "sparse"))
 #'
 #' @examples
 #'
-#' library(cuml)
+#' library(cuda.ml)
 #' library(xgboost)
 #'
 #' model_path <- file.path(tempdir(), "xgboost.model")
@@ -130,7 +130,7 @@ file_match_storage_type <- function(storage_type = c("auto", "dense", "sparse"))
 #'
 #' xgb.save(model, model_path)
 #'
-#' model <- cuml_fil_load_model(
+#' model <- cuda_ml_fil_load_model(
 #'   model_path,
 #'   mode = "regression",
 #'   model_type = "xgboost"
@@ -140,7 +140,7 @@ file_match_storage_type <- function(storage_type = c("auto", "dense", "sparse"))
 #'
 #' print(preds)
 #' @export
-cuml_fil_load_model <- function(filename,
+cuda_ml_fil_load_model <- function(filename,
                                 mode = c("classification", "regression"),
                                 model_type = c("xgboost", "lightgbm"),
                                 algo = c("auto", "naive", "tree_reorg", "batch_tree_reorg"),
@@ -165,7 +165,7 @@ cuml_fil_load_model <- function(filename,
     blocks_per_sm = as.integer(blocks_per_sm)
   )
   model <- list(mode = mode, xptr = xptr)
-  class(model) <- c("cuml_fil", "cuml_model", class(model))
+  class(model) <- c("cuda_ml_fil", "cuda_ml_model", class(model))
 
   model
 }
@@ -173,14 +173,14 @@ cuml_fil_load_model <- function(filename,
 #' Make predictions on new data points.
 #'
 #' Make predictions on new data points using a FIL model.
-#' See \code{\link{cuml_predict}} for full documentation of parameters.
+#' See \code{\link{cuda_ml_predict}} for full documentation of parameters.
 #'
 #' @template predict
 #'
-#' @seealso cuml_predict
+#' @seealso cuda_ml_predict
 #' @importFrom ellipsis check_dots_used
 #' @export
-predict.cuml_fil <- function(object, ...) {
+predict.cuda_ml_fil <- function(object, ...) {
   check_dots_used()
 
   x <- ...elt(1)

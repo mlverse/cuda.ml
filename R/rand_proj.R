@@ -22,24 +22,24 @@
 #' @param seed Seed for the pseudorandom number generator. Default: 0L.
 #'
 #' @return A context object containing GPU pointer to a random matrix that can
-#'   be used as input to the \code{cuml_transform()} function.
+#'   be used as input to the \code{cuda_ml_transform()} function.
 #'   If \code{transform_input} is set to TRUE, then the context object will also
 #'   contain a "transformed_data" attribute containing the lower dimensional
 #'   projection of the input data.
 #'
 #' @examples
-#' library(cuml)
+#' library(cuda.ml)
 #' library(mlbench)
 #'
 #' data(Vehicle)
 #' vehicle_data <- Vehicle[order(Vehicle$Class), which(names(Vehicle) != "Class")]
 #'
-#' ctx <- cuml_rand_proj(vehicle_data, n_components = 4)
+#' ctx <- cuda_ml_rand_proj(vehicle_data, n_components = 4)
 #'
 #' set.seed(0L)
 #' print(kmeans(ctx$transformed_data, centers = 4, iter.max = 1000))
 #' @export
-cuml_rand_proj <- function(x, n_components = NULL, eps = 0.1,
+cuda_ml_rand_proj <- function(x, n_components = NULL, eps = 0.1,
                            gaussian_method = TRUE, density = NULL,
                            transform_input = TRUE, seed = 0L) {
   n_components <- n_components %||%
@@ -59,16 +59,16 @@ cuml_rand_proj <- function(x, n_components = NULL, eps = 0.1,
   )
 
   ctx <- list(rproj_ctx = rproj_ctx)
-  class(ctx) <- c("cuml_rand_proj_ctx", class(ctx))
+  class(ctx) <- c("cuda_ml_rand_proj_ctx", class(ctx))
 
   if (transform_input) {
-    ctx$transformed_data <- cuml_transform(ctx, x)
+    ctx$transformed_data <- cuda_ml_transform(ctx, x)
   }
 
   ctx
 }
 
 #' @export
-cuml_transform.cuml_rand_proj_ctx <- function(model, x, ...) {
+cuda_ml_transform.cuda_ml_rand_proj_ctx <- function(model, x, ...) {
   .rproj_transform(model$rproj_ctx, as.matrix(x))
 }

@@ -42,7 +42,7 @@ agglomerative_clustering_match_metric <- function(metric = c("euclidean", "l1", 
 #'
 #' @examples
 #'
-#' library(cuml)
+#' library(cuda.ml)
 #' library(MASS)
 #' library(magrittr)
 #' library(purrr)
@@ -57,7 +57,7 @@ agglomerative_clustering_match_metric <- function(metric = c("euclidean", "l1", 
 #'   rlang::exec(rbind, !!!pts) %>% as.matrix()
 #' }
 #'
-#' clust <- cuml_agglomerative_clustering(
+#' clust <- cuda_ml_agglomerative_clustering(
 #'   x = gen_pts(),
 #'   metric = "euclidean",
 #'   n_clusters = 3L
@@ -65,7 +65,7 @@ agglomerative_clustering_match_metric <- function(metric = c("euclidean", "l1", 
 #'
 #' print(clust$labels)
 #' @export
-cuml_agglomerative_clustering <- function(x, n_clusters = 2L,
+cuda_ml_agglomerative_clustering <- function(x, n_clusters = 2L,
                                           metric = c("euclidean", "l1", "l2", "manhattan", "cosine"),
                                           connectivity = c("pairwise", "knn"),
                                           n_neighbors = 15L) {
