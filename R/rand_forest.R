@@ -326,6 +326,37 @@ cuda_ml_rand_forest_impl_regression <- function(processed, mtry, trees, min_n,
   )
 }
 
+cuda_ml_get_state.cuda_ml_rand_forest <- function(model) {
+  get_state_impl <- switch(
+    model$mode,
+    classification = .rf_classifier_get_state,
+    regression = .rf_regressor_get_state
+  )
+  model_state <- list(
+    mode = model$mode,
+    rf = get_state_impl(model$xptr),
+    blueprint = model$blueprint
+  )
+  class(model_state) <- c("cuda_ml_rand_forest_model_state", class(model_state))
+
+  model_state
+}
+
+cuda_ml_set_state.cuda_ml_rand_forest_model_state <- function(model_state) {
+  set_state_impl <- switch(
+    model_state$mode,
+    classification = .rf_classifier_set_state,
+    regression = .rf_regressor_set_state
+  )
+
+  new_model(
+    cls = "cuda_ml_rand_forest",
+    mode = model_state$mode,
+    xptr = set_state_impl(model_state$rf),
+    blueprint = model_state$blueprint
+  )
+}
+
 #' Make predictions on new data points.
 #'
 #' Make predictions on new data points using a CuML random forest model.
