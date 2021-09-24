@@ -40,3 +40,33 @@ Rcpp::NumericVector rf_regressor_predict(SEXP model_xptr,
 
 #endif
 }
+
+// [[Rcpp::export(".rf_regressor_get_state")]]
+Rcpp::List rf_regressor_get_state(SEXP model) {
+#ifdef HAS_CUML
+
+  return cuml4r::rf_regressor_get_state(model);
+
+#else
+
+#include "warn_cuml_missing.h"
+
+  return {};
+
+#endif
+}
+
+// [[Rcpp::export(".rf_regressor_set_state")]]
+SEXP rf_regressor_set_state(Rcpp::List const& state) {
+#ifdef HAS_CUML
+
+  return cuml4r::rf_regressor_set_state(state);
+
+#else
+
+#include "warn_cuml_missing.h"
+
+  return R_NilValue;
+
+#endif
+}
