@@ -43,11 +43,12 @@ instructions.
 
 ## Install deps:
 ```
-sudo apt install -y cmake
+sudo apt install -y cmake ccache
 ```
 
 
 ## Install CUDA
+(consult https://developer.nvidia.com/cuda-downloads for other platforms)
 ```bash
 wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
 sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
@@ -91,11 +92,19 @@ The subsequent steps may (or may not) fail without the following:
 
 ```bash
 export LD_LIBRARY_PATH=~/miniconda3/envs/rapids-21.08/lib
-
 ```
 
 If you get some error indicating a GLIBC version mismatch in the subsequent
 steps, then please try adjusting `LD_LIBRARY_PATH` as a workaround.
+
+
+## Consider enabling ccache
+
+To speed up recompilation times during development, set this env var:
+```bash
+echo "export CUML4R_ENABLE_CCACHE=1" >> ~/.bashrc
+. ~/.bashrc
+```
 
 ## Install cuml the R package:
 
