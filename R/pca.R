@@ -63,7 +63,7 @@ cuda_ml_pca <- function(x,
     transform_input = transform_input,
     verbosity = cuda_ml_log_level
   )
-  class(model) <- c("cuda_ml_pca", class(model))
+  class(model) <- c("cuda_ml_pca", "cuda_ml_model", class(model))
 
   model
 }
@@ -71,4 +71,18 @@ cuda_ml_pca <- function(x,
 #' @export
 cuda_ml_inverse_transform.cuda_ml_pca <- function(model, x, ...) {
   .pca_inverse_transform(model = model, x = as.matrix(x))
+}
+
+cuda_ml_get_state.cuda_ml_pca <- function(model) {
+  model_state <- .pca_get_state(model)
+  class(model_state) <- c("cuda_ml_pca_model_state", class(model_state))
+
+  model_state
+}
+
+cuda_ml_set_state.cuda_ml_pca_model_state <- function(model_state) {
+  model <- .pca_set_state(model_state)
+  class(model) <- c("cuda_ml_pca", "cuda_ml_model", class(model))
+
+  model
 }

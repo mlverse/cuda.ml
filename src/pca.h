@@ -14,6 +14,10 @@ Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x, double const tol,
 Rcpp::NumericMatrix pca_inverse_transform(Rcpp::List model,
                                           Rcpp::NumericMatrix const& x);
 
+Rcpp::List pca_get_state(Rcpp::List const& model);
+
+Rcpp::List pca_set_state(Rcpp::List const& model_state);
+
 }  // namespace cuml4r
 
 #else

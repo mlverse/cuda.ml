@@ -61,6 +61,14 @@
     .Call(`_cuda_ml_pca_inverse_transform`, model, x)
 }
 
+.pca_get_state <- function(model) {
+    .Call(`_cuda_ml_pca_get_state`, model)
+}
+
+.pca_set_state <- function(model_state) {
+    .Call(`_cuda_ml_pca_set_state`, model_state)
+}
+
 .rf_classifier_fit <- function(input, labels, n_trees, bootstrap, max_samples, n_streams, max_depth, max_leaves, max_features, n_bins, min_samples_leaf, min_samples_split, split_criterion, min_impurity_decrease, max_batch_size, verbosity) {
     .Call(`_cuda_ml_rf_classifier_fit`, input, labels, n_trees, bootstrap, max_samples, n_streams, max_depth, max_leaves, max_features, n_bins, min_samples_leaf, min_samples_split, split_criterion, min_impurity_decrease, max_batch_size, verbosity)
 }
