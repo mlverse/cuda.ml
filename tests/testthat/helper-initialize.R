@@ -1,6 +1,6 @@
-library(magrittr)
+library(magrittr, warn.conflicts = FALSE)
 library(reticulate)
-library(rlang)
+library(rlang, warn.conflicts = FALSE)
 
 expect_libcuml <- function() {
   if (!has_libcuml()) {
