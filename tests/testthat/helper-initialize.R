@@ -1,4 +1,3 @@
-library(cuda.ml)
 library(magrittr)
 library(reticulate)
 library(rlang)
