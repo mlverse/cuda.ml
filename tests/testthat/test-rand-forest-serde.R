@@ -23,7 +23,7 @@ test_that("random forest classifier can be serialized and unserialized correctly
   )
 
   expect_equal(expected_preds, actual_preds)
-  expect_equal(expected_cls_probs, actual_cls_probs, tol = 1e-4, scale = 1)
+  expect_equal(expected_cls_probs, actual_cls_probs, tolerance = 1e-4, scale = 1)
 })
 
 test_that("random forest regressor can be serialized and unserialized correctly", {
@@ -40,5 +40,5 @@ test_that("random forest regressor can be serialized and unserialized correctly"
     expected_model_cls = "cuda_ml_rand_forest"
   )
 
-  expect_equal(expected_preds, actual_preds, tol = 1e-4, scale = 1)
+  expect_equal(expected_preds, actual_preds, tolerance = 1e-4, scale = 1)
 })

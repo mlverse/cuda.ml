@@ -9,7 +9,7 @@ verify_cluster_centers <- function(centers) {
   expect_equal(
     sort_mat(centers),
     sort_mat(sklearn_kclust$cluster_centers_),
-    tol = 0.01,
+    tolerance = 0.01,
     scale = 1
   )
 }
