@@ -419,6 +419,28 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rproj_get_state
+Rcpp::List rproj_get_state(SEXP model);
+RcppExport SEXP _cuda_ml_rproj_get_state(SEXP modelSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type model(modelSEXP);
+    rcpp_result_gen = Rcpp::wrap(rproj_get_state(model));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rproj_set_state
+SEXP rproj_set_state(Rcpp::List const& model_state);
+RcppExport SEXP _cuda_ml_rproj_set_state(SEXP model_stateSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List const& >::type model_state(model_stateSEXP);
+    rcpp_result_gen = Rcpp::wrap(rproj_set_state(model_state));
+    return rcpp_result_gen;
+END_RCPP
+}
 // svc_fit
 SEXP svc_fit(Rcpp::NumericMatrix const& input, Rcpp::NumericVector const& labels, double const cost, int const kernel, double const gamma, double const coef0, int const degree, double const tol, int const max_iter, int const nochange_steps, double const cache_size, Rcpp::NumericVector const& sample_weights, int const verbosity);
 RcppExport SEXP _cuda_ml_svc_fit(SEXP inputSEXP, SEXP labelsSEXP, SEXP costSEXP, SEXP kernelSEXP, SEXP gammaSEXP, SEXP coef0SEXP, SEXP degreeSEXP, SEXP tolSEXP, SEXP max_iterSEXP, SEXP nochange_stepsSEXP, SEXP cache_sizeSEXP, SEXP sample_weightsSEXP, SEXP verbositySEXP) {
@@ -694,6 +716,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuda_ml_rproj_johnson_lindenstrauss_min_dim", (DL_FUNC) &_cuda_ml_rproj_johnson_lindenstrauss_min_dim, 2},
     {"_cuda_ml_rproj_fit", (DL_FUNC) &_cuda_ml_rproj_fit, 7},
     {"_cuda_ml_rproj_transform", (DL_FUNC) &_cuda_ml_rproj_transform, 2},
+    {"_cuda_ml_rproj_get_state", (DL_FUNC) &_cuda_ml_rproj_get_state, 1},
+    {"_cuda_ml_rproj_set_state", (DL_FUNC) &_cuda_ml_rproj_set_state, 1},
     {"_cuda_ml_svc_fit", (DL_FUNC) &_cuda_ml_svc_fit, 13},
     {"_cuda_ml_svc_predict", (DL_FUNC) &_cuda_ml_svc_predict, 3},
     {"_cuda_ml_svc_get_state", (DL_FUNC) &_cuda_ml_svc_get_state, 1},
