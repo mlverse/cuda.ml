@@ -34,3 +34,33 @@ Rcpp::NumericMatrix pca_inverse_transform(Rcpp::List model,
 
 #endif
 }
+
+// [[Rcpp::export(".pca_get_state")]]
+Rcpp::List pca_get_state(Rcpp::List const& model) {
+#ifdef HAS_CUML
+
+  return cuml4r::pca_get_state(model);
+
+#else
+
+#include "warn_cuml_missing.h"
+
+  return {};
+
+#endif
+}
+
+// [[Rcpp::export(".pca_set_state")]]
+Rcpp::List pca_set_state(Rcpp::List const& model_state) {
+#ifdef HAS_CUML
+
+  return cuml4r::pca_set_state(model_state);
+
+#else
+
+#include "warn_cuml_missing.h"
+
+  return {};
+
+#endif
+}

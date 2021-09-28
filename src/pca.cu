@@ -12,10 +12,60 @@
 
 #include <Rcpp.h>
 
+#include <algorithm>
 #include <memory>
 #include <vector>
 
 namespace cuml4r {
+namespace {
+
+constexpr auto kComponents = "components";
+constexpr auto kExplainedVariance = "explained_variance";
+constexpr auto kExplainedVarianceRatio = "explained_variance_ratio";
+constexpr auto kSingularValues = "singular_values";
+constexpr auto kMean = "mean";
+constexpr auto kTransformedData = "transformed_data";
+constexpr auto kPcaParams = "pca_params";
+constexpr auto kPcaParamsNumRows = "n_rows";
+constexpr auto kPcaParamsNumCols = "n_cols";
+constexpr auto kPcaParamsTol = "tol";
+constexpr auto kPcaParamsNumIters = "n_iters";
+constexpr auto kPcaParamsVerbosity = "verbosity";
+constexpr auto kPcaParamsNumComponents = "n_components";
+constexpr auto kPcaParamsAlgorithm = "algorithm";
+constexpr auto kPcaParamsCopy = "copy";
+constexpr auto kPcaParamsWhiten = "whiten";
+
+__host__ Rcpp::List getState(ML::paramsPCA const& pca_params) {
+  Rcpp::List state;
+
+  state[kPcaParamsNumRows] = pca_params.n_rows;
+  state[kPcaParamsNumCols] = pca_params.n_cols;
+  state[kPcaParamsTol] = pca_params.tol;
+  state[kPcaParamsNumIters] = pca_params.n_iterations;
+  state[kPcaParamsVerbosity] = pca_params.verbose;
+  state[kPcaParamsNumComponents] = pca_params.n_components;
+  state[kPcaParamsAlgorithm] = static_cast<int>(pca_params.algorithm);
+  state[kPcaParamsCopy] = pca_params.copy;
+  state[kPcaParamsWhiten] = pca_params.whiten;
+
+  return state;
+}
+
+__host__ void setState(ML::paramsPCA& pca_params, Rcpp::List const& state) {
+  pca_params.n_rows = state[kPcaParamsNumRows];
+  pca_params.n_cols = state[kPcaParamsNumCols];
+  pca_params.tol = state[kPcaParamsTol];
+  pca_params.n_iterations = state[kPcaParamsNumIters];
+  pca_params.verbose = state[kPcaParamsVerbosity];
+  pca_params.n_components = state[kPcaParamsNumComponents];
+  pca_params.algorithm =
+    static_cast<ML::solver>(Rcpp::as<int>(state[kPcaParamsAlgorithm]));
+  pca_params.copy = state[kPcaParamsCopy];
+  pca_params.whiten = state[kPcaParamsWhiten];
+}
+
+}  // namespace
 
 __host__ Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x,
                                       double const tol, int const n_iters,
@@ -124,24 +174,68 @@ __host__ Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x,
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
-  result["components"] =
+  result[kComponents] =
     Rcpp::NumericMatrix(n_components, n_cols, h_components.begin());
-  result["explained_variance"] =
+  result[kExplainedVariance] =
     Rcpp::NumericVector(h_explained_var.begin(), h_explained_var.end());
-  result["explained_variance_ratio"] = Rcpp::NumericVector(
+  result[kExplainedVarianceRatio] = Rcpp::NumericVector(
     h_explained_var_ratio.begin(), h_explained_var_ratio.end());
-  result["singular_values"] =
+  result[kSingularValues] =
     Rcpp::NumericVector(h_singular_vals.begin(), h_singular_vals.end());
-  result["mean"] = Rcpp::NumericVector(h_mu.begin(), h_mu.end());
+  result[kMean] = Rcpp::NumericVector(h_mu.begin(), h_mu.end());
   // NOTE: noise variance calculation appears to be unimplemented in cuML at the moment
   // result["noise_variance"] = Rcpp::NumericVector(h_noise_vars.begin(), h_noise_vars.end());
   if (transform_input) {
-    result["transformed_data"] =
+    result[kTransformedData] =
       Rcpp::NumericMatrix(n_rows, n_components, h_transformed_data.begin());
   }
-  result["pca_params"] = Rcpp::XPtr<ML::paramsPCA>(params.release());
+  result[kPcaParams] = Rcpp::XPtr<ML::paramsPCA>(params.release());
 
   return result;
+}
+
+__host__ Rcpp::List pca_get_state(Rcpp::List const& model) {
+  Rcpp::List model_state;
+
+  model_state[kComponents] = model[kComponents];
+  model_state[kExplainedVariance] = model[kExplainedVariance];
+  model_state[kExplainedVarianceRatio] = model[kExplainedVarianceRatio];
+  model_state[kSingularValues] = model[kSingularValues];
+  model_state[kMean] = model[kMean];
+  {
+    Rcpp::CharacterVector const model_prop_names = model.names();
+    if (std::find(model_prop_names.cbegin(), model_prop_names.cend(),
+                  kTransformedData) != model_prop_names.cend()) {
+      model_state[kTransformedData] = model[kTransformedData];
+    }
+  }
+  Rcpp::XPtr<ML::paramsPCA> pca_params = model[kPcaParams];
+  model_state[kPcaParams] = getState(*pca_params);
+
+  return model_state;
+}
+
+__host__ Rcpp::List pca_set_state(Rcpp::List const& model_state) {
+  Rcpp::List model;
+
+  model[kComponents] = model_state[kComponents];
+  model[kExplainedVariance] = model_state[kExplainedVariance];
+  model[kExplainedVarianceRatio] = model_state[kExplainedVarianceRatio];
+  model[kSingularValues] = model_state[kSingularValues];
+  model[kMean] = model_state[kMean];
+  {
+    Rcpp::CharacterVector const model_state_prop_names = model_state.names();
+    if (std::find(model_state_prop_names.cbegin(),
+                  model_state_prop_names.cend(),
+                  kTransformedData) != model_state_prop_names.cend()) {
+      model[kTransformedData] = model_state[kTransformedData];
+    }
+  }
+  auto pca_params = std::make_unique<ML::paramsPCA>();
+  setState(*pca_params, model_state[kPcaParams]);
+  model[kPcaParams] = Rcpp::XPtr<ML::paramsPCA>(pca_params.release());
+
+  return model;
 }
 
 __host__ Rcpp::NumericMatrix pca_inverse_transform(
