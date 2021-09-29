@@ -1,3 +1,10 @@
+new_rproj_model <- function(rproj_ctx) {
+  model <- list(rproj_ctx = rproj_ctx)
+  class(model) <- c("cuda_ml_rand_proj_model", "cuda_ml_model", class(model))
+
+  model
+}
+
 #' Random projection for dimensionality reduction.
 #'
 #' Generate a random projection matrix for dimensionality reduction, and
@@ -34,10 +41,10 @@
 #' data(Vehicle)
 #' vehicle_data <- Vehicle[order(Vehicle$Class), which(names(Vehicle) != "Class")]
 #'
-#' ctx <- cuda_ml_rand_proj(vehicle_data, n_components = 4)
+#' model <- cuda_ml_rand_proj(vehicle_data, n_components = 4)
 #'
 #' set.seed(0L)
-#' print(kmeans(ctx$transformed_data, centers = 4, iter.max = 1000))
+#' print(kmeans(model$transformed_data, centers = 4, iter.max = 1000))
 #' @export
 cuda_ml_rand_proj <- function(x, n_components = NULL, eps = 0.1,
                               gaussian_method = TRUE, density = NULL,
@@ -58,17 +65,29 @@ cuda_ml_rand_proj <- function(x, n_components = NULL, eps = 0.1,
     random_state = as.integer(seed)
   )
 
-  ctx <- list(rproj_ctx = rproj_ctx)
-  class(ctx) <- c("cuda_ml_rand_proj_ctx", class(ctx))
+  model <- new_rproj_model(rproj_ctx)
 
   if (transform_input) {
-    ctx$transformed_data <- cuda_ml_transform(ctx, x)
+    model$transformed_data <- cuda_ml_transform(model, x)
   }
 
-  ctx
+  model
 }
 
 #' @export
-cuda_ml_transform.cuda_ml_rand_proj_ctx <- function(model, x, ...) {
+cuda_ml_transform.cuda_ml_rand_proj_model <- function(model, x, ...) {
   .rproj_transform(model$rproj_ctx, as.matrix(x))
+}
+
+cuda_ml_get_state.cuda_ml_rand_proj_model <- function(model) {
+  model_state <- .rproj_get_state(model$rproj_ctx)
+  class(model_state) <- c("cuda_ml_rand_proj_model_state", class(model_state))
+
+  model_state
+}
+
+cuda_ml_set_state.cuda_ml_rand_proj_model_state <- function(model_state) {
+  rproj_ctx <- .rproj_set_state(model_state)
+
+  new_rproj_model(rproj_ctx)
 }

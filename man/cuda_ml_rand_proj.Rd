@@ -58,8 +58,8 @@ library(mlbench)
 data(Vehicle)
 vehicle_data <- Vehicle[order(Vehicle$Class), which(names(Vehicle) != "Class")]
 
-ctx <- cuda_ml_rand_proj(vehicle_data, n_components = 4)
+model <- cuda_ml_rand_proj(vehicle_data, n_components = 4)
 
 set.seed(0L)
-print(kmeans(ctx$transformed_data, centers = 4, iter.max = 1000))
+print(kmeans(model$transformed_data, centers = 4, iter.max = 1000))
 }
