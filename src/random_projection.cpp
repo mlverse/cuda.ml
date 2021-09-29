@@ -32,6 +32,7 @@ SEXP rproj_fit(int const n_samples, int const n_features,
 #include "warn_cuml_missing.h"
 
   return Rcpp::List();
+
 #endif
 }
 
@@ -48,5 +49,36 @@ Rcpp::NumericMatrix rproj_transform(SEXP rproj_ctx_xptr,
 
   // dummy values with distinct data points
   return Rcpp::NumericMatrix::diag(input.nrow(), 1.0);
+
+#endif
+}
+
+// [[Rcpp::export(".rproj_get_state")]]
+Rcpp::List rproj_get_state(SEXP model) {
+#ifdef HAS_CUML
+
+  return cuml4r::rproj_get_state(model);
+
+#else
+
+#include "warn_cuml_missing.h"
+
+  return {};
+
+#endif
+}
+
+// [[Rcpp::export(".rproj_set_state")]]
+SEXP rproj_set_state(Rcpp::List const& model_state) {
+#ifdef HAS_CUML
+
+  return cuml4r::rproj_set_state(model_state);
+
+#else
+
+#include "warn_cuml_missing.h"
+
+  return R_NilValue;
+
 #endif
 }

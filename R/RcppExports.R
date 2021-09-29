@@ -117,6 +117,14 @@
     .Call(`_cuda_ml_rproj_transform`, rproj_ctx_xptr, input)
 }
 
+.rproj_get_state <- function(model) {
+    .Call(`_cuda_ml_rproj_get_state`, model)
+}
+
+.rproj_set_state <- function(model_state) {
+    .Call(`_cuda_ml_rproj_set_state`, model_state)
+}
+
 .svc_fit <- function(input, labels, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, sample_weights, verbosity) {
     .Call(`_cuda_ml_svc_fit`, input, labels, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, sample_weights, verbosity)
 }

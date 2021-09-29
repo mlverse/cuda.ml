@@ -17,6 +17,10 @@ SEXP rproj_fit(int const n_samples, int const n_features,
 Rcpp::NumericMatrix rproj_transform(SEXP rproj_ctx_xptr,
                                     Rcpp::NumericMatrix const& input);
 
+Rcpp::List rproj_get_state(SEXP model);
+
+SEXP rproj_set_state(Rcpp::List const& model_state);
+
 }  // namespace cuml4r
 
 #else
