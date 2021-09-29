@@ -6,7 +6,8 @@ test_that("random forest classifier can be serialized and unserialized correctly
 
   expected_preds <- predict(model, data)
   expected_cls_probs <- predict(
-    model, data, output_class_probabilities = TRUE
+    model, data,
+    output_class_probabilities = TRUE
   )
   actual_preds <- predict_in_sub_proc(
     model_state,

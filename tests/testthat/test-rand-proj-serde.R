@@ -10,7 +10,7 @@ test_that("random projection model can be serialized and unserialized correctly"
 
   actual_transformed_data <- callr::r(
     function(model_state, data) {
-     library(cuda.ml)
+      library(cuda.ml)
 
       model <- cuda_ml_unserialize(model_state)
 

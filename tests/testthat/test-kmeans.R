@@ -16,7 +16,7 @@ verify_cluster_centers <- function(centers) {
 
 test_that("cuda_ml_kmeans() works as expected with 'kmeans++' initialization method", {
   cuda_ml_kclust <- cuda_ml_kmeans(
-    iris[,which(names(iris) != "Species")],
+    iris[, which(names(iris) != "Species")],
     k = 3,
     max_iters = 100,
     init_method = "kmeans++"
@@ -27,7 +27,7 @@ test_that("cuda_ml_kmeans() works as expected with 'kmeans++' initialization met
 
 test_that("cuda_ml_kmeans() works as expected with 'random' initialization method", {
   cuda_ml_kclust <- cuda_ml_kmeans(
-    iris[,which(names(iris) != "Species")],
+    iris[, which(names(iris) != "Species")],
     k = 3,
     max_iters = 100,
     init_method = "random"
@@ -38,7 +38,7 @@ test_that("cuda_ml_kmeans() works as expected with 'random' initialization metho
 
 test_that("cuda_ml_kmeans() works as expected with user-specified initial cluster centers", {
   cuda_ml_kclust <- cuda_ml_kmeans(
-    iris[,which(names(iris) != "Species")],
+    iris[, which(names(iris) != "Species")],
     k = 3,
     max_iters = 100,
     init_method = sklearn_kclust$cluster_centers_
