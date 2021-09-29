@@ -54,6 +54,11 @@ cuda_ml_tsvd <- function(x,
 }
 
 #' @export
+cuda_ml_transform.cuda_ml_tsvd <- function(model, x, ...) {
+  .tsvd_transform(model = model, x = as.matrix(x))
+}
+
+#' @export
 cuda_ml_inverse_transform.cuda_ml_tsvd <- function(model, x, ...) {
   .tsvd_inverse_transform(model = model, x = as.matrix(x))
 }

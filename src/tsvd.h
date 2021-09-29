@@ -11,6 +11,9 @@ Rcpp::List tsvd_fit_transform(Rcpp::NumericMatrix const& x, double const tol,
                               int const n_components, int const algo,
                               bool const transform_input);
 
+Rcpp::NumericMatrix tsvd_transform(Rcpp::List model,
+                                   Rcpp::NumericMatrix const& x);
+
 Rcpp::NumericMatrix tsvd_inverse_transform(Rcpp::List model,
                                            Rcpp::NumericMatrix const& x);
 

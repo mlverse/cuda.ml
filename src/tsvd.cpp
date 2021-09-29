@@ -18,6 +18,22 @@ Rcpp::List tsvd_fit_transform(Rcpp::NumericMatrix const& x, double const tol,
 #endif
 }
 
+// [[Rcpp::export(".tsvd_transform")]]
+Rcpp::NumericMatrix tsvd_transform(Rcpp::List model,
+                                   Rcpp::NumericMatrix const& x) {
+#ifdef HAS_CUML
+
+  return cuml4r::tsvd_transform(model, x);
+
+#else
+
+#include "warn_cuml_missing.h"
+
+  return {};
+
+#endif
+}
+
 // [[Rcpp::export(".tsvd_inverse_transform")]]
 Rcpp::NumericMatrix tsvd_inverse_transform(Rcpp::List model,
                                            Rcpp::NumericMatrix const& x) {

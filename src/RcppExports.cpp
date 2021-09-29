@@ -607,6 +607,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// tsvd_transform
+Rcpp::NumericMatrix tsvd_transform(Rcpp::List model, Rcpp::NumericMatrix const& x);
+RcppExport SEXP _cuda_ml_tsvd_transform(SEXP modelSEXP, SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type model(modelSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(tsvd_transform(model, x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // tsvd_inverse_transform
 Rcpp::NumericMatrix tsvd_inverse_transform(Rcpp::List model, Rcpp::NumericMatrix const& x);
 RcppExport SEXP _cuda_ml_tsvd_inverse_transform(SEXP modelSEXP, SEXP xSEXP) {
@@ -728,6 +740,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuda_ml_svr_set_state", (DL_FUNC) &_cuda_ml_svr_set_state, 1},
     {"_cuda_ml_tsne_fit", (DL_FUNC) &_cuda_ml_tsne_fit, 23},
     {"_cuda_ml_tsvd_fit_transform", (DL_FUNC) &_cuda_ml_tsvd_fit_transform, 7},
+    {"_cuda_ml_tsvd_transform", (DL_FUNC) &_cuda_ml_tsvd_transform, 2},
     {"_cuda_ml_tsvd_inverse_transform", (DL_FUNC) &_cuda_ml_tsvd_inverse_transform, 2},
     {"_cuda_ml_umap_fit", (DL_FUNC) &_cuda_ml_umap_fit, 22},
     {"_cuda_ml_umap_transform", (DL_FUNC) &_cuda_ml_umap_transform, 2},

@@ -165,6 +165,10 @@
     .Call(`_cuda_ml_tsvd_fit_transform`, x, tol, n_iters, verbosity, n_components, algo, transform_input)
 }
 
+.tsvd_transform <- function(model, x) {
+    .Call(`_cuda_ml_tsvd_transform`, model, x)
+}
+
 .tsvd_inverse_transform <- function(model, x) {
     .Call(`_cuda_ml_tsvd_inverse_transform`, model, x)
 }
