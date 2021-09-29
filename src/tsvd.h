@@ -17,6 +17,10 @@ Rcpp::NumericMatrix tsvd_transform(Rcpp::List model,
 Rcpp::NumericMatrix tsvd_inverse_transform(Rcpp::List model,
                                            Rcpp::NumericMatrix const& x);
 
+Rcpp::List tsvd_get_state(Rcpp::List const& model);
+
+Rcpp::List tsvd_set_state(Rcpp::List const& model_state);
+
 }  // namespace cuml4r
 
 #else

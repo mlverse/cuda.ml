@@ -631,6 +631,28 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// tsvd_get_state
+Rcpp::List tsvd_get_state(Rcpp::List const& model);
+RcppExport SEXP _cuda_ml_tsvd_get_state(SEXP modelSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List const& >::type model(modelSEXP);
+    rcpp_result_gen = Rcpp::wrap(tsvd_get_state(model));
+    return rcpp_result_gen;
+END_RCPP
+}
+// tsvd_set_state
+Rcpp::List tsvd_set_state(Rcpp::List const& model_state);
+RcppExport SEXP _cuda_ml_tsvd_set_state(SEXP model_stateSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List const& >::type model_state(model_stateSEXP);
+    rcpp_result_gen = Rcpp::wrap(tsvd_set_state(model_state));
+    return rcpp_result_gen;
+END_RCPP
+}
 // umap_fit
 Rcpp::List umap_fit(Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& y, int const n_neighbors, int const n_components, int const n_epochs, float const learning_rate, float const min_dist, float const spread, float const set_op_mix_ratio, int const local_connectivity, float const repulsion_strength, int const negative_sample_rate, float const transform_queue_size, int const verbosity, float const a, float const b, int const init, int const target_n_neighbors, int const target_metric, float const target_weight, uint64_t const random_state, bool const deterministic);
 RcppExport SEXP _cuda_ml_umap_fit(SEXP xSEXP, SEXP ySEXP, SEXP n_neighborsSEXP, SEXP n_componentsSEXP, SEXP n_epochsSEXP, SEXP learning_rateSEXP, SEXP min_distSEXP, SEXP spreadSEXP, SEXP set_op_mix_ratioSEXP, SEXP local_connectivitySEXP, SEXP repulsion_strengthSEXP, SEXP negative_sample_rateSEXP, SEXP transform_queue_sizeSEXP, SEXP verbositySEXP, SEXP aSEXP, SEXP bSEXP, SEXP initSEXP, SEXP target_n_neighborsSEXP, SEXP target_metricSEXP, SEXP target_weightSEXP, SEXP random_stateSEXP, SEXP deterministicSEXP) {
@@ -742,6 +764,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuda_ml_tsvd_fit_transform", (DL_FUNC) &_cuda_ml_tsvd_fit_transform, 7},
     {"_cuda_ml_tsvd_transform", (DL_FUNC) &_cuda_ml_tsvd_transform, 2},
     {"_cuda_ml_tsvd_inverse_transform", (DL_FUNC) &_cuda_ml_tsvd_inverse_transform, 2},
+    {"_cuda_ml_tsvd_get_state", (DL_FUNC) &_cuda_ml_tsvd_get_state, 1},
+    {"_cuda_ml_tsvd_set_state", (DL_FUNC) &_cuda_ml_tsvd_set_state, 1},
     {"_cuda_ml_umap_fit", (DL_FUNC) &_cuda_ml_umap_fit, 22},
     {"_cuda_ml_umap_transform", (DL_FUNC) &_cuda_ml_umap_transform, 2},
     {"_cuda_ml_umap_get_state", (DL_FUNC) &_cuda_ml_umap_get_state, 1},

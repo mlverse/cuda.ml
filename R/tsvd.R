@@ -1,3 +1,9 @@
+new_tsvd_model <- function(model) {
+  class(model) <- c("cuda_ml_tsvd", "cuda_ml_model", class(model))
+
+  model
+}
+
 #' Truncated SVD.
 #'
 #' Dimensionality reduction using Truncated Singular Value Decomposition.
@@ -48,9 +54,8 @@ cuda_ml_tsvd <- function(x,
     transform_input = transform_input,
     verbosity = cuda_ml_log_level
   )
-  class(model) <- c("cuda_ml_tsvd", class(model))
 
-  model
+  new_tsvd_model(model)
 }
 
 #' @export
@@ -61,4 +66,17 @@ cuda_ml_transform.cuda_ml_tsvd <- function(model, x, ...) {
 #' @export
 cuda_ml_inverse_transform.cuda_ml_tsvd <- function(model, x, ...) {
   .tsvd_inverse_transform(model = model, x = as.matrix(x))
+}
+
+cuda_ml_get_state.cuda_ml_tsvd <- function(model) {
+  model_state <- .tsvd_get_state(model)
+  class(model_state) <- c("cuda_ml_tsvd_model_state", class(model_state))
+
+  model_state
+}
+
+cuda_ml_set_state.cuda_ml_tsvd_model_state <- function(model_state) {
+  model <- .tsvd_set_state(model_state)
+
+  new_tsvd_model(model)
 }

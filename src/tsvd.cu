@@ -16,6 +16,46 @@
 #include <vector>
 
 namespace cuml4r {
+namespace {
+
+constexpr auto kComponents = "components";
+constexpr auto kSingularValues = "singular_values";
+constexpr auto kTsvdParams = "tsvd_params";
+
+constexpr auto kTsvdParamsNumRows = "n_rows";
+constexpr auto kTsvdParamsNumCols = "n_cols";
+constexpr auto kTsvdParamsTol = "tol";
+constexpr auto kTsvdParamsNumIters = "n_iters";
+constexpr auto kTsvdParamsVerbosity = "verbosity";
+constexpr auto kTsvdParamsNumComponents = "n_components";
+constexpr auto kTsvdParamsAlgorithm = "algorithm";
+
+Rcpp::List getState(ML::paramsTSVD const& params) {
+  Rcpp::List state;
+
+  state[kTsvdParamsNumRows] = params.n_rows;
+  state[kTsvdParamsNumCols] = params.n_cols;
+  state[kTsvdParamsTol] = params.tol;
+  state[kTsvdParamsNumIters] = params.n_iterations;
+  state[kTsvdParamsVerbosity] = params.verbose;
+  state[kTsvdParamsNumComponents] = params.n_components;
+  state[kTsvdParamsAlgorithm] = static_cast<int>(params.algorithm);
+
+  return state;
+}
+
+void setState(ML::paramsTSVD& params, Rcpp::List const& state) {
+  params.n_rows = state[kTsvdParamsNumRows];
+  params.n_cols = state[kTsvdParamsNumCols];
+  params.tol = state[kTsvdParamsTol];
+  params.n_iterations = state[kTsvdParamsNumIters];
+  params.verbose = state[kTsvdParamsVerbosity];
+  params.n_components = state[kTsvdParamsNumComponents];
+  params.algorithm =
+    static_cast<ML::solver>(Rcpp::as<int>(state[kTsvdParamsAlgorithm]));
+}
+
+}  // namespace
 
 __host__ Rcpp::List tsvd_fit_transform(Rcpp::NumericMatrix const& x,
                                        double const tol, int const n_iters,
@@ -222,6 +262,30 @@ __host__ Rcpp::NumericMatrix tsvd_inverse_transform(
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
   return Rcpp::NumericMatrix(params->n_rows, params->n_cols, h_result.begin());
+}
+
+__host__ Rcpp::List tsvd_get_state(Rcpp::List const& model) {
+  Rcpp::List model_state;
+
+  model_state[kComponents] = model[kComponents];
+  model_state[kSingularValues] = model[kSingularValues];
+  auto const tsvd_params =
+    Rcpp::as<Rcpp::XPtr<ML::paramsTSVD>>(model[kTsvdParams]);
+  model_state[kTsvdParams] = getState(*tsvd_params);
+
+  return model_state;
+}
+
+__host__ Rcpp::List tsvd_set_state(Rcpp::List const& model_state) {
+  Rcpp::List model;
+
+  model[kComponents] = model_state[kComponents];
+  model[kSingularValues] = model_state[kSingularValues];
+  auto tsvd_params = std::make_unique<ML::paramsTSVD>();
+  setState(*tsvd_params, model_state[kTsvdParams]);
+  model[kTsvdParams] = Rcpp::XPtr<ML::paramsTSVD>(tsvd_params.release());
+
+  return model;
 }
 
 }  // namespace cuml4r

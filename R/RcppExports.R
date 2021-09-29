@@ -173,6 +173,14 @@
     .Call(`_cuda_ml_tsvd_inverse_transform`, model, x)
 }
 
+.tsvd_get_state <- function(model) {
+    .Call(`_cuda_ml_tsvd_get_state`, model)
+}
+
+.tsvd_set_state <- function(model_state) {
+    .Call(`_cuda_ml_tsvd_set_state`, model_state)
+}
+
 .umap_fit <- function(x, y, n_neighbors, n_components, n_epochs, learning_rate, min_dist, spread, set_op_mix_ratio, local_connectivity, repulsion_strength, negative_sample_rate, transform_queue_size, verbosity, a, b, init, target_n_neighbors, target_metric, target_weight, random_state, deterministic) {
     .Call(`_cuda_ml_umap_fit`, x, y, n_neighbors, n_components, n_epochs, learning_rate, min_dist, spread, set_op_mix_ratio, local_connectivity, repulsion_strength, negative_sample_rate, transform_queue_size, verbosity, a, b, init, target_n_neighbors, target_metric, target_weight, random_state, deterministic)
 }

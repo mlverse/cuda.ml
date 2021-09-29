@@ -49,3 +49,33 @@ Rcpp::NumericMatrix tsvd_inverse_transform(Rcpp::List model,
 
 #endif
 }
+
+// [[Rcpp::export(".tsvd_get_state")]]
+Rcpp::List tsvd_get_state(Rcpp::List const& model) {
+#ifdef HAS_CUML
+
+  return cuml4r::tsvd_get_state(model);
+
+#else
+
+#include "warn_cuml_missing.h"
+
+  return {};
+
+#endif
+}
+
+// [[Rcpp::export(".tsvd_set_state")]]
+Rcpp::List tsvd_set_state(Rcpp::List const& model_state) {
+#ifdef HAS_CUML
+
+  return cuml4r::tsvd_set_state(model_state);
+
+#else
+
+#include "warn_cuml_missing.h"
+
+  return {};
+
+#endif
+}
