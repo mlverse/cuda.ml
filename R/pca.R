@@ -74,10 +74,8 @@ cuda_ml_inverse_transform.cuda_ml_pca <- function(model, x, ...) {
 }
 
 cuda_ml_get_state.cuda_ml_pca <- function(model) {
-  model_state <- .pca_get_state(model)
-  class(model_state) <- c("cuda_ml_pca_model_state", class(model_state))
-
-  model_state
+  .pca_get_state(model) %>%
+    new_model_state("cuda_ml_pca_model_state")
 }
 
 cuda_ml_set_state.cuda_ml_pca_model_state <- function(model_state) {

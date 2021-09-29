@@ -8,6 +8,12 @@ tsne_match_method <- function(method = c("barnes_hut", "fft", "exact")) {
   )
 }
 
+new_tsne_model <- function(embedding) {
+  class(embedding) <- c("cuda_ml_tsne_model", "cuda_ml_model")
+
+  embedding
+}
+
 #' t-distributed Stochastic Neighbor Embedding.
 #'
 #' t-distributed Stochastic Neighbor Embedding (TSNE) for visualizing high-
@@ -102,7 +108,7 @@ cuda_ml_tsne <- function(x, n_components = 2L,
   algo <- tsne_match_method(method)
   cuda_ml_log_level <- match_cuda_ml_log_level(cuda_ml_log_level)
 
-  .tsne_fit(
+  embedding <- .tsne_fit(
     x = as.matrix(x),
     dim = as.integer(n_components),
     n_neighbors = as.integer(n_neighbors),
@@ -127,4 +133,6 @@ cuda_ml_tsne <- function(x, n_components = 2L,
     random_state = as.integer(seed %||% -1L),
     verbosity = cuda_ml_log_level
   )
+
+  new_tsne_model(embedding)
 }
