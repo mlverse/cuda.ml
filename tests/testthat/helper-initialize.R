@@ -21,7 +21,19 @@ sklearn <- tryCatch(reticulate::import("sklearn"),
     reticulate::import("sklearn")
   }
 )
-sklearn_iris_dataset <- sklearn$datasets$load_iris()
+sklearn_iris_dataset <- list(
+  data = iris[, names(iris) != "Species"] %>%
+    unname() %>%
+    as.matrix(),
+  target = as.integer(iris[["Species"]])
+)
+sklearn_mtcars_dataset <- list(
+  data = mtcars[, names(mtcars) != "mpg"] %>%
+    data.frame(row.names = NULL) %>%
+    unname() %>%
+    as.matrix(),
+  target = mtcars[["mpg"]]
+)
 
 #' Sort matrix rows by all columns or by a subset of columns.
 #'
