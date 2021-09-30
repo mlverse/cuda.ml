@@ -1,3 +1,5 @@
+context("(de)serialization of Random Projection models")
+
 test_that("random projection model can be serialized and unserialized correctly", {
   has_mlbench <- require("mlbench")
   stopifnot(has_mlbench)

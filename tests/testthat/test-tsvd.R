@@ -1,4 +1,4 @@
-context("tsvd")
+context("Truncated SVD")
 
 tsvd_model <- sklearn$decomposition$TruncatedSVD(
   n_components = 2L, algorithm = "arpack"

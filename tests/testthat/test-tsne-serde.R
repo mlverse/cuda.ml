@@ -1,3 +1,5 @@
+context("(de)serialization of TSNE models")
+
 test_that("TSNE models can be serialized and unserialized correctly", {
   embedding <- cuda_ml_tsne(iris[1:4], method = "exact")
   model_state <- cuda_ml_serialize(embedding)

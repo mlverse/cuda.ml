@@ -1,3 +1,5 @@
+context("(de)serialization of PCA models")
+
 test_that("PCA models can be serialized and unserialized correctly", {
   models <- list()
 

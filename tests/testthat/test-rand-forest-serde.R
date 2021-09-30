@@ -1,3 +1,5 @@
+context("(de)serialization of Random Forest models")
+
 test_that("random forest classifier can be serialized and unserialized correctly", {
   model <- cuda_ml_rand_forest(formula = Species ~ ., data = iris, trees = 200)
   model_state <- cuda_ml_serialize(model)

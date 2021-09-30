@@ -1,4 +1,4 @@
-context("k-means")
+context("K-Means")
 
 sklearn_kmeans_model <- sklearn$cluster$KMeans(
   n_clusters = 3L, max_iter = 100L

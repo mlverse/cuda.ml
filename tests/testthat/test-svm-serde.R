@@ -1,3 +1,5 @@
+context("(de)serialization of SVM models")
+
 test_that("SVM regressor can be serialized and unserialized correctly", {
   model <- cuda_ml_svm(formula = mpg ~ ., data = mtcars, kernel = "rbf")
   model_state <- cuda_ml_serialize(model)
