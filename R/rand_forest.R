@@ -331,14 +331,13 @@ cuda_ml_get_state.cuda_ml_rand_forest <- function(model) {
     classification = .rf_classifier_get_state,
     regression = .rf_regressor_get_state
   )
-  model_state <- list(
+
+  list(
     mode = model$mode,
     rf = get_state_impl(model$xptr),
     blueprint = model$blueprint
-  )
-  class(model_state) <- c("cuda_ml_rand_forest_model_state", class(model_state))
-
-  model_state
+  ) %>%
+    new_model_state("cuda_ml_rand_forest_model_state")
 }
 
 cuda_ml_set_state.cuda_ml_rand_forest_model_state <- function(model_state) {

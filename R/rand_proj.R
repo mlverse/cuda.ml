@@ -80,14 +80,11 @@ cuda_ml_transform.cuda_ml_rand_proj_model <- function(model, x, ...) {
 }
 
 cuda_ml_get_state.cuda_ml_rand_proj_model <- function(model) {
-  model_state <- .rproj_get_state(model$rproj_ctx)
-  class(model_state) <- c("cuda_ml_rand_proj_model_state", class(model_state))
-
-  model_state
+  .rproj_get_state(model$rproj_ctx) %>%
+    new_model_state("cuda_ml_rand_proj_model_state")
 }
 
 cuda_ml_set_state.cuda_ml_rand_proj_model_state <- function(model_state) {
-  rproj_ctx <- .rproj_set_state(model_state)
-
-  new_rproj_model(rproj_ctx)
+  .rproj_set_state(model_state) %>%
+    new_rproj_model()
 }

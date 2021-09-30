@@ -23,6 +23,12 @@ new_model <- function(cls,
   )
 }
 
+new_model_state <- function(model_state, cls) {
+  class(model_state) <- c(cls, "cuda_ml_model_state", class(model_state))
+
+  model_state
+}
+
 get_pred_levels <- function(model) {
   levels(model$blueprint$ptypes$outcomes[[1]])
 }
@@ -242,6 +248,19 @@ cuda_ml_get_state.default <- function(model) {
     "Model of type '", paste(class(model), collapse = " "), "' does not ",
     "support serialization."
   )
+}
+
+cuda_ml_get_state.cuda_ml_model <- function(model) {
+  # Default implementation: assume the entire model object can be serializabled
+  # by `base::serialize()`.
+  list(model = model) %>%
+    new_model_state(cls = NULL)
+}
+
+cuda_ml_set_state.cuda_ml_model_state <- function(model_state) {
+  # Default implementation: assume the entire model state can be unserialized by
+  # `base::unserialize()`.
+  model_state$model
 }
 
 #' Unserialize a CuML model state
