@@ -11,7 +11,7 @@ test_that("cuda_ml_svm() works as expected for binary classification tasks", {
 
   gen_sklearn_binary_svc_input <- function() {
     ds <- sklearn_iris_dataset
-    ds$target <- ds$target == which(levels(iris$Species) == "versicolor")
+    ds$target <- (ds$target == which(levels(iris$Species) == "versicolor"))
 
     ds
   }
