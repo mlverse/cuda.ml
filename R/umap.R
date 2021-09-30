@@ -16,6 +16,12 @@ umap_match_metric_type <- function(metric_type = c("categorical", "euclidean")) 
   )
 }
 
+new_umap_model <- function(model) {
+  class(model) <- c("cuda_ml_umap", "cuda_ml_model", class(model))
+
+  model
+}
+
 #' Uniform Manifold Approximation and Projection (UMAP) for dimension reduction.
 #'
 #' Run the Uniform Manifold Approximation and Projection (UMAP) algorithm to
@@ -134,8 +140,8 @@ cuda_ml_umap <- function(x, y = NULL, n_components = 2L, n_neighbors = 15L,
     random_state = as.integer(seed %||% 0L),
     deterministic = !is.null(seed),
     verbosity = cuda_ml_log_level
-  )
-  class(model) <- c("cuda_ml_umap", "cuda_ml_model", class(model))
+  ) %>%
+    new_umap_model()
 
   if (transform_input) {
     model$transformed_data <- cuda_ml_transform(model, x)
@@ -150,10 +156,8 @@ cuda_ml_get_state.cuda_ml_umap <- function(model) {
 }
 
 cuda_ml_set_state.cuda_ml_umap_model_state <- function(model_state) {
-  model <- .umap_set_state(model_state)
-  class(model) <- c("cuda_ml_umap", "cuda_ml_model", class(model))
-
-  model
+  .umap_set_state(model_state) %>%
+    new_umap_model()
 }
 
 #' @export

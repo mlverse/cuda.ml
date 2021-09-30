@@ -1,3 +1,9 @@
+new_pca_model <- function(model) {
+  class(model) <- c("cuda_ml_pca", "cuda_ml_model", class(model))
+
+  model
+}
+
 #' Perform principal component analysis.
 #'
 #' Compute principal component(s) of the input data. Each feature from the input
@@ -53,7 +59,7 @@ cuda_ml_pca <- function(x,
   eig_algo <- match_eig_algo(eig_algo)
   cuda_ml_log_level <- match_cuda_ml_log_level(cuda_ml_log_level)
 
-  model <- .pca_fit_transform(
+  .pca_fit_transform(
     x = as.matrix(x),
     n_components = as.integer(n_components),
     algo = eig_algo,
@@ -62,10 +68,8 @@ cuda_ml_pca <- function(x,
     whiten = whiten,
     transform_input = transform_input,
     verbosity = cuda_ml_log_level
-  )
-  class(model) <- c("cuda_ml_pca", "cuda_ml_model", class(model))
-
-  model
+  ) %>%
+    new_pca_model()
 }
 
 #' @export
@@ -79,8 +83,6 @@ cuda_ml_get_state.cuda_ml_pca <- function(model) {
 }
 
 cuda_ml_set_state.cuda_ml_pca_model_state <- function(model_state) {
-  model <- .pca_set_state(model_state)
-  class(model) <- c("cuda_ml_pca", "cuda_ml_model", class(model))
-
-  model
+  .pca_set_state(model_state) %>%
+    new_pca_model()
 }
