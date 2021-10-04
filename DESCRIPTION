@@ -3,17 +3,17 @@ Type: Package
 Title: R Interface for the RAPIDS cuML Suite of Libraries
 Version: 0.2.1.9000
 Authors@R:
-    person(given = "Yitao",
+    c(person(given = "Yitao",
            family = "Li",
            role = c("aut", "cph", "cre"),
            email = "yitao@rstudio.com",
            comment = c(ORCID = "0000-0002-1261-905X")),
-    person(given = "Tomasz",
-           family = "Kalinowski",
-           role = c("cph", "ctb"),
-           email = "tomasz.kalinowski@rstudio.com"),
-    person(given = "RStudio",
-           role = c("cph", "fnd"))
+      person(given = "Tomasz",
+             family = "Kalinowski",
+             role = c("cph", "ctb"),
+             email = "tomasz.kalinowski@rstudio.com"),
+      person(given = "RStudio",
+           role = c("cph", "fnd")))
 Maintainer: Yitao Li <yitao@rstudio.com>
 Description: R interface for RAPIDS cuML (<https://github.com/rapidsai/cuml>),
     a suite of GPU-accelerated machine learning libraries powered by CUDA
