@@ -30,7 +30,7 @@ new_umap_model <- function(model) {
 #'
 #' @template model-with-numeric-input
 #' @template transform-input
-#' @template cudaml-log-level
+#' @template cuML-log-level
 #' @param y An optional numeric vector of target values for supervised dimension
 #'   reduction. Default: NULL.
 #' @param n_components The dimension of the space to embed into. Default: 2.
@@ -112,10 +112,10 @@ cuda_ml_umap <- function(x, y = NULL, n_components = 2L, n_neighbors = 15L,
                          a = NULL, b = NULL, target_n_neighbors = n_neighbors,
                          target_metric = c("categorical", "euclidean"),
                          target_weight = 0.5, transform_input = TRUE, seed = NULL,
-                         cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
+                         cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
   init <- umap_match_init_mode(init)
   target_metric <- umap_match_metric_type(target_metric)
-  cuda_ml_log_level <- match_cuda_ml_log_level(cuda_ml_log_level)
+  cuML_log_level <- match_cuML_log_level(cuML_log_level)
 
   model <- .umap_fit(
     x = as.matrix(x),
@@ -139,7 +139,7 @@ cuda_ml_umap <- function(x, y = NULL, n_components = 2L, n_neighbors = 15L,
     target_weight = as.numeric(target_weight),
     random_state = as.integer(seed %||% 0L),
     deterministic = !is.null(seed),
-    verbosity = cuda_ml_log_level
+    verbosity = cuML_log_level
   ) %>%
     new_umap_model()
 

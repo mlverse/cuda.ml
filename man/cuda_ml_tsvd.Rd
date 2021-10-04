@@ -11,7 +11,7 @@ cuda_ml_tsvd(
   tol = 1e-07,
   n_iters = 15L,
   transform_input = TRUE,
-  cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")
+  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")
 )
 }
 \arguments{
@@ -36,7 +36,7 @@ Default: 15.}
 \item{transform_input}{If TRUE, then compute an approximate representation
 of the input data. Default: TRUE.}
 
-\item{cuml_log_level}{Log level within cuML library functions. Must be one of
+\item{cuML_log_level}{Log level within cuML library functions. Must be one of
 {"off", "critical", "error", "warn", "info", "debug", "trace"}.
 Default: off.}
 }

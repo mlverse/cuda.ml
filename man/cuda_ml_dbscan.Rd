@@ -8,7 +8,7 @@ cuda_ml_dbscan(
   x,
   min_pts,
   eps,
-  cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")
+  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")
 )
 }
 \arguments{
@@ -18,7 +18,7 @@ and should consist of numeric values only.}
 \item{min_pts, eps}{A point `p` is a core point if at least `min_pts` are
 within distance `eps` from it.}
 
-\item{cuml_log_level}{Log level within cuML library functions. Must be one of
+\item{cuML_log_level}{Log level within cuML library functions. Must be one of
 {"off", "critical", "error", "warn", "info", "debug", "trace"}.
 Default: off.}
 }

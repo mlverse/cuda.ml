@@ -26,7 +26,7 @@ cuda_ml_umap(
   target_weight = 0.5,
   transform_input = TRUE,
   seed = NULL,
-  cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")
+  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")
 )
 }
 \arguments{
@@ -105,7 +105,7 @@ potentially slower training and increased memory usage.
 If the PRNG seed is not set, then the trained embeddings will not be
 deterministic.}
 
-\item{cuml_log_level}{Log level within cuML library functions. Must be one of
+\item{cuML_log_level}{Log level within cuML library functions. Must be one of
 {"off", "critical", "error", "warn", "info", "debug", "trace"}.
 Default: off.}
 }

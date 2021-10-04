@@ -1,4 +1,4 @@
-match_cuda_ml_log_level <- function(log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
+match_cuML_log_level <- function(log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
   log_level <- match.arg(log_level)
 
   switch(log_level,

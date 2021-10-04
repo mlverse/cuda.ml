@@ -9,7 +9,7 @@
 \arguments{
 \item{object}{A trained CuML model.}
 
-\item{...}{See \code{\link{cuml_predict}} for full documentation of all other
+\item{...}{See \code{\link{cuda_ml_predict}} for full documentation of all other
 parameters.}
 }
 \value{

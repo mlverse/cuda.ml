@@ -24,7 +24,7 @@ cuda_ml_tsne(
   post_momentum = 0.8,
   square_distances = TRUE,
   seed = NULL,
-  cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")
+  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")
 )
 }
 \arguments{
@@ -93,7 +93,7 @@ parallelized t-SNE implementation is not completely deterministic between
 runs, even with the same \code{seed} being used for each run.
 Default: NULL.}
 
-\item{cuml_log_level}{Log level within cuML library functions. Must be one of
+\item{cuML_log_level}{Log level within cuML library functions. Must be one of
 {"off", "critical", "error", "warn", "info", "debug", "trace"}.
 Default: off.}
 }

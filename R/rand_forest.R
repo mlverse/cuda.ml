@@ -5,7 +5,7 @@
 #' @template supervised-model-inputs
 #' @template supervised-model-output
 #' @template ellipsis-unused
-#' @template cudaml-log-level
+#' @template cuML-log-level
 #' @param mtry The number of predictors that will be randomly sampled at each
 #'   split when creating the tree models. Default: the square root of the total
 #'   number of predictors.
@@ -81,7 +81,7 @@ cuda_ml_rand_forest.data.frame <- function(x, y, mtry = NULL, trees = NULL,
                                            split_criterion = NULL,
                                            min_impurity_decrease = 0,
                                            max_batch_size = 128L, n_streams = 8L,
-                                           cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                                           cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
                                            ...) {
   processed <- hardhat::mold(x, y)
 
@@ -100,7 +100,7 @@ cuda_ml_rand_forest.data.frame <- function(x, y, mtry = NULL, trees = NULL,
     min_impurity_decrease = min_impurity_decrease,
     max_batch_size = max_batch_size,
     n_streams = n_streams,
-    cuda_ml_log_level = cuda_ml_log_level
+    cuML_log_level = cuML_log_level
   )
 }
 
@@ -114,7 +114,7 @@ cuda_ml_rand_forest.matrix <- function(x, y, mtry = NULL, trees = NULL, min_n = 
                                        split_criterion = NULL,
                                        min_impurity_decrease = 0,
                                        max_batch_size = 128L, n_streams = 8L,
-                                       cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                                       cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
                                        ...) {
   processed <- hardhat::mold(x, y)
 
@@ -133,7 +133,7 @@ cuda_ml_rand_forest.matrix <- function(x, y, mtry = NULL, trees = NULL, min_n = 
     min_impurity_decrease = min_impurity_decrease,
     max_batch_size = max_batch_size,
     n_streams = n_streams,
-    cuda_ml_log_level = cuda_ml_log_level
+    cuML_log_level = cuML_log_level
   )
 }
 
@@ -147,7 +147,7 @@ cuda_ml_rand_forest.formula <- function(formula, data, mtry = NULL, trees = NULL
                                         split_criterion = NULL,
                                         min_impurity_decrease = 0,
                                         max_batch_size = 128L, n_streams = 8L,
-                                        cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                                        cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
                                         ...) {
   processed <- hardhat::mold(formula, data)
 
@@ -166,7 +166,7 @@ cuda_ml_rand_forest.formula <- function(formula, data, mtry = NULL, trees = NULL
     min_impurity_decrease = min_impurity_decrease,
     max_batch_size = max_batch_size,
     n_streams = n_streams,
-    cuda_ml_log_level = cuda_ml_log_level
+    cuML_log_level = cuML_log_level
   )
 }
 
@@ -180,7 +180,7 @@ cuda_ml_rand_forest.recipe <- function(x, data, mtry = NULL, trees = NULL,
                                        split_criterion = NULL,
                                        min_impurity_decrease = 0,
                                        max_batch_size = 128L, n_streams = 8L,
-                                       cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                                       cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
                                        ...) {
   processed <- hardhat::mold(x, data)
 
@@ -199,7 +199,7 @@ cuda_ml_rand_forest.recipe <- function(x, data, mtry = NULL, trees = NULL,
     min_impurity_decrease = min_impurity_decrease,
     max_batch_size = max_batch_size,
     n_streams = n_streams,
-    cuda_ml_log_level = cuda_ml_log_level
+    cuML_log_level = cuML_log_level
   )
 }
 
@@ -208,7 +208,7 @@ cuda_ml_rand_forest_bridge <- function(processed, mtry, trees, min_n, bootstrap,
                                        max_predictors_per_note_split, n_bins,
                                        min_samples_leaf, split_criterion,
                                        min_impurity_decrease, max_batch_size,
-                                       n_streams, cuda_ml_log_level) {
+                                       n_streams, cuML_log_level) {
   hardhat::validate_outcomes_are_univariate(processed$outcomes)
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
@@ -223,7 +223,7 @@ cuda_ml_rand_forest_bridge <- function(processed, mtry, trees, min_n, bootstrap,
     split_criterion,
     classification
   )
-  cuda_ml_log_level <- match_cuda_ml_log_level(cuda_ml_log_level)
+  cuML_log_level <- match_cuML_log_level(cuML_log_level)
 
   rand_forest_fit_impl <- ifelse(
     classification,
@@ -246,7 +246,7 @@ cuda_ml_rand_forest_bridge <- function(processed, mtry, trees, min_n, bootstrap,
     min_impurity_decrease = min_impurity_decrease,
     max_batch_size = max_batch_size,
     n_streams = n_streams,
-    cuda_ml_log_level = cuda_ml_log_level
+    cuML_log_level = cuML_log_level
   )
 }
 
@@ -258,7 +258,7 @@ cuda_ml_rand_forest_impl_classification <- function(processed, mtry, trees, min_
                                                     split_criterion,
                                                     min_impurity_decrease,
                                                     max_batch_size, n_streams,
-                                                    cuda_ml_log_level) {
+                                                    cuML_log_level) {
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
 
@@ -278,7 +278,7 @@ cuda_ml_rand_forest_impl_classification <- function(processed, mtry, trees, min_
     split_criterion = split_criterion,
     min_impurity_decrease = as.numeric(min_impurity_decrease),
     max_batch_size = as.integer(max_batch_size),
-    verbosity = cuda_ml_log_level
+    verbosity = cuML_log_level
   )
 
   new_model(
@@ -296,7 +296,7 @@ cuda_ml_rand_forest_impl_regression <- function(processed, mtry, trees, min_n,
                                                 split_criterion,
                                                 min_impurity_decrease,
                                                 max_batch_size, n_streams,
-                                                cuda_ml_log_level) {
+                                                cuML_log_level) {
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
 
@@ -316,7 +316,7 @@ cuda_ml_rand_forest_impl_regression <- function(processed, mtry, trees, min_n,
     split_criterion = split_criterion,
     min_impurity_decrease = as.numeric(min_impurity_decrease),
     max_batch_size = as.integer(max_batch_size),
-    verbosity = cuda_ml_log_level
+    verbosity = cuML_log_level
   )
   new_model(
     cls = "cuda_ml_rand_forest",
@@ -369,7 +369,7 @@ predict.cuda_ml_rand_forest <- function(object, ...) {
 
   x <- ...elt(1)
   output_class_probabilities <- if (...length() > 1) ...elt(2) else NULL
-  cuda_ml_log_level <- ifelse(...length() > 2, ...elt(3), "off")
+  cuML_log_level <- ifelse(...length() > 2, ...elt(3), "off")
 
   processed <- hardhat::forge(x, object$blueprint)
 
@@ -377,15 +377,15 @@ predict.cuda_ml_rand_forest <- function(object, ...) {
     model = object,
     processed = processed,
     output_class_probabilities = output_class_probabilities,
-    cuda_ml_log_level = cuda_ml_log_level
+    cuML_log_level = cuML_log_level
   )
 }
 
 predict_cuda_ml_rand_forest_bridge <- function(model,
                                                processed,
                                                output_class_probabilities,
-                                               cuda_ml_log_level) {
-  cuda_ml_log_level <- match_cuda_ml_log_level(cuda_ml_log_level)
+                                               cuML_log_level) {
+  cuML_log_level <- match_cuML_log_level(cuML_log_level)
 
   out <- switch(model$mode,
     classification = {
@@ -393,7 +393,7 @@ predict_cuda_ml_rand_forest_bridge <- function(model,
         model = model,
         processed = processed,
         output_class_probabilities = output_class_probabilities %||% FALSE,
-        cuda_ml_log_level = cuda_ml_log_level
+        cuML_log_level = cuML_log_level
       )
     },
     regression = {
@@ -404,7 +404,7 @@ predict_cuda_ml_rand_forest_bridge <- function(model,
       predict_cuda_ml_rand_forest_regression_impl(
         model = model,
         processed = processed,
-        cuda_ml_log_level = cuda_ml_log_level
+        cuML_log_level = cuML_log_level
       )
     }
   )
@@ -416,7 +416,7 @@ predict_cuda_ml_rand_forest_bridge <- function(model,
 predict_cuda_ml_rand_forest_classification_impl <- function(model,
                                                             processed,
                                                             output_class_probabilities,
-                                                            cuda_ml_log_level) {
+                                                            cuML_log_level) {
   if (output_class_probabilities) {
     .rf_classifier_predict_class_probabilities(
       model_xptr = model$xptr,
@@ -427,18 +427,18 @@ predict_cuda_ml_rand_forest_classification_impl <- function(model,
     .rf_classifier_predict(
       model_xptr = model$xptr,
       input = as.matrix(processed$predictors),
-      verbosity = cuda_ml_log_level
+      verbosity = cuML_log_level
     ) %>%
       postprocess_classification_results(model)
   }
 }
 
 predict_cuda_ml_rand_forest_regression_impl <- function(model, processed,
-                                                        cuda_ml_log_level) {
+                                                        cuML_log_level) {
   .rf_regressor_predict(
     model_xptr = model$xptr,
     input = as.matrix(processed$predictors),
-    verbosity = cuda_ml_log_level
+    verbosity = cuML_log_level
   ) %>%
     postprocess_regression_results()
 }
@@ -500,7 +500,7 @@ register_rand_forest_model <- function(pkgname) {
           min_impurity_decrease = 0,
           max_batch_size = 128L,
           n_streams = 8L,
-          cuda_ml_log_level = "off"
+          cuML_log_level = "off"
         )
       )
     )

@@ -13,7 +13,7 @@ new_pca_model <- function(model) {
 #' @template model-with-numeric-input
 #' @template eigen-decomposition
 #' @template transform-input
-#' @template cudaml-log-level
+#' @template cuML-log-level
 #' @param n_components Number of principal component(s) to keep. Default:
 #'   min(nrow(x), ncol(x)).
 #' @param whiten If TRUE, then de-correlate all components, making each
@@ -54,10 +54,10 @@ cuda_ml_pca <- function(x,
                         tol = 1e-7, n_iters = 15L,
                         whiten = FALSE,
                         transform_input = TRUE,
-                        cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
+                        cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
   n_components <- n_components %||% min(nrow(x), ncol(x))
   eig_algo <- match_eig_algo(eig_algo)
-  cuda_ml_log_level <- match_cuda_ml_log_level(cuda_ml_log_level)
+  cuML_log_level <- match_cuML_log_level(cuML_log_level)
 
   .pca_fit_transform(
     x = as.matrix(x),
@@ -67,7 +67,7 @@ cuda_ml_pca <- function(x,
     n_iters = as.integer(n_iters),
     whiten = whiten,
     transform_input = transform_input,
-    verbosity = cuda_ml_log_level
+    verbosity = cuML_log_level
   ) %>%
     new_pca_model()
 }

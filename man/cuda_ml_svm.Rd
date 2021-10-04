@@ -27,7 +27,7 @@ cuda_ml_svm(x, ...)
   cache_size = 1024,
   epsilon = 0.1,
   sample_weights = NULL,
-  cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
   ...
 )
 
@@ -45,7 +45,7 @@ cuda_ml_svm(x, ...)
   cache_size = 1024,
   epsilon = 0.1,
   sample_weights = NULL,
-  cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
   ...
 )
 
@@ -63,7 +63,7 @@ cuda_ml_svm(x, ...)
   cache_size = 1024,
   epsilon = 0.1,
   sample_weights = NULL,
-  cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
   ...
 )
 
@@ -81,7 +81,7 @@ cuda_ml_svm(x, ...)
   cache_size = 1024,
   epsilon = 0.1,
   sample_weights = NULL,
-  cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
   ...
 )
 }
@@ -153,16 +153,16 @@ tasks. Default: 0.1.}
 
 \item{sample_weights}{Optional weight assigned to each input data point.}
 
+\item{cuML_log_level}{Log level within cuML library functions. Must be one of
+{"off", "critical", "error", "warn", "info", "debug", "trace"}.
+Default: off.}
+
 \item{formula}{A formula specifying the outcome terms on the left-hand side,
 and the predictor terms on the right-hand side.}
 
 \item{data}{When a __recipe__ or __formula__ is used, \code{data} is
 specified as a  __data frame__ containing the predictors and (if
 applicable) the outcome.}
-
-\item{cuml_log_level}{Log level within cuML library functions. Must be one of
-{"off", "critical", "error", "warn", "info", "debug", "trace"}.
-Default: off.}
 }
 \value{
 A SVM classifier / regressor object that can be used with the

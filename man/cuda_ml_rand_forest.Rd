@@ -29,7 +29,7 @@ cuda_ml_rand_forest(x, ...)
   min_impurity_decrease = 0,
   max_batch_size = 128L,
   n_streams = 8L,
-  cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
   ...
 )
 
@@ -49,7 +49,7 @@ cuda_ml_rand_forest(x, ...)
   min_impurity_decrease = 0,
   max_batch_size = 128L,
   n_streams = 8L,
-  cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
   ...
 )
 
@@ -69,7 +69,7 @@ cuda_ml_rand_forest(x, ...)
   min_impurity_decrease = 0,
   max_batch_size = 128L,
   n_streams = 8L,
-  cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
   ...
 )
 
@@ -89,7 +89,7 @@ cuda_ml_rand_forest(x, ...)
   min_impurity_decrease = 0,
   max_batch_size = 128L,
   n_streams = 8L,
-  cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
   ...
 )
 }
@@ -148,16 +148,16 @@ given batch. Default: 128L.}
 \item{n_streams}{Number of CUDA streams to use for building trees.
 Default: 8L.}
 
+\item{cuML_log_level}{Log level within cuML library functions. Must be one of
+{"off", "critical", "error", "warn", "info", "debug", "trace"}.
+Default: off.}
+
 \item{formula}{A formula specifying the outcome terms on the left-hand side,
 and the predictor terms on the right-hand side.}
 
 \item{data}{When a __recipe__ or __formula__ is used, \code{data} is
 specified as a  __data frame__ containing the predictors and (if
 applicable) the outcome.}
-
-\item{cuml_log_level}{Log level within cuML library functions. Must be one of
-{"off", "critical", "error", "warn", "info", "debug", "trace"}.
-Default: off.}
 }
 \value{
 A random forest classifier / regressor object that can be used with

@@ -22,7 +22,7 @@ kmeans_match_init_method <- function(m = c("kmeans++", "random")) {
 #' Run the K means clustering algorithm.
 #'
 #' @template model-with-numeric-input
-#' @template cudaml-log-level
+#' @template cuML-log-level
 #' @param k The number of clusters.
 #' @param max_iters Maximum number of iterations. Default: 300.
 #' @param tol Relative tolerance with regards to inertia to declare convergence.
@@ -50,7 +50,7 @@ kmeans_match_init_method <- function(m = c("kmeans++", "random")) {
 cuda_ml_kmeans <- function(x, k, max_iters = 300, tol = 0,
                            init_method = c("kmeans++", "random"),
                            seed = 0L,
-                           cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
+                           cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
   init_method_enum <- kmeans_match_init_method(init_method)
   centroids <- matrix(numeric(0))
   if (is.matrix(init_method)) {
@@ -64,7 +64,7 @@ cuda_ml_kmeans <- function(x, k, max_iters = 300, tol = 0,
       centroids <- init_method
     }
   }
-  cuda_ml_log_level <- match_cuda_ml_log_level(cuda_ml_log_level)
+  cuML_log_level <- match_cuML_log_level(cuML_log_level)
 
   .kmeans(
     x = as.matrix(x),
@@ -74,6 +74,6 @@ cuda_ml_kmeans <- function(x, k, max_iters = 300, tol = 0,
     init_method = init_method_enum,
     centroids = centroids,
     seed = as.integer(seed),
-    verbosity = cuda_ml_log_level
+    verbosity = cuML_log_level
   )
 }

@@ -168,6 +168,7 @@ cuda_ml_can_predict_class_probabilities.cuda_ml_rand_forest <- cuda_ml_is_classi
 #' @return Predictions on new data points.
 #'
 #' @importFrom ellipsis check_dots_used
+#' @name cuda_ml_predict
 #' @export
 cuda_ml_predict <- function(model, x, output_class_probabilities = NULL, ...) {
   check_dots_used()

@@ -20,7 +20,7 @@ new_tsne_model <- function(embedding) {
 #' dimensional data.
 #'
 #' @template model-with-numeric-input
-#' @template cudaml-log-level
+#' @template cuML-log-level
 #' @param n_components Dimension of the embedded space.
 #' @param n_neighbors The number of datapoints to use in the attractive forces.
 #'   Default: ceiling(3 * perplexity).
@@ -87,7 +87,7 @@ cuda_ml_tsne <- function(x, n_components = 2L,
                          late_exaggeration = 1.0, exaggeration_iter = 250L,
                          min_grad_norm = 1e-7, pre_momentum = 0.5,
                          post_momentum = 0.8, square_distances = TRUE, seed = NULL,
-                         cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
+                         cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
   learning_rate_method <- match.arg(learning_rate_method)
 
   if (identical(learning_rate_method, "adaptive") &&
@@ -106,7 +106,7 @@ cuda_ml_tsne <- function(x, n_components = 2L,
     post_learning_rate <- learning_rate * 2
   }
   algo <- tsne_match_method(method)
-  cuda_ml_log_level <- match_cuda_ml_log_level(cuda_ml_log_level)
+  cuML_log_level <- match_cuML_log_level(cuML_log_level)
 
   .tsne_fit(
     x = as.matrix(x),
@@ -131,7 +131,7 @@ cuda_ml_tsne <- function(x, n_components = 2L,
     pre_momentum = as.numeric(pre_momentum),
     post_momentum = as.numeric(post_momentum),
     random_state = as.integer(seed %||% -1L),
-    verbosity = cuda_ml_log_level
+    verbosity = cuML_log_level
   ) %>%
     new_tsne_model()
 }

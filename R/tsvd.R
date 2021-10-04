@@ -5,7 +5,7 @@
 #' @template model-with-numeric-input
 #' @template eigen-decomposition
 #' @template transform-input
-#' @template cudaml-log-level
+#' @template cuML-log-level
 #' @param n_components Desired dimensionality of output data. Must be strictly
 #'   less than \code{ncol(x)} (i.e., the number of features in input data).
 #'   Default: 2.
@@ -35,9 +35,9 @@ cuda_ml_tsvd <- function(x,
                          eig_algo = c("dq", "jacobi"),
                          tol = 1e-7, n_iters = 15L,
                          transform_input = TRUE,
-                         cuda_ml_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
+                         cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
   eig_algo <- match_eig_algo(eig_algo)
-  cuda_ml_log_level <- match_cuda_ml_log_level(cuda_ml_log_level)
+  cuML_log_level <- match_cuML_log_level(cuML_log_level)
 
   model <- .tsvd_fit_transform(
     x = as.matrix(x),
@@ -46,7 +46,7 @@ cuda_ml_tsvd <- function(x,
     tol = as.numeric(tol),
     n_iters = as.integer(n_iters),
     transform_input = transform_input,
-    verbosity = cuda_ml_log_level
+    verbosity = cuML_log_level
   )
   class(model) <- c("cuda_ml_tsvd", class(model))
 
