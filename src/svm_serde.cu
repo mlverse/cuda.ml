@@ -8,7 +8,6 @@
 namespace cuml4r {
 namespace detail {
 
-template <>
 __host__ Rcpp::List getState(
   MLCommon::Matrix::KernelParams const& kernel_params) {
   Rcpp::List state;
@@ -21,7 +20,6 @@ __host__ Rcpp::List getState(
   return state;
 }
 
-template <>
 __host__ Rcpp::List getState(ML::SVM::svmParameter const& svm_params) {
   Rcpp::List state;
 
@@ -37,7 +35,6 @@ __host__ Rcpp::List getState(ML::SVM::svmParameter const& svm_params) {
   return state;
 }
 
-template <>
 __host__ Rcpp::List getState(ML::SVM::svmModel<double> const& svm_model,
                              raft::handle_t const& handle) {
   Rcpp::List state;
@@ -90,7 +87,6 @@ __host__ Rcpp::List getState(ML::SVM::svmModel<double> const& svm_model,
   return state;
 }
 
-template <>
 __host__ void setState(MLCommon::Matrix::KernelParams& kernel_params,
                        Rcpp::List const& state) {
   kernel_params.kernel = static_cast<MLCommon::Matrix::KernelType>(
@@ -100,7 +96,6 @@ __host__ void setState(MLCommon::Matrix::KernelParams& kernel_params,
   kernel_params.coef0 = state[kKernelParamsCoef0];
 }
 
-template <>
 __host__ void setState(ML::SVM::svmParameter& svm_params,
                        Rcpp::List const& state) {
   svm_params.C = state[kSvmParamsC];
@@ -114,7 +109,6 @@ __host__ void setState(ML::SVM::svmParameter& svm_params,
     static_cast<ML::SVM::SvmType>(Rcpp::as<int>(state[kSvmParamsType]));
 }
 
-template <>
 __host__ void setState(ML::SVM::svmModel<double>& svm_model,
                        raft::handle_t const& handle, Rcpp::List const& state) {
   int const n_support = state[kSvmModelNumSupportVectors];
