@@ -22,15 +22,15 @@ namespace {
 
 /*
  * The 'ML::UMAPParams::target_weights' parameter was renamed to 'target_weight'
- * at some point, so, using SFINAE here to be compatible with both versions of
- * the 'ML::UMAPParams' definitions.
+ * in RAPIDS cuML v21.06 or above, so, using SFINAE here to be compatible with
+ * both versions of the 'ML::UMAPParams' definitions.
  */
 
 // for cuML v21.06 or above
 template <typename T>
 __host__ void set_target_weight(
   T& params,
-  typename std::remove_reference<decltype(T::target_weight)>::type const w) {
+  typename std::remove_reference<decltype(T::target_weight)>::type const w) noexcept {
   params.target_weight = w;
 }
 
@@ -38,7 +38,7 @@ __host__ void set_target_weight(
 template <typename T>
 __host__ void set_target_weight(
   T& params,
-  typename std::remove_reference<decltype(T::target_weights)>::type const w) {
+  typename std::remove_reference<decltype(T::target_weights)>::type const w) noexcept {
   params.target_weights = w;
 }
 
