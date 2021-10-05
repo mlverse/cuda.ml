@@ -260,11 +260,24 @@ blocks to lauch for the inference kernel.
   mode <span class='op'>=</span> <span class='st'>"regression"</span>,
   model_type <span class='op'>=</span> <span class='st'>"xgboost"</span>
 <span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in cuda_ml_fil_load_model(model_path, mode = "regression", model_type = "xgboost"): could not find function "cuda_ml_fil_load_model"</span></div><div class='input'>
+
 <span class='va'>preds</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/predict.html'>predict</a></span><span class='op'>(</span><span class='va'>model</span>, <span class='va'>mtcars</span><span class='op'>[</span><span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>mtcars</span><span class='op'>)</span> <span class='op'>!=</span> <span class='st'>"mpg"</span><span class='op'>)</span><span class='op'>]</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in xgb.DMatrix(newdata, missing = missing): xgb.DMatrix does not support construction from list</span></div><div class='input'>
+
 <span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='va'>preds</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in print(preds): object 'preds' not found</span></div></pre>
+</div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 32 × 1</span>
+#&gt;    .pred
+#&gt;    <span style='color: #949494; font-style: italic;'>&lt;dbl&gt;</span>
+#&gt; <span style='color: #BCBCBC;'> 1</span>     1
+#&gt; <span style='color: #BCBCBC;'> 2</span>     1
+#&gt; <span style='color: #BCBCBC;'> 3</span>     1
+#&gt; <span style='color: #BCBCBC;'> 4</span>     1
+#&gt; <span style='color: #BCBCBC;'> 5</span>     1
+#&gt; <span style='color: #BCBCBC;'> 6</span>     1
+#&gt; <span style='color: #BCBCBC;'> 7</span>     1
+#&gt; <span style='color: #BCBCBC;'> 8</span>     1
+#&gt; <span style='color: #BCBCBC;'> 9</span>     1
+#&gt; <span style='color: #BCBCBC;'>10</span>     1
+#&gt; <span style='color: #949494;'># … with 22 more rows</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
