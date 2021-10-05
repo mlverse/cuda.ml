@@ -19,6 +19,10 @@ Description: R interface for RAPIDS cuML (<https://github.com/rapidsai/cuml>),
     a suite of GPU-accelerated machine learning libraries powered by CUDA
     (<https://en.wikipedia.org/wiki/CUDA>).
 License: MIT + file LICENSE
+URL: https://mlverse.github.io/cuda.ml/
+BugReports: https://github.com/mlverse/cuda.ml/issues
+Depends:
+    R (>= 3.2)
 Imports:
     ellipsis,
     hardhat,
