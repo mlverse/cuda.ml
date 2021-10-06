@@ -20,9 +20,7 @@
 #'   centroids <- list(c(1000, 1000), c(-1000, -1000), c(-1000, 1000))
 #'
 #'   pts <- centroids %>%
-#'     purrr::map(
-#'       ~ MASS::mvrnorm(10, mu = .x, Sigma = matrix(c(1, 0, 0, 1), nrow = 2))
-#'     )
+#'     purrr::map(~ MASS::mvrnorm(10, mu = .x, Sigma = diag(2)))
 #'
 #'   rlang::exec(rbind, !!!pts)
 #' }
