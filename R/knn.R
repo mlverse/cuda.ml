@@ -165,7 +165,7 @@ cuda_ml_knn_algo_ivfsq <- function(nlist, nprobe,
 #'
 #' gen_pts <- function(cluster_sz) {
 #'   pts <- centers %>%
-#'     map(~ mvrnorm(cluster_sz, mu = .x, Sigma = matrix(c(1, 0, 0, 1), nrow = 2)))
+#'     map(~ mvrnorm(cluster_sz, mu = .x, Sigma = diag(2)))
 #'
 #'   rlang::exec(rbind, !!!pts) %>% as.matrix()
 #' }

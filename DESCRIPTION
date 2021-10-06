@@ -40,7 +40,7 @@ Suggests:
     xgboost
 LinkingTo: Rcpp
 Encoding: UTF-8
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 OS_type: unix
 SystemRequirements: RAPIDS cuML (see https://rapids.ai/start.html)
 NeedsCompilation: yes
