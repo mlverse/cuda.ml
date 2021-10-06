@@ -92,7 +92,12 @@
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/mlverse/cuda.ml/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -107,7 +112,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Train a random forest model.</h1>
-    
+    <small class="dont-index">Source: <a href='https://github.com/mlverse/cuda.ml/blob/master/R/rand_forest.R'><code>R/rand_forest.R</code></a></small>
     <div class="hidden name"><code>cuda_ml_rand_forest.Rd</code></div>
     </div>
 
@@ -137,7 +142,7 @@
   min_impurity_decrease <span class='op'>=</span> <span class='fl'>0</span>,
   max_batch_size <span class='op'>=</span> <span class='fl'>128L</span>,
   n_streams <span class='op'>=</span> <span class='fl'>8L</span>,
-  cuda_ml_log_level <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"off"</span>, <span class='st'>"critical"</span>, <span class='st'>"error"</span>, <span class='st'>"warn"</span>, <span class='st'>"info"</span>, <span class='st'>"debug"</span>, <span class='st'>"trace"</span><span class='op'>)</span>,
+  cuML_log_level <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"off"</span>, <span class='st'>"critical"</span>, <span class='st'>"error"</span>, <span class='st'>"warn"</span>, <span class='st'>"info"</span>, <span class='st'>"debug"</span>, <span class='st'>"trace"</span><span class='op'>)</span>,
   <span class='va'>...</span>
 <span class='op'>)</span>
 
@@ -158,7 +163,7 @@
   min_impurity_decrease <span class='op'>=</span> <span class='fl'>0</span>,
   max_batch_size <span class='op'>=</span> <span class='fl'>128L</span>,
   n_streams <span class='op'>=</span> <span class='fl'>8L</span>,
-  cuda_ml_log_level <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"off"</span>, <span class='st'>"critical"</span>, <span class='st'>"error"</span>, <span class='st'>"warn"</span>, <span class='st'>"info"</span>, <span class='st'>"debug"</span>, <span class='st'>"trace"</span><span class='op'>)</span>,
+  cuML_log_level <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"off"</span>, <span class='st'>"critical"</span>, <span class='st'>"error"</span>, <span class='st'>"warn"</span>, <span class='st'>"info"</span>, <span class='st'>"debug"</span>, <span class='st'>"trace"</span><span class='op'>)</span>,
   <span class='va'>...</span>
 <span class='op'>)</span>
 
@@ -179,7 +184,7 @@
   min_impurity_decrease <span class='op'>=</span> <span class='fl'>0</span>,
   max_batch_size <span class='op'>=</span> <span class='fl'>128L</span>,
   n_streams <span class='op'>=</span> <span class='fl'>8L</span>,
-  cuda_ml_log_level <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"off"</span>, <span class='st'>"critical"</span>, <span class='st'>"error"</span>, <span class='st'>"warn"</span>, <span class='st'>"info"</span>, <span class='st'>"debug"</span>, <span class='st'>"trace"</span><span class='op'>)</span>,
+  cuML_log_level <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"off"</span>, <span class='st'>"critical"</span>, <span class='st'>"error"</span>, <span class='st'>"warn"</span>, <span class='st'>"info"</span>, <span class='st'>"debug"</span>, <span class='st'>"trace"</span><span class='op'>)</span>,
   <span class='va'>...</span>
 <span class='op'>)</span>
 
@@ -200,7 +205,7 @@
   min_impurity_decrease <span class='op'>=</span> <span class='fl'>0</span>,
   max_batch_size <span class='op'>=</span> <span class='fl'>128L</span>,
   n_streams <span class='op'>=</span> <span class='fl'>8L</span>,
-  cuda_ml_log_level <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"off"</span>, <span class='st'>"critical"</span>, <span class='st'>"error"</span>, <span class='st'>"warn"</span>, <span class='st'>"info"</span>, <span class='st'>"debug"</span>, <span class='st'>"trace"</span><span class='op'>)</span>,
+  cuML_log_level <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"off"</span>, <span class='st'>"critical"</span>, <span class='st'>"error"</span>, <span class='st'>"warn"</span>, <span class='st'>"info"</span>, <span class='st'>"debug"</span>, <span class='st'>"trace"</span><span class='op'>)</span>,
   <span class='va'>...</span>
 <span class='op'>)</span></pre>
 
@@ -293,6 +298,12 @@ given batch. Default: 128L.</p></td>
 Default: 8L.</p></td>
     </tr>
     <tr>
+      <th>cuML_log_level</th>
+      <td><p>Log level within cuML library functions. Must be one of
+"off", "critical", "error", "warn", "info", "debug", "trace".
+Default: off.</p></td>
+    </tr>
+    <tr>
       <th>formula</th>
       <td><p>A formula specifying the outcome terms on the left-hand side,
 and the predictor terms on the right-hand side.</p></td>
@@ -303,12 +314,6 @@ and the predictor terms on the right-hand side.</p></td>
 specified as a  __data frame__ containing the predictors and (if
 applicable) the outcome.</p></td>
     </tr>
-    <tr>
-      <th>cuml_log_level</th>
-      <td><p>Log level within cuML library functions. Must be one of
-"off", "critical", "error", "warn", "info", "debug", "trace".
-Default: off.</p></td>
-    </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
@@ -317,7 +322,7 @@ Default: off.</p></td>
   the 'predict' S3 generic to make predictions on new data points.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'>cuda.ml</span><span class='op'>)</span>
+    <pre class="examples"><div class='input'><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://mlverse.github.io/cuda.ml/'>cuda.ml</a></span><span class='op'>)</span>
 
 <span class='co'># Classification</span>
 
@@ -350,7 +355,7 @@ Default: off.</p></td>
 
       <footer>
       <div class="copyright">
-  <p>Developed by .</p>
+  <p>Developed by Yitao Li, <a href='https://www.rstudio.com'><img src='https://www.tidyverse.org/rstudio-logo.svg' alt='RStudio' height='24' /></a>.</p>
 </div>
 
 <div class="pkgdown">

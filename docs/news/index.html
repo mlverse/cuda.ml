@@ -91,7 +91,12 @@
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/mlverse/cuda.ml/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -106,7 +111,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
       <h1 data-toc-skip>Changelog <small></small></h1>
-      
+      <small>Source: <a href='https://github.com/mlverse/cuda.ml/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
     <div id="cuml-020" class="section level1">
@@ -116,7 +121,7 @@
 <h3 class="hasAnchor">
 <a href="#r-interface-improvements" class="anchor"></a>R Interface Improvements</h3>
 <ul>
-<li><p>Re-wrote R interfaces of all supervised ML algorithms using {hardhat} to support data-frame, matrix, formula, and recipe inputs, per suggestion from @topepo in <a href="https://github.com/mlverse/cuml/issues/78" class="uri">https://github.com/mlverse/cuml/issues/78</a> and <a href="https://github.com/mlverse/cuml/issues/77" class="uri">https://github.com/mlverse/cuml/issues/77</a>.</p></li>
+<li><p>Re-wrote R interfaces of all supervised ML algorithms using {hardhat} to support data-frame, matrix, formula, and recipe inputs, per suggestion from <a href='https://github.com/topepo'>@topepo</a> in <a href="https://github.com/mlverse/cuml/issues/78" class="uri">https://github.com/mlverse/cuml/issues/78</a> and <a href="https://github.com/mlverse/cuml/issues/77" class="uri">https://github.com/mlverse/cuml/issues/77</a>.</p></li>
 <li><p>Added {parsnip} bindings for random forest, SVM, and KNN models.</p></li>
 <li><p>Improved warning message for missing linkage to the RAPIDS CuML shared library. If the C++/CUDA source code of this package was not linked with a valid version of the RAPIDS CuML shared library when the package was installed, then a warning will be emitted whenever the package is loaded.</p></li>
 </ul>
@@ -157,7 +162,7 @@
 <a href="#misc" class="anchor"></a>Misc</h3>
 <ul>
 <li><p>Added <code><a href="https://ellipsis.r-lib.org/reference/check_dots_used.html">ellipsis::check_dots_used()</a></code> checks for all <code>...</code> parameters in R.</p></li>
-<li><p>Renamed this package from {cuml4r} to {cuml} per suggestion from @lorenzwalthert (context: <a href="https://github.com/mlverse/cuml/issues/75" class="uri">https://github.com/mlverse/cuml/issues/75</a>). The new name is shorter, and more importantly, is consistent with the mlverse naming convention for R packages (e.g., {keras}, {tensorflow}, {torch}, {tabnet}, etc).</p></li>
+<li><p>Renamed this package from {cuml4r} to {cuml} per suggestion from <a href='https://github.com/lorenzwalthert'>@lorenzwalthert</a> (context: <a href="https://github.com/mlverse/cuml/issues/75" class="uri">https://github.com/mlverse/cuml/issues/75</a>). The new name is shorter, and more importantly, is consistent with the mlverse naming convention for R packages (e.g., {keras}, {tensorflow}, {torch}, {tabnet}, etc).</p></li>
 </ul>
 </div>
 </div>
@@ -187,7 +192,7 @@
 <li><p>Included suggestions on how to build and install <code>cuML</code> libraries from source with or without multi-GPU support in <a href="https://github.com/yitao-li/cuml-installation-notes" class="uri">https://github.com/yitao-li/cuml-installation-notes</a>. All suggestions are known to be working for RAPIDS cuML version 21.08. Please note the building-from- source option is more for advanced use cases that require customizations of RAPIDS cuML libraries’ build parameters, compilers, etc, and is somewhat time- consuming and not as beginner-friendly as installing <code>cuML</code> directly from Conda.</p></li>
 <li><p>Found and fixed a few typos and inconsistencies.</p></li>
 <li><p>Some examples were simplified.</p></li>
-<li><p>Added documentation for <code><a href="https://rdrr.io/r/stats/predict.html">predict()</a></code> functions per suggestion from @topepo in <a href="https://github.com/mlverse/cuml/issues/80" class="uri">https://github.com/mlverse/cuml/issues/80</a>.</p></li>
+<li><p>Added documentation for <code><a href="https://rdrr.io/r/stats/predict.html">predict()</a></code> functions per suggestion from <a href='https://github.com/topepo'>@topepo</a> in <a href="https://github.com/mlverse/cuml/issues/80" class="uri">https://github.com/mlverse/cuml/issues/80</a>.</p></li>
 </ul>
 </div>
 <div id="misc-1" class="section level3">
@@ -215,7 +220,7 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by .</p>
+  <p>Developed by Yitao Li, <a href='https://www.rstudio.com'><img src='https://www.tidyverse.org/rstudio-logo.svg' alt='RStudio' height='24' /></a>.</p>
 </div>
 
 <div class="pkgdown">
