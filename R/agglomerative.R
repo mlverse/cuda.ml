@@ -52,7 +52,7 @@ agglomerative_clustering_match_metric <- function(metric = c("euclidean", "l1", 
 #' gen_pts <- function() {
 #'   centers <- list(c(1000, 1000), c(-1000, -1000), c(-1000, 1000))
 #'   pts <- centers %>%
-#'     map(~ mvrnorm(50, mu = .x, Sigma = matrix(c(1, 0, 0, 1), nrow = 2)))
+#'     map(~ mvrnorm(50, mu = .x, Sigma = diag(2)))
 #'
 #'   rlang::exec(rbind, !!!pts) %>% as.matrix()
 #' }
