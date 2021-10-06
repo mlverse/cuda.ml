@@ -8,10 +8,10 @@
 #include "random_forest.cuh"
 #include "stream_allocator.h"
 
-#include <raft/spatial/knn/ann_common.h>
 #include <thrust/async/copy.h>
 #include <thrust/device_vector.h>
 #include <cuml/neighbors/knn.hpp>
+#include <cuml/version_config.hpp>
 
 #include <Rcpp.h>
 
@@ -20,6 +20,30 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+#if CUML_VERSION_MAJOR == 21
+#if CUML4R_CONCAT(0x, CUML_VERSION_MINOR) >= 0x08
+
+#include <raft/spatial/knn/ann_common.h>
+
+using knnIndex = raft::spatial::knn::knnIndex;
+using knnIndexParam = raft::spatial::knn::knnIndexParam;
+using QuantizerType = raft::spatial::knn::QuantizerType;
+using IVFFlatParam = raft::spatial::knn::IVFFlatParam;
+using IVFPQParam = raft::spatial::knn::IVFPQParam;
+using IVFSQParam = raft::spatial::knn::IVFSQParam;
+
+#else
+
+using knnIndex = ML::knnIndex;
+using knnIndexParam = ML::knnIndexParam;
+using QuantizerType = ML::QuantizerType;
+using IVFFlatParam = ML::IVFFlatParam;
+using IVFPQParam = ML::IVFPQParam;
+using IVFSQParam = ML::IVFSQParam;
+
+#endif
+#endif
 
 namespace cuml4r {
 namespace knn {
@@ -41,15 +65,14 @@ char const* const METRIC = "metric";
 char const* const N_SAMPLES = "n_samples";
 char const* const N_DIMS = "n_dims";
 
-std::unordered_map<std::string, raft::spatial::knn::QuantizerType> const
-  kQuantizerTypes{
-    {"QT_8bit", raft::spatial::knn::QuantizerType::QT_8bit},
-    {"QT_4bit", raft::spatial::knn::QuantizerType::QT_4bit},
-    {"QT_8bit_uniform", raft::spatial::knn::QuantizerType::QT_8bit_uniform},
-    {"QT_4bit_uniform", raft::spatial::knn::QuantizerType::QT_4bit_uniform},
-    {"QT_fp16", raft::spatial::knn::QuantizerType::QT_fp16},
-    {"QT_8bit_direct", raft::spatial::knn::QuantizerType::QT_8bit_direct},
-    {"QT_6bit", raft::spatial::knn::QuantizerType::QT_6bit}};
+std::unordered_map<std::string, QuantizerType> const kQuantizerTypes{
+  {"QT_8bit", QuantizerType::QT_8bit},
+  {"QT_4bit", QuantizerType::QT_4bit},
+  {"QT_8bit_uniform", QuantizerType::QT_8bit_uniform},
+  {"QT_4bit_uniform", QuantizerType::QT_4bit_uniform},
+  {"QT_fp16", QuantizerType::QT_fp16},
+  {"QT_8bit_direct", QuantizerType::QT_8bit_direct},
+  {"QT_6bit", QuantizerType::QT_6bit}};
 
 // Additional info for setting KNN params
 struct ParamsDetails {
@@ -79,8 +102,7 @@ class PredictionCtx {
                          int const n_neighbors)
     : nSamples_(x.nrow()),
       nFeatures_(x.ncol()),
-      modelKnnIndex_(Rcpp::XPtr<raft::spatial::knn::knnIndex>(
-        static_cast<SEXP>(model[KNN_INDEX]))),
+      modelKnnIndex_(Rcpp::XPtr<knnIndex>(static_cast<SEXP>(model[KNN_INDEX]))),
       modelAlgoType_(static_cast<knn::Algo>(Rcpp::as<int>(model[ALGO]))),
       modelDistType_(static_cast<raft::distance::DistanceType>(
         Rcpp::as<int>(model[METRIC]))),
@@ -136,7 +158,7 @@ class PredictionCtx {
   int const nSamples_;
   int const nFeatures_;
   // attributes from the KNN model object
-  Rcpp::XPtr<raft::spatial::knn::knnIndex> const modelKnnIndex_;
+  Rcpp::XPtr<knnIndex> const modelKnnIndex_;
   Algo const modelAlgoType_;
   raft::distance::DistanceType const modelDistType_;
   float const modelP_;
@@ -175,23 +197,22 @@ __host__ void validate_algo_params(Algo const algo, Rcpp::List const& params) {
   }
 }
 
-__host__ std::unique_ptr<raft::spatial::knn::knnIndexParam>
-build_ivfflat_algo_params(Rcpp::List params, bool const automated) {
+__host__ std::unique_ptr<knnIndexParam> build_ivfflat_algo_params(
+  Rcpp::List params, bool const automated) {
   if (automated) {
     params[N_LIST] = 8;
     params[N_PROBE] = 2;
   }
 
-  auto algo_params = std::make_unique<raft::spatial::knn::IVFFlatParam>();
+  auto algo_params = std::make_unique<IVFFlatParam>();
   algo_params->nlist = params[N_LIST];
   algo_params->nprobe = params[N_PROBE];
 
   return algo_params;
 }
 
-__host__ std::unique_ptr<raft::spatial::knn::knnIndexParam>
-build_ivfpq_algo_params(Rcpp::List params, bool const automated,
-                        ParamsDetails const& details) {
+__host__ std::unique_ptr<knnIndexParam> build_ivfpq_algo_params(
+  Rcpp::List params, bool const automated, ParamsDetails const& details) {
   constexpr std::array<int, 13> kAllowedSubquantizers = {
     1, 2, 3, 4, 8, 12, 16, 20, 24, 28, 32, 40, 48};
   constexpr std::array<int, 13> kAllowedSubDimSize = {1,  2,  3,  4,  6,  8, 10,
@@ -234,7 +255,7 @@ build_ivfpq_algo_params(Rcpp::List params, bool const automated,
     }
   }
 
-  auto algo_params = std::make_unique<raft::spatial::knn::IVFPQParam>();
+  auto algo_params = std::make_unique<IVFPQParam>();
   algo_params->nlist = Rcpp::as<int>(params[N_LIST]);
   algo_params->nprobe = Rcpp::as<int>(params[N_PROBE]);
   algo_params->M = Rcpp::as<int>(params[M_VALUE]);
@@ -245,8 +266,8 @@ build_ivfpq_algo_params(Rcpp::List params, bool const automated,
   return algo_params;
 }
 
-__host__ std::unique_ptr<raft::spatial::knn::knnIndexParam>
-build_ivfsq_algo_params(Rcpp::List params, bool const automated) {
+__host__ std::unique_ptr<knnIndexParam> build_ivfsq_algo_params(
+  Rcpp::List params, bool const automated) {
   if (automated) {
     params[N_LIST] = 8;
     params[N_PROBE] = 2;
@@ -254,7 +275,7 @@ build_ivfsq_algo_params(Rcpp::List params, bool const automated) {
     params[ENCODE_RESIDUAL] = true;
   }
 
-  auto algo_params = std::make_unique<raft::spatial::knn::IVFSQParam>();
+  auto algo_params = std::make_unique<IVFSQParam>();
   algo_params->nlist = Rcpp::as<int>(params[N_LIST]);
   algo_params->nprobe = Rcpp::as<int>(params[N_PROBE]);
   auto const qtype = Rcpp::as<std::string>(params[Q_TYPE]);
@@ -270,7 +291,7 @@ build_ivfsq_algo_params(Rcpp::List params, bool const automated) {
   return algo_params;
 }
 
-__host__ std::unique_ptr<raft::spatial::knn::knnIndexParam> build_algo_params(
+__host__ std::unique_ptr<knnIndexParam> build_algo_params(
   Algo const algo, Rcpp::List const& params, ParamsDetails const& details) {
   bool const automated = (params.size() == 0);
 
@@ -290,12 +311,12 @@ __host__ std::unique_ptr<raft::spatial::knn::knnIndexParam> build_algo_params(
   }
 }
 
-__host__ std::unique_ptr<raft::spatial::knn::knnIndex> build_knn_index(
+__host__ std::unique_ptr<knnIndex> build_knn_index(
   raft::handle_t& handle, float* const d_input, int const n_samples,
   int const n_features, Algo const algo_type,
   raft::distance::DistanceType const dist_type, float const p,
   Rcpp::List const& algo_params) {
-  std::unique_ptr<raft::spatial::knn::knnIndex> knn_index(nullptr);
+  std::unique_ptr<knnIndex> knn_index(nullptr);
 
   if (algo_type == Algo::IVFFLAT || algo_type == Algo::IVFPQ ||
       algo_type == Algo::IVFSQ) {
@@ -306,7 +327,7 @@ __host__ std::unique_ptr<raft::spatial::knn::knnIndex> build_knn_index(
     auto params =
       build_algo_params(/*algo=*/algo_type, /*params=*/algo_params, details);
 
-    knn_index = std::make_unique<raft::spatial::knn::knnIndex>();
+    knn_index = std::make_unique<knnIndex>();
     ML::approx_knn_build_index(handle,
                                /*index=*/knn_index.get(),
                                /*params=*/params.get(),
@@ -350,8 +371,7 @@ __host__ Rcpp::List knn_fit(Rcpp::NumericMatrix const& x, int const algo,
                     algo_type, dist_type, p, algo_params);
 
   Rcpp::List model;
-  model[knn::KNN_INDEX] =
-    Rcpp::XPtr<raft::spatial::knn::knnIndex>(knn_index.release());
+  model[knn::KNN_INDEX] = Rcpp::XPtr<knnIndex>(knn_index.release());
   model[knn::ALGO] = algo;
   model[knn::METRIC] = metric;
   model[knn::P_VALUE] = p;

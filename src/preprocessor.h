@@ -21,3 +21,15 @@
 #else
 #define CUML4R_ANONYMOUS_VARIABLE(x) CUML4R_CONCAT(x, __LINE__)
 #endif
+
+#define CUML4R_ASSIGN_IF_PRESENT(X)                                          \
+  template <typename T>                                                      \
+  __host__ void set_##X(                                                     \
+    T& t,                                                                    \
+    typename std::remove_reference<decltype(T::X)>::type const x) noexcept { \
+    t.X = x;                                                                 \
+  }
+
+#define CUML4R_NOOP_IF_ABSENT(X)          \
+  template <typename T, typename... Args> \
+  __host__ void set_##X(T&, Args...) noexcept {}

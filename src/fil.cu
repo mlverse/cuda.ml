@@ -22,6 +22,20 @@ namespace {
 
 enum class ModelType { XGBoost, XGBoostJSON, LightGBM };
 
+struct FILModel {
+  __host__ FILModel(std::unique_ptr<raft::handle_t> handle,
+                    cuml4r::fil::forest_uptr forest, size_t const num_classes)
+    : handle_(std::move(handle)),
+      forest_(std::move(forest)),
+      numClasses_(num_classes) {}
+
+  std::unique_ptr<raft::handle_t> const handle_;
+  // NOTE: the destruction of `forest_` must precede the destruction of
+  // `handle_`.
+  cuml4r::fil::forest_uptr forest_;
+  size_t const numClasses_;
+};
+
 __host__ int treeliteLoadModel(ModelType const model_type, char const* filename,
                                cuml4r::TreeliteHandle& tl_handle) {
   switch (model_type) {
@@ -37,19 +51,16 @@ __host__ int treeliteLoadModel(ModelType const model_type, char const* filename,
   return -1;
 }
 
-struct FILModel {
-  __host__ FILModel(std::unique_ptr<raft::handle_t> handle,
-                    cuml4r::fil::forest_uptr forest, size_t const num_classes)
-    : handle_(std::move(handle)),
-      forest_(std::move(forest)),
-      numClasses_(num_classes) {}
+/*
+ * The 'ML::fil::treelite_params_t::threads_per_tree' and
+ * 'ML::fil::treelite_params_t::n_items' parameters are only supported in
+ * RAPIDS cuML 21.08 or above.
+ */
+CUML4R_ASSIGN_IF_PRESENT(threads_per_tree)
+CUML4R_NOOP_IF_ABSENT(threads_per_tree)
 
-  std::unique_ptr<raft::handle_t> const handle_;
-  // NOTE: the destruction of `forest_` must precede the destruction of
-  // `handle_`.
-  cuml4r::fil::forest_uptr forest_;
-  size_t const numClasses_;
-};
+CUML4R_ASSIGN_IF_PRESENT(n_items)
+CUML4R_NOOP_IF_ABSENT(n_items)
 
 }  // namespace
 
@@ -80,8 +91,9 @@ __host__ SEXP fil_load_model(int const model_type, std::string const& filename,
   params.threshold = threshold;
   params.storage_type = static_cast<ML::fil::storage_type_t>(storage_type);
   params.blocks_per_sm = blocks_per_sm;
-  params.threads_per_tree = threads_per_tree;
-  params.n_items = n_items;
+  params.output_class = classification;
+  set_threads_per_tree(params, threads_per_tree);
+  set_n_items(params, n_items);
   params.pforest_shape_str = nullptr;
 
   auto stream_view = cuml4r::stream_allocator::getOrCreateStream();

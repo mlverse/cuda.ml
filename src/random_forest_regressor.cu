@@ -11,6 +11,7 @@
 
 #include <thrust/async/copy.h>
 #include <thrust/device_vector.h>
+#include <cuml/version_config.hpp>
 
 #include <Rcpp.h>
 
@@ -121,6 +122,17 @@ __host__ Rcpp::NumericVector rf_regressor_predict(
   return Rcpp::NumericVector(h_preds.begin(), h_preds.end());
 }
 
+/*
+ * The 'ML::fil::treelite_params_t::threads_per_tree' and
+ * 'ML::fil::treelite_params_t::n_items' parameters are only supported in
+ * RAPIDS cuML 21.08 or above.
+ */
+CUML4R_ASSIGN_IF_PRESENT(threads_per_tree)
+CUML4R_NOOP_IF_ABSENT(threads_per_tree)
+
+CUML4R_ASSIGN_IF_PRESENT(n_items)
+CUML4R_NOOP_IF_ABSENT(n_items)
+
 }  // namespace
 
 __host__ SEXP rf_regressor_fit(
@@ -158,14 +170,35 @@ __host__ SEXP rf_regressor_fit(
     ML::fit(
       handle, rf_ptr, d_input.data().get(), n_samples, n_features,
       /*labels=*/d_responses.data().get(),
+#if CUML4R_CONCAT(0x, CUML_VERSION_MINOR) >= 0x08
+
       ML::set_rf_params(max_depth, max_leaves, max_features, n_bins,
                         min_samples_leaf, min_samples_split,
                         min_impurity_decrease, bootstrap, n_trees, max_samples,
+                        /*seed=*/
                         std::chrono::duration_cast<std::chrono::milliseconds>(
                           std::chrono::system_clock::now().time_since_epoch())
                           .count(),
                         static_cast<ML::CRITERION>(split_criterion), n_streams,
                         max_batch_size),
+
+#else
+
+      ML::set_rf_params(
+        max_depth, max_leaves, max_features, n_bins,
+        /*split_algo=*/ML::SPLIT_ALGO::HIST, min_samples_leaf,
+        min_samples_split, min_impurity_decrease,
+        /*bootstrap_features=*/bootstrap, bootstrap, n_trees,
+        max_samples, /*seed=*/
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+          std::chrono::system_clock::now().time_since_epoch())
+          .count(),
+        /*split_criterion=*/static_cast<ML::CRITERION>(split_criterion),
+        /*quantile_per_tree=*/false,
+        /*cfg_n_streams=*/n_streams,
+        /*use_experimental_backend=*/false, max_batch_size),
+
+#endif
       /*verbosity=*/verbosity);
 
     CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
@@ -210,8 +243,8 @@ __host__ Rcpp::NumericVector rf_regressor_predict(
         params.output_class = false;
         params.storage_type = ML::fil::storage_type_t::AUTO;
         params.blocks_per_sm = 0;
-        params.threads_per_tree = 1;
-        params.n_items = 0;
+        set_threads_per_tree(params, 1);
+        set_n_items(params, 0);
         params.pforest_shape_str = nullptr;
         auto forest =
           fil::make_forest(handle,
