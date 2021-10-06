@@ -75,9 +75,9 @@ predict_in_sub_proc <- function(model_state, data, expected_mode,
   )
 }
 
-gen_blobs <- function(blob_sz = 10) {
-  centroids <- list(c(1000, 1000), c(-1000, -1000), c(-1000, 1000))
-  pts <- centroids %>%
+gen_blobs <- function(blob_sz = 10, centers = NULL) {
+  centers <- centers %||% list(c(1000, 1000), c(-1000, -1000), c(-1000, 1000))
+  pts <- centers %>%
     purrr::map(~ MASS::mvrnorm(blob_sz, mu = .x, Sigma = diag(2)))
 
   rlang::exec(rbind, !!!pts)

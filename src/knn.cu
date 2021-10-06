@@ -50,20 +50,21 @@ namespace knn {
 namespace {
 
 // string constants related to KNN params
-char const* const N_LIST = "nlist";
-char const* const N_PROBE = "nprobe";
-char const* const M_VALUE = "M";
-char const* const N_BITS = "n_bits";
-char const* const USE_PRE_COMPUTED_TABLES = "usePrecomputedTables";
-char const* const Q_TYPE = "qtype";
-char const* const ENCODE_RESIDUAL = "encodeResidual";
+constexpr auto kNumLists = "nlist";
+constexpr auto kNumProbes = "nprobe";
+constexpr auto kM = "M";
+constexpr auto kNumBits = "n_bits";
+constexpr auto kUseComputedTables = "usePrecomputedTables";
+constexpr auto kQuantizerType = "qtype";
+constexpr auto kEncodeResidual = "encodeResidual";
 // string constants related to KNN model attributes
-char const* const KNN_INDEX = "knn_index";
-char const* const ALGO = "algo";
-char const* const P_VALUE = "p";
-char const* const METRIC = "metric";
-char const* const N_SAMPLES = "n_samples";
-char const* const N_DIMS = "n_dims";
+constexpr auto kInput = "input";
+constexpr auto kIndex = "knn_index";
+constexpr auto kAlgo = "algo";
+constexpr auto kP = "p";
+constexpr auto kMetric = "metric";
+constexpr auto kNumSamples = "n_samples";
+constexpr auto kNumDims = "n_dims";
 
 std::unordered_map<std::string, QuantizerType> const kQuantizerTypes{
   {"QT_8bit", QuantizerType::QT_8bit},
@@ -102,18 +103,18 @@ class PredictionCtx {
                          int const n_neighbors)
     : nSamples_(x.nrow()),
       nFeatures_(x.ncol()),
-      modelKnnIndex_(Rcpp::XPtr<knnIndex>(static_cast<SEXP>(model[KNN_INDEX]))),
-      modelAlgoType_(static_cast<knn::Algo>(Rcpp::as<int>(model[ALGO]))),
+      modelKnnIndex_(Rcpp::XPtr<knnIndex>(static_cast<SEXP>(model[kIndex]))),
+      modelAlgoType_(static_cast<knn::Algo>(Rcpp::as<int>(model[kAlgo]))),
       modelDistType_(static_cast<raft::distance::DistanceType>(
-        Rcpp::as<int>(model[METRIC]))),
-      modelP_(Rcpp::as<float>(model[P_VALUE])),
-      modelNSamples_(Rcpp::as<int>(model[N_SAMPLES])),
-      modelNDims_(Rcpp::as<int>(model[N_DIMS])),
+        Rcpp::as<int>(model[kMetric]))),
+      modelP_(Rcpp::as<float>(model[kP])),
+      modelNSamples_(Rcpp::as<int>(model[kNumSamples])),
+      modelNDims_(Rcpp::as<int>(model[kNumDims])),
       streamView_(cuml4r::stream_allocator::getOrCreateStream()) {
     cuml4r::handle_utils::initializeHandle(handle_, streamView_.value());
-    auto const input_m = cuml4r::Matrix<float>(x, /*transpose=*/false);
+    auto const x_m = cuml4r::Matrix<float>(x, /*transpose=*/false);
     // KNN classifier input
-    auto const& h_x = input_m.values;
+    auto const& h_x = x_m.values;
     dX_.resize(h_x.size());
     xH2D_ = cuml4r::async_copy(streamView_.value(), h_x.cbegin(), h_x.cend(),
                                dX_.begin());
@@ -124,6 +125,14 @@ class PredictionCtx {
     dY_.resize(h_y.size());
     yH2D_ = cuml4r::async_copy(streamView_.value(), h_y.cbegin(), h_y.cend(),
                                dY_.begin());
+    if (modelAlgoType_ == knn::Algo::BRUTE_FORCE) {
+      auto const input_m = cuml4r::Matrix<float>(
+        Rcpp::as<Rcpp::NumericMatrix>(model[kInput]), /*transpose=*/false);
+      auto const& h_input = input_m.values;
+      dInput_.resize(h_input.size());
+      inputH2D_ = cuml4r::async_copy(streamView_.value(), h_input.cbegin(),
+                                     h_input.cend(), dInput_.begin());
+    }
 
     nearestNeighbors_ = query_nearest_neighbors(n_neighbors);
 
@@ -132,14 +141,12 @@ class PredictionCtx {
 
   __host__ NearestNeighbors query_nearest_neighbors(int const n_neighbors) {
     NearestNeighbors res(nSamples_, n_neighbors);
-    auto d_input = dX_.data().get();
 
-    if (modelAlgoType_ == Algo::BRUTE_FORCE) {
-      std::vector<float*> input{d_input};
-      std::vector<int> sizes{nSamples_};
-
+    if (modelAlgoType_ == knn::Algo::BRUTE_FORCE) {
+      std::vector<float*> input{dInput_.data().get()};
+      std::vector<int> sizes{modelNSamples_};
       ML::brute_force_knn(handle_, input, sizes, /*D=*/modelNDims_,
-                          /*search_items=*/d_input,
+                          /*search_items=*/dX_.data().get(),
                           /*n=*/nSamples_, /*res_I=*/res.indices.data().get(),
                           /*res_D=*/res.dists.data().get(), /*k=*/n_neighbors,
                           /*rowMajorIndex=*/true, /*rowMajorQuery=*/true,
@@ -148,7 +155,7 @@ class PredictionCtx {
       ML::approx_knn_search(handle_, /*distances=*/res.dists.data().get(),
                             /*indices=*/res.indices.data().get(),
                             /*index=*/modelKnnIndex_.get(), /*k=*/n_neighbors,
-                            /*query_array=*/d_input, /*n=*/nSamples_);
+                            /*query_array=*/dX_.data().get(), /*n=*/nSamples_);
     }
 
     return res;
@@ -168,6 +175,7 @@ class PredictionCtx {
   rmm::cuda_stream_view streamView_;
   raft::handle_t handle_;
   // KNN classifier inputs
+  thrust::device_vector<float> dInput_;  // only used by Algo::BRUTE_FORCE
   thrust::device_vector<float> dX_;
   thrust::device_vector<ResponseT> dY_;
   NearestNeighbors nearestNeighbors_;
@@ -175,6 +183,7 @@ class PredictionCtx {
  private:
   cuml4r::unique_marker xH2D_;
   cuml4r::unique_marker yH2D_;
+  cuml4r::unique_marker inputH2D_;
 };
 
 __host__ void validate_param_list(
@@ -188,25 +197,26 @@ __host__ void validate_param_list(
 
 __host__ void validate_algo_params(Algo const algo, Rcpp::List const& params) {
   if (algo == Algo::IVFFLAT) {
-    validate_param_list(params, {N_LIST, N_PROBE});
+    validate_param_list(params, {kNumLists, kNumProbes});
   } else if (algo == Algo::IVFPQ) {
     validate_param_list(
-      params, {N_LIST, N_PROBE, M_VALUE, N_BITS, USE_PRE_COMPUTED_TABLES});
+      params, {kNumLists, kNumProbes, kM, kNumBits, kUseComputedTables});
   } else if (algo == Algo::IVFSQ) {
-    validate_param_list(params, {N_LIST, N_PROBE, Q_TYPE, ENCODE_RESIDUAL});
+    validate_param_list(
+      params, {kNumLists, kNumProbes, kQuantizerType, kEncodeResidual});
   }
 }
 
 __host__ std::unique_ptr<knnIndexParam> build_ivfflat_algo_params(
   Rcpp::List params, bool const automated) {
   if (automated) {
-    params[N_LIST] = 8;
-    params[N_PROBE] = 2;
+    params[kNumLists] = 8;
+    params[kNumProbes] = 2;
   }
 
   auto algo_params = std::make_unique<IVFFlatParam>();
-  algo_params->nlist = params[N_LIST];
-  algo_params->nprobe = params[N_PROBE];
+  algo_params->nlist = params[kNumLists];
+  algo_params->nprobe = params[kNumProbes];
 
   return algo_params;
 }
@@ -222,46 +232,46 @@ __host__ std::unique_ptr<knnIndexParam> build_ivfpq_algo_params(
     auto const n = details.numRows_;
     auto const d = details.numCols_;
 
-    params[N_LIST] = 8;
-    params[N_PROBE] = 3;
+    params[kNumLists] = 8;
+    params[kNumProbes] = 3;
 
     for (auto const n_subq : kAllowedSubquantizers) {
       if (d % n_subq == 0 &&
           std::find(kAllowedSubDimSize.cbegin(), kAllowedSubDimSize.cend(),
                     d / n_subq) != kAllowedSubDimSize.cend()) {
-        params[USE_PRE_COMPUTED_TABLES] = false;
-        params[M_VALUE] = n_subq;
+        params[kUseComputedTables] = false;
+        params[kM] = n_subq;
         break;
       }
     }
 
-    if (!params.containsElementNamed(M_VALUE)) {
+    if (!params.containsElementNamed(kM)) {
       for (auto const n_subq : kAllowedSubquantizers) {
         if (d % n_subq == 0) {
-          params[USE_PRE_COMPUTED_TABLES] = true;
-          params[M_VALUE] = n_subq;
+          params[kUseComputedTables] = true;
+          params[kM] = n_subq;
           break;
         }
       }
     }
 
-    params[N_BITS] = 4;
+    params[kNumBits] = 4;
     for (auto const n_bits : {8, 6, 5}) {
       auto const min_train_points = (1 << n_bits) * 39;
       if (n >= min_train_points) {
-        params[N_BITS] = n_bits;
+        params[kNumBits] = n_bits;
         break;
       }
     }
   }
 
   auto algo_params = std::make_unique<IVFPQParam>();
-  algo_params->nlist = Rcpp::as<int>(params[N_LIST]);
-  algo_params->nprobe = Rcpp::as<int>(params[N_PROBE]);
-  algo_params->M = Rcpp::as<int>(params[M_VALUE]);
-  algo_params->n_bits = Rcpp::as<int>(params[N_BITS]);
+  algo_params->nlist = Rcpp::as<int>(params[kNumLists]);
+  algo_params->nprobe = Rcpp::as<int>(params[kNumProbes]);
+  algo_params->M = Rcpp::as<int>(params[kM]);
+  algo_params->n_bits = Rcpp::as<int>(params[kNumBits]);
   algo_params->usePrecomputedTables =
-    Rcpp::as<bool>(params[USE_PRE_COMPUTED_TABLES]);
+    Rcpp::as<bool>(params[kUseComputedTables]);
 
   return algo_params;
 }
@@ -269,16 +279,16 @@ __host__ std::unique_ptr<knnIndexParam> build_ivfpq_algo_params(
 __host__ std::unique_ptr<knnIndexParam> build_ivfsq_algo_params(
   Rcpp::List params, bool const automated) {
   if (automated) {
-    params[N_LIST] = 8;
-    params[N_PROBE] = 2;
-    params[Q_TYPE] = "QT_8bit";
-    params[ENCODE_RESIDUAL] = true;
+    params[kNumLists] = 8;
+    params[kNumProbes] = 2;
+    params[kQuantizerType] = "QT_8bit";
+    params[kEncodeResidual] = true;
   }
 
   auto algo_params = std::make_unique<IVFSQParam>();
-  algo_params->nlist = Rcpp::as<int>(params[N_LIST]);
-  algo_params->nprobe = Rcpp::as<int>(params[N_PROBE]);
-  auto const qtype = Rcpp::as<std::string>(params[Q_TYPE]);
+  algo_params->nlist = Rcpp::as<int>(params[kNumLists]);
+  algo_params->nprobe = Rcpp::as<int>(params[kNumProbes]);
+  auto const qtype = Rcpp::as<std::string>(params[kQuantizerType]);
   {
     auto const qtype_iter = kQuantizerTypes.find(qtype);
     if (kQuantizerTypes.cend() == qtype_iter) {
@@ -286,7 +296,7 @@ __host__ std::unique_ptr<knnIndexParam> build_ivfsq_algo_params(
     }
     algo_params->qtype = qtype_iter->second;
   }
-  algo_params->encodeResidual = Rcpp::as<bool>(params[ENCODE_RESIDUAL]);
+  algo_params->encodeResidual = Rcpp::as<bool>(params[kEncodeResidual]);
 
   return algo_params;
 }
@@ -351,32 +361,36 @@ __host__ Rcpp::List knn_fit(Rcpp::NumericMatrix const& x, int const algo,
                             Rcpp::List const& algo_params) {
   auto const algo_type = static_cast<knn::Algo>(algo);
   auto const dist_type = static_cast<raft::distance::DistanceType>(metric);
-
   auto const input_m = cuml4r::Matrix<float>(x, /*transpose=*/false);
   int const n_samples = input_m.numRows;
   int const n_features = input_m.numCols;
 
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
-  raft::handle_t handle;
-  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
-
-  // knn input
-  auto const& h_x = input_m.values;
-  thrust::device_vector<float> d_x(h_x.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(x_h2d) = cuml4r::async_copy(
-    stream_view.value(), h_x.cbegin(), h_x.cend(), d_x.begin());
-
-  auto knn_index =
-    build_knn_index(handle, /*d_input=*/d_x.data().get(), n_samples, n_features,
-                    algo_type, dist_type, p, algo_params);
-
   Rcpp::List model;
-  model[knn::KNN_INDEX] = Rcpp::XPtr<knnIndex>(knn_index.release());
-  model[knn::ALGO] = algo;
-  model[knn::METRIC] = metric;
-  model[knn::P_VALUE] = p;
-  model[knn::N_SAMPLES] = n_samples;
-  model[knn::N_DIMS] = n_features;
+
+  if (algo_type != knn::Algo::BRUTE_FORCE) {
+    auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+    raft::handle_t handle;
+    cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+    // knn input
+    auto const& h_x = input_m.values;
+    thrust::device_vector<float> d_x(h_x.size());
+    auto CUML4R_ANONYMOUS_VARIABLE(x_h2d) = cuml4r::async_copy(
+      stream_view.value(), h_x.cbegin(), h_x.cend(), d_x.begin());
+
+    auto knn_index =
+      build_knn_index(handle, /*d_input=*/d_x.data().get(), n_samples,
+                      n_features, algo_type, dist_type, p, algo_params);
+    model[knn::kIndex] = Rcpp::XPtr<knnIndex>(knn_index.release());
+  } else {
+    model[knn::kIndex] = Rcpp::XPtr<knnIndex>(static_cast<knnIndex*>(nullptr));
+    model[knn::kInput] = x;
+  }
+
+  model[knn::kAlgo] = algo;
+  model[knn::kMetric] = metric;
+  model[knn::kP] = p;
+  model[knn::kNumSamples] = n_samples;
+  model[knn::kNumDims] = n_features;
 
   return model;
 }
