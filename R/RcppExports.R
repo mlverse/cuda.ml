@@ -5,8 +5,16 @@
     .Call(`_cuda_ml_agglomerative_clustering`, x, pairwise_conn, metric, n_neighbors, n_clusters)
 }
 
-.has_libcuml <- function() {
-    .Call(`_cuda_ml_has_libcuml`)
+.has_cuML <- function() {
+    .Call(`_cuda_ml_has_cuML`)
+}
+
+.cuML_major_version <- function() {
+    .Call(`_cuda_ml_cuML_major_version`)
+}
+
+.cuML_minor_version <- function() {
+    .Call(`_cuda_ml_cuML_minor_version`)
 }
 
 .dbscan <- function(x, min_pts, eps, max_bytes_per_batch, verbosity) {

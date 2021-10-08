@@ -16,7 +16,7 @@ NULL
 }
 
 .onAttach <- function(libname, pkgname) {
-  if (!has_libcuml()) {
+  if (!has_cuML()) {
     packageStartupMessage(
       "
       The current installation of {", pkgname, "} will not function as expected
