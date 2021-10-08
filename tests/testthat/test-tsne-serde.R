@@ -10,7 +10,7 @@ test_that("TSNE models can be serialized and unserialized correctly", {
       function(model_state) {
         library(cuda.ml)
 
-        stopifnot(has_libcuml())
+        stopifnot(has_cuML())
         cuda_ml_unserialize(model_state)
       },
       args = list(model_state = model_state)

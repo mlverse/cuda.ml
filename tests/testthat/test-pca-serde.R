@@ -22,7 +22,7 @@ test_that("PCA models can be serialized and unserialized correctly", {
         library(cuda.ml)
         library(testthat)
 
-        expect_true(has_libcuml())
+        stopifnot(has_cuML())
 
         model <- cuda_ml_unserialize(model_state)
 

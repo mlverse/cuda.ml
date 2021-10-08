@@ -3,10 +3,10 @@ library(reticulate)
 library(rlang, warn.conflicts = FALSE)
 
 expect_libcuml <- function() {
-  if (!has_libcuml()) {
+  if (!has_cuML()) {
     stop(
       "The current installation of {cuda.ml} is not linked with a valid copy of",
-      " libcuml!\n",
+      " the RAPIDS cuML shared library!\n",
       ".libPaths:\n",
       paste(.libPaths(), collapse = "\n")
     )

@@ -25,13 +25,33 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// has_libcuml
-bool has_libcuml();
-RcppExport SEXP _cuda_ml_has_libcuml() {
+// has_cuML
+bool has_cuML();
+RcppExport SEXP _cuda_ml_has_cuML() {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(has_libcuml());
+    rcpp_result_gen = Rcpp::wrap(has_cuML());
+    return rcpp_result_gen;
+END_RCPP
+}
+// cuML_major_version
+Rcpp::CharacterVector cuML_major_version();
+RcppExport SEXP _cuda_ml_cuML_major_version() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(cuML_major_version());
+    return rcpp_result_gen;
+END_RCPP
+}
+// cuML_minor_version
+Rcpp::CharacterVector cuML_minor_version();
+RcppExport SEXP _cuda_ml_cuML_minor_version() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(cuML_minor_version());
     return rcpp_result_gen;
 END_RCPP
 }
@@ -700,7 +720,9 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_cuda_ml_agglomerative_clustering", (DL_FUNC) &_cuda_ml_agglomerative_clustering, 5},
-    {"_cuda_ml_has_libcuml", (DL_FUNC) &_cuda_ml_has_libcuml, 0},
+    {"_cuda_ml_has_cuML", (DL_FUNC) &_cuda_ml_has_cuML, 0},
+    {"_cuda_ml_cuML_major_version", (DL_FUNC) &_cuda_ml_cuML_major_version, 0},
+    {"_cuda_ml_cuML_minor_version", (DL_FUNC) &_cuda_ml_cuML_minor_version, 0},
     {"_cuda_ml_dbscan", (DL_FUNC) &_cuda_ml_dbscan, 5},
     {"_cuda_ml_fil_enabled", (DL_FUNC) &_cuda_ml_fil_enabled, 0},
     {"_cuda_ml_fil_load_model", (DL_FUNC) &_cuda_ml_fil_load_model, 9},
