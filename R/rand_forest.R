@@ -418,6 +418,14 @@ predict_cuda_ml_rand_forest_classification_impl <- function(model,
                                                             output_class_probabilities,
                                                             cuML_log_level) {
   if (output_class_probabilities) {
+    if (as.integer(cuML_major_version()) == 21 &&
+        as.integer(cuML_minor_version()) < 8) {
+      stop("Class probabilities output for random forest classifier is only ",
+           "supported by RAPIDS cuML 21.08 or above. Current version of ",
+           "RAPIDS cuML linked with {cuda.ml} is v",
+           paste0(cuML_major_version(), ".",  cuML_minor_version()), ".")
+    }
+
     .rf_classifier_predict_class_probabilities(
       model_xptr = model$xptr,
       input = as.matrix(processed$predictors)
