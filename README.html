@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link href="data:text/css;charset=utf-8,%0A%40font%2Dface%20%7B%0Afont%2Dfamily%3A%20octicons%2Dlink%3B%0Asrc%3A%20url%28data%3Afont%2Fwoff%3Bcharset%3Dutf%2D8%3Bbase64%2Cd09GRgABAAAAAAZwABAAAAAACFQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABEU0lHAAAGaAAAAAgAAAAIAAAAAUdTVUIAAAZcAAAACgAAAAoAAQAAT1MvMgAAAyQAAABJAAAAYFYEU3RjbWFwAAADcAAAAEUAAACAAJThvmN2dCAAAATkAAAABAAAAAQAAAAAZnBnbQAAA7gAAACyAAABCUM%2B8IhnYXNwAAAGTAAAABAAAAAQABoAI2dseWYAAAFsAAABPAAAAZwcEq9taGVhZAAAAsgAAAA0AAAANgh4a91oaGVhAAADCAAAABoAAAAkCA8DRGhtdHgAAAL8AAAADAAAAAwGAACfbG9jYQAAAsAAAAAIAAAACABiATBtYXhwAAACqAAAABgAAAAgAA8ASm5hbWUAAAToAAABQgAAAlXu73sOcG9zdAAABiwAAAAeAAAAME3QpOBwcmVwAAAEbAAAAHYAAAB%2FaFGpk3jaTY6xa8JAGMW%2FO62BDi0tJLYQincXEypYIiGJjSgHniQ6umTsUEyLm5BV6NDBP8Tpts6F0v%2Bk%2F0an2i%2BitHDw3v2%2B9%2BDBKTzsJNnWJNTgHEy4BgG3EMI9DCEDOGEXzDADU5hBKMIgNPZqoD3SilVaXZCER3%2FI7AtxEJLtzzuZfI%2BVVkprxTlXShWKb3TBecG11rwoNlmmn1P2WYcJczl32etSpKnziC7lQyWe1smVPy%2FLt7Kc%2B0vWY%2FgAgIIEqAN9we0pwKXreiMasxvabDQMM4riO%2BqxM2ogwDGOZTXxwxDiycQIcoYFBLj5K3EIaSctAq2kTYiw%2Bymhce7vwM9jSqO8JyVd5RH9gyTt2%2BJ%2FyUmYlIR0s04n6%2B7Vm1ozezUeLEaUjhaDSuXHwVRgvLJn1tQ7xiuVv%2FocTRF42mNgZGBgYGbwZOBiAAFGJBIMAAizAFoAAABiAGIAznjaY2BkYGAA4in8zwXi%2BW2%2BMjCzMIDApSwvXzC97Z4Ig8N%2FBxYGZgcgl52BCSQKAA3jCV8CAABfAAAAAAQAAEB42mNgZGBg4f3vACQZQABIMjKgAmYAKEgBXgAAeNpjYGY6wTiBgZWBg2kmUxoDA4MPhGZMYzBi1AHygVLYQUCaawqDA4PChxhmh%2F8ODDEsvAwHgMKMIDnGL0x7gJQCAwMAJd4MFwAAAHjaY2BgYGaA4DAGRgYQkAHyGMF8NgYrIM3JIAGVYYDT%2BAEjAwuDFpBmA9KMDEwMCh9i%2Fv8H8sH0%2F4dQc1iAmAkALaUKLgAAAHjaTY9LDsIgEIbtgqHUPpDi3gPoBVyRTmTddOmqTXThEXqrob2gQ1FjwpDvfwCBdmdXC5AVKFu3e5MfNFJ29KTQT48Ob9%2FlqYwOGZxeUelN2U2R6%2BcArgtCJpauW7UQBqnFkUsjAY%2FkOU1cP%2BDAgvxwn1chZDwUbd6CFimGXwzwF6tPbFIcjEl%2BvvmM%2FbyA48e6tWrKArm4ZJlCbdsrxksL1AwWn%2FyBSJKpYbq8AXaaTb8AAHja28jAwOC00ZrBeQNDQOWO%2F%2FsdBBgYGRiYWYAEELEwMTE4uzo5Zzo5b2BxdnFOcALxNjA6b2ByTswC8jYwg0VlNuoCTWAMqNzMzsoK1rEhNqByEyerg5PMJlYuVueETKcd%2F89uBpnpvIEVomeHLoMsAAe1Id4AAAAAAAB42oWQT07CQBTGv0JBhagk7HQzKxca2sJCE1hDt4QF%2B9JOS0nbaaYDCQfwCJ7Au3AHj%2BLO13FMmm6cl7785vven0kBjHCBhfpYuNa5Ph1c0e2Xu3jEvWG7UdPDLZ4N92nOm%2BEBXuAbHmIMSRMs%2B4aUEd4Nd3CHD8NdvOLTsA2GL8M9PODbcL%2BhD7C1xoaHeLJSEao0FEW14ckxC%2BTU8TxvsY6X0eLPmRhry2WVioLpkrbp84LLQPGI7c6sOiUzpWIWS5GzlSgUzzLBSikOPFTOXqly7rqx0Z1Q5BAIoZBSFihQYQOOBEdkCOgXTOHA07HAGjGWiIjaPZNW13%2F%2Blm6S9FT7rLHFJ6fQbkATOG1j2OFMucKJJsxIVfQORl%2B9Jyda6Sl1dUYhSCm1dyClfoeDve4qMYdLEbfqHf3O%2FAdDumsjAAB42mNgYoAAZQYjBmyAGYQZmdhL8zLdDEydARfoAqIAAAABAAMABwAKABMAB%2F%2F%2FAA8AAQAAAAAAAAAAAAAAAAABAAAAAA%3D%3D%29%20format%28%27woff%27%29%3B%0A%7D%0Abody%20%7B%0A%2Dwebkit%2Dtext%2Dsize%2Dadjust%3A%20100%25%3B%0Atext%2Dsize%2Dadjust%3A%20100%25%3B%0Acolor%3A%20%23333%3B%0Afont%2Dfamily%3A%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20%22Segoe%20UI%22%2C%20Arial%2C%20freesans%2C%20sans%2Dserif%2C%20%22Apple%20Color%20Emoji%22%2C%20%22Segoe%20UI%20Emoji%22%2C%20%22Segoe%20UI%20Symbol%22%3B%0Afont%2Dsize%3A%2016px%3B%0Aline%2Dheight%3A%201%2E6%3B%0Aword%2Dwrap%3A%20break%2Dword%3B%0A%7D%0Aa%20%7B%0Abackground%2Dcolor%3A%20transparent%3B%0A%7D%0Aa%3Aactive%2C%0Aa%3Ahover%20%7B%0Aoutline%3A%200%3B%0A%7D%0Astrong%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Ah1%20%7B%0Afont%2Dsize%3A%202em%3B%0Amargin%3A%200%2E67em%200%3B%0A%7D%0Aimg%20%7B%0Aborder%3A%200%3B%0A%7D%0Ahr%20%7B%0Abox%2Dsizing%3A%20content%2Dbox%3B%0Aheight%3A%200%3B%0A%7D%0Apre%20%7B%0Aoverflow%3A%20auto%3B%0A%7D%0Acode%2C%0Akbd%2C%0Apre%20%7B%0Afont%2Dfamily%3A%20monospace%2C%20monospace%3B%0Afont%2Dsize%3A%201em%3B%0A%7D%0Ainput%20%7B%0Acolor%3A%20inherit%3B%0Afont%3A%20inherit%3B%0Amargin%3A%200%3B%0A%7D%0Ahtml%20input%5Bdisabled%5D%20%7B%0Acursor%3A%20default%3B%0A%7D%0Ainput%20%7B%0Aline%2Dheight%3A%20normal%3B%0A%7D%0Ainput%5Btype%3D%22checkbox%22%5D%20%7B%0Abox%2Dsizing%3A%20border%2Dbox%3B%0Apadding%3A%200%3B%0A%7D%0Atable%20%7B%0Aborder%2Dcollapse%3A%20collapse%3B%0Aborder%2Dspacing%3A%200%3B%0A%7D%0Atd%2C%0Ath%20%7B%0Apadding%3A%200%3B%0A%7D%0A%2A%20%7B%0Abox%2Dsizing%3A%20border%2Dbox%3B%0A%7D%0Ainput%20%7B%0Afont%3A%2013px%20%2F%201%2E4%20Helvetica%2C%20arial%2C%20nimbussansl%2C%20liberationsans%2C%20freesans%2C%20clean%2C%20sans%2Dserif%2C%20%22Apple%20Color%20Emoji%22%2C%20%22Segoe%20UI%20Emoji%22%2C%20%22Segoe%20UI%20Symbol%22%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%234078c0%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%2C%0Aa%3Aactive%20%7B%0Atext%2Ddecoration%3A%20underline%3B%0A%7D%0Ahr%20%7B%0Aheight%3A%200%3B%0Amargin%3A%2015px%200%3B%0Aoverflow%3A%20hidden%3B%0Abackground%3A%20transparent%3B%0Aborder%3A%200%3B%0Aborder%2Dbottom%3A%201px%20solid%20%23ddd%3B%0A%7D%0Ahr%3Abefore%20%7B%0Adisplay%3A%20table%3B%0Acontent%3A%20%22%22%3B%0A%7D%0Ahr%3Aafter%20%7B%0Adisplay%3A%20table%3B%0Aclear%3A%20both%3B%0Acontent%3A%20%22%22%3B%0A%7D%0Ah1%2C%0Ah2%2C%0Ah3%2C%0Ah4%2C%0Ah5%2C%0Ah6%20%7B%0Amargin%2Dtop%3A%2015px%3B%0Amargin%2Dbottom%3A%2015px%3B%0Aline%2Dheight%3A%201%2E1%3B%0A%7D%0Ah1%20%7B%0Afont%2Dsize%3A%2030px%3B%0A%7D%0Ah2%20%7B%0Afont%2Dsize%3A%2021px%3B%0A%7D%0Ah3%20%7B%0Afont%2Dsize%3A%2016px%3B%0A%7D%0Ah4%20%7B%0Afont%2Dsize%3A%2014px%3B%0A%7D%0Ah5%20%7B%0Afont%2Dsize%3A%2012px%3B%0A%7D%0Ah6%20%7B%0Afont%2Dsize%3A%2011px%3B%0A%7D%0Ablockquote%20%7B%0Amargin%3A%200%3B%0A%7D%0Aul%2C%0Aol%20%7B%0Apadding%3A%200%3B%0Amargin%2Dtop%3A%200%3B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Aol%20ol%2C%0Aul%20ol%20%7B%0Alist%2Dstyle%2Dtype%3A%20lower%2Droman%3B%0A%7D%0Aul%20ul%20ol%2C%0Aul%20ol%20ol%2C%0Aol%20ul%20ol%2C%0Aol%20ol%20ol%20%7B%0Alist%2Dstyle%2Dtype%3A%20lower%2Dalpha%3B%0A%7D%0Add%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20%22Liberation%20Mono%22%2C%20Menlo%2C%20Courier%2C%20monospace%3B%0Afont%2Dsize%3A%2012px%3B%0A%7D%0Apre%20%7B%0Amargin%2Dtop%3A%200%3B%0Amargin%2Dbottom%3A%200%3B%0Afont%3A%2012px%20Consolas%2C%20%22Liberation%20Mono%22%2C%20Menlo%2C%20Courier%2C%20monospace%3B%0A%7D%0A%2Eselect%3A%3A%2Dms%2Dexpand%20%7B%0Aopacity%3A%200%3B%0A%7D%0A%2Eocticon%20%7B%0Afont%3A%20normal%20normal%20normal%2016px%2F1%20octicons%2Dlink%3B%0Adisplay%3A%20inline%2Dblock%3B%0Atext%2Ddecoration%3A%20none%3B%0Atext%2Drendering%3A%20auto%3B%0A%2Dwebkit%2Dfont%2Dsmoothing%3A%20antialiased%3B%0A%2Dmoz%2Dosx%2Dfont%2Dsmoothing%3A%20grayscale%3B%0A%2Dwebkit%2Duser%2Dselect%3A%20none%3B%0A%2Dmoz%2Duser%2Dselect%3A%20none%3B%0A%2Dms%2Duser%2Dselect%3A%20none%3B%0Auser%2Dselect%3A%20none%3B%0A%7D%0A%2Eocticon%2Dlink%3Abefore%20%7B%0Acontent%3A%20%27%5Cf05c%27%3B%0A%7D%0A%2Emarkdown%2Dbody%3Abefore%20%7B%0Adisplay%3A%20table%3B%0Acontent%3A%20%22%22%3B%0A%7D%0A%2Emarkdown%2Dbody%3Aafter%20%7B%0Adisplay%3A%20table%3B%0Aclear%3A%20both%3B%0Acontent%3A%20%22%22%3B%0A%7D%0A%2Emarkdown%2Dbody%3E%2A%3Afirst%2Dchild%20%7B%0Amargin%2Dtop%3A%200%20%21important%3B%0A%7D%0A%2Emarkdown%2Dbody%3E%2A%3Alast%2Dchild%20%7B%0Amargin%2Dbottom%3A%200%20%21important%3B%0A%7D%0Aa%3Anot%28%5Bhref%5D%29%20%7B%0Acolor%3A%20inherit%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0A%2Eanchor%20%7B%0Adisplay%3A%20inline%2Dblock%3B%0Apadding%2Dright%3A%202px%3B%0Amargin%2Dleft%3A%20%2D18px%3B%0A%7D%0A%2Eanchor%3Afocus%20%7B%0Aoutline%3A%20none%3B%0A%7D%0Ah1%2C%0Ah2%2C%0Ah3%2C%0Ah4%2C%0Ah5%2C%0Ah6%20%7B%0Amargin%2Dtop%3A%201em%3B%0Amargin%2Dbottom%3A%2016px%3B%0Afont%2Dweight%3A%20bold%3B%0Aline%2Dheight%3A%201%2E4%3B%0A%7D%0Ah1%20%2Eocticon%2Dlink%2C%0Ah2%20%2Eocticon%2Dlink%2C%0Ah3%20%2Eocticon%2Dlink%2C%0Ah4%20%2Eocticon%2Dlink%2C%0Ah5%20%2Eocticon%2Dlink%2C%0Ah6%20%2Eocticon%2Dlink%20%7B%0Acolor%3A%20%23000%3B%0Avertical%2Dalign%3A%20middle%3B%0Avisibility%3A%20hidden%3B%0A%7D%0Ah1%3Ahover%20%2Eanchor%2C%0Ah2%3Ahover%20%2Eanchor%2C%0Ah3%3Ahover%20%2Eanchor%2C%0Ah4%3Ahover%20%2Eanchor%2C%0Ah5%3Ahover%20%2Eanchor%2C%0Ah6%3Ahover%20%2Eanchor%20%7B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Ah1%3Ahover%20%2Eanchor%20%2Eocticon%2Dlink%2C%0Ah2%3Ahover%20%2Eanchor%20%2Eocticon%2Dlink%2C%0Ah3%3Ahover%20%2Eanchor%20%2Eocticon%2Dlink%2C%0Ah4%3Ahover%20%2Eanchor%20%2Eocticon%2Dlink%2C%0Ah5%3Ahover%20%2Eanchor%20%2Eocticon%2Dlink%2C%0Ah6%3Ahover%20%2Eanchor%20%2Eocticon%2Dlink%20%7B%0Avisibility%3A%20visible%3B%0A%7D%0Ah1%20%7B%0Apadding%2Dbottom%3A%200%2E3em%3B%0Afont%2Dsize%3A%202%2E25em%3B%0Aline%2Dheight%3A%201%2E2%3B%0Aborder%2Dbottom%3A%201px%20solid%20%23eee%3B%0A%7D%0Ah1%20%2Eanchor%20%7B%0Aline%2Dheight%3A%201%3B%0A%7D%0Ah2%20%7B%0Apadding%2Dbottom%3A%200%2E3em%3B%0Afont%2Dsize%3A%201%2E75em%3B%0Aline%2Dheight%3A%201%2E225%3B%0Aborder%2Dbottom%3A%201px%20solid%20%23eee%3B%0A%7D%0Ah2%20%2Eanchor%20%7B%0Aline%2Dheight%3A%201%3B%0A%7D%0Ah3%20%7B%0Afont%2Dsize%3A%201%2E5em%3B%0Aline%2Dheight%3A%201%2E43%3B%0A%7D%0Ah3%20%2Eanchor%20%7B%0Aline%2Dheight%3A%201%2E2%3B%0A%7D%0Ah4%20%7B%0Afont%2Dsize%3A%201%2E25em%3B%0A%7D%0Ah4%20%2Eanchor%20%7B%0Aline%2Dheight%3A%201%2E2%3B%0A%7D%0Ah5%20%7B%0Afont%2Dsize%3A%201em%3B%0A%7D%0Ah5%20%2Eanchor%20%7B%0Aline%2Dheight%3A%201%2E1%3B%0A%7D%0Ah6%20%7B%0Afont%2Dsize%3A%201em%3B%0Acolor%3A%20%23777%3B%0A%7D%0Ah6%20%2Eanchor%20%7B%0Aline%2Dheight%3A%201%2E1%3B%0A%7D%0Ap%2C%0Ablockquote%2C%0Aul%2C%0Aol%2C%0Adl%2C%0Atable%2C%0Apre%20%7B%0Amargin%2Dtop%3A%200%3B%0Amargin%2Dbottom%3A%2016px%3B%0A%7D%0Ahr%20%7B%0Aheight%3A%204px%3B%0Apadding%3A%200%3B%0Amargin%3A%2016px%200%3B%0Abackground%2Dcolor%3A%20%23e7e7e7%3B%0Aborder%3A%200%20none%3B%0A%7D%0Aul%2C%0Aol%20%7B%0Apadding%2Dleft%3A%202em%3B%0A%7D%0Aul%20ul%2C%0Aul%20ol%2C%0Aol%20ol%2C%0Aol%20ul%20%7B%0Amargin%2Dtop%3A%200%3B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Ali%3Ep%20%7B%0Amargin%2Dtop%3A%2016px%3B%0A%7D%0Adl%20%7B%0Apadding%3A%200%3B%0A%7D%0Adl%20dt%20%7B%0Apadding%3A%200%3B%0Amargin%2Dtop%3A%2016px%3B%0Afont%2Dsize%3A%201em%3B%0Afont%2Dstyle%3A%20italic%3B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Adl%20dd%20%7B%0Apadding%3A%200%2016px%3B%0Amargin%2Dbottom%3A%2016px%3B%0A%7D%0Ablockquote%20%7B%0Apadding%3A%200%2015px%3B%0Acolor%3A%20%23777%3B%0Aborder%2Dleft%3A%204px%20solid%20%23ddd%3B%0A%7D%0Ablockquote%3E%3Afirst%2Dchild%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Ablockquote%3E%3Alast%2Dchild%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Atable%20%7B%0Adisplay%3A%20block%3B%0Awidth%3A%20100%25%3B%0Aoverflow%3A%20auto%3B%0Aword%2Dbreak%3A%20normal%3B%0Aword%2Dbreak%3A%20keep%2Dall%3B%0A%7D%0Atable%20th%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Atable%20th%2C%0Atable%20td%20%7B%0Apadding%3A%206px%2013px%3B%0Aborder%3A%201px%20solid%20%23ddd%3B%0A%7D%0Atable%20tr%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Aborder%2Dtop%3A%201px%20solid%20%23ccc%3B%0A%7D%0Atable%20tr%3Anth%2Dchild%282n%29%20%7B%0Abackground%2Dcolor%3A%20%23f8f8f8%3B%0A%7D%0Aimg%20%7B%0Amax%2Dwidth%3A%20100%25%3B%0Abox%2Dsizing%3A%20content%2Dbox%3B%0Abackground%2Dcolor%3A%20%23fff%3B%0A%7D%0Acode%20%7B%0Apadding%3A%200%3B%0Apadding%2Dtop%3A%200%2E2em%3B%0Apadding%2Dbottom%3A%200%2E2em%3B%0Amargin%3A%200%3B%0Afont%2Dsize%3A%2085%25%3B%0Abackground%2Dcolor%3A%20rgba%280%2C0%2C0%2C0%2E04%29%3B%0Aborder%2Dradius%3A%203px%3B%0A%7D%0Acode%3Abefore%2C%0Acode%3Aafter%20%7B%0Aletter%2Dspacing%3A%20%2D0%2E2em%3B%0Acontent%3A%20%22%5C00a0%22%3B%0A%7D%0Apre%3Ecode%20%7B%0Apadding%3A%200%3B%0Amargin%3A%200%3B%0Afont%2Dsize%3A%20100%25%3B%0Aword%2Dbreak%3A%20normal%3B%0Awhite%2Dspace%3A%20pre%3B%0Abackground%3A%20transparent%3B%0Aborder%3A%200%3B%0A%7D%0A%2Ehighlight%20%7B%0Amargin%2Dbottom%3A%2016px%3B%0A%7D%0A%2Ehighlight%20pre%2C%0Apre%20%7B%0Apadding%3A%2016px%3B%0Aoverflow%3A%20auto%3B%0Afont%2Dsize%3A%2085%25%3B%0Aline%2Dheight%3A%201%2E45%3B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0A%7D%0A%2Ehighlight%20pre%20%7B%0Amargin%2Dbottom%3A%200%3B%0Aword%2Dbreak%3A%20normal%3B%0A%7D%0Apre%20%7B%0Aword%2Dwrap%3A%20normal%3B%0A%7D%0Apre%20code%20%7B%0Adisplay%3A%20inline%3B%0Amax%2Dwidth%3A%20initial%3B%0Apadding%3A%200%3B%0Amargin%3A%200%3B%0Aoverflow%3A%20initial%3B%0Aline%2Dheight%3A%20inherit%3B%0Aword%2Dwrap%3A%20normal%3B%0Abackground%2Dcolor%3A%20transparent%3B%0Aborder%3A%200%3B%0A%7D%0Apre%20code%3Abefore%2C%0Apre%20code%3Aafter%20%7B%0Acontent%3A%20normal%3B%0A%7D%0Akbd%20%7B%0Adisplay%3A%20inline%2Dblock%3B%0Apadding%3A%203px%205px%3B%0Afont%2Dsize%3A%2011px%3B%0Aline%2Dheight%3A%2010px%3B%0Acolor%3A%20%23555%3B%0Avertical%2Dalign%3A%20middle%3B%0Abackground%2Dcolor%3A%20%23fcfcfc%3B%0Aborder%3A%20solid%201px%20%23ccc%3B%0Aborder%2Dbottom%2Dcolor%3A%20%23bbb%3B%0Aborder%2Dradius%3A%203px%3B%0Abox%2Dshadow%3A%20inset%200%20%2D1px%200%20%23bbb%3B%0A%7D%0A%2Epl%2Dc%20%7B%0Acolor%3A%20%23969896%3B%0A%7D%0A%2Epl%2Dc1%2C%0A%2Epl%2Ds%20%2Epl%2Dv%20%7B%0Acolor%3A%20%230086b3%3B%0A%7D%0A%2Epl%2De%2C%0A%2Epl%2Den%20%7B%0Acolor%3A%20%23795da3%3B%0A%7D%0A%2Epl%2Ds%20%2Epl%2Ds1%2C%0A%2Epl%2Dsmi%20%7B%0Acolor%3A%20%23333%3B%0A%7D%0A%2Epl%2Dent%20%7B%0Acolor%3A%20%2363a35c%3B%0A%7D%0A%2Epl%2Dk%20%7B%0Acolor%3A%20%23a71d5d%3B%0A%7D%0A%2Epl%2Dpds%2C%0A%2Epl%2Ds%2C%0A%2Epl%2Ds%20%2Epl%2Dpse%20%2Epl%2Ds1%2C%0A%2Epl%2Dsr%2C%0A%2Epl%2Dsr%20%2Epl%2Dcce%2C%0A%2Epl%2Dsr%20%2Epl%2Dsra%2C%0A%2Epl%2Dsr%20%2Epl%2Dsre%20%7B%0Acolor%3A%20%23183691%3B%0A%7D%0A%2Epl%2Dv%20%7B%0Acolor%3A%20%23ed6a43%3B%0A%7D%0A%2Epl%2Did%20%7B%0Acolor%3A%20%23b52a1d%3B%0A%7D%0A%2Epl%2Dii%20%7B%0Abackground%2Dcolor%3A%20%23b52a1d%3B%0Acolor%3A%20%23f8f8f8%3B%0A%7D%0A%2Epl%2Dsr%20%2Epl%2Dcce%20%7B%0Acolor%3A%20%2363a35c%3B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0A%2Epl%2Dml%20%7B%0Acolor%3A%20%23693a17%3B%0A%7D%0A%2Epl%2Dmh%2C%0A%2Epl%2Dmh%20%2Epl%2Den%2C%0A%2Epl%2Dms%20%7B%0Acolor%3A%20%231d3e81%3B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0A%2Epl%2Dmq%20%7B%0Acolor%3A%20%23008080%3B%0A%7D%0A%2Epl%2Dmi%20%7B%0Acolor%3A%20%23333%3B%0Afont%2Dstyle%3A%20italic%3B%0A%7D%0A%2Epl%2Dmb%20%7B%0Acolor%3A%20%23333%3B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0A%2Epl%2Dmd%20%7B%0Abackground%2Dcolor%3A%20%23ffecec%3B%0Acolor%3A%20%23bd2c00%3B%0A%7D%0A%2Epl%2Dmi1%20%7B%0Abackground%2Dcolor%3A%20%23eaffea%3B%0Acolor%3A%20%2355a532%3B%0A%7D%0A%2Epl%2Dmdr%20%7B%0Acolor%3A%20%23795da3%3B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0A%2Epl%2Dmo%20%7B%0Acolor%3A%20%231d3e81%3B%0A%7D%0Akbd%20%7B%0Adisplay%3A%20inline%2Dblock%3B%0Apadding%3A%203px%205px%3B%0Afont%3A%2011px%20Consolas%2C%20%22Liberation%20Mono%22%2C%20Menlo%2C%20Courier%2C%20monospace%3B%0Aline%2Dheight%3A%2010px%3B%0Acolor%3A%20%23555%3B%0Avertical%2Dalign%3A%20middle%3B%0Abackground%2Dcolor%3A%20%23fcfcfc%3B%0Aborder%3A%20solid%201px%20%23ccc%3B%0Aborder%2Dbottom%2Dcolor%3A%20%23bbb%3B%0Aborder%2Dradius%3A%203px%3B%0Abox%2Dshadow%3A%20inset%200%20%2D1px%200%20%23bbb%3B%0A%7D%0A%2Etask%2Dlist%2Ditem%20%7B%0Alist%2Dstyle%2Dtype%3A%20none%3B%0A%7D%0A%2Etask%2Dlist%2Ditem%2B%2Etask%2Dlist%2Ditem%20%7B%0Amargin%2Dtop%3A%203px%3B%0A%7D%0A%2Etask%2Dlist%2Ditem%20input%20%7B%0Amargin%3A%200%200%2E35em%200%2E25em%20%2D1%2E6em%3B%0Avertical%2Dalign%3A%20middle%3B%0A%7D%0A%3Achecked%2B%2Eradio%2Dlabel%20%7B%0Az%2Dindex%3A%201%3B%0Aposition%3A%20relative%3B%0Aborder%2Dcolor%3A%20%234078c0%3B%0A%7D%0A%2EsourceLine%20%7B%0Adisplay%3A%20inline%2Dblock%3B%0A%7D%0Acode%20%2Ekw%20%7B%20color%3A%20%23000000%3B%20%7D%0Acode%20%2Edt%20%7B%20color%3A%20%23ed6a43%3B%20%7D%0Acode%20%2Edv%20%7B%20color%3A%20%23009999%3B%20%7D%0Acode%20%2Ebn%20%7B%20color%3A%20%23009999%3B%20%7D%0Acode%20%2Efl%20%7B%20color%3A%20%23009999%3B%20%7D%0Acode%20%2Ech%20%7B%20color%3A%20%23009999%3B%20%7D%0Acode%20%2Est%20%7B%20color%3A%20%23183691%3B%20%7D%0Acode%20%2Eco%20%7B%20color%3A%20%23969896%3B%20%7D%0Acode%20%2Eot%20%7B%20color%3A%20%230086b3%3B%20%7D%0Acode%20%2Eal%20%7B%20color%3A%20%23a61717%3B%20%7D%0Acode%20%2Efu%20%7B%20color%3A%20%2363a35c%3B%20%7D%0Acode%20%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%0Acode%20%2Ewa%20%7B%20color%3A%20%23000000%3B%20%7D%0Acode%20%2Ecn%20%7B%20color%3A%20%23008080%3B%20%7D%0Acode%20%2Esc%20%7B%20color%3A%20%23008080%3B%20%7D%0Acode%20%2Evs%20%7B%20color%3A%20%23183691%3B%20%7D%0Acode%20%2Ess%20%7B%20color%3A%20%23183691%3B%20%7D%0Acode%20%2Eim%20%7B%20color%3A%20%23000000%3B%20%7D%0Acode%20%2Eva%20%7Bcolor%3A%20%23008080%3B%20%7D%0Acode%20%2Ecf%20%7B%20color%3A%20%23000000%3B%20%7D%0Acode%20%2Eop%20%7B%20color%3A%20%23000000%3B%20%7D%0Acode%20%2Ebu%20%7B%20color%3A%20%23000000%3B%20%7D%0Acode%20%2Eex%20%7B%20color%3A%20%23000000%3B%20%7D%0Acode%20%2Epp%20%7B%20color%3A%20%23999999%3B%20%7D%0Acode%20%2Eat%20%7B%20color%3A%20%23008080%3B%20%7D%0Acode%20%2Edo%20%7B%20color%3A%20%23969896%3B%20%7D%0Acode%20%2Ean%20%7B%20color%3A%20%23008080%3B%20%7D%0Acode%20%2Ecv%20%7B%20color%3A%20%23008080%3B%20%7D%0Acode%20%2Ein%20%7B%20color%3A%20%23008080%3B%20%7D%0A" rel="stylesheet">
+<style>
+body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 45px;
+  padding-top: 0px;
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+<h1 id="cuda.ml">cuda.ml</h1>
+<!-- badges: start -->
+<p><a href="https://cran.r-project.org/package=cuda.ml"><embed src="data:image/svg+xml; charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMzEiIGhlaWdodD0iMjAiPgogIDxsaW5lYXJHcmFkaWVudCBpZD0iYiIgeDI9IjAiIHkyPSIxMDAlIj4KICAgIDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2JiYiIgc3RvcC1vcGFjaXR5PSIuMSIvPgogICAgPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLW9wYWNpdHk9Ii4xIi8+CiAgPC9saW5lYXJHcmFkaWVudD4KICA8bWFzayBpZD0iYSI+CiAgICA8cmVjdCB3aWR0aD0iMTMxIiBoZWlnaHQ9IjIwIiByeD0iMyIgZmlsbD0iI2ZmZiIvPgogIDwvbWFzaz4KICA8ZyBtYXNrPSJ1cmwoI2EpIj4KICAgIDxwYXRoIGZpbGw9IiM1NTUiIGQ9Ik0wIDBoNDN2MjBIMHoiLz4KICAgIDxwYXRoIGZpbGw9IiNlMDVkNDQiIGQ9Ik00MyAwaDExNHYyMEg0M3oiLz4KICAgIDxwYXRoIGZpbGw9InVybCgjYikiIGQ9Ik0wIDBoMTMxdjIwSDB6Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiCiAgICAgZm9udC1mYW1pbHk9IkRlamFWdSBTYW5zLFZlcmRhbmEsR2VuZXZhLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiPgogICAgPHRleHQgeD0iMjEuNSIgeT0iMTUiIGZpbGw9IiMwMTAxMDEiIGZpbGwtb3BhY2l0eT0iLjMiPgogICAgICBDUkFOCiAgICA8L3RleHQ+CiAgICA8dGV4dCB4PSIyMS41IiB5PSIxNCI+CiAgICAgIENSQU4KICAgIDwvdGV4dD4KICAgIDx0ZXh0IHg9Ijg2IiB5PSIxNSIgZmlsbD0iIzAxMDEwMSIgZmlsbC1vcGFjaXR5PSIuMyI+CiAgICAgIG5vdCBwdWJsaXNoZWQKICAgIDwvdGV4dD4KICAgIDx0ZXh0IHg9Ijg2IiB5PSIxNCI+CiAgICAgIG5vdCBwdWJsaXNoZWQKICAgIDwvdGV4dD4KICA8L2c+Cjwvc3ZnPg=="></embed></a> <a href="https://www.r-pkg.org/pkg/cuda.ml"><img src="data:image/svg+xml; charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNDkiIGhlaWdodD0iMjAiPgogIDxsaW5lYXJHcmFkaWVudCBpZD0iYiIgeDI9IjAiIHkyPSIxMDAlIj4KICAgIDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2JiYiIgc3RvcC1vcGFjaXR5PSIuMSIvPgogICAgPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLW9wYWNpdHk9Ii4xIi8+CiAgPC9saW5lYXJHcmFkaWVudD4KICA8bWFzayBpZD0iYSI+CiAgICA8cmVjdCB3aWR0aD0iMTQ5IiBoZWlnaHQ9IjIwIiByeD0iMyIgZmlsbD0iI2ZmZiIvPgogIDwvbWFzaz4KICA8ZyBtYXNrPSJ1cmwoI2EpIj48cGF0aCBmaWxsPSIjNTU1IiBkPSJNMCAwaDcwdjIwSDB6Ii8+CiAgICA8cGF0aCBmaWxsPSIjNGMxIiBkPSJNNzAgMGg3OXYyMEg3MHoiLz4KICAgIDxwYXRoIGZpbGw9InVybCgjYikiIGQ9Ik0wIDBoMTQ5djIwSDB6Ii8+CiAgPC9nPgogIDxnIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiCiAgICAgZm9udC1mYW1pbHk9IkRlamFWdSBTYW5zLFZlcmRhbmEsR2VuZXZhLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiPgogICAgPHRleHQgeD0iMzYiIHk9IjE1IiBmaWxsPSIjMDEwMTAxIiBmaWxsLW9wYWNpdHk9Ii4zIj4KICAgICAgZG93bmxvYWRzCiAgICA8L3RleHQ+CiAgICA8dGV4dCB4PSIzNiIgeT0iMTQiPgogICAgICBkb3dubG9hZHMKICAgIDwvdGV4dD4KICAgIDx0ZXh0IHg9IjEwOC41IiB5PSIxNSIgZmlsbD0iIzAxMDEwMSIgZmlsbC1vcGFjaXR5PSIuMyI+CiAgICAgIDAvbW9udGgKICAgIDwvdGV4dD4KICAgIDx0ZXh0IHg9IjEwOC41IiB5PSIxNCI+CiAgICAgIDAvbW9udGgKICAgIDwvdGV4dD4KICA8L2c+Cjwvc3ZnPg==" style></a> <!-- badges: end --></p>
+<p>The goal of {cuda.ml} is to provide a simple and intuitive R interface for <a href="https://github.com/rapidsai/cuml">RAPIDS cuML</a>. RAPIDS cuML is a suite of GPU-accelerated machine learning libraries powered by <a href="https://en.wikipedia.org/wiki/CUDA">CUDA</a>. {cuda.ml} is under active development, and currently implements R interfaces for the algorithms listed below (which is a subset of <a href="https://github.com/rapidsai/cuml#supported-algorithms">algorithms supported by RAPIDS cuML</a>).</p>
+<h3 id="supported-algorithms">Supported Algorithms</h3>
+<table style="width:17%;">
+<colgroup>
+<col width="5%"></col>
+<col width="5%"></col>
+<col width="5%"></col>
+</colgroup>
+<thead>
+<tr class="header">
+<th>Category</th>
+<th>Algorithm</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Clustering</strong></td>
+<td>Density-Based Spatial Clustering of Applications with Noise (DBSCAN)</td>
+<td>Only single-GPU implementation is supported at the moment</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>K-Means</td>
+<td>Only single-GPU implementation is supported at the moment</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Single-Linkage Agglomerative Clustering</td>
+<td></td>
+</tr>
+<tr class="even">
+<td><strong>Dimensionality Reduction</strong></td>
+<td>Principal Components Analysis (PCA)</td>
+<td>Only single-GPU implementation is supported at the moment</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Truncated Singular Value Decomposition (tSVD)</td>
+<td>Only single-GPU implementation is supported at the moment</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Uniform Manifold Approximation and Projection (UMAP)</td>
+<td>Only single-GPU implementation is supported at the moment</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Random Projection</td>
+<td></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>t-Distributed Stochastic Neighbor Embedding (TSNE)</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><strong>Nonlinear Models for Regression or Classification</strong></td>
+<td>Random Forest (RF) Classification</td>
+<td>Only single-GPU implementation is supported at the moment</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Random Forest (RF) Regression</td>
+<td>Only single-GPU implementation is supported at the moment</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Inference for decision tree-based models in XGBoost or LightGBM formats using the CuML Forest Inference Library (FIL)</td>
+<td>Requires linkage to the Treelite C library when {cuml} is installed. Treelite is used for model loading.</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>K-Nearest Neighbors (KNN) Classification</td>
+<td>Uses <a href="https://github.com/facebookresearch/faiss">Faiss</a> for Nearest Neighbors Query.</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>K-Nearest Neighbors (KNN) Regression</td>
+<td>Uses <a href="https://github.com/facebookresearch/faiss">Faiss</a> for Nearest Neighbors Query.</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Support Vector Machine Classifier (SVC)</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Epsilon-Support Vector Regression (SVR)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="installation">Installation</h2>
+<p>In order for {cuda.ml} to work as expected, the C++/CUDA source code of {cuda.ml} must be linked with CUDA runtime and a valid copy of the RAPIDS cuML library.</p>
+<p>Before installing {cuda.ml} itself, it may be worthwhile to take a quick look through the sub-sections below on how to properly setup all of {cuda.ml}'s required runtime dependencies.</p>
+<h3 id="quick-note-on-installing-the-rapids-cuml-library">Quick note on installing the RAPIDS cuML library:</h3>
+<p>Although Conda is the only officially supported distribution channel at the moment for RAPIDS cuML (i.e., see <a href="https://rapids.ai/start.html#get-rapids" class="uri">https://rapids.ai/start.html#get-rapids</a>), one can still build and install this library from source without relying on Conda. See <a href="https://github.com/yitao-li/cuml-installation-notes" class="uri">https://github.com/yitao-li/cuml-installation-notes</a> for build-from-source instructions.</p>
+<h3 id="quick-install-instructions-for-ubuntu-20-04">Quick install instructions for Ubuntu 20-04:</h3>
+<h4 id="install-deps">Install deps:</h4>
+<pre><code>sudo apt install -y cmake ccache</code></pre>
+<h3 id="install-cuda">Install CUDA</h3>
+<p>(consult <a href="https://developer.nvidia.com/cuda-downloads" class="uri">https://developer.nvidia.com/cuda-downloads</a> for other platforms)</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="fu">wget</span> https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
+<span class="fu">sudo</span> mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
+<span class="fu">wget</span> https://developer.download.nvidia.com/compute/cuda/11.4.2/local_installers/cuda-repo-ubuntu2004-11-4-local_11.4.2-470.57.02-1_amd64.deb
+<span class="fu">sudo</span> dpkg -i cuda-repo-ubuntu2004-11-4-local_11.4.2-470.57.02-1_amd64.deb
+<span class="fu">sudo</span> apt-key add /var/cuda-repo-ubuntu2004-11-4-local/7fa2af80.pub
+<span class="fu">sudo</span> apt-get update
+<span class="fu">sudo</span> apt-get -y install cuda</code></pre></div>
+<h3 id="add-cuda-executables-to-path">Add CUDA executables to path</h3>
+<p>(nvcc is needed for building the C++/CUDA source code of {cuda.ml})</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">echo</span> <span class="st">&quot;export PATH=</span><span class="va">$PATH</span><span class="st">:/usr/local/cuda/bin&quot;</span> <span class="op">&gt;&gt;</span> ~/.bashrc
+<span class="bu">source</span> ~/.bashrc</code></pre></div>
+<h3 id="install-miniconda">Install Miniconda:</h3>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="fu">wget</span> https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+<span class="fu">chmod</span> +x Miniconda3-latest-Linux-x86_64.sh
+<span class="ex">./Miniconda3-latest-Linux-x86_64.sh</span> -b
+<span class="co"># consult https://rapids.ai/start.html for alternatives</span></code></pre></div>
+<h3 id="create-and-configure-the-conda-env">Create and configure the conda env</h3>
+<pre><code># This is a relatively big download, may take a while
+~/miniconda3/bin/conda create -n rapids-21.08 -c rapidsai -c nvidia -c conda-forge \
+    rapids-blazing=21.08 python=3.8 cudatoolkit=11.2</code></pre>
+<h3 id="activate-the-conda-env">Activate the conda env:</h3>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">.</span> <span class="ex">~/miniconda3/bin/activate</span>
+<span class="ex">conda</span> activate rapids-21.08</code></pre></div>
+<h3 id="consider-adjusting-ld_library_path">Consider adjusting <code>LD_LIBRARY_PATH</code></h3>
+<p>The subsequent steps may (or may not) fail without the following:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">export</span> <span class="va">LD_LIBRARY_PATH=</span>~/miniconda3/envs/rapids-21.08/lib</code></pre></div>
+<p>If you get some error indicating a GLIBC version mismatch in the subsequent steps, then please try adjusting <code>LD_LIBRARY_PATH</code> as a workaround.</p>
+<h3 id="consider-enabling-ccache">Consider enabling ccache</h3>
+<p>To speed up recompilation times during development, set this env var:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">echo</span> <span class="st">&quot;export CUML4R_ENABLE_CCACHE=1&quot;</span> <span class="op">&gt;&gt;</span> ~/.bashrc
+<span class="bu">.</span> <span class="ex">~/.bashrc</span></code></pre></div>
+<h3 id="install-cuda.ml-the-r-package">Install {cuda.ml} the R package:</h3>
+<p>You can install the released version of {cuda.ml} from <a href="https://CRAN.R-project.org">CRAN</a> with:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;cuda.ml&quot;</span>)</code></pre></div>
+<p>And the development version from <a href="https://github.com/">GitHub</a> with:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># install.packages(&quot;devtools&quot;)</span>
+devtools<span class="op">::</span><span class="kw">install_github</span>(<span class="st">&quot;mlverse/cuda.ml&quot;</span>)</code></pre></div>
+<h1 id="examples">Examples</h1>
+<h2 id="using-cuda.ml-for-supervised-ml-tasks-through-parsnip">Using {cuda.ml} for supervised ML tasks through {parsnip}</h2>
+<p>{cuda.ml} provides {parsnip} bindings for supervised ML algorithms such as <code>rand_forest</code>, <code>nearest_neighbor</code>, <code>svm_rbf</code>, <code>svm_poly</code>, and <code>svm_linear</code>.</p>
+<p>The following example shows how {cuda.ml} can be used as a {parsnip} engine to build a SVM classifier.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(cuda.ml)
+<span class="kw">library</span>(dplyr, <span class="dt">quietly =</span> <span class="ot">TRUE</span>)
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Attaching package: 'dplyr'</span>
+<span class="co">#&gt; The following objects are masked from 'package:stats':</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;     filter, lag</span>
+<span class="co">#&gt; The following objects are masked from 'package:base':</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;     intersect, setdiff, setequal, union</span>
+<span class="kw">library</span>(parsnip, <span class="dt">quietly =</span> <span class="ot">TRUE</span>)
+<span class="kw">library</span>(yardstick, <span class="dt">quietly =</span> <span class="ot">TRUE</span>)
+<span class="co">#&gt; For binary classification, the first factor level is assumed to be the event.</span>
+<span class="co">#&gt; Use the argument `event_level = &quot;second&quot;` to alter this as needed.</span>
+
+train_inds &lt;-<span class="st"> </span>iris <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">ind =</span> <span class="kw">row_number</span>()) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">group_by</span>(Species) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">sample_frac</span>(<span class="fl">0.7</span>)
+
+train_data &lt;-<span class="st"> </span>iris[train_inds<span class="op">$</span>ind, ]
+test_data &lt;-<span class="st"> </span>iris[<span class="op">-</span>train_inds<span class="op">$</span>ind, ]
+
+model &lt;-<span class="st"> </span><span class="kw">svm_rbf</span>(<span class="dt">mode =</span> <span class="st">&quot;classification&quot;</span>, <span class="dt">rbf_sigma =</span> <span class="dv">10</span>, <span class="dt">cost =</span> <span class="dv">50</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">set_engine</span>(<span class="st">&quot;cuda.ml&quot;</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">fit</span>(Species <span class="op">~</span><span class="st"> </span>., <span class="dt">data =</span> train_data)
+
+preds &lt;-<span class="st"> </span><span class="kw">predict</span>(model, test_data)
+
+<span class="kw">cat</span>(<span class="st">&quot;Confusion matrix:</span><span class="ch">\n\n</span><span class="st">&quot;</span>)
+<span class="co">#&gt; Confusion matrix:</span>
+preds <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">bind_cols</span>(test_data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(Species)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">conf_mat</span>(<span class="dt">truth =</span> Species, <span class="dt">estimate =</span> .pred_class) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">print</span>()
+<span class="co">#&gt;             Truth</span>
+<span class="co">#&gt; Prediction   setosa versicolor virginica</span>
+<span class="co">#&gt;   setosa         15          0         0</span>
+<span class="co">#&gt;   versicolor      0         14         0</span>
+<span class="co">#&gt;   virginica       0          1        15</span></code></pre></div>
+<h2 id="using-cuda.ml-for-unsupervised-ml-tasks">Using {cuda.ml} for unsupervised ML tasks</h2>
+<p>The following example shows how {cuda.ml} can be used for unsupervised ML tasks such as k-means clustering.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(cuda.ml)
+
+clustering &lt;-<span class="st"> </span><span class="kw">cuda_ml_kmeans</span>(
+  iris[, <span class="kw">which</span>(<span class="kw">names</span>(iris) <span class="op">!=</span><span class="st"> &quot;Species&quot;</span>)],
+  <span class="dt">k =</span> <span class="dv">3</span>, <span class="dt">max_iters =</span> <span class="dv">100</span>
+)
+
+<span class="co"># Expected outcome: there is strong correlation between the cluster labels and</span>
+<span class="co"># `iris$Species`</span>
+<span class="kw">print</span>(clustering)
+<span class="co">#&gt; $labels</span>
+<span class="co">#&gt;   [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</span>
+<span class="co">#&gt;  [38] 1 1 1 1 1 1 1 1 1 1 1 1 1 0 2 0 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2</span>
+<span class="co">#&gt;  [75] 2 2 2 0 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 0 2 0 0 0 0 2 0 0 0 0</span>
+<span class="co">#&gt; [112] 0 0 2 2 0 0 0 0 2 0 2 0 2 0 0 2 2 0 0 0 0 0 2 0 0 0 0 2 0 0 0 2 0 0 0 2 0</span>
+<span class="co">#&gt; [149] 0 2</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; $centroids</span>
+<span class="co">#&gt;          [,1]     [,2]     [,3]     [,4]</span>
+<span class="co">#&gt; [1,] 6.853846 3.076923 5.715385 2.053846</span>
+<span class="co">#&gt; [2,] 5.006000 3.428000 1.462000 0.246000</span>
+<span class="co">#&gt; [3,] 5.883607 2.740984 4.388525 1.434426</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; $inertia</span>
+<span class="co">#&gt; [1] 78.85567</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; $n_iter</span>
+<span class="co">#&gt; [1] 10</span></code></pre></div>
+<h2 id="using-cuda.ml-for-visualizations">Using {cuda.ml} for visualizations</h2>
+<p>{cuda.ml} also features R interfaces for algorithms such as UMAP and t-SNE, which are useful when one needs to visualize clusters of high-dimensional data points by embedding them onto low-dimensional manifolds (i.e., 4 dimensions or fewer).</p>
+<p>For example, the code snippet below shows how <code>cuda_ml_umap()</code> can be used to visualize the MNIST hand-written digits dataset:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(cuda.ml)
+<span class="kw">library</span>(ggplot2)
+<span class="kw">library</span>(magrittr)
+
+<span class="co"># initialize data directory</span>
+data_dir &lt;-<span class="st"> </span><span class="kw">tempdir</span>()
+<span class="kw">dir.create</span>(data_dir, <span class="dt">showWarnings =</span> <span class="ot">FALSE</span>)
+
+data_url &lt;-<span class="st"> &quot;https://storage.googleapis.com/cvdf-datasets/mnist/train-images-idx3-ubyte.gz&quot;</span>
+
+<span class="co"># read an MNIST file (encoded in IDX format)</span>
+read_idx &lt;-<span class="st"> </span><span class="cf">function</span>(file) {
+  conn &lt;-<span class="st"> </span><span class="kw">gzfile</span>(file, <span class="dt">open =</span> <span class="st">&quot;rb&quot;</span>)
+  <span class="kw">on.exit</span>(<span class="kw">close</span>(conn), <span class="dt">add =</span> <span class="ot">TRUE</span>)
+
+  <span class="co"># read the magic number as sequence of 4 bytes</span>
+  magic &lt;-<span class="st"> </span><span class="kw">readBin</span>(conn, <span class="dt">what =</span> <span class="st">&quot;raw&quot;</span>, <span class="dt">n =</span> <span class="dv">4</span>, <span class="dt">endian =</span> <span class="st">&quot;big&quot;</span>)
+  ndims &lt;-<span class="st"> </span><span class="kw">as.integer</span>(magic[[<span class="dv">4</span>]])
+
+  <span class="co"># read the dimensions (32-bit integers)</span>
+  dims &lt;-<span class="st"> </span><span class="kw">readBin</span>(conn, <span class="dt">what =</span> <span class="st">&quot;integer&quot;</span>, <span class="dt">n =</span> ndims, <span class="dt">endian =</span> <span class="st">&quot;big&quot;</span>)
+
+  <span class="co"># read the rest in as a raw vector</span>
+  data &lt;-<span class="st"> </span><span class="kw">readBin</span>(conn, <span class="dt">what =</span> <span class="st">&quot;raw&quot;</span>, <span class="dt">n =</span> <span class="kw">prod</span>(dims), <span class="dt">endian =</span> <span class="st">&quot;big&quot;</span>)
+
+  <span class="co"># convert to an integer vector</span>
+  converted &lt;-<span class="st"> </span><span class="kw">as.integer</span>(data)
+
+  <span class="kw">matrix</span>(converted, <span class="dt">nrow =</span> dims[<span class="dv">1</span>], <span class="dt">ncol =</span> <span class="kw">prod</span>(dims[<span class="op">-</span><span class="dv">1</span>]), <span class="dt">byrow =</span> <span class="ot">TRUE</span>)
+}
+
+dst_path &lt;-<span class="st"> </span><span class="kw">file.path</span>(data_dir, <span class="kw">basename</span>(data_url))
+<span class="kw">download.file</span>(data_url, <span class="dt">destfile =</span> dst_path)
+
+mnist_dataset &lt;-<span class="st"> </span><span class="kw">read_idx</span>(dst_path)
+
+embedding &lt;-<span class="st"> </span><span class="kw">cuda_ml_umap</span>(
+  mnist_dataset, <span class="dt">n_components =</span> <span class="dv">2</span>, <span class="dt">n_neighbors =</span> <span class="dv">50</span>,
+  <span class="dt">local_connectivity =</span> <span class="dv">15</span>, <span class="dt">repulsion_strength =</span> <span class="dv">10</span>
+)
+embedding<span class="op">$</span>transformed_data <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">as.data.frame</span>() <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> V1, <span class="dt">y =</span> V2)) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>()</code></pre></div>
+<p><img src="data:image/png;base64,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" width="100%" /></p>
+<p>From this type of visualization, we can qualitatively understand the following about the MNIST dataset:</p>
+<ul>
+<li>The dataset can be reasonably classified into some number of categories.</li>
+<li>The right number of categories may be any where between 9 and 11.</li>
+<li>While there are some categories that are clearly distinguishable from others, there are others that have less clear boundaries with their neighbors.</li>
+<li>A small fraction of data points did not fit particularly well into any of the categories.</li>
+</ul>
+
+</body>
+</html>
