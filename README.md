@@ -243,8 +243,8 @@ preds %>%
 #>             Truth
 #> Prediction   setosa versicolor virginica
 #>   setosa         15          0         0
-#>   versicolor      0         15         2
-#>   virginica       0          0        13
+#>   versicolor      0         14         0
+#>   virginica       0          1        15
 ```
 
 ## Using {cuda.ml} for unsupervised ML tasks
@@ -342,24 +342,3 @@ From this type of visualization, we can qualitatively understand the following a
 -   The right number of categories may be any where between 9 and 11.
 -   While there are some categories that are clearly distinguishable from others, there are others that have less clear boundaries with their neighbors.
 -   A small fraction of data points did not fit particularly well into any of the categories.
-
-Furthermore, we can also read the desired label of each sample from the MNIST dataset, and compare the UMAP output above with the MNIST ground-truth by coloring each point based on its desired label, which will show most data points belonging to the same category are clustered together in the UMAP output:
-
-``` r
-library(cuda.ml)
-library(ggplot2)
-library(magrittr)
-
-dir.create(data_dir, showWarnings = FALSE)
-
-labels_url <- "https://storage.googleapis.com/cvdf-datasets/mnist/train-labels-idx1-ubyte.gz"
-labels_dst_path <- file.path(data_dir, "labels.idx")
-download.file(labels_url, destfile = labels_dst_path)
-mnist_labels <- factor(read_idx(labels_dst_path))
-
-embedding$transformed_data %>%
-  as.data.frame() %>%
-  ggplot(aes(x = V1, y = V2, color = mnist_labels)) + geom_point()
-```
-
-<img src="man/figures/README-umap colored output based on ground-truth-1.png" width="100%" />
