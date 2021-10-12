@@ -1,26 +1,30 @@
-get_cuda_path <- function() {
-  cuda_path <- Sys.getenv("CUDA_PATH", unset = NA_character_)
-  if (is.na(cuda_path)) {
+get_cuml_prefix <- function() {
+  cuml_prefix <- Sys.getenv("CUML_PREFIX", unset = NA_character_)
+  if (is.na(cuml_prefix)) {
+    # Try the 'CUDA_PATH' env variable if it is present.
+    cuml_prefix <- Sys.getenv("CUDA_PATH", unset = NA_character_)
+  }
+  if (is.na(cuml_prefix)) {
     warning(
       "\t**********************************************\n",
       "\t**********************************************\n",
       "\t**                                          **\n",
-      "\t**  'CUDA_PATH' env variable is missing --  **\n",
-      "\t**  will boldly assume it is '/usr' !       **\n",
+      "\t** 'CUML_PREFIX' env variable is missing -- **\n",
+      "\t** will boldly assume it is '/usr' !        **\n",
       "\t**                                          **\n",
       "\t**********************************************\n",
       "\t**********************************************\n",
       immediate. = TRUE
     )
-    cuda_path <- "/usr"
+    cuml_prefix <- "/usr"
   }
 
-  cuda_path
+  cuml_prefix
 }
 
 has_cuml <- function() {
-  cuda_path <- get_cuda_path()
-  cuml_headers_dir <- file.path(cuda_path, "include", "cuml")
+  cuml_prefix <- get_cuml_prefix()
+  cuml_headers_dir <- file.path(cuml_prefix, "include", "cuml")
 
   if (!dir.exists(cuml_headers_dir)) {
     warning(
@@ -28,11 +32,15 @@ has_cuml <- function() {
       "\t***************************************************************************\n",
       "\t***************************************************************************\n",
       "\t**                                                                       **\n",
-      "\t**  {cuml} requires a valid RAPIDS installation.                         **\n",
+      "\t**  {cuda.ml} requires a valid RAPIDS installation.                      **\n",
       "\t**  Please follow https://rapids.ai/start.html to install RAPIDS first.  **\n",
-      "\t**  {cuml} must be installed and run from an environment containing a    **\n",
-      "\t**  valid CUDA_PATH env variable\n                                       **\n",
-      "\t**  (e.g., '/home/user/anaconda3/envs/rapids-21.06' or similar).         **\n",
+      "\t**  {cuda.ml} must be installed from an environment containing a valid   **\n",
+      "\t**  CUML_PREFIX env variable (e.g.,                                      **\n",
+      "\t**  '/home/user/anaconda3/envs/rapids-21.06',                            **\n",
+      "\t**  '/home/user/miniconda3/envs/rapids-21.06', '/usr', or similar such   **\n",
+      "\t**  such that \"${CUML_PREFIX}/include/cuml\" is the directory of RAPIDS   **\n",
+      "\t**  cuML header files and \"${CUML_PREFIX}/lib\" is the directory of       **\n",
+      "\t**  RAPIDS cuML shared library files.).                                  **\n",
       "\t**                                                                       **\n",
       "\t***************************************************************************\n",
       "\t***************************************************************************\n"
@@ -71,13 +79,13 @@ run_cmake <- function() {
   on.exit(setwd(wd))
   setwd("src")
 
-  cuda_path <- get_cuda_path()
+  cuml_prefix <- get_cuml_prefix()
 
   rc <- system2(
     "cmake",
     args = c(
-      paste0("-DCUML_INCLUDE_DIR=", file.path(cuda_path, "include")),
-      paste0("-DCUML_LIBRARY_DIR=", file.path(cuda_path, "lib")),
+      paste0("-DCUML_INCLUDE_DIR=", file.path(cuml_prefix, "include")),
+      paste0("-DCUML_LIBRARY_DIR=", file.path(cuml_prefix, "lib")),
       paste0(
         "-DCUML_STUB_HEADERS_DIR=", normalizePath(file.path(getwd(), "stubs"))
       ),
