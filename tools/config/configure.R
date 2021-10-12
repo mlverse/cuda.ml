@@ -80,6 +80,10 @@ run_cmake <- function() {
   setwd("src")
 
   cuml_prefix <- get_cuml_prefix()
+  cmake_prefix_path <- paste0(
+    c(Sys.getenv("CMAKE_PREFIX_PATH", unset = ""), cuml_prefix), collapse = ":"
+  )
+  Sys.setenv(CMAKE_PREFIX_PATH = cmake_prefix_path)
 
   rc <- system2(
     "cmake",
