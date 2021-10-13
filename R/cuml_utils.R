@@ -29,7 +29,6 @@ has_cuML <- .has_cuML
 #' library(cuda.ml)
 #'
 #' print(cuML_major_version())
-#'
 #' @export
 cuML_major_version <- .cuML_major_version
 
@@ -45,6 +44,5 @@ cuML_major_version <- .cuML_major_version
 #' library(cuda.ml)
 #'
 #' print(cuML_minor_version())
-#'
 #' @export
 cuML_minor_version <- .cuML_minor_version

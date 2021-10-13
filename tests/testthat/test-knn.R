@@ -19,7 +19,8 @@ test_that("KNN classifier works as expected", {
     as.data.frame()
   for (algo in c("brute", "ivfflat", "ivfpq", "ivfsq")) {
     model <- cuda_ml_knn(
-      label ~ ., blobs_df, algo = algo, metric = "euclidean"
+      label ~ ., blobs_df,
+      algo = algo, metric = "euclidean"
     )
     preds <- predict(model, test_blobs_df)
 
@@ -43,7 +44,8 @@ test_that("KNN regressor works as expected", {
   test_blobs <- gen_blobs(test_blob_sz, centers)
 
   cuda_ml_knn_regressor <- cuda_ml_knn(
-    y ~ ., data = train_df, algo = "brute", metric = "euclidean", neighbors = 5L
+    y ~ .,
+    data = train_df, algo = "brute", metric = "euclidean", neighbors = 5L
   )
   cuda_ml_knn_regressor_preds <- predict(
     cuda_ml_knn_regressor, as.data.frame(test_blobs)
@@ -66,7 +68,7 @@ test_that("KNN classifier works as expected through parsnip", {
   require("parsnip")
 
   test_blobs_df <- gen_blobs(test_blob_sz, centers) %>%
-  as.data.frame()
+    as.data.frame()
   model <- nearest_neighbor(
     mode = "classification", neighbors = 10, dist_power = 2
   ) %>%
