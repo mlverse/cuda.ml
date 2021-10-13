@@ -21,3 +21,5 @@
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
+^README\.Rmd$
+^README_cache$
