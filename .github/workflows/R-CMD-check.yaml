@@ -37,6 +37,11 @@ jobs:
           apt-get update -y
           apt-get install -y sudo software-properties-common dialog apt-utils tzdata
 
+      - name: Setup cmake
+        uses: jwlawson/actions-setup-cmake@v1.9
+        with:
+          cmake-version: '3.21.x'
+
       - uses: actions/checkout@v2
 
       - uses: r-lib/actions/setup-pandoc@v1
