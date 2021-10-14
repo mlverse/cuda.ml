@@ -114,7 +114,7 @@ points by embedding them onto low-dimensional manifolds (i.e., 4 dimensions or
 fewer).
 
 For example, the code snippet below shows how `cuda_ml_umap()` can be used to
-visualize the MNIST hand-written digits dataset:
+visualize the MNIST hand-written digits dataset, and also, the coloring based on the true label of each sample demonstrates how well the UMAP algorithm transforms different hand writings of the same digit into nearby points in a 2D embedding:
 
 ```{r umap example, cache = TRUE}
 library(cuda.ml)
