@@ -25,3 +25,4 @@
 ^README_cache$
 ^man/figures$
 ^libcuml$
+^\.github$

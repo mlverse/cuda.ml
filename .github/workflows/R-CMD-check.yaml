@@ -1,0 +1,60 @@
+# Workflow derived from https://github.com/r-lib/actions/tree/master/examples
+# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+name: R-CMD-check
+
+jobs:
+  R-CMD-check:
+
+    strategy:
+      fail-fast: false
+      matrix:
+        cuda: ['11.4.2']
+        cuml: ['21.08']
+        r: ['release', 'devel']
+
+    runs-on: ['self-hosted', 'gpu']
+    container:
+      image: nvidia/cuda:${{ matrix.cuda }}-devel-ubuntu18.04
+      options: --gpus all
+
+    name: 'R: ${{ matrix.r }} CUDA: ${{ matrix.cuda }} CUML: ${{ matrix.cuml }}''
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+      CUML_VERSION: matrix.cuml
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: r-lib/actions/setup-pandoc@v1
+
+      - uses: r-lib/actions/setup-r@v1
+        with:
+          r-version: ${{ matrix.r }}
+          http-user-agent: ${{ matrix.config.http-user-agent }}
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v1
+        with:
+          extra-packages: rcmdcheck
+
+      - uses: r-lib/actions/check-r-package@v1
+
+      - name: Show testthat output
+        if: always()
+        run: find check -name 'testthat.Rout*' -exec cat '{}' \; || true
+        shell: bash
+
+      - name: Upload check results
+        if: failure()
+        uses: actions/upload-artifact@main
+        with:
+          name: ${{ runner.os }}-r${{ matrix.r }}-results
+          path: check
