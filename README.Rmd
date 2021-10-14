@@ -62,7 +62,7 @@ required runtime dependencies.
 
 Although Conda is the only officially supported distribution channel at the
 moment for RAPIDS cuML (i.e., see https://rapids.ai/start.html#get-rapids),
-one can still build and install this library from source without relying on
+you can still build and install this library from source without relying on
 Conda.
 See https://github.com/yitao-li/cuml-installation-notes for build-from-source
 instructions.
@@ -161,15 +161,15 @@ The following example shows how {cuda.ml} can be used as a {parsnip} engine to
 build a SVM classifier.
 
 ```{r svm example}
+library(dplyr, warn.conflicts = FALSE)
+library(parsnip)
 library(cuda.ml)
-library(dplyr, quietly = TRUE)
-library(parsnip, quietly = TRUE)
-library(yardstick, quietly = TRUE)
+set.seed(11235)
 
 train_inds <- iris %>%
   mutate(ind = row_number()) %>%
   group_by(Species) %>%
-  sample_frac(0.7)
+  slice_sample(prop = 0.7)
 
 train_data <- iris[train_inds$ind, ]
 test_data <- iris[-train_inds$ind, ]
@@ -183,8 +183,7 @@ preds <- predict(model, test_data)
 cat("Confusion matrix:\n\n")
 preds %>%
   bind_cols(test_data %>% select(Species)) %>%
-  conf_mat(truth = Species, estimate = .pred_class) %>%
-  print()
+  yardstick::conf_mat(truth = Species, estimate = .pred_class)
 ```
 
 ## Using {cuda.ml} for unsupervised ML tasks
@@ -200,9 +199,13 @@ clustering <- cuda_ml_kmeans(
   k = 3, max_iters = 100
 )
 
-# Expected outcome: there is strong correlation between the cluster labels and
-# `iris$Species`
+# Expected outcome: there is strong correlation 
+# between cluster labels and `iris$Species`
 print(clustering)
+
+library(dplyr, warn.conflicts = FALSE)
+tibble(cluster_id = clustering$labels, species = iris$Species) %>% 
+  group_by(cluster_id) %>% count(species)
 ```
 
 ## Using {cuda.ml} for visualizations
@@ -220,45 +223,38 @@ library(cuda.ml)
 library(ggplot2)
 library(magrittr)
 
-# initialize data directory
-data_dir <- tempdir()
-dir.create(data_dir, showWarnings = FALSE)
+# load mnist
+source("data-raw/load-mnist.R")
+str(mnist_images)
+str(mnist_labels)
 
-data_url <- "https://storage.googleapis.com/cvdf-datasets/mnist/train-images-idx3-ubyte.gz"
 
-# read an MNIST file (encoded in IDX format)
-read_idx <- function(file) {
-  conn <- gzfile(file, open = "rb")
-  on.exit(close(conn), add = TRUE)
-
-  # read the magic number as sequence of 4 bytes
-  magic <- readBin(conn, what = "raw", n = 4, endian = "big")
-  ndims <- as.integer(magic[[4]])
-
-  # read the dimensions (32-bit integers)
-  dims <- readBin(conn, what = "integer", n = ndims, endian = "big")
-
-  # read the rest in as a raw vector
-  data <- readBin(conn, what = "raw", n = prod(dims), endian = "big")
-
-  # convert to an integer vector
-  converted <- as.integer(data)
-
-  matrix(converted, nrow = dims[1], ncol = prod(dims[-1]), byrow = TRUE)
+# flatten each image to a 1d array, combine into a matrix with 1 row per image
+flatten <- function(img) {
+  dim(img) <- NULL
+  img
 }
 
-dst_path <- file.path(data_dir, basename(data_url))
-download.file(data_url, destfile = dst_path)
+flattened_mnist_images <- 
+  mnist_images %>% asplit(3) %>% lapply(flatten) %>% do.call(rbind, .) 
 
-mnist_dataset <- read_idx(dst_path)
-
+# embed
 embedding <- cuda_ml_umap(
-  mnist_dataset, n_components = 2, n_neighbors = 50,
+  flattened_mnist_images, n_components = 2, n_neighbors = 50,
   local_connectivity = 15, repulsion_strength = 10
 )
+
+str(embedding$transformed_data)
+
+# visualize 
 embedding$transformed_data %>%
   as.data.frame() %>%
-  ggplot(aes(x = V1, y = V2)) + geom_point()
+  dplyr::mutate(Label = factor(mnist_labels)) %>% 
+  ggplot(aes(x = V1, y = V2, color = Label)) + 
+  geom_point(alpha = .5, size = .5) +
+  labs(title = "UMAP: Uniform Manifold Approximation and Projection",
+       subtitle = "Two Dimensional Embedding of MNIST")
+
 ```
 
 From this type of visualization, we can qualitatively understand the following
@@ -270,25 +266,14 @@ about the MNIST dataset:
   there are others that have less clear boundaries with their neighbors.
 - A small fraction of data points did not fit particularly well into any of the
   categories.
+- Most data points belonging to the same digit category are clustered together 
+  in the UMAP output
 
-Furthermore, we can also read the desired label of each sample from the MNIST
-dataset, and compare the UMAP output above with the MNIST ground-truth by
-coloring each point based on its desired label, which will show most data points
-belonging to the same category are clustered together in the UMAP output:
+### Appendix
 
-```{r umap colored output based on ground-truth, dependson = -1}
-library(cuda.ml)
-library(ggplot2)
-library(magrittr)
-
-dir.create(data_dir, showWarnings = FALSE)
-
-labels_url <- "https://storage.googleapis.com/cvdf-datasets/mnist/train-labels-idx1-ubyte.gz"
-labels_dst_path <- file.path(data_dir, "labels.idx")
-download.file(labels_url, destfile = labels_dst_path)
-mnist_labels <- factor(read_idx(labels_dst_path))
-
-embedding$transformed_data %>%
-  as.data.frame() %>%
-  ggplot(aes(x = V1, y = V2, color = mnist_labels)) + geom_point()
+<details>
+<summary>Inspect MNIST images</summary>
+```{r mnist}
+plot_mnist(1:64)
 ```
+</details>

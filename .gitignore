@@ -3,3 +3,4 @@
 tests/testthat/testthat-problems.rds
 .Rhistory
 README_cache
+data-raw/*.gz

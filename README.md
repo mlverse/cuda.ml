@@ -1,115 +1,60 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+
 # cuda.ml
 
 <!-- badges: start -->
-[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/cuda.ml)](https://cran.r-project.org/package=cuda.ml) <a href="https://www.r-pkg.org/pkg/cuda.ml"><img src="https://cranlogs.r-pkg.org/badges/cuda.ml?color=brightgreen" style=""></a> <!-- badges: end -->
 
-The goal of {cuda.ml} is to provide a simple and intuitive R interface for [RAPIDS cuML](https://github.com/rapidsai/cuml). RAPIDS cuML is a suite of GPU-accelerated machine learning libraries powered by [CUDA](https://en.wikipedia.org/wiki/CUDA). {cuda.ml} is under active development, and currently implements R interfaces for the algorithms listed below (which is a subset of [algorithms supported by RAPIDS cuML](https://github.com/rapidsai/cuml#supported-algorithms)).
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/cuda.ml)](https://cran.r-project.org/package=cuda.ml)
+<a href="https://www.r-pkg.org/pkg/cuda.ml"><img src="https://cranlogs.r-pkg.org/badges/cuda.ml?color=brightgreen" style=""></a>
+<!-- badges: end -->
+
+The goal of {cuda.ml} is to provide a simple and intuitive R interface
+for [RAPIDS cuML](https://github.com/rapidsai/cuml). RAPIDS cuML is a
+suite of GPU-accelerated machine learning libraries powered by
+[CUDA](https://en.wikipedia.org/wiki/CUDA). {cuda.ml} is under active
+development, and currently implements R interfaces for the algorithms
+listed below (which is a subset of [algorithms supported by RAPIDS
+cuML](https://github.com/rapidsai/cuml#supported-algorithms)).
 
 ### Supported Algorithms
 
-<table style="width:17%;">
-<colgroup>
-<col width="5%" />
-<col width="5%" />
-<col width="5%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th>Category</th>
-<th>Algorithm</th>
-<th>Notes</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><strong>Clustering</strong></td>
-<td>Density-Based Spatial Clustering of Applications with Noise (DBSCAN)</td>
-<td>Only single-GPU implementation is supported at the moment</td>
-</tr>
-<tr class="even">
-<td></td>
-<td>K-Means</td>
-<td>Only single-GPU implementation is supported at the moment</td>
-</tr>
-<tr class="odd">
-<td></td>
-<td>Single-Linkage Agglomerative Clustering</td>
-<td></td>
-</tr>
-<tr class="even">
-<td><strong>Dimensionality Reduction</strong></td>
-<td>Principal Components Analysis (PCA)</td>
-<td>Only single-GPU implementation is supported at the moment</td>
-</tr>
-<tr class="odd">
-<td></td>
-<td>Truncated Singular Value Decomposition (tSVD)</td>
-<td>Only single-GPU implementation is supported at the moment</td>
-</tr>
-<tr class="even">
-<td></td>
-<td>Uniform Manifold Approximation and Projection (UMAP)</td>
-<td>Only single-GPU implementation is supported at the moment</td>
-</tr>
-<tr class="odd">
-<td></td>
-<td>Random Projection</td>
-<td></td>
-</tr>
-<tr class="even">
-<td></td>
-<td>t-Distributed Stochastic Neighbor Embedding (TSNE)</td>
-<td></td>
-</tr>
-<tr class="odd">
-<td><strong>Nonlinear Models for Regression or Classification</strong></td>
-<td>Random Forest (RF) Classification</td>
-<td>Only single-GPU implementation is supported at the moment</td>
-</tr>
-<tr class="even">
-<td></td>
-<td>Random Forest (RF) Regression</td>
-<td>Only single-GPU implementation is supported at the moment</td>
-</tr>
-<tr class="odd">
-<td></td>
-<td>Inference for decision tree-based models in XGBoost or LightGBM formats using the CuML Forest Inference Library (FIL)</td>
-<td>Requires linkage to the Treelite C library when {cuml} is installed. Treelite is used for model loading.</td>
-</tr>
-<tr class="even">
-<td></td>
-<td>K-Nearest Neighbors (KNN) Classification</td>
-<td>Uses <a href="https://github.com/facebookresearch/faiss">Faiss</a> for Nearest Neighbors Query.</td>
-</tr>
-<tr class="odd">
-<td></td>
-<td>K-Nearest Neighbors (KNN) Regression</td>
-<td>Uses <a href="https://github.com/facebookresearch/faiss">Faiss</a> for Nearest Neighbors Query.</td>
-</tr>
-<tr class="even">
-<td></td>
-<td>Support Vector Machine Classifier (SVC)</td>
-<td></td>
-</tr>
-<tr class="odd">
-<td></td>
-<td>Epsilon-Support Vector Regression (SVR)</td>
-<td></td>
-</tr>
-</tbody>
-</table>
+| Category                                              | Algorithm                                                                                                             | Notes                                                                                                    |
+|-------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
+| **Clustering**                                        | Density-Based Spatial Clustering of Applications with Noise (DBSCAN)                                                  | Only single-GPU implementation is supported at the moment                                                |
+|                                                       | K-Means                                                                                                               | Only single-GPU implementation is supported at the moment                                                |
+|                                                       | Single-Linkage Agglomerative Clustering                                                                               |                                                                                                          |
+| **Dimensionality Reduction**                          | Principal Components Analysis (PCA)                                                                                   | Only single-GPU implementation is supported at the moment                                                |
+|                                                       | Truncated Singular Value Decomposition (tSVD)                                                                         | Only single-GPU implementation is supported at the moment                                                |
+|                                                       | Uniform Manifold Approximation and Projection (UMAP)                                                                  | Only single-GPU implementation is supported at the moment                                                |
+|                                                       | Random Projection                                                                                                     |                                                                                                          |
+|                                                       | t-Distributed Stochastic Neighbor Embedding (TSNE)                                                                    |                                                                                                          |
+| **Nonlinear Models for Regression or Classification** | Random Forest (RF) Classification                                                                                     | Only single-GPU implementation is supported at the moment                                                |
+|                                                       | Random Forest (RF) Regression                                                                                         | Only single-GPU implementation is supported at the moment                                                |
+|                                                       | Inference for decision tree-based models in XGBoost or LightGBM formats using the CuML Forest Inference Library (FIL) | Requires linkage to the Treelite C library when {cuml} is installed. Treelite is used for model loading. |
+|                                                       | K-Nearest Neighbors (KNN) Classification                                                                              | Uses [Faiss](https://github.com/facebookresearch/faiss) for Nearest Neighbors Query.                     |
+|                                                       | K-Nearest Neighbors (KNN) Regression                                                                                  | Uses [Faiss](https://github.com/facebookresearch/faiss) for Nearest Neighbors Query.                     |
+|                                                       | Support Vector Machine Classifier (SVC)                                                                               |                                                                                                          |
+|                                                       | Epsilon-Support Vector Regression (SVR)                                                                               |                                                                                                          |
 
 ## Installation
 
-In order for {cuda.ml} to work as expected, the C++/CUDA source code of {cuda.ml} must be linked with CUDA runtime and a valid copy of the RAPIDS cuML library.
+In order for {cuda.ml} to work as expected, the C++/CUDA source code of
+{cuda.ml} must be linked with CUDA runtime and a valid copy of the
+RAPIDS cuML library.
 
-Before installing {cuda.ml} itself, it may be worthwhile to take a quick look through the sub-sections below on how to properly setup all of {cuda.ml}'s required runtime dependencies.
+Before installing {cuda.ml} itself, it may be worthwhile to take a quick
+look through the sub-sections below on how to properly setup all of
+{cuda.ml}’s required runtime dependencies.
 
 ### Quick note on installing the RAPIDS cuML library:
 
-Although Conda is the only officially supported distribution channel at the moment for RAPIDS cuML (i.e., see <https://rapids.ai/start.html#get-rapids>), one can still build and install this library from source without relying on Conda. See <https://github.com/yitao-li/cuml-installation-notes> for build-from-source instructions.
+Although Conda is the only officially supported distribution channel at
+the moment for RAPIDS cuML (i.e., see
+<https://rapids.ai/start.html#get-rapids>), you can still build and
+install this library from source without relying on Conda. See
+<https://github.com/yitao-li/cuml-installation-notes> for
+build-from-source instructions.
 
 ### Quick install instructions for Ubuntu 20-04:
 
@@ -119,7 +64,8 @@ Although Conda is the only officially supported distribution channel at the mome
 
 ### Install CUDA
 
-(consult <https://developer.nvidia.com/cuda-downloads> for other platforms)
+(consult <https://developer.nvidia.com/cuda-downloads> for other
+platforms)
 
 ``` bash
 wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
@@ -170,7 +116,9 @@ The subsequent steps may (or may not) fail without the following:
 export LD_LIBRARY_PATH=~/miniconda3/envs/rapids-21.08/lib
 ```
 
-If you get some error indicating a GLIBC version mismatch in the subsequent steps, then please try adjusting `LD_LIBRARY_PATH` as a workaround.
+If you get some error indicating a GLIBC version mismatch in the
+subsequent steps, then please try adjusting `LD_LIBRARY_PATH` as a
+workaround.
 
 ### Consider enabling ccache
 
@@ -183,7 +131,8 @@ echo "export CUML4R_ENABLE_CCACHE=1" >> ~/.bashrc
 
 ### Install {cuda.ml} the R package:
 
-You can install the released version of {cuda.ml} from [CRAN](https://CRAN.R-project.org) with:
+You can install the released version of {cuda.ml} from
+[CRAN](https://CRAN.R-project.org) with:
 
 ``` r
 install.packages("cuda.ml")
@@ -200,30 +149,23 @@ devtools::install_github("mlverse/cuda.ml")
 
 ## Using {cuda.ml} for supervised ML tasks through {parsnip}
 
-{cuda.ml} provides {parsnip} bindings for supervised ML algorithms such as `rand_forest`, `nearest_neighbor`, `svm_rbf`, `svm_poly`, and `svm_linear`.
+{cuda.ml} provides {parsnip} bindings for supervised ML algorithms such
+as `rand_forest`, `nearest_neighbor`, `svm_rbf`, `svm_poly`, and
+`svm_linear`.
 
-The following example shows how {cuda.ml} can be used as a {parsnip} engine to build a SVM classifier.
+The following example shows how {cuda.ml} can be used as a {parsnip}
+engine to build a SVM classifier.
 
 ``` r
+library(dplyr, warn.conflicts = FALSE)
+library(parsnip)
 library(cuda.ml)
-library(dplyr, quietly = TRUE)
-#> 
-#> Attaching package: 'dplyr'
-#> The following objects are masked from 'package:stats':
-#> 
-#>     filter, lag
-#> The following objects are masked from 'package:base':
-#> 
-#>     intersect, setdiff, setequal, union
-library(parsnip, quietly = TRUE)
-library(yardstick, quietly = TRUE)
-#> For binary classification, the first factor level is assumed to be the event.
-#> Use the argument `event_level = "second"` to alter this as needed.
+set.seed(11235)
 
 train_inds <- iris %>%
   mutate(ind = row_number()) %>%
   group_by(Species) %>%
-  sample_frac(0.7)
+  slice_sample(prop = 0.7)
 
 train_data <- iris[train_inds$ind, ]
 test_data <- iris[-train_inds$ind, ]
@@ -238,18 +180,18 @@ cat("Confusion matrix:\n\n")
 #> Confusion matrix:
 preds %>%
   bind_cols(test_data %>% select(Species)) %>%
-  conf_mat(truth = Species, estimate = .pred_class) %>%
-  print()
+  yardstick::conf_mat(truth = Species, estimate = .pred_class)
 #>             Truth
 #> Prediction   setosa versicolor virginica
 #>   setosa         15          0         0
-#>   versicolor      0         15         2
-#>   virginica       0          0        13
+#>   versicolor      0         12         1
+#>   virginica       0          3        14
 ```
 
 ## Using {cuda.ml} for unsupervised ML tasks
 
-The following example shows how {cuda.ml} can be used for unsupervised ML tasks such as k-means clustering.
+The following example shows how {cuda.ml} can be used for unsupervised
+ML tasks such as k-means clustering.
 
 ``` r
 library(cuda.ml)
@@ -259,8 +201,8 @@ clustering <- cuda_ml_kmeans(
   k = 3, max_iters = 100
 )
 
-# Expected outcome: there is strong correlation between the cluster labels and
-# `iris$Species`
+# Expected outcome: there is strong correlation 
+# between cluster labels and `iris$Species`
 print(clustering)
 #> $labels
 #>   [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
@@ -280,86 +222,98 @@ print(clustering)
 #> 
 #> $n_iter
 #> [1] 10
+
+library(dplyr, warn.conflicts = FALSE)
+tibble(cluster_id = clustering$labels, species = iris$Species) %>% 
+  group_by(cluster_id) %>% count(species)
+#> # A tibble: 5 × 3
+#> # Groups:   cluster_id [3]
+#>   cluster_id species        n
+#>        <int> <fct>      <int>
+#> 1          0 versicolor     3
+#> 2          0 virginica     36
+#> 3          1 setosa        50
+#> 4          2 versicolor    47
+#> 5          2 virginica     14
 ```
 
 ## Using {cuda.ml} for visualizations
 
-{cuda.ml} also features R interfaces for algorithms such as UMAP and t-SNE, which are useful when one needs to visualize clusters of high-dimensional data points by embedding them onto low-dimensional manifolds (i.e., 4 dimensions or fewer).
+{cuda.ml} also features R interfaces for algorithms such as UMAP and
+t-SNE, which are useful when one needs to visualize clusters of
+high-dimensional data points by embedding them onto low-dimensional
+manifolds (i.e., 4 dimensions or fewer).
 
-For example, the code snippet below shows how `cuda_ml_umap()` can be used to visualize the MNIST hand-written digits dataset:
+For example, the code snippet below shows how `cuda_ml_umap()` can be
+used to visualize the MNIST hand-written digits dataset:
 
 ``` r
 library(cuda.ml)
 library(ggplot2)
 library(magrittr)
 
-# initialize data directory
-data_dir <- tempdir()
-dir.create(data_dir, showWarnings = FALSE)
+# load mnist
+source("data-raw/load-mnist.R")
+str(mnist_images)
+#>  int [1:28, 1:28, 1:60000] 0 0 0 0 0 0 0 0 0 0 ...
+str(mnist_labels)
+#>  int [1:60000(1d)] 5 0 4 1 9 2 1 3 1 4 ...
 
-data_url <- "https://storage.googleapis.com/cvdf-datasets/mnist/train-images-idx3-ubyte.gz"
 
-# read an MNIST file (encoded in IDX format)
-read_idx <- function(file) {
-  conn <- gzfile(file, open = "rb")
-  on.exit(close(conn), add = TRUE)
-
-  # read the magic number as sequence of 4 bytes
-  magic <- readBin(conn, what = "raw", n = 4, endian = "big")
-  ndims <- as.integer(magic[[4]])
-
-  # read the dimensions (32-bit integers)
-  dims <- readBin(conn, what = "integer", n = ndims, endian = "big")
-
-  # read the rest in as a raw vector
-  data <- readBin(conn, what = "raw", n = prod(dims), endian = "big")
-
-  # convert to an integer vector
-  converted <- as.integer(data)
-
-  matrix(converted, nrow = dims[1], ncol = prod(dims[-1]), byrow = TRUE)
+# flatten each image to a 1d array, combine into a matrix with 1 row per image
+flatten <- function(img) {
+  dim(img) <- NULL
+  img
 }
 
-dst_path <- file.path(data_dir, basename(data_url))
-download.file(data_url, destfile = dst_path)
+flattened_mnist_images <- 
+  mnist_images %>% asplit(3) %>% lapply(flatten) %>% do.call(rbind, .) 
 
-mnist_dataset <- read_idx(dst_path)
-
+# embed
 embedding <- cuda_ml_umap(
-  mnist_dataset, n_components = 2, n_neighbors = 50,
+  flattened_mnist_images, n_components = 2, n_neighbors = 50,
   local_connectivity = 15, repulsion_strength = 10
 )
+
+str(embedding$transformed_data)
+#>  num [1:60000, 1:2] 19.02 -5.75 -17.59 5.22 -18.18 ...
+
+# visualize 
 embedding$transformed_data %>%
   as.data.frame() %>%
-  ggplot(aes(x = V1, y = V2)) + geom_point()
+  dplyr::mutate(Label = factor(mnist_labels)) %>% 
+  ggplot(aes(x = V1, y = V2, color = Label)) + 
+  geom_point(alpha = .5, size = .5) +
+  labs(title = "UMAP: Uniform Manifold Approximation and Projection",
+       subtitle = "Two Dimensional Embedding of MNIST")
 ```
 
 <img src="man/figures/README-umap example-1.png" width="100%" />
 
-From this type of visualization, we can qualitatively understand the following about the MNIST dataset:
+From this type of visualization, we can qualitatively understand the
+following about the MNIST dataset:
 
--   The dataset can be reasonably classified into some number of categories.
+-   The dataset can be reasonably classified into some number of
+    categories.
 -   The right number of categories may be any where between 9 and 11.
--   While there are some categories that are clearly distinguishable from others, there are others that have less clear boundaries with their neighbors.
--   A small fraction of data points did not fit particularly well into any of the categories.
+-   While there are some categories that are clearly distinguishable
+    from others, there are others that have less clear boundaries with
+    their neighbors.
+-   A small fraction of data points did not fit particularly well into
+    any of the categories.
+-   Most data points belonging to the same digit category are clustered
+    together in the UMAP output
 
-Furthermore, we can also read the desired label of each sample from the MNIST dataset, and compare the UMAP output above with the MNIST ground-truth by coloring each point based on its desired label, which will show most data points belonging to the same category are clustered together in the UMAP output:
+### Appendix
+
+<details>
+<summary>
+Inspect MNIST images
+</summary>
 
 ``` r
-library(cuda.ml)
-library(ggplot2)
-library(magrittr)
-
-dir.create(data_dir, showWarnings = FALSE)
-
-labels_url <- "https://storage.googleapis.com/cvdf-datasets/mnist/train-labels-idx1-ubyte.gz"
-labels_dst_path <- file.path(data_dir, "labels.idx")
-download.file(labels_url, destfile = labels_dst_path)
-mnist_labels <- factor(read_idx(labels_dst_path))
-
-embedding$transformed_data %>%
-  as.data.frame() %>%
-  ggplot(aes(x = V1, y = V2, color = mnist_labels)) + geom_point()
+plot_mnist(1:64)
 ```
 
-<img src="man/figures/README-umap colored output based on ground-truth-1.png" width="100%" />
+<img src="man/figures/README-mnist-1.png" width="100%" />
+</details>
