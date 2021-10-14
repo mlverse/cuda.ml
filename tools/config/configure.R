@@ -1,3 +1,83 @@
+#' Options:
+#'
+#' CUML_VERSION: specify a version of the libcuml library that you want to be
+#'               installed. This version must be defined in the `libcuml_versions`
+#'               object below.
+#'
+#' CUML_URL: instead of automatically finding a URL to download libcuml from, you
+#'           can specify a URL that will be used directly. No checks for CUDA
+#'           version happens in that case.
+#'
+#' CUML_PREFIX: if you have a libcuml installation, you can specify this env var
+#'              to use it. In this case, pre-built libcuml versions are not
+#'              downloaded.
+#'
+#' CUML_NO_DOWNLOAD: The default if to automatically download cudaml if no
+#'                   installation is found but some users might prefer to disable
+#'                   automatic download. This can be done by setting
+#'                   `CUML_NO_DOWNLOAD=1`
+#'
+#'
+
+
+format_msg <- function(...) {
+  msg <- c(...)
+
+  #if (require(cli, quietly = TRUE)) {
+  if (FALSE) {
+    msg <- cli::ansi_strwrap(msg)
+    msg <- cli::boxx(msg, border_style = "double")
+  } else {
+    msg <- strwrap(msg)
+    msg <- paste("*\t", c("", msg, ""))
+    msg <- paste(msg, collapse = "\n")
+    starline <- paste(rep("*", 0.9*getOption("width")), collapse = "")
+    msg <- paste(c(starline, msg, starline), collapse = "\n")
+  }
+
+  msg
+}
+
+stop2 <- function (...) {
+  stop("\n", format_msg(...), call. = FALSE)
+}
+
+warning2 <- function(...) {
+  warning("\n", format_msg(...), immediate. = TRUE, call. = FALSE)
+}
+
+check_path <- function(path) {
+  cuml_headers_dir <- file.path(path, "include", "cuml")
+  dir.exists(cuml_headers_dir)
+}
+
+# A list containing libcuml download links for "cuml_versions" and CUDA major versions.
+libcuml_versions <- list(
+  "21.08" = list(
+    "11" = "https://github.com/mlverse/libcuml-builds/releases/download/v21.08/libcuml-cu11.4.2.zip"
+  )
+)
+
+download_binaries <- function(cuml_version = Sys.getenv("CUML_VERSION", unset = "21.08")) {
+
+  if (Sys.getenv("CUML_NO_DOWNLOAD", unset = 0) == 1) {
+    stop2("No libcuml installation has been found and downloading has been prevented by `CUML_NO_DOWNLOAD`.")
+  }
+
+  old_timeout <- getOption("timeout")
+  options(timeout = 1000)
+  on.exit(options(timeout = old_timeout), add = TRUE)
+
+  tmp <- tempfile(fileext = ".zip")
+  cuda_version <- as.character(find_nvcc()$version$major)
+  url <- Sys.getenv("CUML_URL", unset = libcuml_versions[[cuml_version]][[cuda_version]])
+  download.file(url, tmp)
+
+  unzip(tmp, exdir = ".")
+
+  path.expand("libcuml")
+}
+
 get_cuml_prefix <- function() {
   cuml_prefix <- Sys.getenv("CUML_PREFIX", unset = NA_character_)
   if (is.na(cuml_prefix)) {
@@ -5,45 +85,49 @@ get_cuml_prefix <- function() {
     cuml_prefix <- Sys.getenv("CUDA_PATH", unset = NA_character_)
   }
   if (is.na(cuml_prefix)) {
-    warning(
-      "\t**********************************************\n",
-      "\t**********************************************\n",
-      "\t**                                          **\n",
-      "\t** 'CUML_PREFIX' env variable is missing -- **\n",
-      "\t** will boldly assume it is '/usr' !        **\n",
-      "\t**                                          **\n",
-      "\t**********************************************\n",
-      "\t**********************************************\n",
-      immediate. = TRUE
-    )
     cuml_prefix <- "/usr"
-  }
+    if (check_path(cuml_prefix)) {
+      warning2(
+        "'CUML_PREFIX' env variable is missing",
+        "will boldly assume it is '/usr' !"
+      )
+      return(cuml_prefix)
+    } else {
 
+      cuml_prefix <- "./libcuml"
+      if (file.exists("./DESCRIPTION") && check_path(cuml_prefix)) return(cuml_prefix)
+
+      # devtools::load_all() might run the config script from the `src` directory.
+      cuml_prefix <- "../libcuml"
+      if (file.exists("../DESCRIPTION") && check_path(cuml_prefix)) return(cuml_prefix)
+
+      return(download_binaries())
+    }
+  }
   cuml_prefix
 }
 
 has_cuml <- function() {
+
+  # this is here to make sure we only proceed to automatically downloading if we
+  # find a compatible nvcc version.
+  find_nvcc()
+
   cuml_prefix <- get_cuml_prefix()
   cuml_headers_dir <- file.path(cuml_prefix, "include", "cuml")
 
   if (!dir.exists(cuml_headers_dir)) {
-    warning(
-      "\t'", cuml_headers_dir, "' does not exist or is not a directory!\n\n",
-      "\t***************************************************************************\n",
-      "\t***************************************************************************\n",
-      "\t**                                                                       **\n",
-      "\t**  {cuda.ml} requires a valid RAPIDS installation.                      **\n",
-      "\t**  Please follow https://rapids.ai/start.html to install RAPIDS first.  **\n",
-      "\t**  {cuda.ml} must be installed from an environment containing a valid   **\n",
-      "\t**  CUML_PREFIX env variable (e.g.,                                      **\n",
-      "\t**  '/home/user/anaconda3/envs/rapids-21.06',                            **\n",
-      "\t**  '/home/user/miniconda3/envs/rapids-21.06', '/usr', or similar such   **\n",
-      "\t**  such that \"${CUML_PREFIX}/include/cuml\" is the directory of RAPIDS   **\n",
-      "\t**  cuML header files and \"${CUML_PREFIX}/lib\" is the directory of       **\n",
-      "\t**  RAPIDS cuML shared library files.).                                  **\n",
-      "\t**                                                                       **\n",
-      "\t***************************************************************************\n",
-      "\t***************************************************************************\n"
+    warning2(
+      paste0(cuml_headers_dir, " does not exist or is not a directory!"),
+      "",
+      "{cuda.ml} requires a valid RAPIDS installation.",
+      "Please follow https://rapids.ai/start.html to install RAPIDS first"
+    )
+    warning2(
+      "{cuda.ml} must be installed from an environment containing a valid",
+      "CUML_PREFIX env variable such that \"${CUML_PREFIX}/include/cuml\"",
+      "is the directory of RAPIDS cuML header files and \"${CUML_PREFIX}/lib\"",
+      "is the directory of RAPIDS cuML shared library files.)."
     )
     FALSE
   } else {
@@ -51,25 +135,64 @@ has_cuml <- function() {
   }
 }
 
+
+nvcc_version_from_path <- function(nvcc) {
+  suppressWarnings(
+    nvcc <- tryCatch(system2(nvcc, "--version", stdout = TRUE, stderr = TRUE), error = function(e) NULL)
+  )
+
+  if (is.null(nvcc) || !any(grepl("release", nvcc))) return(NULL)
+
+  version <- gsub(".*release |, V.*", "", nvcc[grepl("release", nvcc)])
+  package_version(version)
+}
+
+find_nvcc <- function() {
+
+  # Check if nvcc from path is available
+  nvcc_path <- "nvcc"
+  cuda_version <- nvcc_version_from_path(nvcc_path)
+
+  # Check if nvcc from CUDA_HOME is available
+  cuda_home <- Sys.getenv("CUDA_HOME")
+  if (nzchar(cuda_home) && is.null(cuda_version)) {
+    nvcc_path <- file.path(cuda_home, "bin", "nvcc")
+    cuda_version <- nvcc_version_from_path(nvcc_path)
+  }
+
+  # Check nvcc from default install location.
+  if (is.null(cuda_version)) {
+    nvcc_path <- "/usr/local/cuda/bin/nvcc"
+    cuda_version <- nvcc_version_from_path(nvcc_path)
+  }
+
+  # No nvcc found! Error!
+  if (is.null(cuda_version)) {
+    stop2(
+      "Unable to locate a CUDA compiler (nvcc).",
+      "Please ensure it is present in PATH (e.g., run",
+      "`export PATH=\"${PATH}:/usr/local/cuda/bin\"` or",
+      "similar) and try again."
+    )
+  }
+
+  # Nvcc found but wrong cuda version.
+  minimum_supported <- package_version("11.0")
+  if (cuda_version < minimum_supported) {
+    stop2(
+      paste0("Found nvcc '", nvcc_path, "'"),
+      paste0("CUDA version '", cuda_version, "' is not supported."),
+      paste0("The minimum required version is '", minimum_supported, "'")
+    )
+  }
+
+  # return nvcc path.
+  list(path = nvcc_path, version = cuda_version)
+}
+
 cuml_missing <- !has_cuml()
 
 run_cmake <- function() {
-  rc <- system2("which", "nvcc")
-
-  if (rc != 0) {
-    stop(
-      "\n\n\n",
-      "*********************************************************\n",
-      "*                                                    \t*\n",
-      "*    Unable to locate a CUDA compiler (nvcc).      \t*\n",
-      "*                                                  \t*\n",
-      "*    Please ensure it is present in PATH (e.g., run \t*\n",
-      "*    `export PATH=\"${PATH}:/usr/local/cuda/bin\"` or  \t*\n",
-      "*    similar) and try again.                       \t*\n",
-      "*                                                    \t*\n",
-      "*********************************************************\n\n\n"
-    )
-  }
 
   define(R_INCLUDE_DIR = R.home("include"))
   define(RCPP_INCLUDE_DIR = system.file("include", package = "Rcpp"))
@@ -93,6 +216,7 @@ run_cmake <- function() {
       paste0(
         "-DCUML_STUB_HEADERS_DIR=", normalizePath(file.path(getwd(), "stubs"))
       ),
+      paste0("-DCMAKE_CUDA_COMPILER=",find_nvcc()$path),
       "-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON",
       "."
     )
