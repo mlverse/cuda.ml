@@ -46,6 +46,11 @@ jobs:
 
       - uses: r-lib/actions/setup-pandoc@v1
 
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+          architecture: 'x64'
+
       - uses: r-lib/actions/setup-r@master
         with:
           r-version: ${{ matrix.r }}
