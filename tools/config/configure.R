@@ -97,12 +97,12 @@ get_cuml_prefix <- function() {
       return(cuml_prefix)
     } else {
 
-      cuml_prefix <- "./libcuml"
-      if (file.exists("./DESCRIPTION") && check_path(cuml_prefix)) return(cuml_prefix)
-
       # devtools::load_all() might run the config script from the `src` directory.
-      cuml_prefix <- "../libcuml"
-      if (file.exists("../DESCRIPTION") && check_path(cuml_prefix)) return(cuml_prefix)
+      for (wd in list(".", "..")) {
+        cuml_prefix <- file.path(wd, "libcuml")
+        if (file.exists(file.path(wd, "DESCRIPTION")) && check_path(cuml_prefix))
+          return(cuml_prefix)
+      }
 
       return(download_binaries())
     }
