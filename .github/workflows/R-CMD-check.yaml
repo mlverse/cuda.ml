@@ -36,6 +36,7 @@ jobs:
       - run: |
           apt-get update -y
           apt-get install -y sudo software-properties-common dialog apt-utils tzdata
+          cat /proc/meminfo
 
       - name: Setup cmake
         uses: jwlawson/actions-setup-cmake@v1.9
