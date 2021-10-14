@@ -57,7 +57,7 @@ jobs:
           extra-packages: rcmdcheck
 
       - name: Install Miniconda
-        run: reticulate::install_miniconda()
+        run: reticulate::install_miniconda(force = TRUE)
         shell: Rscript {0}
 
       - uses: r-lib/actions/check-r-package@v1
