@@ -70,9 +70,12 @@ download_binaries <- function(cuml_version = Sys.getenv("CUML_VERSION", unset = 
 
   tmp <- tempfile(fileext = ".zip")
   cuda_version <- as.character(find_nvcc()$version$major)
-  url <- Sys.getenv("CUML_URL", unset = libcuml_versions[[cuml_version]][[cuda_version]])
-  download.file(url, tmp)
 
+  url <- Sys.getenv("CUML_URL")
+  if (!nzchar(url))
+    url <- libcuml_versions[[cuml_version]][[cuda_version]]
+
+  download.file(url, tmp)
   unzip(tmp, exdir = ".")
 
   path.expand("libcuml")
