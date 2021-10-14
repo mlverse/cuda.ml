@@ -97,12 +97,12 @@ clustering <- cuda_ml_kmeans(
   k = 3, max_iters = 100
 )
 
-# Expected outcome: there is strong correlation 
+# Expected outcome: there is strong correlation
 # between cluster labels and `iris$Species`
 print(clustering)
 
 library(dplyr, warn.conflicts = FALSE)
-tibble(cluster_id = clustering$labels, species = iris$Species) %>% 
+tibble(cluster_id = clustering$labels, species = iris$Species) %>%
   group_by(cluster_id) %>% count(species)
 ```
 
@@ -114,7 +114,10 @@ points by embedding them onto low-dimensional manifolds (i.e., 4 dimensions or
 fewer).
 
 For example, the code snippet below shows how `cuda_ml_umap()` can be used to
-visualize the MNIST hand-written digits dataset, and also, the coloring based on the true label of each sample demonstrates how well the UMAP algorithm transforms different hand writings of the same digit into nearby points in a 2D embedding:
+visualize the MNIST hand-written digits dataset, and also, the coloring based on
+the true label of each sample demonstrates how well the UMAP algorithm
+transforms different hand writings of the same digit into nearby points in a 2D
+embedding:
 
 ```{r umap example, cache = TRUE}
 library(cuda.ml)
@@ -133,8 +136,8 @@ flatten <- function(img) {
   img
 }
 
-flattened_mnist_images <- 
-  mnist_images %>% asplit(3) %>% lapply(flatten) %>% do.call(rbind, .) 
+flattened_mnist_images <-
+  mnist_images %>% asplit(3) %>% lapply(flatten) %>% do.call(rbind, .)
 
 # embed
 embedding <- cuda_ml_umap(
@@ -144,11 +147,11 @@ embedding <- cuda_ml_umap(
 
 str(embedding$transformed_data)
 
-# visualize 
+# visualize
 embedding$transformed_data %>%
   as.data.frame() %>%
-  dplyr::mutate(Label = factor(mnist_labels)) %>% 
-  ggplot(aes(x = V1, y = V2, color = Label)) + 
+  dplyr::mutate(Label = factor(mnist_labels)) %>%
+  ggplot(aes(x = V1, y = V2, color = Label)) +
   geom_point(alpha = .5, size = .5) +
   labs(title = "UMAP: Uniform Manifold Approximation and Projection",
        subtitle = "Two Dimensional Embedding of MNIST")
@@ -164,7 +167,7 @@ about the MNIST dataset:
   there are others that have less clear boundaries with their neighbors.
 - A small fraction of data points did not fit particularly well into any of the
   categories.
-- Most data points belonging to the same digit category are clustered together 
+- Most data points belonging to the same digit category are clustered together
   in the UMAP output
 
 

@@ -93,7 +93,7 @@ clustering <- cuda_ml_kmeans(
   k = 3, max_iters = 100
 )
 
-# Expected outcome: there is strong correlation 
+# Expected outcome: there is strong correlation
 # between cluster labels and `iris$Species`
 print(clustering)
 #> $labels
@@ -102,21 +102,21 @@ print(clustering)
 #>  [75] 2 2 2 0 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 0 2 0 0 0 0 2 0 0 0 0
 #> [112] 0 0 2 2 0 0 0 0 2 0 2 0 2 0 0 2 2 0 0 0 0 0 2 0 0 0 0 2 0 0 0 2 0 0 0 2 0
 #> [149] 0 2
-#> 
+#>
 #> $centroids
 #>          [,1]     [,2]     [,3]     [,4]
 #> [1,] 6.853846 3.076923 5.715385 2.053846
 #> [2,] 5.006000 3.428000 1.462000 0.246000
 #> [3,] 5.883607 2.740984 4.388525 1.434426
-#> 
+#>
 #> $inertia
 #> [1] 78.85567
-#> 
+#>
 #> $n_iter
 #> [1] 10
 
 library(dplyr, warn.conflicts = FALSE)
-tibble(cluster_id = clustering$labels, species = iris$Species) %>% 
+tibble(cluster_id = clustering$labels, species = iris$Species) %>%
   group_by(cluster_id) %>% count(species)
 #> # A tibble: 5 × 3
 #> # Groups:   cluster_id [3]
@@ -137,7 +137,10 @@ high-dimensional data points by embedding them onto low-dimensional
 manifolds (i.e., 4 dimensions or fewer).
 
 For example, the code snippet below shows how `cuda_ml_umap()` can be
-used to visualize the MNIST hand-written digits dataset:
+used to visualize the MNIST hand-written digits dataset, and also, the
+coloring based on the true label of each sample demonstrates how well
+the UMAP algorithm transforms different hand writings of the same digit
+into nearby points in a 2D embedding:
 
 ``` r
 library(cuda.ml)
@@ -158,8 +161,8 @@ flatten <- function(img) {
   img
 }
 
-flattened_mnist_images <- 
-  mnist_images %>% asplit(3) %>% lapply(flatten) %>% do.call(rbind, .) 
+flattened_mnist_images <-
+  mnist_images %>% asplit(3) %>% lapply(flatten) %>% do.call(rbind, .)
 
 # embed
 embedding <- cuda_ml_umap(
@@ -170,11 +173,11 @@ embedding <- cuda_ml_umap(
 str(embedding$transformed_data)
 #>  num [1:60000, 1:2] 19.02 -5.75 -17.59 5.22 -18.18 ...
 
-# visualize 
+# visualize
 embedding$transformed_data %>%
   as.data.frame() %>%
-  dplyr::mutate(Label = factor(mnist_labels)) %>% 
-  ggplot(aes(x = V1, y = V2, color = Label)) + 
+  dplyr::mutate(Label = factor(mnist_labels)) %>%
+  ggplot(aes(x = V1, y = V2, color = Label)) +
   geom_point(alpha = .5, size = .5) +
   labs(title = "UMAP: Uniform Manifold Approximation and Projection",
        subtitle = "Two Dimensional Embedding of MNIST")
