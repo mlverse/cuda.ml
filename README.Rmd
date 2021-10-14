@@ -58,7 +58,7 @@ the algorithms listed below
 The following example shows how {cuda.ml} can be used as a {parsnip} engine to
 build a SVM classifier.
 
-```{r svm example}
+```{r svm-example}
 library(dplyr, warn.conflicts = FALSE)
 library(parsnip)
 library(cuda.ml)
@@ -89,7 +89,7 @@ preds %>%
 The following example shows how {cuda.ml} can be used for unsupervised ML tasks
 such as k-means clustering.
 
-```{r kmeans example}
+```{r kmeans-example}
 library(cuda.ml)
 
 clustering <- cuda_ml_kmeans(
@@ -119,7 +119,7 @@ the true label of each sample demonstrates how well the UMAP algorithm
 transforms different hand writings of the same digit into nearby points in a 2D
 embedding:
 
-```{r umap example, cache = TRUE}
+```{r umap-example, cache = TRUE}
 library(cuda.ml)
 library(ggplot2)
 library(magrittr)
