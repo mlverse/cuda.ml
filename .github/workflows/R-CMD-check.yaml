@@ -58,6 +58,7 @@ jobs:
 
       - name: Install Miniconda
         run: reticulate::install_miniconda()
+        shell: Rscript {0}
 
       - uses: r-lib/actions/check-r-package@v1
         with:
