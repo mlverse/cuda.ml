@@ -48,12 +48,12 @@ jobs:
       - uses: r-lib/actions/check-r-package@v1
 
       - name: Show testthat output
-        if: always()
+        if: ${{ always() }}
         run: find check -name 'testthat.Rout*' -exec cat '{}' \; || true
         shell: bash
 
       - name: Upload check results
-        if: failure()
+        if: ${{ failure() }}
         uses: actions/upload-artifact@main
         with:
           name: ${{ runner.os }}-r${{ matrix.r }}-results
