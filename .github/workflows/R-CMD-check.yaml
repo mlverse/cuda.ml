@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cuda: ['11.4.2']
+        cuda: ['11.2.1']
         cuml: ['21.08']
         r: ['release', 'devel']
 
@@ -36,7 +36,6 @@ jobs:
       - run: |
           apt-get update -y
           apt-get install -y sudo software-properties-common dialog apt-utils tzdata
-          cat /proc/meminfo
 
       - name: Setup cmake
         uses: jwlawson/actions-setup-cmake@v1.9
