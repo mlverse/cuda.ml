@@ -255,7 +255,7 @@ embedding<span class="op">$</span>transformed_data <span class="op">%&gt;%</span
 <p>Although Conda is the only officially supported distribution channel at the moment for RAPIDS cuML (i.e., see <a href="https://rapids.ai/start.html#get-rapids" class="uri">https://rapids.ai/start.html#get-rapids</a>), you can still build and install this library from source without relying on Conda. See <a href="https://github.com/yitao-li/cuml-installation-notes" class="uri">https://github.com/yitao-li/cuml-installation-notes</a> for build-from-source instructions.</p>
 <h3 id="quick-install-instructions-for-ubuntu-20-04">Quick install instructions for Ubuntu 20-04:</h3>
 <h4 id="install-deps">Install deps:</h4>
-<pre><code>sudo apt install -y cmake ccache</code></pre>
+<pre><code>sudo apt install -y cmake ccache libblas3 liblapack3</code></pre>
 <h3 id="install-cuda">Install CUDA</h3>
 <p>(consult <a href="https://developer.nvidia.com/cuda-downloads" class="uri">https://developer.nvidia.com/cuda-downloads</a> for other platforms)</p>
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="fu">wget</span> https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin

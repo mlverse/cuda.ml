@@ -260,7 +260,7 @@ Although Conda is the only officially supported distribution channel at the mome
 
 #### Install deps:
 
-    sudo apt install -y cmake ccache
+    sudo apt install -y cmake ccache libblas3 liblapack3
 
 ### Install CUDA
 
