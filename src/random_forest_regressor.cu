@@ -15,7 +15,6 @@
 
 #include <Rcpp.h>
 
-#include <chrono>
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -175,12 +174,8 @@ __host__ SEXP rf_regressor_fit(
       ML::set_rf_params(max_depth, max_leaves, max_features, n_bins,
                         min_samples_leaf, min_samples_split,
                         min_impurity_decrease, bootstrap, n_trees, max_samples,
-                        /*seed=*/
-                        std::chrono::duration_cast<std::chrono::milliseconds>(
-                          std::chrono::system_clock::now().time_since_epoch())
-                          .count(),
-                        static_cast<ML::CRITERION>(split_criterion), n_streams,
-                        max_batch_size),
+                        /*seed=*/0, static_cast<ML::CRITERION>(split_criterion),
+                        n_streams, max_batch_size),
 
 #else
 
@@ -188,11 +183,8 @@ __host__ SEXP rf_regressor_fit(
         max_depth, max_leaves, max_features, n_bins,
         /*split_algo=*/ML::SPLIT_ALGO::HIST, min_samples_leaf,
         min_samples_split, min_impurity_decrease,
-        /*bootstrap_features=*/bootstrap, bootstrap, n_trees,
-        max_samples, /*seed=*/
-        std::chrono::duration_cast<std::chrono::milliseconds>(
-          std::chrono::system_clock::now().time_since_epoch())
-          .count(),
+        /*bootstrap_features=*/bootstrap, bootstrap, n_trees, max_samples,
+        /*seed=*/0,
         /*split_criterion=*/static_cast<ML::CRITERION>(split_criterion),
         /*quantile_per_tree=*/false,
         /*cfg_n_streams=*/n_streams,
