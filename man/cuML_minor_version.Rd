@@ -21,5 +21,4 @@ to.
 library(cuda.ml)
 
 print(cuML_minor_version())
-
 }

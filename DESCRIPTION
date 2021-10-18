@@ -29,8 +29,7 @@ Imports:
     magrittr,
     parsnip,
     Rcpp (>= 1.0.6),
-    rlang (>= 0.1.4),
-    cli
+    rlang (>= 0.1.4)
 Suggests:
     callr,
     MASS,
