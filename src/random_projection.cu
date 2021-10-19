@@ -193,6 +193,8 @@ __host__ Rcpp::NumericMatrix rproj_transform(SEXP rproj_ctx_xptr,
                      /*output=*/d_output.data().get(),
                      /*params=*/params.get());
 
+  CUDA_RT_CALL(cudaStreamSynchronize(stream));
+
   cuml4r::pinned_host_vector<double> h_output(d_output.size());
   auto CUML4R_ANONYMOUS_VARIABLE(output_d2h) = cuml4r::async_copy(
     stream, d_output.cbegin(), d_output.cend(), h_output.begin());

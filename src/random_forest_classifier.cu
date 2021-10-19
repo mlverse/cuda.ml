@@ -183,6 +183,8 @@ __host__ Rcpp::IntegerVector rf_classifier_predict(
 
   predict_impl(handle, d_input.data().get(), d_predictions.data().get());
 
+  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
+
   cuml4r::pinned_host_vector<OutputT> h_predictions(n_samples);
   unique_marker __attribute__((unused)) preds_d2h;
   preds_d2h = cuml4r::async_copy(stream_view.value(), d_predictions.cbegin(),
@@ -387,6 +389,8 @@ __host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
                    /*preds=*/d_preds.data().get(),
                    /*data=*/d_x.data().get(), /*num_rows=*/n_samples,
                    /*predict_proba=*/true);
+
+  CUDA_RT_CALL(cudaStreamSynchronize(handle.get_stream()));
 
   cuml4r::pinned_host_vector<float> h_preds(d_preds.size());
   auto CUML4R_ANONYMOUS_VARIABLE(preds_d2h) = cuml4r::async_copy(

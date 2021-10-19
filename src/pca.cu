@@ -137,6 +137,8 @@ __host__ Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x,
                /*prms=*/*params);
   }
 
+  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
+
   cuml4r::pinned_host_vector<double> h_transformed_data;
   if (transform_input) {
     h_transformed_data.resize(d_transformed_data.size());
@@ -281,6 +283,8 @@ __host__ Rcpp::NumericMatrix pca_inverse_transform(
                           /*mu=*/d_mu.data().get(),
                           /*input=*/d_result.data().get(),
                           /*prms=*/*params);
+
+  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
   cuml4r::pinned_host_vector<double> h_result(d_result.size());
   auto CUML4R_ANONYMOUS_VARIABLE(result_d2h) = cuml4r::async_copy(

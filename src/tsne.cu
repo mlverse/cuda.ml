@@ -74,6 +74,8 @@ __host__ Rcpp::NumericMatrix tsne_fit(
     handle, /*X=*/d_x.data().get(), /*Y=*/d_y.data().get(), /*n=*/n_samples,
     /*p=*/n_features, /*knn_indices=*/nullptr, /*knn_dists=*/nullptr, params);
 
+  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
+
   cuml4r::pinned_host_vector<float> h_y(d_y.size());
   auto CUML4R_ANONYMOUS_VARIABLE(y_d2h) = cuml4r::async_copy(
     stream_view.value(), d_y.cbegin(), d_y.cend(), h_y.begin());

@@ -70,6 +70,8 @@ __host__ Rcpp::List kmeans(Rcpp::NumericMatrix const& x, int const k,
                           n_features, 0, d_pred_centroids.data().get(),
                           d_pred_labels.data().get(), inertia, n_iter);
 
+  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
+
   cuml4r::pinned_host_vector<int> h_pred_labels(n_samples);
   auto CUML4R_ANONYMOUS_VARIABLE(pred_labels_d2h) =
     cuml4r::async_copy(stream_view.value(), d_pred_labels.cbegin(),

@@ -410,6 +410,8 @@ __host__ Rcpp::IntegerVector knn_classifier_predict(
                    /*y=*/y_vec, /*n_index_rows=*/ctx.modelNSamples_,
                    /*n_query_rows=*/ctx.nSamples_, /*k=*/n_neighbors);
 
+  CUDA_RT_CALL(cudaStreamSynchronize(ctx.streamView_.value()));
+
   cuml4r::pinned_host_vector<int> h_out(d_out.size());
   auto CUML4R_ANONYMOUS_VARIABLE(out_d2h) = cuml4r::async_copy(
     ctx.streamView_.value(), d_out.cbegin(), d_out.cend(), h_out.begin());
@@ -438,6 +440,8 @@ __host__ Rcpp::NumericMatrix knn_classifier_predict_probabilities(
     /*y=*/y_vec, /*n_index_rows=*/ctx.modelNSamples_,
     /*n_query_rows=*/ctx.nSamples_, /*k=*/n_neighbors);
 
+  CUDA_RT_CALL(cudaStreamSynchronize(ctx.streamView_.value()));
+
   cuml4r::pinned_host_vector<float> h_out(d_out.size());
   auto CUML4R_ANONYMOUS_VARIABLE(out_d2h) = cuml4r::async_copy(
     ctx.streamView_.value(), d_out.cbegin(), d_out.cend(), h_out.begin());
@@ -462,6 +466,8 @@ Rcpp::NumericVector knn_regressor_predict(Rcpp::List const& model,
                   /*y=*/y_vec,
                   /*n_rows=*/ctx.modelNSamples_,
                   /*n_samples=*/ctx.nSamples_, /*k=*/n_neighbors);
+
+  CUDA_RT_CALL(cudaStreamSynchronize(ctx.streamView_.value()));
 
   cuml4r::pinned_host_vector<float> h_out(d_out.size());
   auto CUML4R_ANONYMOUS_VARIABLE(out_d2h) = cuml4r::async_copy(

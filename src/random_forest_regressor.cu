@@ -111,6 +111,8 @@ __host__ Rcpp::NumericVector rf_regressor_predict(
 
   predict_impl(handle, d_input.data().get(), d_preds.data().get());
 
+  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
+
   cuml4r::pinned_host_vector<OutputT> h_preds(n_samples);
   unique_marker __attribute__((unused)) preds_d2h;
   preds_d2h = cuml4r::async_copy(stream_view.value(), d_preds.cbegin(),

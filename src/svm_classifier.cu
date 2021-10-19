@@ -146,6 +146,8 @@ __host__ SEXP svc_predict(SEXP model_xptr, Rcpp::NumericMatrix const& input,
       /*buffer_size=*/svc->param.cache_size, /*predict_class=*/false);
   }
 
+  CUDA_RT_CALL(cudaStreamSynchronize(stream));
+
   cuml4r::pinned_host_vector<double> h_preds(n_samples);
   auto CUML4R_ANONYMOUS_VARIABLE(preds_d2h) = cuml4r::async_copy(
     stream, d_preds.cbegin(), d_preds.cend(), h_preds.begin());

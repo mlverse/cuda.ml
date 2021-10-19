@@ -121,6 +121,8 @@ __host__ Rcpp::List umap_fit(
                 /*params=*/params.get(),
                 /*embeddings=*/d_embedding.data().get());
 
+  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
+
   cuml4r::pinned_host_vector<float> h_embedding(d_embedding.size());
   auto CUML4R_ANONYMOUS_VARIABLE(embedding_d2h) =
     cuml4r::async_copy(stream_view.value(), d_embedding.cbegin(),
@@ -176,6 +178,8 @@ __host__ Rcpp::NumericMatrix umap_transform(Rcpp::List const& model,
     /*orig_n=*/m_orig.numRows, /*embedding=*/d_embedding.data().get(),
     /*embedding_n=*/m_embedding.numRows,
     /*params=*/params.get(), /*transformed=*/d_transformed.data().get());
+
+  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
   cuml4r::pinned_host_vector<float> h_transformed(d_transformed.size());
   auto CUML4R_ANONYMOUS_VARIABLE(transformed_d2h) =

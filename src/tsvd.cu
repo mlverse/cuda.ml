@@ -174,6 +174,8 @@ __host__ Rcpp::NumericMatrix tsvd_transform(Rcpp::List model,
                     /*trans_input=*/d_result.data().get(),
                     /*prms=*/*params);
 
+  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
+
   cuml4r::pinned_host_vector<double> h_result(d_result.size());
   auto CUML4R_ANONYMOUS_VARIABLE(result_d2h) = cuml4r::async_copy(
     stream_view.value(), d_result.cbegin(), d_result.cend(), h_result.begin());
@@ -214,6 +216,8 @@ __host__ Rcpp::NumericMatrix tsvd_inverse_transform(
                            /*componenets=*/d_components.data().get(),
                            /*input=*/d_result.data().get(),
                            /*prms=*/*params);
+
+  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
   cuml4r::pinned_host_vector<double> h_result(d_result.size());
   auto CUML4R_ANONYMOUS_VARIABLE(result_d2h) = cuml4r::async_copy(

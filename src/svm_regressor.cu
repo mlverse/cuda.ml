@@ -159,6 +159,8 @@ __host__ Rcpp::NumericVector svr_predict(SEXP svr_xptr,
                       /*model=*/*svr->model_, /*preds=*/d_y.data().get(),
                       /*cache_size=*/svr->cacheSize_, /*predict_class=*/false);
 
+  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
+
   cuml4r::pinned_host_vector<double> h_y(n_samples);
   auto CUML4R_ANONYMOUS_VARIABLE(y_d2h) = cuml4r::async_copy(
     stream_view.value(), d_y.cbegin(), d_y.cend(), h_y.begin());

@@ -58,6 +58,8 @@ __host__ Rcpp::List agglomerative_clustering(Rcpp::NumericMatrix const& x,
       /*c=*/n_neighbors, n_clusters);
   }
 
+  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
+
   cuml4r::pinned_host_vector<int> h_labels(d_labels.size());
   cuml4r::pinned_host_vector<int> h_children(d_children.size());
   auto CUML4R_ANONYMOUS_VARIABLE(labels_d2h) = cuml4r::async_copy(
