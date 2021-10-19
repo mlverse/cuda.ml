@@ -12,6 +12,10 @@ Authors@R:
              family = "Kalinowski",
              role = c("cph", "ctb"),
              email = "tomasz.kalinowski@rstudio.com"),
+      person(given = "Daniel",
+             family = "Falbel",
+             role = c("cph", "ctb"),
+             email = "daniel@rstudio.com"),
       person(given = "RStudio",
            role = c("cph", "fnd")))
 Maintainer: Yitao Li <yitao@rstudio.com>

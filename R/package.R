@@ -5,7 +5,6 @@
 #' @docType package
 #' @author Yitao Li <yitao@rstudio.com>
 #' @import Rcpp
-#' @useDynLib cuda.ml, .registration = TRUE
 #' @name cuda.ml
 NULL
 

@@ -1,4 +1,5 @@
 ^\.gitignore$
+^data-raw$
 ^man-roxygen$
 ^README\.md$
 ^NEWS\.md$
@@ -24,3 +25,5 @@
 ^README\.Rmd$
 ^README_cache$
 ^man/figures$
+^libcuml/*
+^\.github$
