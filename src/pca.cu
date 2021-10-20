@@ -14,7 +14,6 @@
 
 #include <algorithm>
 #include <memory>
-#include <vector>
 
 namespace cuml4r {
 namespace {

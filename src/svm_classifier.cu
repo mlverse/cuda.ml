@@ -15,7 +15,6 @@
 #include <Rcpp.h>
 
 #include <memory>
-#include <vector>
 
 namespace cuml4r {
 

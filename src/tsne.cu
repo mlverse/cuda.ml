@@ -13,9 +13,6 @@
 
 #include <Rcpp.h>
 
-#include <memory>
-#include <vector>
-
 namespace cuml4r {
 
 __host__ Rcpp::NumericMatrix tsne_fit(

@@ -12,7 +12,6 @@
 #include <Rcpp.h>
 
 #include <memory>
-#include <vector>
 
 namespace cuml4r {
 
@@ -49,7 +48,7 @@ __host__ Rcpp::List dbscan(Rcpp::NumericMatrix const& x, int const min_pts,
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
-  std::vector<int> h_labels(n_samples);
+  cuml4r::pinned_host_vector<int> h_labels(n_samples);
   auto CUML4R_ANONYMOUS_VARIABLE(labels_d2h) = cuml4r::async_copy(
     stream_view.value(), d_labels.cbegin(), d_labels.cend(), h_labels.begin());
 
