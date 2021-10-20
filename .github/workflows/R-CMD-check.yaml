@@ -23,7 +23,7 @@ jobs:
       image: nvidia/cuda:${{ matrix.cuda }}-devel-ubuntu18.04
       options: --gpus all
 
-    name: 'R: ${{ matrix.r }} CUDA: ${{ matrix.cuda }} CUML: ${{ matrix.cuml }}'
+    name: 'R: ${{ matrix.r }}, CUDA: ${{ matrix.cuda }}, CUML: ${{ matrix.cuml }}'
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
