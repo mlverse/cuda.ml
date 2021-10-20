@@ -23,19 +23,19 @@ __host__ Rcpp::List agglomerative_clustering(Rcpp::NumericMatrix const& x,
                                              int const n_clusters) {
   Rcpp::List result;
 
-  auto const m = cuml4r::Matrix<float>(x, /*transpose=*/false);
+  auto const m = Matrix<float>(x, /*transpose=*/false);
   auto const n_samples = m.numRows;
   auto const n_features = m.numCols;
 
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  auto stream_view = stream_allocator::getOrCreateStream();
   raft::handle_t handle;
-  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+  handle_utils::initializeHandle(handle, stream_view.value());
 
   // single-linkage hierarchical clustering input
   auto const& h_x = m.values;
   thrust::device_vector<float> d_x(h_x.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(x_h2d) = cuml4r::async_copy(
-    stream_view.value(), h_x.cbegin(), h_x.cend(), d_x.begin());
+  auto CUML4R_ANONYMOUS_VARIABLE(x_h2d) =
+    async_copy(stream_view.value(), h_x.cbegin(), h_x.cend(), d_x.begin());
 
   // single-linkage hierarchical clustering output
   auto out = std::make_unique<raft::hierarchy::linkage_output<int, float>>();
@@ -59,13 +59,13 @@ __host__ Rcpp::List agglomerative_clustering(Rcpp::NumericMatrix const& x,
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
-  cuml4r::pinned_host_vector<int> h_labels(d_labels.size());
-  cuml4r::pinned_host_vector<int> h_children(d_children.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(labels_d2h) = cuml4r::async_copy(
+  pinned_host_vector<int> h_labels(d_labels.size());
+  pinned_host_vector<int> h_children(d_children.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(labels_d2h) = async_copy(
     stream_view.value(), d_labels.cbegin(), d_labels.cend(), h_labels.begin());
   auto CUML4R_ANONYMOUS_VARIABLE(children_d2h) =
-    cuml4r::async_copy(stream_view.value(), d_children.cbegin(),
-                       d_children.cend(), h_children.begin());
+    async_copy(stream_view.value(), d_children.cbegin(), d_children.cend(),
+               h_children.begin());
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 

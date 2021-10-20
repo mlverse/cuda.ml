@@ -18,13 +18,14 @@
 #include <memory>
 #include <string>
 
+namespace cuml4r {
 namespace {
 
 enum class ModelType { XGBoost, XGBoostJSON, LightGBM };
 
 struct FILModel {
   __host__ FILModel(std::unique_ptr<raft::handle_t> handle,
-                    cuml4r::fil::forest_uptr forest, size_t const num_classes)
+                    fil::forest_uptr forest, size_t const num_classes)
     : handle_(std::move(handle)),
       forest_(std::move(forest)),
       numClasses_(num_classes) {}
@@ -32,12 +33,12 @@ struct FILModel {
   std::unique_ptr<raft::handle_t> const handle_;
   // NOTE: the destruction of `forest_` must precede the destruction of
   // `handle_`.
-  cuml4r::fil::forest_uptr forest_;
+  fil::forest_uptr forest_;
   size_t const numClasses_;
 };
 
 __host__ int treeliteLoadModel(ModelType const model_type, char const* filename,
-                               cuml4r::TreeliteHandle& tl_handle) {
+                               TreeliteHandle& tl_handle) {
   switch (model_type) {
     case ModelType::XGBoost:
       return TreeliteLoadXGBoostModel(filename, tl_handle.get());
@@ -63,8 +64,6 @@ CUML4R_ASSIGN_IF_PRESENT(n_items)
 CUML4R_NOOP_IF_ABSENT(n_items)
 
 }  // namespace
-
-namespace cuml4r {
 
 __host__ SEXP fil_load_model(int const model_type, std::string const& filename,
                              int const algo, bool const classification,
@@ -96,9 +95,9 @@ __host__ SEXP fil_load_model(int const model_type, std::string const& filename,
   set_n_items(params, n_items);
   params.pforest_shape_str = nullptr;
 
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  auto stream_view = stream_allocator::getOrCreateStream();
   auto handle = std::make_unique<raft::handle_t>();
-  cuml4r::handle_utils::initializeHandle(*handle, stream_view.value());
+  handle_utils::initializeHandle(*handle, stream_view.value());
 
   auto forest = fil::make_forest(*handle, /*src=*/[&] {
     ML::fil::forest* f;
@@ -136,7 +135,7 @@ __host__ Rcpp::NumericMatrix fil_predict(
   SEXP const& model, Rcpp::NumericMatrix const& x,
   bool const output_class_probabilities) {
   auto const model_xptr = Rcpp::XPtr<FILModel>(model);
-  auto const m = cuml4r::Matrix<float>(x, /*transpose=*/false);
+  auto const m = Matrix<float>(x, /*transpose=*/false);
 
   if (output_class_probabilities && model_xptr->numClasses_ == 0) {
     Rcpp::stop(
@@ -148,8 +147,8 @@ __host__ Rcpp::NumericMatrix fil_predict(
   // ensemble input data
   auto const& h_x = m.values;
   thrust::device_vector<float> d_x(h_x.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(x_h2d) = cuml4r::async_copy(
-    handle.get_stream(), h_x.cbegin(), h_x.cend(), d_x.begin());
+  auto CUML4R_ANONYMOUS_VARIABLE(x_h2d) =
+    async_copy(handle.get_stream(), h_x.cbegin(), h_x.cend(), d_x.begin());
 
   // ensemble output
   thrust::device_vector<float> d_preds(output_class_probabilities
@@ -161,8 +160,8 @@ __host__ Rcpp::NumericMatrix fil_predict(
                    /*data=*/d_x.data().get(), /*num_rows=*/m.numRows,
                    /*predict_proba=*/output_class_probabilities);
 
-  cuml4r::pinned_host_vector<float> h_preds(d_preds.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(preds_d2h) = cuml4r::async_copy(
+  pinned_host_vector<float> h_preds(d_preds.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(preds_d2h) = async_copy(
     handle.get_stream(), d_preds.cbegin(), d_preds.cend(), h_preds.begin());
 
   CUDA_RT_CALL(cudaStreamSynchronize(handle.get_stream()));

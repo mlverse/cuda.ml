@@ -66,34 +66,34 @@ __host__ SEXP svc_fit(Rcpp::NumericMatrix const& input,
                       int const nochange_steps, double const cache_size,
                       Rcpp::NumericVector const& sample_weights,
                       int const verbosity) {
-  auto const m = cuml4r::Matrix<>(input, /*transpose=*/true);
+  auto const m = Matrix<>(input, /*transpose=*/true);
   auto const n_samples = m.numCols;
   auto const n_features = m.numRows;
 
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  auto stream_view = stream_allocator::getOrCreateStream();
   auto handle = std::make_unique<raft::handle_t>();
-  cuml4r::handle_utils::initializeHandle(*handle, stream_view.value());
+  handle_utils::initializeHandle(*handle, stream_view.value());
 
   // SVM input
   auto const& h_input = m.values;
   thrust::device_vector<double> d_input(h_input.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(input_h2d) = cuml4r::async_copy(
+  auto CUML4R_ANONYMOUS_VARIABLE(input_h2d) = async_copy(
     stream_view.value(), h_input.cbegin(), h_input.cend(), d_input.begin());
 
-  auto h_labels(Rcpp::as<cuml4r::pinned_host_vector<double>>(labels));
+  auto h_labels(Rcpp::as<pinned_host_vector<double>>(labels));
   thrust::device_vector<double> d_labels(h_labels.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(labels_h2d) = cuml4r::async_copy(
+  auto CUML4R_ANONYMOUS_VARIABLE(labels_h2d) = async_copy(
     stream_view.value(), h_labels.cbegin(), h_labels.cend(), d_labels.begin());
 
   thrust::device_vector<double> d_sample_weights;
-  cuml4r::unique_marker sample_weights_h2d;
+  AsyncCopyCtx sample_weights_h2d;
   if (sample_weights.size() > 0) {
     auto const h_sample_weights(
-      Rcpp::as<cuml4r::pinned_host_vector<double>>(sample_weights));
+      Rcpp::as<pinned_host_vector<double>>(sample_weights));
     d_sample_weights.resize(h_sample_weights.size());
     sample_weights_h2d =
-      cuml4r::async_copy(stream_view.value(), h_sample_weights.cbegin(),
-                         h_sample_weights.cend(), d_sample_weights.begin());
+      async_copy(stream_view.value(), h_sample_weights.cbegin(),
+                 h_sample_weights.cend(), d_sample_weights.begin());
   }
 
   MLCommon::Matrix::KernelParams kernel_params{
@@ -116,7 +116,7 @@ __host__ SEXP svc_fit(Rcpp::NumericMatrix const& input,
 
 __host__ SEXP svc_predict(SEXP model_xptr, Rcpp::NumericMatrix const& input,
                           bool predict_class) {
-  auto const m = cuml4r::Matrix<>(input, /*transpose=*/true);
+  auto const m = Matrix<>(input, /*transpose=*/true);
   int const n_samples = m.numCols;
   int const n_features = m.numRows;
 
@@ -127,8 +127,8 @@ __host__ SEXP svc_predict(SEXP model_xptr, Rcpp::NumericMatrix const& input,
   // input
   auto const& h_input = m.values;
   thrust::device_vector<double> d_input(h_input.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(input_h2d) = cuml4r::async_copy(
-    stream, h_input.cbegin(), h_input.cend(), d_input.begin());
+  auto CUML4R_ANONYMOUS_VARIABLE(input_h2d) =
+    async_copy(stream, h_input.cbegin(), h_input.cend(), d_input.begin());
 
   // output
   thrust::device_vector<double> d_preds(n_samples);
@@ -147,9 +147,9 @@ __host__ SEXP svc_predict(SEXP model_xptr, Rcpp::NumericMatrix const& input,
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream));
 
-  cuml4r::pinned_host_vector<double> h_preds(n_samples);
-  auto CUML4R_ANONYMOUS_VARIABLE(preds_d2h) = cuml4r::async_copy(
-    stream, d_preds.cbegin(), d_preds.cend(), h_preds.begin());
+  pinned_host_vector<double> h_preds(n_samples);
+  auto CUML4R_ANONYMOUS_VARIABLE(preds_d2h) =
+    async_copy(stream, d_preds.cbegin(), d_preds.cend(), h_preds.begin());
   CUDA_RT_CALL(cudaStreamSynchronize(stream));
 
   return Rcpp::NumericVector(h_preds.begin(), h_preds.end());
@@ -160,9 +160,9 @@ __host__ Rcpp::List svc_get_state(SEXP model) {
 }
 
 __host__ SEXP svc_set_state(Rcpp::List const& state) {
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  auto stream_view = stream_allocator::getOrCreateStream();
   auto handle = std::make_unique<raft::handle_t>();
-  cuml4r::handle_utils::initializeHandle(*handle, stream_view.value());
+  handle_utils::initializeHandle(*handle, stream_view.value());
 
   auto model = std::make_unique<ML::SVM::SVC<double>>(*handle);
 

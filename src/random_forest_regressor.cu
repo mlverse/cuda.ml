@@ -21,14 +21,14 @@
 
 namespace cuml4r {
 
-using RandomForestRegressorUPtr =
-  std::unique_ptr<ML::RandomForestRegressorD,
-                  RandomForestMetaDataDeleter<double, double>>;
-
 namespace {
 
 constexpr auto kRfRegressorNumFeatures = "n_features";
 constexpr auto kRfRegressorForest = "forest";
+
+using RandomForestRegressorUPtr =
+  std::unique_ptr<ML::RandomForestRegressorD,
+                  RandomForestMetaDataDeleter<double, double>>;
 
 class RandomForestRegressor {
  public:
@@ -92,19 +92,19 @@ __host__ Rcpp::NumericVector rf_regressor_predict(
   Rcpp::NumericMatrix const& input,
   std::function<void(raft::handle_t const&, InputT* const,
                      OutputT* const)> const& predict_impl) {
-  auto const input_m = cuml4r::Matrix<InputT>(input, /*transpose=*/false);
+  auto const input_m = Matrix<InputT>(input, /*transpose=*/false);
   int const n_samples = input_m.numRows;
 
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  auto stream_view = stream_allocator::getOrCreateStream();
   raft::handle_t handle;
-  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+  handle_utils::initializeHandle(handle, stream_view.value());
 
   // inputs
   auto const& h_input = input_m.values;
   thrust::device_vector<InputT> d_input(h_input.size());
-  unique_marker __attribute__((unused)) input_h2d;
-  input_h2d = cuml4r::async_copy(stream_view.value(), h_input.cbegin(),
-                                 h_input.cend(), d_input.begin());
+  AsyncCopyCtx __attribute__((unused)) input_h2d;
+  input_h2d = async_copy(stream_view.value(), h_input.cbegin(), h_input.cend(),
+                         d_input.begin());
 
   // outputs
   thrust::device_vector<OutputT> d_preds(n_samples);
@@ -113,10 +113,10 @@ __host__ Rcpp::NumericVector rf_regressor_predict(
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
-  cuml4r::pinned_host_vector<OutputT> h_preds(n_samples);
-  unique_marker __attribute__((unused)) preds_d2h;
-  preds_d2h = cuml4r::async_copy(stream_view.value(), d_preds.cbegin(),
-                                 d_preds.cend(), h_preds.begin());
+  pinned_host_vector<OutputT> h_preds(n_samples);
+  AsyncCopyCtx __attribute__((unused)) preds_d2h;
+  preds_d2h = async_copy(stream_view.value(), d_preds.cbegin(), d_preds.cend(),
+                         h_preds.begin());
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
@@ -144,28 +144,27 @@ __host__ SEXP rf_regressor_fit(
   int const min_samples_split, int const split_criterion,
   float const min_impurity_decrease, int const max_batch_size,
   int const verbosity) {
-  auto const input_m = cuml4r::Matrix<>(input, /*transpose=*/true);
+  auto const input_m = Matrix<>(input, /*transpose=*/true);
   int const n_samples = input_m.numCols;
   int const n_features = input_m.numRows;
 
   auto rf = RandomForestRegressorUPtr(new ML::RandomForestRegressorD);
 
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  auto stream_view = stream_allocator::getOrCreateStream();
   raft::handle_t handle(n_streams);
-  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+  handle_utils::initializeHandle(handle, stream_view.value());
 
   // rf input data & responses
   auto const& h_input = input_m.values;
   thrust::device_vector<double> d_input(h_input.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(input_h2d) = cuml4r::async_copy(
+  auto CUML4R_ANONYMOUS_VARIABLE(input_h2d) = async_copy(
     stream_view.value(), h_input.cbegin(), h_input.cend(), d_input.begin());
-  auto const h_responses(
-    Rcpp::as<cuml4r::pinned_host_vector<double>>(responses));
+  auto const h_responses(Rcpp::as<pinned_host_vector<double>>(responses));
 
   thrust::device_vector<double> d_responses(h_responses.size());
   auto CUML4R_ANONYMOUS_VARIABLE(responses_h2d) =
-    cuml4r::async_copy(stream_view.value(), h_responses.cbegin(),
-                       h_responses.cend(), d_responses.begin());
+    async_copy(stream_view.value(), h_responses.cbegin(), h_responses.cend(),
+               d_responses.begin());
   {
     auto* rf_ptr = rf.get();
     ML::fit(

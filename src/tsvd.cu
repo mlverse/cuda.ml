@@ -23,28 +23,28 @@ __host__ Rcpp::List tsvd_fit_transform(Rcpp::NumericMatrix const& x,
                                        bool const transform_input) {
   Rcpp::List result;
 
-  auto const m = cuml4r::Matrix<>(x, /*transpose=*/true);
+  auto const m = Matrix<>(x, /*transpose=*/true);
   auto const n_rows = m.numCols;
   auto const n_cols = m.numRows;
 
   auto params = std::make_unique<ML::paramsTSVD>();
   params->n_rows = n_rows;
   params->n_cols = n_cols;
-  params->gpu_id = cuml4r::currentDevice();
+  params->gpu_id = currentDevice();
   params->tol = tol;
   params->n_iterations = n_iters;
   params->verbose = verbosity;
   params->n_components = n_components;
   params->algorithm = static_cast<ML::solver>(algo);
 
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  auto stream_view = stream_allocator::getOrCreateStream();
   raft::handle_t handle;
-  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+  handle_utils::initializeHandle(handle, stream_view.value());
 
   // TSVD input
   auto const& h_input = m.values;
   thrust::device_vector<double> d_input(h_input.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(input_h2d) = cuml4r::async_copy(
+  auto CUML4R_ANONYMOUS_VARIABLE(input_h2d) = async_copy(
     stream_view.value(), h_input.cbegin(), h_input.cend(), d_input.begin());
 
   // TSVD outputs
@@ -81,45 +81,45 @@ __host__ Rcpp::List tsvd_fit_transform(Rcpp::NumericMatrix const& x,
                 /*prms=*/*params);
   }
 
-  cuml4r::pinned_host_vector<double> h_transformed_data;
+  pinned_host_vector<double> h_transformed_data;
   if (transform_input) {
     h_transformed_data.resize(d_transformed_data.size());
   }
-  cuml4r::pinned_host_vector<double> h_components(n_cols * n_components);
-  cuml4r::pinned_host_vector<double> h_explained_var;
+  pinned_host_vector<double> h_components(n_cols * n_components);
+  pinned_host_vector<double> h_explained_var;
   if (transform_input) {
     h_explained_var.resize(d_explained_var.size());
   }
-  cuml4r::pinned_host_vector<double> h_explained_var_ratio;
+  pinned_host_vector<double> h_explained_var_ratio;
   if (transform_input) {
     h_explained_var_ratio.resize(d_explained_var_ratio.size());
   }
-  cuml4r::pinned_host_vector<double> h_singular_vals(n_components);
+  pinned_host_vector<double> h_singular_vals(n_components);
 
-  cuml4r::unique_marker transformed_data_d2h;
+  AsyncCopyCtx transformed_data_d2h;
   if (transform_input) {
     transformed_data_d2h =
-      cuml4r::async_copy(stream_view.value(), d_transformed_data.cbegin(),
-                         d_transformed_data.cend(), h_transformed_data.begin());
+      async_copy(stream_view.value(), d_transformed_data.cbegin(),
+                 d_transformed_data.cend(), h_transformed_data.begin());
   }
   auto CUML4R_ANONYMOUS_VARIABLE(components_d2h) =
-    cuml4r::async_copy(stream_view.value(), d_components.cbegin(),
-                       d_components.cend(), h_components.begin());
-  cuml4r::unique_marker explained_var_d2h;
+    async_copy(stream_view.value(), d_components.cbegin(), d_components.cend(),
+               h_components.begin());
+  AsyncCopyCtx explained_var_d2h;
   if (transform_input) {
     explained_var_d2h =
-      cuml4r::async_copy(stream_view.value(), d_explained_var.cbegin(),
-                         d_explained_var.cend(), h_explained_var.begin());
+      async_copy(stream_view.value(), d_explained_var.cbegin(),
+                 d_explained_var.cend(), h_explained_var.begin());
   }
-  cuml4r::unique_marker explained_var_ratio_d2h;
+  AsyncCopyCtx explained_var_ratio_d2h;
   if (transform_input) {
-    explained_var_ratio_d2h = cuml4r::async_copy(
-      stream_view.value(), d_explained_var_ratio.cbegin(),
-      d_explained_var_ratio.cend(), h_explained_var_ratio.begin());
+    explained_var_ratio_d2h =
+      async_copy(stream_view.value(), d_explained_var_ratio.cbegin(),
+                 d_explained_var_ratio.cend(), h_explained_var_ratio.begin());
   }
   auto CUML4R_ANONYMOUS_VARIABLE(singular_vals_d2h) =
-    cuml4r::async_copy(stream_view.value(), d_singular_vals.cbegin(),
-                       d_singular_vals.cend(), h_singular_vals.begin());
+    async_copy(stream_view.value(), d_singular_vals.cbegin(),
+               d_singular_vals.cend(), h_singular_vals.begin());
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
@@ -144,26 +144,25 @@ __host__ Rcpp::List tsvd_fit_transform(Rcpp::NumericMatrix const& x,
 
 __host__ Rcpp::NumericMatrix tsvd_transform(Rcpp::List model,
                                             Rcpp::NumericMatrix const& x) {
-  auto const m = cuml4r::Matrix<>(x, /*transpose=*/true);
+  auto const m = Matrix<>(x, /*transpose=*/true);
   auto const& h_input = m.values;
-  auto const components =
-    cuml4r::Matrix<>(model["components"], /*transpose=*/true);
+  auto const components = Matrix<>(model["components"], /*transpose=*/true);
   auto const& h_components = components.values;
   Rcpp::XPtr<ML::paramsTSVD> const params = model["tsvd_params"];
 
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  auto stream_view = stream_allocator::getOrCreateStream();
   raft::handle_t handle;
-  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+  handle_utils::initializeHandle(handle, stream_view.value());
 
   // transform inputs
   thrust::device_vector<double> d_input(h_input.size());
   thrust::device_vector<double> d_components(h_components.size());
 
-  auto CUML4R_ANONYMOUS_VARIABLE(input_h2d) = cuml4r::async_copy(
+  auto CUML4R_ANONYMOUS_VARIABLE(input_h2d) = async_copy(
     stream_view.value(), h_input.cbegin(), h_input.cend(), d_input.begin());
   auto CUML4R_ANONYMOUS_VARIABLE(components_h2d) =
-    cuml4r::async_copy(stream_view.value(), h_components.cbegin(),
-                       h_components.cend(), d_components.begin());
+    async_copy(stream_view.value(), h_components.cbegin(), h_components.cend(),
+               d_components.begin());
 
   // transform output
   thrust::device_vector<double> d_result(params->n_rows * params->n_components);
@@ -175,8 +174,8 @@ __host__ Rcpp::NumericMatrix tsvd_transform(Rcpp::List model,
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
-  cuml4r::pinned_host_vector<double> h_result(d_result.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(result_d2h) = cuml4r::async_copy(
+  pinned_host_vector<double> h_result(d_result.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(result_d2h) = async_copy(
     stream_view.value(), d_result.cbegin(), d_result.cend(), h_result.begin());
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
@@ -187,26 +186,25 @@ __host__ Rcpp::NumericMatrix tsvd_transform(Rcpp::List model,
 
 __host__ Rcpp::NumericMatrix tsvd_inverse_transform(
   Rcpp::List model, Rcpp::NumericMatrix const& x) {
-  auto const m = cuml4r::Matrix<>(x, /*transpose=*/true);
+  auto const m = Matrix<>(x, /*transpose=*/true);
   auto const& h_input = m.values;
-  auto const components =
-    cuml4r::Matrix<>(model["components"], /*transpose=*/true);
+  auto const components = Matrix<>(model["components"], /*transpose=*/true);
   auto const& h_components = components.values;
   Rcpp::XPtr<ML::paramsTSVD> params = model["tsvd_params"];
 
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  auto stream_view = stream_allocator::getOrCreateStream();
   raft::handle_t handle;
-  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+  handle_utils::initializeHandle(handle, stream_view.value());
 
   // inverse transform inputs
   thrust::device_vector<double> d_input(h_input.size());
   thrust::device_vector<double> d_components(h_components.size());
 
-  auto CUML4R_ANONYMOUS_VARIABLE(input_h2d) = cuml4r::async_copy(
+  auto CUML4R_ANONYMOUS_VARIABLE(input_h2d) = async_copy(
     stream_view.value(), h_input.cbegin(), h_input.cend(), d_input.begin());
   auto CUML4R_ANONYMOUS_VARIABLE(components_h2d) =
-    cuml4r::async_copy(stream_view.value(), h_components.cbegin(),
-                       h_components.cend(), d_components.begin());
+    async_copy(stream_view.value(), h_components.cbegin(), h_components.cend(),
+               d_components.begin());
 
   // inverse transform output
   thrust::device_vector<double> d_result(params->n_rows * params->n_cols);
@@ -218,8 +216,8 @@ __host__ Rcpp::NumericMatrix tsvd_inverse_transform(
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
-  cuml4r::pinned_host_vector<double> h_result(d_result.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(result_d2h) = cuml4r::async_copy(
+  pinned_host_vector<double> h_result(d_result.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(result_d2h) = async_copy(
     stream_view.value(), d_result.cbegin(), d_result.cend(), h_result.begin());
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));

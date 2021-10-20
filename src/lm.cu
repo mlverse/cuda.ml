@@ -24,22 +24,22 @@ __host__ Rcpp::List lm_fit(
   Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& y,
   bool const fit_intercept, bool const normalize_input,
   std::function<void(raft::handle_t&, lm::Params const&)> const& fit_impl) {
-  auto const m = cuml4r::Matrix<>(x, /*transpose=*/true);
+  auto const m = Matrix<>(x, /*transpose=*/true);
   auto const n_rows = m.numCols;
   auto const n_cols = m.numRows;
 
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  auto stream_view = stream_allocator::getOrCreateStream();
   raft::handle_t handle;
-  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+  handle_utils::initializeHandle(handle, stream_view.value());
 
   // LM input
   auto const& h_input = m.values;
   thrust::device_vector<double> d_input(h_input.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(input_h2d) = cuml4r::async_copy(
+  auto CUML4R_ANONYMOUS_VARIABLE(input_h2d) = async_copy(
     stream_view.value(), h_input.cbegin(), h_input.cend(), d_input.begin());
-  auto const h_labels = Rcpp::as<cuml4r::pinned_host_vector<double>>(y);
+  auto const h_labels = Rcpp::as<pinned_host_vector<double>>(y);
   thrust::device_vector<double> d_labels(h_labels.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(labels_h2d) = cuml4r::async_copy(
+  auto CUML4R_ANONYMOUS_VARIABLE(labels_h2d) = async_copy(
     stream_view.value(), h_labels.cbegin(), h_labels.cend(), d_labels.begin());
 
   // LM output
@@ -60,13 +60,13 @@ __host__ Rcpp::List lm_fit(
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
-  cuml4r::pinned_host_vector<double> h_coef(n_cols);
-  cuml4r::pinned_host_vector<double> h_intercept(1);
-  auto CUML4R_ANONYMOUS_VARIABLE(coef_d2h) = cuml4r::async_copy(
+  pinned_host_vector<double> h_coef(n_cols);
+  pinned_host_vector<double> h_intercept(1);
+  auto CUML4R_ANONYMOUS_VARIABLE(coef_d2h) = async_copy(
     stream_view.value(), d_coef.cbegin(), d_coef.cend(), h_coef.begin());
   auto CUML4R_ANONYMOUS_VARIABLE(intercept_d2h) =
-    cuml4r::async_copy(stream_view.value(), d_intercept.cbegin(),
-                       d_intercept.cend(), h_intercept.begin());
+    async_copy(stream_view.value(), d_intercept.cbegin(), d_intercept.cend(),
+               h_intercept.begin());
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 

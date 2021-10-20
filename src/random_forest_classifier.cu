@@ -22,16 +22,16 @@
 #include <unordered_map>
 #include <vector>
 
-using RandomForestClassifierUPtr =
-  std::unique_ptr<ML::RandomForestClassifierD,
-                  cuml4r::RandomForestMetaDataDeleter<double, int>>;
-
 namespace cuml4r {
 namespace {
 
 constexpr auto kRfClassiferNumFeatures = "n_features";
 constexpr auto kRfClassifierForest = "forest";
 constexpr auto kRfClassifierInvLabelsMap = "inv_labels_map";
+
+using RandomForestClassifierUPtr =
+  std::unique_ptr<ML::RandomForestClassifierD,
+                  RandomForestMetaDataDeleter<double, int>>;
 
 class RandomForestClassifier {
  public:
@@ -116,10 +116,10 @@ class RandomForestClassifier {
 };
 
 // map labels into consecutive integral values in [0, to n_unique_labels)
-__host__ cuml4r::pinned_host_vector<int> preprocess_labels(
+__host__ pinned_host_vector<int> preprocess_labels(
   std::unordered_map<int, int>& labels_map, std::vector<int> const& labels) {
   int n_unique_labels = 0;
-  cuml4r::pinned_host_vector<int> preprocessed_labels;
+  pinned_host_vector<int> preprocessed_labels;
   preprocessed_labels.reserve(labels.size());
 
   for (auto const label : labels) {
@@ -136,7 +136,7 @@ __host__ cuml4r::pinned_host_vector<int> preprocess_labels(
 // reverse the mapping done by preprocess_labels
 template <typename T>
 __host__ void postprocess_labels(
-  cuml4r::pinned_host_vector<T>& labels,
+  pinned_host_vector<T>& labels,
   std::unordered_map<int, int> const& inv_labels_map) {
   for (auto& label : labels) {
     auto iter = inv_labels_map.find(static_cast<int>(label));
@@ -164,19 +164,19 @@ __host__ Rcpp::IntegerVector rf_classifier_predict(
   Rcpp::NumericMatrix const& input,
   std::function<void(raft::handle_t const&, InputT* const,
                      OutputT* const)> const& predict_impl) {
-  auto const input_m = cuml4r::Matrix<InputT>(input, /*transpose=*/false);
+  auto const input_m = Matrix<InputT>(input, /*transpose=*/false);
   auto const n_samples = input_m.numRows;
 
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  auto stream_view = stream_allocator::getOrCreateStream();
   raft::handle_t handle;
-  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+  handle_utils::initializeHandle(handle, stream_view.value());
 
   // inputs
   auto const& h_input = input_m.values;
   thrust::device_vector<InputT> d_input(h_input.size());
-  unique_marker __attribute__((unused)) input_h2d;
-  input_h2d = cuml4r::async_copy(stream_view.value(), h_input.cbegin(),
-                                 h_input.cend(), d_input.begin());
+  AsyncCopyCtx __attribute__((unused)) input_h2d;
+  input_h2d = async_copy(stream_view.value(), h_input.cbegin(), h_input.cend(),
+                         d_input.begin());
 
   // outputs
   thrust::device_vector<OutputT> d_predictions(n_samples);
@@ -185,10 +185,10 @@ __host__ Rcpp::IntegerVector rf_classifier_predict(
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
-  cuml4r::pinned_host_vector<OutputT> h_predictions(n_samples);
-  unique_marker __attribute__((unused)) preds_d2h;
-  preds_d2h = cuml4r::async_copy(stream_view.value(), d_predictions.cbegin(),
-                                 d_predictions.cend(), h_predictions.begin());
+  pinned_host_vector<OutputT> h_predictions(n_samples);
+  AsyncCopyCtx __attribute__((unused)) preds_d2h;
+  preds_d2h = async_copy(stream_view.value(), d_predictions.cbegin(),
+                         d_predictions.cend(), h_predictions.begin());
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
@@ -219,27 +219,27 @@ __host__ SEXP rf_classifier_fit(
   int const min_samples_split, int const split_criterion,
   float const min_impurity_decrease, int const max_batch_size,
   int const verbosity) {
-  auto const input_m = cuml4r::Matrix<>(input, /*transpose=*/true);
+  auto const input_m = Matrix<>(input, /*transpose=*/true);
   int const n_samples = input_m.numCols;
   int const n_features = input_m.numRows;
 
   auto rf = RandomForestClassifierUPtr(new ML::RandomForestClassifierD);
 
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  auto stream_view = stream_allocator::getOrCreateStream();
   raft::handle_t handle(n_streams);
-  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+  handle_utils::initializeHandle(handle, stream_view.value());
 
   // rf input data & labels
   auto const& h_input = input_m.values;
   thrust::device_vector<double> d_input(h_input.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(input_h2d) = cuml4r::async_copy(
+  auto CUML4R_ANONYMOUS_VARIABLE(input_h2d) = async_copy(
     stream_view.value(), h_input.cbegin(), h_input.cend(), d_input.begin());
   std::unordered_map<int, int> labels_map;
   auto const h_labels =
     preprocess_labels(labels_map, Rcpp::as<std::vector<int>>(labels));
 
   thrust::device_vector<int> d_labels(h_labels.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(labels_h2d) = cuml4r::async_copy(
+  auto CUML4R_ANONYMOUS_VARIABLE(labels_h2d) = async_copy(
     stream_view.value(), h_labels.cbegin(), h_labels.cend(), d_labels.begin());
   {
     auto* rf_ptr = rf.get();
@@ -346,7 +346,7 @@ __host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
   SEXP model_xptr, Rcpp::NumericMatrix const& input) {
 #ifndef CUML4R_TREELITE_C_API_MISSING
 
-  auto const input_m = cuml4r::Matrix<float>(input, /*transpose=*/false);
+  auto const input_m = Matrix<float>(input, /*transpose=*/false);
   int const n_samples = input_m.numRows;
 
   auto model = Rcpp::XPtr<RandomForestClassifier>(model_xptr);
@@ -354,9 +354,9 @@ __host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
 
   auto const& tl_handle = model->getTreeliteHandle();
 
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  auto stream_view = stream_allocator::getOrCreateStream();
   raft::handle_t handle;
-  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+  handle_utils::initializeHandle(handle, stream_view.value());
 
   ML::fil::treelite_params_t params;
   params.algo = ML::fil::algo_t::ALGO_AUTO;
@@ -379,8 +379,8 @@ __host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
   // FIL input
   auto const& h_x = input_m.values;
   thrust::device_vector<float> d_x(h_x.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(x_h2d) = cuml4r::async_copy(
-    handle.get_stream(), h_x.cbegin(), h_x.cend(), d_x.begin());
+  auto CUML4R_ANONYMOUS_VARIABLE(x_h2d) =
+    async_copy(handle.get_stream(), h_x.cbegin(), h_x.cend(), d_x.begin());
 
   // FIL output
   thrust::device_vector<float> d_preds(n_classes * n_samples);
@@ -392,8 +392,8 @@ __host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
 
   CUDA_RT_CALL(cudaStreamSynchronize(handle.get_stream()));
 
-  cuml4r::pinned_host_vector<float> h_preds(d_preds.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(preds_d2h) = cuml4r::async_copy(
+  pinned_host_vector<float> h_preds(d_preds.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(preds_d2h) = async_copy(
     handle.get_stream(), d_preds.cbegin(), d_preds.cend(), h_preds.begin());
 
   CUDA_RT_CALL(cudaStreamSynchronize(handle.get_stream()));

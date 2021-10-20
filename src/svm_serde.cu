@@ -40,29 +40,29 @@ __host__ Rcpp::List getState(ML::SVM::svmModel<double> const& svm_model,
   Rcpp::List state;
   auto* const stream = handle.get_stream();
 
-  cuml4r::pinned_host_vector<double> h_dual_coefs(svm_model.n_support);
+  pinned_host_vector<double> h_dual_coefs(svm_model.n_support);
   CUDA_RT_CALL(cudaMemcpyAsync(
     /*dst=*/h_dual_coefs.data(),
     /*src=*/svm_model.dual_coefs,
     /*count=*/svm_model.n_support * sizeof(double),
     /*kind=*/cudaMemcpyDeviceToHost, stream));
 
-  cuml4r::pinned_host_vector<double> h_x_support(svm_model.n_support *
-                                                 svm_model.n_cols);
+  pinned_host_vector<double> h_x_support(svm_model.n_support *
+                                         svm_model.n_cols);
   CUDA_RT_CALL(cudaMemcpyAsync(
     /*dst=*/h_x_support.data(),
     /*src=*/svm_model.x_support,
     /*count=*/svm_model.n_support * svm_model.n_cols * sizeof(double),
     /*kind=*/cudaMemcpyDeviceToHost, stream));
 
-  cuml4r::pinned_host_vector<int> h_support_idx(svm_model.n_support);
+  pinned_host_vector<int> h_support_idx(svm_model.n_support);
   CUDA_RT_CALL(cudaMemcpyAsync(
     /*dst=*/h_support_idx.data(),
     /*src=*/svm_model.support_idx,
     /*count=*/svm_model.n_support * sizeof(int),
     /*kind=*/cudaMemcpyDeviceToHost, stream));
 
-  cuml4r::pinned_host_vector<double> h_unique_labels(svm_model.n_classes);
+  pinned_host_vector<double> h_unique_labels(svm_model.n_classes);
   CUDA_RT_CALL(cudaMemcpyAsync(
     /*dst=*/h_unique_labels.data(),
     /*src=*/svm_model.unique_labels,
@@ -122,7 +122,7 @@ __host__ void setState(ML::SVM::svmModel<double>& svm_model,
 
   CUDA_RT_CALL(cudaMalloc(&svm_model.dual_coefs, n_support * sizeof(double)));
   auto const h_dual_coefs =
-    Rcpp::as<cuml4r::pinned_host_vector<double>>(state[kSvmModelDualCoefs]);
+    Rcpp::as<pinned_host_vector<double>>(state[kSvmModelDualCoefs]);
   CUDA_RT_CALL(cudaMemcpyAsync(
     /*dst=*/svm_model.dual_coefs,
     /*src=*/h_dual_coefs.data(),
@@ -132,8 +132,8 @@ __host__ void setState(ML::SVM::svmModel<double>& svm_model,
 
   CUDA_RT_CALL(
     cudaMalloc(&svm_model.x_support, n_support * n_cols * sizeof(double)));
-  auto const h_x_support = Rcpp::as<cuml4r::pinned_host_vector<double>>(
-    state[kSvmModelSupportVectors]);
+  auto const h_x_support =
+    Rcpp::as<pinned_host_vector<double>>(state[kSvmModelSupportVectors]);
   CUDA_RT_CALL(cudaMemcpyAsync(
     /*dst=*/svm_model.x_support,
     /*src=*/h_x_support.data(),
@@ -143,7 +143,7 @@ __host__ void setState(ML::SVM::svmModel<double>& svm_model,
 
   CUDA_RT_CALL(cudaMalloc(&svm_model.support_idx, n_support * sizeof(int)));
   auto const h_support_idx =
-    Rcpp::as<cuml4r::pinned_host_vector<int>>(state[kSvmModelSupportIdxes]);
+    Rcpp::as<pinned_host_vector<int>>(state[kSvmModelSupportIdxes]);
   CUDA_RT_CALL(cudaMemcpyAsync(
     /*dst=*/svm_model.support_idx,
     /*src=*/h_support_idx.data(),
@@ -157,7 +157,7 @@ __host__ void setState(ML::SVM::svmModel<double>& svm_model,
   CUDA_RT_CALL(
     cudaMalloc(&svm_model.unique_labels, n_classes * sizeof(double)));
   auto const h_unique_labels =
-    Rcpp::as<cuml4r::pinned_host_vector<double>>(state[kSvmModelUniqueLabels]);
+    Rcpp::as<pinned_host_vector<double>>(state[kSvmModelUniqueLabels]);
   CUDA_RT_CALL(cudaMemcpyAsync(
     /*dst=*/svm_model.unique_labels,
     /*src=*/h_unique_labels.data(),

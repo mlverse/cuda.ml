@@ -26,7 +26,7 @@ __host__ Rcpp::NumericMatrix tsne_fit(
   float const post_momentum, long long const random_state, int const verbosity,
   bool const initialize_embeddings, bool const square_distances,
   int const algo) {
-  auto const m_x = cuml4r::Matrix<float>(x, /*transpose=*/false);
+  auto const m_x = Matrix<float>(x, /*transpose=*/false);
   auto const n_samples = m_x.numRows;
   auto const n_features = m_x.numCols;
 
@@ -54,15 +54,15 @@ __host__ Rcpp::NumericMatrix tsne_fit(
   params.square_distances = square_distances;
   params.algorithm = static_cast<ML::TSNE_ALGORITHM>(algo);
 
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  auto stream_view = stream_allocator::getOrCreateStream();
   raft::handle_t handle;
-  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+  handle_utils::initializeHandle(handle, stream_view.value());
 
   // TSNE input
   auto const& h_x = m_x.values;
   thrust::device_vector<float> d_x(h_x.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(x_h2d) = cuml4r::async_copy(
-    stream_view.value(), h_x.cbegin(), h_x.cend(), d_x.begin());
+  auto CUML4R_ANONYMOUS_VARIABLE(x_h2d) =
+    async_copy(stream_view.value(), h_x.cbegin(), h_x.cend(), d_x.begin());
 
   // TSNE output
   thrust::device_vector<float> d_y(n_samples * dim);
@@ -73,9 +73,9 @@ __host__ Rcpp::NumericMatrix tsne_fit(
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
-  cuml4r::pinned_host_vector<float> h_y(d_y.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(y_d2h) = cuml4r::async_copy(
-    stream_view.value(), d_y.cbegin(), d_y.cend(), h_y.begin());
+  pinned_host_vector<float> h_y(d_y.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(y_d2h) =
+    async_copy(stream_view.value(), d_y.cbegin(), d_y.cend(), h_y.begin());
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 

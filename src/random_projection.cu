@@ -15,6 +15,7 @@
 #include <memory>
 #include <vector>
 
+namespace cuml4r {
 namespace {
 
 constexpr auto kRProjParamsNumSamples = "n_samples";
@@ -37,7 +38,7 @@ __host__ Rcpp::Vector<Rcpp::traits::r_sexptype_traits<T>::rtype> toRcppVector(
   MLCommon::device_buffer<T> const& d_data) {
   auto const stream = d_data.get_stream();
 
-  cuml4r::pinned_host_vector<T> h_data(d_data.size());
+  pinned_host_vector<T> h_data(d_data.size());
   CUDA_RT_CALL(cudaMemcpyAsync(/*dst=*/h_data.data(), /*src=*/d_data.data(),
                                /*count=*/sizeof(T) * d_data.size(),
                                /*kind=*/cudaMemcpyDeviceToHost, stream));
@@ -53,7 +54,7 @@ __host__ void toDeviceBuffer(
   Rcpp::Vector<Rcpp::traits::r_sexptype_traits<T>::rtype> const& src) {
   auto const stream = dst.get_stream();
 
-  auto h_data = Rcpp::as<cuml4r::pinned_host_vector<T>>(src);
+  auto h_data = Rcpp::as<pinned_host_vector<T>>(src);
   dst.resize(src.size());
   CUDA_RT_CALL(cudaMemcpyAsync(/*dst=*/dst.data(), /*src=*/h_data.data(),
                                /*count=*/sizeof(T) * h_data.size(),
@@ -131,8 +132,6 @@ struct RPROJCtx {
 
 }  // namespace
 
-namespace cuml4r {
-
 __host__ size_t rproj_johnson_lindenstrauss_min_dim(size_t const n_samples,
                                                     double const eps) {
   return ML::johnson_lindenstrauss_min_dim(n_samples, eps);
@@ -151,9 +150,9 @@ __host__ SEXP rproj_fit(int const n_samples, int const n_features,
   params->density = density;
   params->random_state = random_state;
 
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  auto stream_view = stream_allocator::getOrCreateStream();
   auto handle = std::make_unique<raft::handle_t>();
-  cuml4r::handle_utils::initializeHandle(*handle, stream_view.value());
+  handle_utils::initializeHandle(*handle, stream_view.value());
 
   auto random_matrix = std::make_unique<ML::rand_mat<double>>(
     /*allocator=*/handle->get_device_allocator(),
@@ -179,11 +178,11 @@ __host__ Rcpp::NumericMatrix rproj_transform(SEXP rproj_ctx_xptr,
   auto const n_components = params->n_components;
 
   // RPROJtransform input
-  auto const m = cuml4r::Matrix<>(input, /*transpose=*/true);
+  auto const m = Matrix<>(input, /*transpose=*/true);
   auto const& h_input = m.values;
   thrust::device_vector<double> d_input(h_input.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(input_h2d) = cuml4r::async_copy(
-    stream, h_input.cbegin(), h_input.cend(), d_input.begin());
+  auto CUML4R_ANONYMOUS_VARIABLE(input_h2d) =
+    async_copy(stream, h_input.cbegin(), h_input.cend(), d_input.begin());
 
   // RPROJtransform output
   thrust::device_vector<double> d_output(n_samples * n_components);
@@ -195,9 +194,9 @@ __host__ Rcpp::NumericMatrix rproj_transform(SEXP rproj_ctx_xptr,
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream));
 
-  cuml4r::pinned_host_vector<double> h_output(d_output.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(output_d2h) = cuml4r::async_copy(
-    stream, d_output.cbegin(), d_output.cend(), h_output.begin());
+  pinned_host_vector<double> h_output(d_output.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(output_d2h) =
+    async_copy(stream, d_output.cbegin(), d_output.cend(), h_output.begin());
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream));
 
@@ -210,9 +209,9 @@ __host__ Rcpp::List rproj_get_state(SEXP model) {
 }
 
 __host__ SEXP rproj_set_state(Rcpp::List const& model_state) {
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  auto stream_view = stream_allocator::getOrCreateStream();
   auto handle = std::make_unique<raft::handle_t>();
-  cuml4r::handle_utils::initializeHandle(*handle, stream_view.value());
+  handle_utils::initializeHandle(*handle, stream_view.value());
   auto model =
     std::make_unique<RPROJCtx>(/*handle=*/std::move(handle), model_state);
 

@@ -59,13 +59,13 @@ __host__ Rcpp::List umap_fit(
   uint64_t const random_state, bool const deterministic) {
   Rcpp::List model;
 
-  auto const m_x = cuml4r::Matrix<float>(x, /*transpose=*/false);
+  auto const m_x = Matrix<float>(x, /*transpose=*/false);
   auto const n_samples = m_x.numRows;
   auto const n_features = m_x.numCols;
 
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  auto stream_view = stream_allocator::getOrCreateStream();
   raft::handle_t handle;
-  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+  handle_utils::initializeHandle(handle, stream_view.value());
 
   auto params = std::make_unique<ML::UMAPParams>();
   params->n_neighbors = n_neighbors;
@@ -97,15 +97,15 @@ __host__ Rcpp::List umap_fit(
   // UMAP input
   auto const& h_x = m_x.values;
   thrust::device_vector<float> d_x(h_x.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(x_h2d) = cuml4r::async_copy(
-    stream_view.value(), h_x.cbegin(), h_x.cend(), d_x.begin());
+  auto CUML4R_ANONYMOUS_VARIABLE(x_h2d) =
+    async_copy(stream_view.value(), h_x.cbegin(), h_x.cend(), d_x.begin());
   thrust::device_vector<float> d_y;
-  cuml4r::unique_marker y_h2d;
+  AsyncCopyCtx y_h2d;
   if (y.size() > 0) {
-    auto const h_y = Rcpp::as<cuml4r::pinned_host_vector<float>>(y);
+    auto const h_y = Rcpp::as<pinned_host_vector<float>>(y);
     d_y.resize(y.size());
-    y_h2d = cuml4r::async_copy(stream_view.value(), h_y.cbegin(), h_y.cend(),
-                               d_y.begin());
+    y_h2d =
+      async_copy(stream_view.value(), h_y.cbegin(), h_y.cend(), d_y.begin());
   }
 
   // UMAP output
@@ -122,10 +122,10 @@ __host__ Rcpp::List umap_fit(
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
-  cuml4r::pinned_host_vector<float> h_embedding(d_embedding.size());
+  pinned_host_vector<float> h_embedding(d_embedding.size());
   auto CUML4R_ANONYMOUS_VARIABLE(embedding_d2h) =
-    cuml4r::async_copy(stream_view.value(), d_embedding.cbegin(),
-                       d_embedding.cend(), h_embedding.begin());
+    async_copy(stream_view.value(), d_embedding.cbegin(), d_embedding.cend(),
+               h_embedding.begin());
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
@@ -140,32 +140,32 @@ __host__ Rcpp::List umap_fit(
 
 __host__ Rcpp::NumericMatrix umap_transform(Rcpp::List const& model,
                                             Rcpp::NumericMatrix const& x) {
-  auto const m_x = cuml4r::Matrix<float>(x, /*transpose=*/false);
+  auto const m_x = Matrix<float>(x, /*transpose=*/false);
   auto const n_samples = m_x.numRows;
   auto const n_features = m_x.numCols;
-  auto const m_orig = cuml4r::Matrix<float>(model["x"], /*transpose=*/false);
+  auto const m_orig = Matrix<float>(model["x"], /*transpose=*/false);
   auto const m_embedding =
-    cuml4r::Matrix<float>(model["embedding"], /*transpose=*/false);
+    Matrix<float>(model["embedding"], /*transpose=*/false);
   Rcpp::XPtr<ML::UMAPParams> params = model["umap_params"];
 
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  auto stream_view = stream_allocator::getOrCreateStream();
   raft::handle_t handle;
-  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+  handle_utils::initializeHandle(handle, stream_view.value());
 
   // UMAP transform input
   auto const& h_x = m_x.values;
   thrust::device_vector<float> d_x(h_x.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(x_h2d) = cuml4r::async_copy(
-    stream_view.value(), h_x.cbegin(), h_x.cend(), d_x.begin());
+  auto CUML4R_ANONYMOUS_VARIABLE(x_h2d) =
+    async_copy(stream_view.value(), h_x.cbegin(), h_x.cend(), d_x.begin());
   auto const& h_orig_x = m_orig.values;
   thrust::device_vector<float> d_orig_x(h_orig_x.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(orig_x_h2d) = cuml4r::async_copy(
+  auto CUML4R_ANONYMOUS_VARIABLE(orig_x_h2d) = async_copy(
     stream_view.value(), h_orig_x.cbegin(), h_orig_x.cend(), d_orig_x.begin());
   auto const& h_embedding = m_embedding.values;
   thrust::device_vector<float> d_embedding(h_embedding.size());
   auto CUML4R_ANONYMOUS_VARIABLE(orig_x_h2d) =
-    cuml4r::async_copy(stream_view.value(), h_embedding.cbegin(),
-                       h_embedding.cend(), d_embedding.begin());
+    async_copy(stream_view.value(), h_embedding.cbegin(), h_embedding.cend(),
+               d_embedding.begin());
 
   // UMAP transform output
   thrust::device_vector<float> d_transformed(n_samples * m_embedding.numCols);
@@ -180,10 +180,10 @@ __host__ Rcpp::NumericMatrix umap_transform(Rcpp::List const& model,
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
-  cuml4r::pinned_host_vector<float> h_transformed(d_transformed.size());
+  pinned_host_vector<float> h_transformed(d_transformed.size());
   auto CUML4R_ANONYMOUS_VARIABLE(transformed_d2h) =
-    cuml4r::async_copy(stream_view.value(), d_transformed.cbegin(),
-                       d_transformed.cend(), h_transformed.begin());
+    async_copy(stream_view.value(), d_transformed.cbegin(),
+               d_transformed.cend(), h_transformed.begin());
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 

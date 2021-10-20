@@ -110,28 +110,28 @@ class PredictionCtx {
       modelP_(Rcpp::as<float>(model[kP])),
       modelNSamples_(Rcpp::as<int>(model[kNumSamples])),
       modelNDims_(Rcpp::as<int>(model[kNumDims])),
-      streamView_(cuml4r::stream_allocator::getOrCreateStream()) {
-    cuml4r::handle_utils::initializeHandle(handle_, streamView_.value());
-    auto const x_m = cuml4r::Matrix<float>(x, /*transpose=*/false);
+      streamView_(stream_allocator::getOrCreateStream()) {
+    handle_utils::initializeHandle(handle_, streamView_.value());
+    auto const x_m = Matrix<float>(x, /*transpose=*/false);
     // KNN classifier input
     auto const& h_x = x_m.values;
     dX_.resize(h_x.size());
-    xH2D_ = cuml4r::async_copy(streamView_.value(), h_x.cbegin(), h_x.cend(),
-                               dX_.begin());
+    xH2D_ =
+      async_copy(streamView_.value(), h_x.cbegin(), h_x.cend(), dX_.begin());
 
     ResponseVecT const model_resps(
       Rcpp::as<ResponseVecT>(model[detail::kResponses]));
-    auto h_y = Rcpp::as<cuml4r::pinned_host_vector<ResponseT>>(model_resps);
+    auto h_y = Rcpp::as<pinned_host_vector<ResponseT>>(model_resps);
     dY_.resize(h_y.size());
-    yH2D_ = cuml4r::async_copy(streamView_.value(), h_y.cbegin(), h_y.cend(),
-                               dY_.begin());
+    yH2D_ =
+      async_copy(streamView_.value(), h_y.cbegin(), h_y.cend(), dY_.begin());
     if (modelAlgoType_ == knn::Algo::BRUTE_FORCE) {
-      auto const input_m = cuml4r::Matrix<float>(
+      auto const input_m = Matrix<float>(
         Rcpp::as<Rcpp::NumericMatrix>(model[kInput]), /*transpose=*/false);
       auto const& h_input = input_m.values;
       dInput_.resize(h_input.size());
-      inputH2D_ = cuml4r::async_copy(streamView_.value(), h_input.cbegin(),
-                                     h_input.cend(), dInput_.begin());
+      inputH2D_ = async_copy(streamView_.value(), h_input.cbegin(),
+                             h_input.cend(), dInput_.begin());
     }
 
     nearestNeighbors_ = query_nearest_neighbors(n_neighbors);
@@ -181,9 +181,9 @@ class PredictionCtx {
   NearestNeighbors nearestNeighbors_;
 
  private:
-  cuml4r::unique_marker xH2D_;
-  cuml4r::unique_marker yH2D_;
-  cuml4r::unique_marker inputH2D_;
+  AsyncCopyCtx xH2D_;
+  AsyncCopyCtx yH2D_;
+  AsyncCopyCtx inputH2D_;
 };
 
 __host__ void validate_param_list(
@@ -361,21 +361,21 @@ __host__ Rcpp::List knn_fit(Rcpp::NumericMatrix const& x, int const algo,
                             Rcpp::List const& algo_params) {
   auto const algo_type = static_cast<knn::Algo>(algo);
   auto const dist_type = static_cast<raft::distance::DistanceType>(metric);
-  auto const input_m = cuml4r::Matrix<float>(x, /*transpose=*/false);
+  auto const input_m = Matrix<float>(x, /*transpose=*/false);
   int const n_samples = input_m.numRows;
   int const n_features = input_m.numCols;
 
   Rcpp::List model;
 
   if (algo_type != knn::Algo::BRUTE_FORCE) {
-    auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+    auto stream_view = stream_allocator::getOrCreateStream();
     raft::handle_t handle;
-    cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+    handle_utils::initializeHandle(handle, stream_view.value());
     // knn input
     auto const& h_x = input_m.values;
     thrust::device_vector<float> d_x(h_x.size());
-    auto CUML4R_ANONYMOUS_VARIABLE(x_h2d) = cuml4r::async_copy(
-      stream_view.value(), h_x.cbegin(), h_x.cend(), d_x.begin());
+    auto CUML4R_ANONYMOUS_VARIABLE(x_h2d) =
+      async_copy(stream_view.value(), h_x.cbegin(), h_x.cend(), d_x.begin());
 
     auto knn_index =
       build_knn_index(handle, /*d_input=*/d_x.data().get(), n_samples,
@@ -412,8 +412,8 @@ __host__ Rcpp::IntegerVector knn_classifier_predict(
 
   CUDA_RT_CALL(cudaStreamSynchronize(ctx.streamView_.value()));
 
-  cuml4r::pinned_host_vector<int> h_out(d_out.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(out_d2h) = cuml4r::async_copy(
+  pinned_host_vector<int> h_out(d_out.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(out_d2h) = async_copy(
     ctx.streamView_.value(), d_out.cbegin(), d_out.cend(), h_out.begin());
   CUDA_RT_CALL(cudaStreamSynchronize(ctx.streamView_.value()));
 
@@ -442,8 +442,8 @@ __host__ Rcpp::NumericMatrix knn_classifier_predict_probabilities(
 
   CUDA_RT_CALL(cudaStreamSynchronize(ctx.streamView_.value()));
 
-  cuml4r::pinned_host_vector<float> h_out(d_out.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(out_d2h) = cuml4r::async_copy(
+  pinned_host_vector<float> h_out(d_out.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(out_d2h) = async_copy(
     ctx.streamView_.value(), d_out.cbegin(), d_out.cend(), h_out.begin());
   CUDA_RT_CALL(cudaStreamSynchronize(ctx.streamView_.value()));
 
@@ -469,8 +469,8 @@ Rcpp::NumericVector knn_regressor_predict(Rcpp::List const& model,
 
   CUDA_RT_CALL(cudaStreamSynchronize(ctx.streamView_.value()));
 
-  cuml4r::pinned_host_vector<float> h_out(d_out.size());
-  auto CUML4R_ANONYMOUS_VARIABLE(out_d2h) = cuml4r::async_copy(
+  pinned_host_vector<float> h_out(d_out.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(out_d2h) = async_copy(
     ctx.streamView_.value(), d_out.cbegin(), d_out.cend(), h_out.begin());
   CUDA_RT_CALL(cudaStreamSynchronize(ctx.streamView_.value()));
 

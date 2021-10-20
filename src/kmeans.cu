@@ -23,7 +23,7 @@ __host__ Rcpp::List kmeans(Rcpp::NumericMatrix const& x, int const k,
                            int const verbosity) {
   Rcpp::List result;
 
-  auto const m = cuml4r::Matrix<>(x, /*transpose=*/false);
+  auto const m = Matrix<>(x, /*transpose=*/false);
   auto const n_samples = m.numRows;
   auto const n_features = m.numCols;
 
@@ -38,9 +38,9 @@ __host__ Rcpp::List kmeans(Rcpp::NumericMatrix const& x, int const k,
   params.seed = seed;
   params.verbosity = verbosity;
 
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  auto stream_view = stream_allocator::getOrCreateStream();
   raft::handle_t handle;
-  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+  handle_utils::initializeHandle(handle, stream_view.value());
 
   // kmeans input data
   auto const& h_src_data = m.values;
@@ -48,18 +48,17 @@ __host__ Rcpp::List kmeans(Rcpp::NumericMatrix const& x, int const k,
   auto const n_centroid_values = params.n_clusters * n_features;
   thrust::device_vector<double> d_src_data(h_src_data.size());
   auto CUML4R_ANONYMOUS_VARIABLE(src_data_h2d) =
-    cuml4r::async_copy(stream_view.value(), h_src_data.cbegin(),
-                       h_src_data.cend(), d_src_data.begin());
+    async_copy(stream_view.value(), h_src_data.cbegin(), h_src_data.cend(),
+               d_src_data.begin());
 
   // kmeans outputs
   thrust::device_vector<double> d_pred_centroids(n_centroid_values);
-  cuml4r::unique_marker centroids_h2d;
+  AsyncCopyCtx centroids_h2d;
   if (params.init == ML::kmeans::KMeansParams::InitMethod::Array) {
-    auto const m_centroids = cuml4r::Matrix<>(centroids, /*transpose=*/false);
+    auto const m_centroids = Matrix<>(centroids, /*transpose=*/false);
     auto const& h_centroids = m_centroids.values;
-    centroids_h2d =
-      cuml4r::async_copy(stream_view.value(), h_centroids.cbegin(),
-                         h_centroids.cend(), d_pred_centroids.begin());
+    centroids_h2d = async_copy(stream_view.value(), h_centroids.cbegin(),
+                               h_centroids.cend(), d_pred_centroids.begin());
   }
   thrust::device_vector<int> d_pred_labels(n_samples);
 
@@ -71,15 +70,15 @@ __host__ Rcpp::List kmeans(Rcpp::NumericMatrix const& x, int const k,
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
-  cuml4r::pinned_host_vector<int> h_pred_labels(n_samples);
+  pinned_host_vector<int> h_pred_labels(n_samples);
   auto CUML4R_ANONYMOUS_VARIABLE(pred_labels_d2h) =
-    cuml4r::async_copy(stream_view.value(), d_pred_labels.cbegin(),
-                       d_pred_labels.cend(), h_pred_labels.begin());
+    async_copy(stream_view.value(), d_pred_labels.cbegin(),
+               d_pred_labels.cend(), h_pred_labels.begin());
 
-  cuml4r::pinned_host_vector<double> h_pred_centroids(n_centroid_values);
+  pinned_host_vector<double> h_pred_centroids(n_centroid_values);
   auto CUML4R_ANONYMOUS_VARIABLE(pred_centroids_d2h) =
-    cuml4r::async_copy(stream_view.value(), d_pred_centroids.cbegin(),
-                       d_pred_centroids.cend(), h_pred_centroids.begin());
+    async_copy(stream_view.value(), d_pred_centroids.cbegin(),
+               d_pred_centroids.cend(), h_pred_centroids.begin());
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 

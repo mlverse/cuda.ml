@@ -11,7 +11,7 @@ class handle_t;
 namespace cuml4r {
 namespace detail {
 
-void cd_fit_impl(raft::handle_t& handle, cuml4r::lm::Params const& params,
+void cd_fit_impl(raft::handle_t& handle, lm::Params const& params,
                  int const epochs, int const loss, double const alpha,
                  double const l1_ratio, bool const shuffle, double const tol);
 

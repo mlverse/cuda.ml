@@ -20,14 +20,14 @@ __host__ Rcpp::List dbscan(Rcpp::NumericMatrix const& x, int const min_pts,
                            int const verbosity) {
   Rcpp::List result;
 
-  auto const m = cuml4r::Matrix<>(x, /*transpose=*/false);
+  auto const m = Matrix<>(x, /*transpose=*/false);
   auto const n_samples = m.numRows;
   auto const n_features = m.numCols;
   auto const& h_src_data = m.values;
 
-  auto stream_view = cuml4r::stream_allocator::getOrCreateStream();
+  auto stream_view = stream_allocator::getOrCreateStream();
   raft::handle_t handle;
-  cuml4r::handle_utils::initializeHandle(handle, stream_view.value());
+  handle_utils::initializeHandle(handle, stream_view.value());
 
   // dbscan input data
   thrust::device_vector<double> d_src_data(h_src_data.size());
@@ -36,8 +36,8 @@ __host__ Rcpp::List dbscan(Rcpp::NumericMatrix const& x, int const min_pts,
   thrust::device_vector<int> d_labels(n_samples);
 
   auto CUML4R_ANONYMOUS_VARIABLE(src_data_h2d) =
-    cuml4r::async_copy(stream_view.value(), h_src_data.cbegin(),
-                       h_src_data.cend(), d_src_data.begin());
+    async_copy(stream_view.value(), h_src_data.cbegin(), h_src_data.cend(),
+               d_src_data.begin());
 
   ML::Dbscan::fit(handle, /*input=*/d_src_data.data().get(),
                   /*n_rows=*/n_samples, /*n_cols=*/n_features, eps, min_pts,
@@ -48,8 +48,8 @@ __host__ Rcpp::List dbscan(Rcpp::NumericMatrix const& x, int const min_pts,
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
-  cuml4r::pinned_host_vector<int> h_labels(n_samples);
-  auto CUML4R_ANONYMOUS_VARIABLE(labels_d2h) = cuml4r::async_copy(
+  pinned_host_vector<int> h_labels(n_samples);
+  auto CUML4R_ANONYMOUS_VARIABLE(labels_d2h) = async_copy(
     stream_view.value(), d_labels.cbegin(), d_labels.cend(), h_labels.begin());
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));

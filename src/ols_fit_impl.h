@@ -11,8 +11,7 @@ class handle_t;
 namespace cuml4r {
 namespace detail {
 
-void ols_fit_impl(raft::handle_t&, cuml4r::lm::Params const& params,
-                  int const algo);
+void ols_fit_impl(raft::handle_t&, lm::Params const& params, int const algo);
 
 }  // namespace detail
 }  // namespace cuml4r
