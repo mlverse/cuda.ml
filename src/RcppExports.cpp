@@ -25,6 +25,26 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cd_fit
+Rcpp::List cd_fit(Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& y, bool const fit_intercept, bool const normalize_input, int const epochs, int const loss, double const alpha, double const l1_ratio, bool const shuffle, double const tol);
+RcppExport SEXP _cuda_ml_cd_fit(SEXP xSEXP, SEXP ySEXP, SEXP fit_interceptSEXP, SEXP normalize_inputSEXP, SEXP epochsSEXP, SEXP lossSEXP, SEXP alphaSEXP, SEXP l1_ratioSEXP, SEXP shuffleSEXP, SEXP tolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector const& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< bool const >::type fit_intercept(fit_interceptSEXP);
+    Rcpp::traits::input_parameter< bool const >::type normalize_input(normalize_inputSEXP);
+    Rcpp::traits::input_parameter< int const >::type epochs(epochsSEXP);
+    Rcpp::traits::input_parameter< int const >::type loss(lossSEXP);
+    Rcpp::traits::input_parameter< double const >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< double const >::type l1_ratio(l1_ratioSEXP);
+    Rcpp::traits::input_parameter< bool const >::type shuffle(shuffleSEXP);
+    Rcpp::traits::input_parameter< double const >::type tol(tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(cd_fit(x, y, fit_intercept, normalize_input, epochs, loss, alpha, l1_ratio, shuffle, tol));
+    return rcpp_result_gen;
+END_RCPP
+}
 // has_cuML
 bool has_cuML();
 RcppExport SEXP _cuda_ml_has_cuML() {
@@ -748,6 +768,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_cuda_ml_agglomerative_clustering", (DL_FUNC) &_cuda_ml_agglomerative_clustering, 5},
+    {"_cuda_ml_cd_fit", (DL_FUNC) &_cuda_ml_cd_fit, 10},
     {"_cuda_ml_has_cuML", (DL_FUNC) &_cuda_ml_has_cuML, 0},
     {"_cuda_ml_cuML_major_version", (DL_FUNC) &_cuda_ml_cuML_major_version, 0},
     {"_cuda_ml_cuML_minor_version", (DL_FUNC) &_cuda_ml_cuML_minor_version, 0},

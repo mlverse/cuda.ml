@@ -5,6 +5,10 @@
     .Call('_cuda_ml_agglomerative_clustering', PACKAGE = 'cuda.ml', x, pairwise_conn, metric, n_neighbors, n_clusters)
 }
 
+.cd_fit <- function(x, y, fit_intercept, normalize_input, epochs, loss, alpha, l1_ratio, shuffle, tol) {
+    .Call('_cuda_ml_cd_fit', PACKAGE = 'cuda.ml', x, y, fit_intercept, normalize_input, epochs, loss, alpha, l1_ratio, shuffle, tol)
+}
+
 .has_cuML <- function() {
     .Call('_cuda_ml_has_cuML', PACKAGE = 'cuda.ml')
 }
