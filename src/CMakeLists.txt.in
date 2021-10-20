@@ -50,10 +50,14 @@ add_library(
   dbscan.cu
   fil.cpp
   fil.cu
+  glm.cpp
+  glm.cu
   kmeans.cpp
   kmeans.cu
   knn.cpp
   knn.cu
+  ols.cpp
+  ols.cu
   pca.cpp
   pca.cu
   random_forest_classifier.cpp

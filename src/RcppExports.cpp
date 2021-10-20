@@ -123,6 +123,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// glm_predict
+Rcpp::NumericVector glm_predict(Rcpp::NumericMatrix const& input, Rcpp::NumericVector const& coef, double const intercept);
+RcppExport SEXP _cuda_ml_glm_predict(SEXP inputSEXP, SEXP coefSEXP, SEXP interceptSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector const& >::type coef(coefSEXP);
+    Rcpp::traits::input_parameter< double const >::type intercept(interceptSEXP);
+    rcpp_result_gen = Rcpp::wrap(glm_predict(input, coef, intercept));
+    return rcpp_result_gen;
+END_RCPP
+}
 // kmeans
 Rcpp::List kmeans(Rcpp::NumericMatrix const& x, int const k, int const max_iters, double const tol, int const init_method, Rcpp::NumericMatrix const& centroids, int const seed, int const verbosity);
 RcppExport SEXP _cuda_ml_kmeans(SEXP xSEXP, SEXP kSEXP, SEXP max_itersSEXP, SEXP tolSEXP, SEXP init_methodSEXP, SEXP centroidsSEXP, SEXP seedSEXP, SEXP verbositySEXP) {
@@ -209,6 +222,21 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type x(xSEXP);
     Rcpp::traits::input_parameter< int const >::type n_neighbors(n_neighborsSEXP);
     rcpp_result_gen = Rcpp::wrap(knn_regressor_predict(model, x, n_neighbors));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ols_fit
+Rcpp::List ols_fit(Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& y, bool const fit_intercept, bool const normalize_input, int const algo);
+RcppExport SEXP _cuda_ml_ols_fit(SEXP xSEXP, SEXP ySEXP, SEXP fit_interceptSEXP, SEXP normalize_inputSEXP, SEXP algoSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector const& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< bool const >::type fit_intercept(fit_interceptSEXP);
+    Rcpp::traits::input_parameter< bool const >::type normalize_input(normalize_inputSEXP);
+    Rcpp::traits::input_parameter< int const >::type algo(algoSEXP);
+    rcpp_result_gen = Rcpp::wrap(ols_fit(x, y, fit_intercept, normalize_input, algo));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -728,12 +756,14 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuda_ml_fil_load_model", (DL_FUNC) &_cuda_ml_fil_load_model, 9},
     {"_cuda_ml_fil_get_num_classes", (DL_FUNC) &_cuda_ml_fil_get_num_classes, 1},
     {"_cuda_ml_fil_predict", (DL_FUNC) &_cuda_ml_fil_predict, 3},
+    {"_cuda_ml_glm_predict", (DL_FUNC) &_cuda_ml_glm_predict, 3},
     {"_cuda_ml_kmeans", (DL_FUNC) &_cuda_ml_kmeans, 8},
     {"_cuda_ml_knn_classifier_fit", (DL_FUNC) &_cuda_ml_knn_classifier_fit, 6},
     {"_cuda_ml_knn_classifier_predict", (DL_FUNC) &_cuda_ml_knn_classifier_predict, 3},
     {"_cuda_ml_knn_classifier_predict_probabilities", (DL_FUNC) &_cuda_ml_knn_classifier_predict_probabilities, 3},
     {"_cuda_ml_knn_regressor_fit", (DL_FUNC) &_cuda_ml_knn_regressor_fit, 6},
     {"_cuda_ml_knn_regressor_predict", (DL_FUNC) &_cuda_ml_knn_regressor_predict, 3},
+    {"_cuda_ml_ols_fit", (DL_FUNC) &_cuda_ml_ols_fit, 5},
     {"_cuda_ml_pca_fit_transform", (DL_FUNC) &_cuda_ml_pca_fit_transform, 8},
     {"_cuda_ml_pca_inverse_transform", (DL_FUNC) &_cuda_ml_pca_inverse_transform, 2},
     {"_cuda_ml_pca_get_state", (DL_FUNC) &_cuda_ml_pca_get_state, 1},
