@@ -72,6 +72,9 @@ add_library(
   random_forest_serde.cu
   random_projection.cpp
   random_projection.cu
+  ridge.cpp
+  ridge.cu
+  ridge_fit_impl.cu
   svm_classifier.cpp
   svm_classifier.cu
   svm_regressor.cpp

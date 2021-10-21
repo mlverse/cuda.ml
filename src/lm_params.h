@@ -3,6 +3,8 @@
 namespace cuml4r {
 namespace lm {
 
+enum class InterceptType { HOST, DEVICE };
+
 struct Params {
   // LM input
   double* d_input;
@@ -11,7 +13,8 @@ struct Params {
   double* d_labels;
   // LM output
   double* d_coef;
-  double* d_intercept;
+  // whether 'intercept' is a host or device ptr is implementation-dependent
+  double* intercept;
   // LM settings
   bool fit_intercept;
   bool normalize_input;

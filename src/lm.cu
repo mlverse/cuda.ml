@@ -22,7 +22,8 @@ constexpr auto kIntercept = "intercept";
 
 __host__ Rcpp::List lm_fit(
   Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& y,
-  bool const fit_intercept, bool const normalize_input,
+  lm::InterceptType const intercept_type, bool const fit_intercept,
+  bool const normalize_input,
   std::function<void(raft::handle_t&, lm::Params const&)> const& fit_impl) {
   auto const m = Matrix<>(x, /*transpose=*/true);
   auto const n_rows = m.numCols;
@@ -44,7 +45,8 @@ __host__ Rcpp::List lm_fit(
 
   // LM output
   thrust::device_vector<double> d_coef(n_cols);
-  thrust::device_vector<double> d_intercept(1);
+  thrust::device_vector<double> d_intercept;
+  double h_intercept = 0;
 
   lm::Params params;
   params.d_input = d_input.data().get();
@@ -52,7 +54,17 @@ __host__ Rcpp::List lm_fit(
   params.n_cols = n_cols;
   params.d_labels = d_labels.data().get();
   params.d_coef = d_coef.data().get();
-  params.d_intercept = d_intercept.data().get();
+  switch (intercept_type) {
+    case lm::InterceptType::HOST: {
+      params.intercept = &h_intercept;
+      break;
+    }
+    case lm::InterceptType::DEVICE: {
+      d_intercept.resize(1);
+      params.intercept = d_intercept.data().get();
+      break;
+    }
+  }
   params.fit_intercept = fit_intercept;
   params.normalize_input = normalize_input;
 
@@ -61,18 +73,23 @@ __host__ Rcpp::List lm_fit(
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
   pinned_host_vector<double> h_coef(n_cols);
-  pinned_host_vector<double> h_intercept(1);
   auto CUML4R_ANONYMOUS_VARIABLE(coef_d2h) = async_copy(
     stream_view.value(), d_coef.cbegin(), d_coef.cend(), h_coef.begin());
-  auto CUML4R_ANONYMOUS_VARIABLE(intercept_d2h) =
-    async_copy(stream_view.value(), d_intercept.cbegin(), d_intercept.cend(),
-               h_intercept.begin());
+  switch (intercept_type) {
+    case lm::InterceptType::HOST: {
+      break;
+    }
+    case lm::InterceptType::DEVICE: {
+      h_intercept = d_intercept[0];
+      break;
+    }
+  }
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
   Rcpp::List model;
   model[kCoef] = Rcpp::NumericVector(h_coef.begin(), h_coef.end());
-  model[kIntercept] = *h_intercept.begin();
+  model[kIntercept] = h_intercept;
 
   return model;
 }
