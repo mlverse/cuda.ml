@@ -12,7 +12,7 @@ __host__ void ols_fit_impl(raft::handle_t& handle, lm::Params const& params,
                   /*n_cols=*/params.n_cols,
                   /*labels=*/params.d_labels,
                   /*coef=*/params.d_coef,
-                  /*intercept=*/params.d_intercept,
+                  /*intercept=*/params.intercept,
                   /*fit_intercept=*/params.fit_intercept,
                   /*normalize=*/params.normalize_input, algo);
 }

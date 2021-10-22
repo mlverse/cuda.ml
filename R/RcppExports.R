@@ -145,6 +145,10 @@
     .Call('_cuda_ml_rproj_set_state', PACKAGE = 'cuda.ml', model_state)
 }
 
+.ridge_fit <- function(x, y, fit_intercept, normalize_input, alpha, algo) {
+    .Call('_cuda_ml_ridge_fit', PACKAGE = 'cuda.ml', x, y, fit_intercept, normalize_input, alpha, algo)
+}
+
 .svc_fit <- function(input, labels, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, sample_weights, verbosity) {
     .Call('_cuda_ml_svc_fit', PACKAGE = 'cuda.ml', input, labels, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, sample_weights, verbosity)
 }
