@@ -11,7 +11,9 @@ __host__ Rcpp::List ols_fit(Rcpp::NumericMatrix const& x,
                             bool const normalize_input, int const algo) {
   using namespace std::placeholders;
 
-  return lm_fit(x, y, /*intercept_type=*/lm::InterceptType::DEVICE,
+  return lm_fit(x, y, /*intercept_type=*/
+                        fit_intercept ? lm::InterceptType::DEVICE
+                                      : lm::InterceptType::HOST,
                 fit_intercept, normalize_input,
                 /*fit_impl=*/std::bind(detail::ols_fit_impl, _1, _2, algo));
 }
