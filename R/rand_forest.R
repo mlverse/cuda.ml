@@ -209,6 +209,7 @@ cuda_ml_rand_forest_bridge <- function(processed, mtry, trees, min_n, bootstrap,
                                        min_samples_leaf, split_criterion,
                                        min_impurity_decrease, max_batch_size,
                                        n_streams, cuML_log_level) {
+  hardhat::validate_predictors_are_numeric(processed$predictors)
   hardhat::validate_outcomes_are_univariate(processed$outcomes)
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
