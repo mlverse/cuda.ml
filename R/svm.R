@@ -217,6 +217,7 @@ cuda_ml_svm.recipe <- function(x, data, cost = 1,
 cuda_ml_svm_bridge <- function(processed, cost, kernel, gamma, coef0, degree, tol,
                                max_iter, nochange_steps, cache_size, epsilon,
                                sample_weights, cuML_log_level) {
+  hardhat::validate_predictors_are_numeric(processed$predictors)
   hardhat::validate_outcomes_are_univariate(processed$outcomes)
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]

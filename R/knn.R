@@ -277,6 +277,7 @@ cuda_ml_knn.recipe <- function(x, data,
 }
 
 cuda_ml_knn_bridge <- function(processed, algo, metric, p, neighbors) {
+  hardhat::validate_predictors_are_numeric(processed$predictors)
   hardhat::validate_outcomes_are_univariate(processed$outcomes)
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
