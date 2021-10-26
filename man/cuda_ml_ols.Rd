@@ -15,7 +15,7 @@ cuda_ml_ols(x, ...)
 \method{cuda_ml_ols}{data.frame}(
   x,
   y,
-  algorithm = c("svd", "eig", "qr"),
+  method = c("svd", "eig", "qr"),
   fit_intercept = TRUE,
   normalize_input = FALSE,
   ...
@@ -24,7 +24,7 @@ cuda_ml_ols(x, ...)
 \method{cuda_ml_ols}{matrix}(
   x,
   y,
-  algorithm = c("svd", "eig", "qr"),
+  method = c("svd", "eig", "qr"),
   fit_intercept = TRUE,
   normalize_input = FALSE,
   ...
@@ -33,7 +33,7 @@ cuda_ml_ols(x, ...)
 \method{cuda_ml_ols}{formula}(
   x,
   data,
-  algorithm = c("svd", "eig", "qr"),
+  method = c("svd", "eig", "qr"),
   fit_intercept = TRUE,
   normalize_input = FALSE,
   ...
@@ -42,7 +42,7 @@ cuda_ml_ols(x, ...)
 \method{cuda_ml_ols}{formula}(
   x,
   data,
-  algorithm = c("svd", "eig", "qr"),
+  method = c("svd", "eig", "qr"),
   fit_intercept = TRUE,
   normalize_input = FALSE,
   ...
@@ -62,7 +62,7 @@ cuda_ml_ols(x, ...)
 \item{y}{A numeric vector (for regression) or factor (for classification) of
 desired responses.}
 
-\item{algorithm}{Must be one of {"svd", "eig", "qr"}.
+\item{method}{Must be one of {"svd", "eig", "qr"}.
 
   - "svd": compute SVD decomposition using Jacobi iterations.
   - "eig": use an eigendecomposition of the covariance matrix.
@@ -100,7 +100,7 @@ Train an Ordinary Least Square (OLS) model for regression tasks.
 
 library(cuda.ml)
 
-model <- cuda_ml_ols(mpg ~ ., mtcars)
+model <- cuda_ml_ols(formula = mpg ~ ., data = mtcars, method = "qr")
 
 predictions <- predict(model, mtcars)
 }

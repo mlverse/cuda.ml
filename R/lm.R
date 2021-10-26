@@ -11,14 +11,15 @@
 predict.cuda_ml_linear_model <- function(object, ...) {
   check_dots_used()
 
-  x <- ...elt(1)
+  x <- ..1
 
   processed <- hardhat::forge(x, object$blueprint)
 
-  .glm_predict(
+  preds <- .glm_predict(
     input = as.matrix(processed$predictors),
     coef = object$xptr$coef,
     intercept = object$xptr$intercept
-  ) %>%
-    postprocess_regression_results()
+  )
+
+  postprocess_regression_results(preds)
 }

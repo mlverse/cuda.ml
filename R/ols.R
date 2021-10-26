@@ -1,7 +1,7 @@
-ols_match_algo <- function(algo = c("svd", "eig", "qr")) {
-  algo <- match.arg(algo)
+ols_match_method <- function(method = c("svd", "eig", "qr")) {
+  method <- match.arg(method)
 
-  switch(algo,
+  switch(method,
     "svd" = 0L,
     "eig" = 1L,
     "qr" = 2L
@@ -15,7 +15,7 @@ ols_match_algo <- function(algo = c("svd", "eig", "qr")) {
 #' @template supervised-model-inputs
 #' @template supervised-model-output
 #' @template ellipsis-unused
-#' @param algorithm Must be one of {"svd", "eig", "qr"}.
+#' @param method Must be one of {"svd", "eig", "qr"}.
 #'
 #'   - "svd": compute SVD decomposition using Jacobi iterations.
 #'   - "eig": use an eigendecomposition of the covariance matrix.
@@ -40,7 +40,7 @@ ols_match_algo <- function(algo = c("svd", "eig", "qr")) {
 #'
 #' library(cuda.ml)
 #'
-#' model <- cuda_ml_ols(mpg ~ ., mtcars)
+#' model <- cuda_ml_ols(formula = mpg ~ ., data = mtcars, method = "qr")
 #'
 #' predictions <- predict(model, mtcars)
 #' @export
@@ -57,7 +57,7 @@ cuda_ml_ols.default <- function(x, ...) {
 #' @rdname cuda_ml_ols
 #' @export
 cuda_ml_ols.data.frame <- function(x, y,
-                                   algorithm = c("svd", "eig", "qr"),
+                                   method = c("svd", "eig", "qr"),
                                    fit_intercept = TRUE,
                                    normalize_input = FALSE,
                                    ...) {
@@ -65,7 +65,7 @@ cuda_ml_ols.data.frame <- function(x, y,
 
   cuda_ml_ols_bridge(
     processed = processed,
-    algorithm = algorithm,
+    method = method,
     fit_intercept = fit_intercept,
     normalize_input = normalize_input
   )
@@ -74,7 +74,7 @@ cuda_ml_ols.data.frame <- function(x, y,
 #' @rdname cuda_ml_ols
 #' @export
 cuda_ml_ols.matrix <- function(x, y,
-                               algorithm = c("svd", "eig", "qr"),
+                               method = c("svd", "eig", "qr"),
                                fit_intercept = TRUE,
                                normalize_input = FALSE,
                                ...) {
@@ -82,7 +82,7 @@ cuda_ml_ols.matrix <- function(x, y,
 
   cuda_ml_ols_bridge(
     processed = processed,
-    algorithm = algorithm,
+    method = method,
     fit_intercept = fit_intercept,
     normalize_input = normalize_input
   )
@@ -91,7 +91,7 @@ cuda_ml_ols.matrix <- function(x, y,
 #' @rdname cuda_ml_ols
 #' @export
 cuda_ml_ols.formula <- function(formula, data,
-                                algorithm = c("svd", "eig", "qr"),
+                                method = c("svd", "eig", "qr"),
                                 fit_intercept = TRUE,
                                 normalize_input = FALSE,
                                 ...) {
@@ -99,7 +99,7 @@ cuda_ml_ols.formula <- function(formula, data,
 
   cuda_ml_ols_bridge(
     processed = processed,
-    algorithm = algorithm,
+    method = method,
     fit_intercept = fit_intercept,
     normalize_input = normalize_input
   )
@@ -108,7 +108,7 @@ cuda_ml_ols.formula <- function(formula, data,
 #' @rdname cuda_ml_ols
 #' @export
 cuda_ml_ols.formula <- function(x, data,
-                                algorithm = c("svd", "eig", "qr"),
+                                method = c("svd", "eig", "qr"),
                                 fit_intercept = TRUE,
                                 normalize_input = FALSE,
                                 ...) {
@@ -116,14 +116,14 @@ cuda_ml_ols.formula <- function(x, data,
 
   cuda_ml_ols_bridge(
     processed = processed,
-    algorithm = algorithm,
+    method = method,
     fit_intercept = fit_intercept,
     normalize_input = normalize_input
   )
 }
 
 cuda_ml_ols_bridge <- function(processed,
-                               algorithm = c("svd", "eig", "qr"),
+                               method = c("svd", "eig", "qr"),
                                fit_intercept = TRUE,
                                normalize_input = FALSE,
                                ...) {
@@ -135,21 +135,21 @@ cuda_ml_ols_bridge <- function(processed,
   if (ncol(x) < 1) stop("Predictors must contain at least 1 feature.")
   if (nrow(x) < 2) stop("At least 2 samples are required.")
 
-  if (ncol(x) > nrow(x) && !identical(algorithm, "svd")) {
+  if (ncol(x) > nrow(x) && !identical(method, "svd")) {
     warning(
-      "Forcing algorithm to be 'svd' because only 'svd' supports inputs with ",
+      "Forcing method to be 'svd' because only 'svd' supports inputs with ",
       "number of features being larger than the sample size."
     )
-    algorithm <- "svd"
+    method <- "svd"
   }
-  algorithm <- ols_match_algo(algorithm)
+  method <- ols_match_method(method)
 
   model_xptr <- .ols_fit(
     x = x,
     y = y,
     fit_intercept = fit_intercept,
     normalize_input = normalize_input,
-    algo = algorithm
+    algo = method
   )
 
   new_model(
