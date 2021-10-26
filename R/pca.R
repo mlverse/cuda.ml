@@ -59,7 +59,7 @@ cuda_ml_pca <- function(x,
   eig_algo <- match_eig_algo(eig_algo)
   cuML_log_level <- match_cuML_log_level(cuML_log_level)
 
-  .pca_fit_transform(
+  model_obj <- .pca_fit_transform(
     x = as.matrix(x),
     n_components = as.integer(n_components),
     algo = eig_algo,
@@ -68,8 +68,9 @@ cuda_ml_pca <- function(x,
     whiten = whiten,
     transform_input = transform_input,
     verbosity = cuML_log_level
-  ) %>%
-    new_pca_model()
+  )
+
+  new_pca_model(model_obj)
 }
 
 #' @export
@@ -78,11 +79,13 @@ cuda_ml_inverse_transform.cuda_ml_pca <- function(model, x, ...) {
 }
 
 cuda_ml_get_state.cuda_ml_pca <- function(model) {
-  .pca_get_state(model) %>%
-    new_model_state("cuda_ml_pca_model_state")
+  model_state <- .pca_get_state(model)
+
+  new_model_state(model_state, "cuda_ml_pca_model_state")
 }
 
 cuda_ml_set_state.cuda_ml_pca_model_state <- function(model_state) {
-  .pca_set_state(model_state) %>%
-    new_pca_model()
+  model_state <- .pca_set_state(model_state)
+
+  new_pca_model(model_state)
 }

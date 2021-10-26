@@ -375,29 +375,32 @@ predict_cuda_ml_knn_bridge <- function(model, processed, output_class_probabilit
 
 predict_cuda_ml_knn_classification_impl <- function(model, processed, output_class_probabilities) {
   if (output_class_probabilities) {
-    .knn_classifier_predict_probabilities(
+    preds <- .knn_classifier_predict_probabilities(
       model = model$xptr,
       x = as.matrix(processed$predictors),
       n_neighbors = model$neighbors
-    ) %>%
-      postprocess_class_probabilities(model)
+    )
+
+    postprocess_class_probabilities(preds, model)
   } else {
-    .knn_classifier_predict(
+    preds <- .knn_classifier_predict(
       model = model$xptr,
       x = as.matrix(processed$predictors),
       n_neighbors = model$neighbors
-    ) %>%
-      postprocess_classification_results(model)
+    )
+
+    postprocess_classification_results(preds, model)
   }
 }
 
 predict_cuda_ml_knn_regression_impl <- function(model, processed) {
-  .knn_regressor_predict(
+  preds <- .knn_regressor_predict(
     model = model$xptr,
     x = as.matrix(processed$predictors),
     n_neighbors = model$neighbors
-  ) %>%
-    postprocess_regression_results()
+  )
+
+  postprocess_regression_results(preds)
 }
 
 # register the CuML-based knn model for parsnip

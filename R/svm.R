@@ -312,11 +312,12 @@ cuda_ml_svm_classification_multiclass_impl <- function(processed, cost, kernel,
 }
 
 cuda_ml_get_state.cuda_ml_svc_ovr <- function(model) {
-  list(
+  model_state <- list(
     ovr_model_states = lapply(model$xptr, function(x) cuda_ml_get_state(x)),
     blueprint = model$blueprint
-  ) %>%
-    new_model_state("cuda_ml_svc_ovr_model_state")
+  )
+
+  new_model_state(model_state, "cuda_ml_svc_ovr_model_state")
 }
 
 cuda_ml_set_state.cuda_ml_svc_ovr_model_state <- function(model_state) {
@@ -363,11 +364,12 @@ cuda_ml_svm_classification_binary_impl <- function(processed, cost, kernel, gamm
 }
 
 cuda_ml_get_state.cuda_ml_svc <- function(model) {
-  list(
+  model_state <- list(
     model_state = .svc_get_state(model$xptr),
     blueprint = model$blueprint
-  ) %>%
-    new_model_state("cuda_ml_svc_model_state")
+  )
+
+  new_model_state(model_state, "cuda_ml_svc_model_state")
 }
 
 cuda_ml_set_state.cuda_ml_svc_model_state <- function(model_state) {
@@ -413,11 +415,12 @@ cuda_ml_svm_regression_impl <- function(processed, cost, kernel, gamma, coef0,
 }
 
 cuda_ml_get_state.cuda_ml_svr <- function(model) {
-  list(
+  model_state <- list(
     model_state = .svr_get_state(model$xptr),
     blueprint = model$blueprint
-  ) %>%
-    new_model_state("cuda_ml_svr_model_state")
+  )
+
+  new_model_state(model_state, "cuda_ml_svr_model_state")
 }
 
 cuda_ml_set_state.cuda_ml_svr_model_state <- function(model_state) {
@@ -469,48 +472,54 @@ predict_cuda_ml_svm_bridge <- function(model, processed) {
 predict_cuda_ml_svm_classification_multiclass_impl <- function(model, processed) {
   pred_levels <- get_pred_levels(model)
 
-  scores <- seq_along(pred_levels) %>%
-    lapply(
-      function(label_idx) {
-        if (is.null(model$xptr[[label_idx]])) {
-          # None of the training data points had the current label.
-          rep(-Inf, nrow(processed$predictors))
-        } else {
-          .svc_predict(
-            model_xptr = model$xptr[[label_idx]]$xptr,
-            input = as.matrix(processed$predictors),
-            predict_class = FALSE
-          )
-        }
+  scores <- lapply(
+    seq_along(pred_levels),
+    function(label_idx) {
+      if (is.null(model$xptr[[label_idx]])) {
+        # None of the training data points had the current label.
+        rep(-Inf, nrow(processed$predictors))
+      } else {
+        .svc_predict(
+          model_xptr = model$xptr[[label_idx]]$xptr,
+          input = as.matrix(processed$predictors),
+          predict_class = FALSE
+        )
       }
-    )
+    }
+  )
 
-  seq_len(nrow(processed$predictors)) %>%
-    sapply(
-      function(input_idx) {
-        seq_along(pred_levels) %>%
-          lapply(function(label_idx) scores[[label_idx]][[input_idx]]) %>%
-          which.max()
-      }
-    ) %>%
-    postprocess_classification_results(model)
+  preds <- sapply(
+    seq_len(nrow(processed$predictors)),
+    function(row_idx) {
+      row_scores <- lapply(
+        seq_along(pred_levels),
+        function(label_idx) scores[[label_idx]][[row_idx]]
+      )
+
+      which.max(row_scores)
+    }
+  )
+
+  postprocess_classification_results(preds, model)
 }
 
 predict_cuda_ml_svm_classification_binary_impl <- function(model, processed) {
-  .svc_predict(
+  preds <- .svc_predict(
     model_xptr = model$xptr,
     input = as.matrix(processed$predictors),
     predict_class = TRUE
-  ) %>%
-    postprocess_classification_results(model)
+  )
+
+  postprocess_classification_results(preds, model)
 }
 
 predict_cuda_ml_svm_regression_impl <- function(model, processed) {
-  .svr_predict(
+  preds <- .svr_predict(
     svr_xptr = model$xptr,
     X = as.matrix(processed$predictors)
-  ) %>%
-    postprocess_regression_results()
+  )
+
+  postprocess_regression_results(preds)
 }
 
 # register the CuML-based rand_forest model for parsnip

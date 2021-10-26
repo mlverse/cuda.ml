@@ -108,7 +108,7 @@ cuda_ml_tsne <- function(x, n_components = 2L,
   algo <- tsne_match_method(method)
   cuML_log_level <- match_cuML_log_level(cuML_log_level)
 
-  .tsne_fit(
+  model_obj <- .tsne_fit(
     x = as.matrix(x),
     dim = as.integer(n_components),
     n_neighbors = as.integer(n_neighbors),
@@ -132,6 +132,7 @@ cuda_ml_tsne <- function(x, n_components = 2L,
     post_momentum = as.numeric(post_momentum),
     random_state = as.integer(seed %||% -1L),
     verbosity = cuML_log_level
-  ) %>%
-    new_tsne_model()
+  )
+
+  new_tsne_model(model_obj)
 }

@@ -333,12 +333,13 @@ cuda_ml_get_state.cuda_ml_rand_forest <- function(model) {
     regression = .rf_regressor_get_state
   )
 
-  list(
+  model_state <- list(
     mode = model$mode,
     rf = get_state_impl(model$xptr),
     blueprint = model$blueprint
-  ) %>%
-    new_model_state("cuda_ml_rand_forest_model_state")
+  )
+
+  new_model_state(model_state, "cuda_ml_rand_forest_model_state")
 }
 
 cuda_ml_set_state.cuda_ml_rand_forest_model_state <- function(model_state) {
@@ -429,29 +430,32 @@ predict_cuda_ml_rand_forest_classification_impl <- function(model,
       )
     }
 
-    .rf_classifier_predict_class_probabilities(
+    preds <- .rf_classifier_predict_class_probabilities(
       model_xptr = model$xptr,
       input = as.matrix(processed$predictors)
-    ) %>%
-      postprocess_class_probabilities(model)
+    )
+
+    postprocess_class_probabilities(preds, model)
   } else {
-    .rf_classifier_predict(
+    preds <- .rf_classifier_predict(
       model_xptr = model$xptr,
       input = as.matrix(processed$predictors),
       verbosity = cuML_log_level
-    ) %>%
-      postprocess_classification_results(model)
+    )
+
+    postprocess_classification_results(preds, model)
   }
 }
 
 predict_cuda_ml_rand_forest_regression_impl <- function(model, processed,
                                                         cuML_log_level) {
-  .rf_regressor_predict(
+  preds <- .rf_regressor_predict(
     model_xptr = model$xptr,
     input = as.matrix(processed$predictors),
     verbosity = cuML_log_level
-  ) %>%
-    postprocess_regression_results()
+  )
+
+  postprocess_regression_results(preds)
 }
 
 # register the CuML-based rand_forest model for parsnip

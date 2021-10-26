@@ -254,8 +254,9 @@ cuda_ml_get_state.default <- function(model) {
 cuda_ml_get_state.cuda_ml_model <- function(model) {
   # Default implementation: assume the entire model object can be serializabled
   # by `base::serialize()`.
-  list(model = model) %>%
-    new_model_state(cls = NULL)
+  model_state <- list(model = model)
+
+  new_model_state(model_state, cls = NULL)
 }
 
 cuda_ml_set_state.cuda_ml_model_state <- function(model_state) {

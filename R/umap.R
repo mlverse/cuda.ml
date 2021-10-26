@@ -117,7 +117,7 @@ cuda_ml_umap <- function(x, y = NULL, n_components = 2L, n_neighbors = 15L,
   target_metric <- umap_match_metric_type(target_metric)
   cuML_log_level <- match_cuML_log_level(cuML_log_level)
 
-  model <- .umap_fit(
+  model_obj <- .umap_fit(
     x = as.matrix(x),
     y = if (length(y) > 0) as.numeric(y) else numeric(0),
     n_components = as.integer(n_components),
@@ -140,8 +140,8 @@ cuda_ml_umap <- function(x, y = NULL, n_components = 2L, n_neighbors = 15L,
     random_state = as.integer(seed %||% 0L),
     deterministic = !is.null(seed),
     verbosity = cuML_log_level
-  ) %>%
-    new_umap_model()
+  )
+  model <- new_umap_model(model_obj)
 
   if (transform_input) {
     model$transformed_data <- cuda_ml_transform(model, x)
@@ -151,13 +151,15 @@ cuda_ml_umap <- function(x, y = NULL, n_components = 2L, n_neighbors = 15L,
 }
 
 cuda_ml_get_state.cuda_ml_umap <- function(model) {
-  .umap_get_state(model) %>%
-    new_model_state("cuda_ml_umap_model_state")
+  model_state <- .umap_get_state(model)
+
+  new_model_state(model_state, "cuda_ml_umap_model_state")
 }
 
 cuda_ml_set_state.cuda_ml_umap_model_state <- function(model_state) {
-  .umap_set_state(model_state) %>%
-    new_umap_model()
+  model_obj <- .umap_set_state(model_state)
+
+  new_umap_model(model_obj)
 }
 
 #' @export
