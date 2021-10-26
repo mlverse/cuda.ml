@@ -6,7 +6,7 @@ test_that("OLS regressor works as expected", {
       if (!fit_intercept) {
         input <- scale(mtcars, scale = FALSE)
       } else {
-        input <- mtcars
+        input <- as.matrix(mtcars)
       }
 
       if (normalize_input) {
