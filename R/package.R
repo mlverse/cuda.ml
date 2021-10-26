@@ -6,6 +6,7 @@
 #' @author Yitao Li <yitao@rstudio.com>
 #' @import Rcpp
 #' @name cuda.ml
+#' @useDynLib cuda.ml, .registration = TRUE
 NULL
 
 .onLoad <- function(libname, pkgname) {

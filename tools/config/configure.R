@@ -243,10 +243,6 @@ run_cmake <- function() {
     libs <- c("libtreelite", "libtreelite_runtime", "libcuml++")
     bundle_libcuml <- TRUE
   }
-  write(
-    "useDynLib(cuda.ml, .registration = TRUE)", file = "NAMESPACE",
-    append = TRUE
-  )
   cmake_prefix_path <- paste0(
     c(Sys.getenv("CMAKE_PREFIX_PATH", unset = ""), cuml_prefix),
     collapse = ":"
@@ -282,10 +278,6 @@ if (is.null(find_nvcc(stop_if_missing = FALSE)) || !has_libcuml()) {
   wd <- getwd()
   on.exit(setwd(wd))
   setwd(pkg_root())
-  write(
-    "useDynLib(cuda.ml, .registration = TRUE)", file = "NAMESPACE",
-    append = TRUE
-  )
   define(PKG_CPPFLAGS = normalizePath(file.path(getwd(), "src", "stubs")))
 } else {
   define(PKG_CPPFLAGS = "")
