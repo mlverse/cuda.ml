@@ -337,8 +337,8 @@ cuda_ml_knn_bridge <- function(processed, algo, metric, p, neighbors) {
 predict.cuda_ml_knn <- function(object, ...) {
   check_dots_used()
 
-  x <- ...elt(1)
-  output_class_probabilities <- if (...length() > 1) ...elt(2) else NULL
+  x <- ..1
+  output_class_probabilities <- if (length(list(...)) > 1) ..2 else NULL
 
   processed <- hardhat::forge(x, object$blueprint)
 

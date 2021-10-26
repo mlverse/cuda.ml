@@ -183,8 +183,8 @@ cuda_ml_fil_load_model <- function(filename,
 predict.cuda_ml_fil <- function(object, ...) {
   check_dots_used()
 
-  x <- ...elt(1)
-  output_class_probabilities <- ifelse(...length() > 1, ...elt(2), FALSE)
+  x <- ..1
+  output_class_probabilities <- ifelse(length(list(...)) > 1, ..2, FALSE)
 
   num_classes <- .fil_get_num_classes(model = object$xptr)
   preds <- .fil_predict(

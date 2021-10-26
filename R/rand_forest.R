@@ -368,9 +368,9 @@ cuda_ml_set_state.cuda_ml_rand_forest_model_state <- function(model_state) {
 predict.cuda_ml_rand_forest <- function(object, ...) {
   check_dots_used()
 
-  x <- ...elt(1)
-  output_class_probabilities <- if (...length() > 1) ...elt(2) else NULL
-  cuML_log_level <- ifelse(...length() > 2, ...elt(3), "off")
+  x <- ..1
+  output_class_probabilities <- if (length(list(...)) > 1) ..2 else NULL
+  cuML_log_level <- ifelse(length(list(...)) > 2, ..3, "off")
 
   processed <- hardhat::forge(x, object$blueprint)
 

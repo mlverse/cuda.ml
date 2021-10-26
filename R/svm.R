@@ -442,8 +442,7 @@ cuda_ml_set_state.cuda_ml_svr_model_state <- function(model_state) {
 predict.cuda_ml_svm <- function(object, ...) {
   check_dots_used()
 
-  x <- ...elt(1)
-  processed <- hardhat::forge(x, object$blueprint)
+  processed <- hardhat::forge(..1, object$blueprint)
 
   predict_cuda_ml_svm_bridge(model = object, processed = processed)
 }
