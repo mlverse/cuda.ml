@@ -39,7 +39,7 @@ test_that("OLS regressor works as expected", {
           normalize_input = normalize_input
         )
         cuda_ml_ols_regressor_preds <- predict(
-          cuda_ml_ols_regressor, input
+          cuda_ml_ols_regressor, input[, which(names(mtcars) != "mpg")]
         )
 
         expect_equal(
