@@ -41,8 +41,13 @@ ols_match_method <- function(method = c("svd", "eig", "qr")) {
 #' library(cuda.ml)
 #'
 #' model <- cuda_ml_ols(formula = mpg ~ ., data = mtcars, method = "qr")
-#'
 #' predictions <- predict(model, mtcars)
+#'
+#' # predictions will be comparable to those from a `stats::lm` model
+#' lm_model <- stats::lm(formula = mpg ~ ., data = mtcars, method = "qr")
+#' lm_predictions <- predict(lm_model, mtcars)
+#'
+#' print(max(abs(lm_predictions - predictions)))
 #' @export
 cuda_ml_ols <- function(x, ...) {
   UseMethod("cuda_ml_ols")
@@ -107,7 +112,7 @@ cuda_ml_ols.formula <- function(formula, data,
 
 #' @rdname cuda_ml_ols
 #' @export
-cuda_ml_ols.formula <- function(x, data,
+cuda_ml_ols.recipe <- function(x, data,
                                 method = c("svd", "eig", "qr"),
                                 fit_intercept = TRUE,
                                 normalize_input = FALSE,

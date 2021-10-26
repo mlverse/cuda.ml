@@ -6,6 +6,7 @@
 \alias{cuda_ml_ols.data.frame}
 \alias{cuda_ml_ols.matrix}
 \alias{cuda_ml_ols.formula}
+\alias{cuda_ml_ols.recipe}
 \title{Train a OLS model.}
 \usage{
 cuda_ml_ols(x, ...)
@@ -31,7 +32,7 @@ cuda_ml_ols(x, ...)
 )
 
 \method{cuda_ml_ols}{formula}(
-  x,
+  formula,
   data,
   method = c("svd", "eig", "qr"),
   fit_intercept = TRUE,
@@ -39,7 +40,7 @@ cuda_ml_ols(x, ...)
   ...
 )
 
-\method{cuda_ml_ols}{formula}(
+\method{cuda_ml_ols}{recipe}(
   x,
   data,
   method = c("svd", "eig", "qr"),
@@ -82,12 +83,12 @@ centered. Default: TRUE.}
 then the predictors will be normalized to have a L2 norm of 1.
 Default: FALSE.}
 
+\item{formula}{A formula specifying the outcome terms on the left-hand side,
+and the predictor terms on the right-hand side.}
+
 \item{data}{When a __recipe__ or __formula__ is used, \code{data} is
 specified as a  __data frame__ containing the predictors and (if
 applicable) the outcome.}
-
-\item{formula}{A formula specifying the outcome terms on the left-hand side,
-and the predictor terms on the right-hand side.}
 }
 \value{
 A OLS regressor that can be used with the 'predict' S3 generic to
@@ -101,6 +102,11 @@ Train an Ordinary Least Square (OLS) model for regression tasks.
 library(cuda.ml)
 
 model <- cuda_ml_ols(formula = mpg ~ ., data = mtcars, method = "qr")
-
 predictions <- predict(model, mtcars)
+
+# predictions will be comparable to those from a `stats::lm` model
+lm_model <- stats::lm(formula = mpg ~ ., data = mtcars, method = "qr")
+lm_predictions <- predict(lm_model, mtcars)
+
+print(max(abs(lm_predictions - predictions)))
 }
