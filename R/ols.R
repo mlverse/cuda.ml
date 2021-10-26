@@ -140,13 +140,6 @@ cuda_ml_ols_bridge <- function(processed,
   if (ncol(x) < 1) stop("Predictors must contain at least 1 feature.")
   if (nrow(x) < 2) stop("At least 2 samples are required.")
 
-  if (ncol(x) > nrow(x) && !identical(method, "svd")) {
-    warning(
-      "Forcing method to be 'svd' because only 'svd' supports inputs with ",
-      "number of features being larger than the sample size."
-    )
-    method <- "svd"
-  }
   method <- ols_match_method(method)
 
   model_xptr <- .ols_fit(
