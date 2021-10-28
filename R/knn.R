@@ -329,16 +329,20 @@ cuda_ml_knn_bridge <- function(processed, algo, metric, p, neighbors) {
 #' See \code{\link{cuda_ml_predict}} for full documentation of parameters.
 #'
 #' @template predict
+#' @param x The new data points.
 #'
 #' @seealso cuda_ml_predict
 #'
 #' @importFrom ellipsis check_dots_used
 #' @export
-predict.cuda_ml_knn <- function(object, ...) {
+predict.cuda_ml_knn <- function(object, x, ...) {
   check_dots_used()
 
-  x <- ..1
-  output_class_probabilities <- if (length(list(...)) > 1) ..2 else NULL
+  # x <- ..1
+  # output_class_probabilities <- if (length(list(...)) > 1) ..2 else NULL
+
+  # For this reprex let's ignore `output_class_probabilities` for now
+  output_class_probabilities <- FALSE
 
   processed <- hardhat::forge(x, object$blueprint)
 

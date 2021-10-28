@@ -4,10 +4,12 @@
 \alias{predict.cuda_ml_knn}
 \title{Make predictions on new data points.}
 \usage{
-\method{predict}{cuda_ml_knn}(object, ...)
+\method{predict}{cuda_ml_knn}(object, x, ...)
 }
 \arguments{
 \item{object}{A trained CuML model.}
+
+\item{x}{The new data points.}
 
 \item{...}{See \code{\link{cuda_ml_predict}} for full documentation of all other
 parameters.}
