@@ -15,6 +15,7 @@ ols_match_method <- function(method = c("svd", "eig", "qr")) {
 #' @template supervised-model-inputs
 #' @template supervised-model-output
 #' @template ellipsis-unused
+#' @template lm
 #' @param method Must be one of {"svd", "eig", "qr"}.
 #'
 #'   - "svd": compute SVD decomposition using Jacobi iterations.
@@ -26,12 +27,6 @@ ols_match_method <- function(method = c("svd", "eig", "qr")) {
 #'    algorithm that can support this type of scenario.
 #'
 #'   Default: "svd".
-#' @param fit_intercept If TRUE, then the model tries to correct for the global
-#'   mean of the response variable. If FALSE, then the model expects data to be
-#'   centered. Default: TRUE.
-#' @param normalize_input  Ignored when \code{fit_intercept} is FALSE. If TRUE,
-#'   then the predictors will be normalized to have a L2 norm of 1.
-#'   Default: FALSE.
 #'
 #' @return A OLS regressor that can be used with the 'predict' S3 generic to
 #'   make predictions on new data points.
@@ -113,10 +108,10 @@ cuda_ml_ols.formula <- function(formula, data,
 #' @rdname cuda_ml_ols
 #' @export
 cuda_ml_ols.recipe <- function(x, data,
-                                method = c("svd", "eig", "qr"),
-                                fit_intercept = TRUE,
-                                normalize_input = FALSE,
-                                ...) {
+                               method = c("svd", "eig", "qr"),
+                               fit_intercept = TRUE,
+                               normalize_input = FALSE,
+                               ...) {
   processed <- hardhat::mold(x, data)
 
   cuda_ml_ols_bridge(
@@ -132,13 +127,10 @@ cuda_ml_ols_bridge <- function(processed,
                                fit_intercept = TRUE,
                                normalize_input = FALSE,
                                ...) {
-  hardhat::validate_outcomes_are_univariate(processed$outcomes)
-  hardhat::validate_outcomes_are_numeric(processed$outcomes)
+  validate_lm_input(processed)
+
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
-
-  if (ncol(x) < 1) stop("Predictors must contain at least 1 feature.")
-  if (nrow(x) < 2) stop("At least 2 samples are required.")
 
   method <- ols_match_method(method)
 
@@ -150,9 +142,8 @@ cuda_ml_ols_bridge <- function(processed,
     algo = method
   )
 
-  new_model(
-    cls = c("cuda_ml_ols", "cuda_ml_linear_model"),
-    mode = "regression",
+  new_linear_model(
+    cls = "cuda_ml_ols",
     xptr = model_xptr,
     blueprint = processed$blueprint
   )

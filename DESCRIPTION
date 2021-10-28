@@ -35,6 +35,7 @@ Imports:
     rlang (>= 0.1.4)
 Suggests:
     callr,
+    glmnet,
     MASS,
     magrittr,
     mlbench,
