@@ -252,6 +252,7 @@ run_cmake <- function() {
   setwd(file.path(pkg_root(), "src"))
   cmake_args <- c(
     ".",
+    "-DCMAKE_CUDA_ARCHITECTURES=NATIVE",
     paste0("-DCUML_INCLUDE_DIR=", file.path(cuml_prefix, "include")),
     paste0("-DCUML_LIB_DIR=", file.path(cuml_prefix, "lib")),
     paste0(
