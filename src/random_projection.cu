@@ -9,6 +9,7 @@
 #include <cuml/random_projection/rproj_c.h>
 #include <thrust/async/copy.h>
 #include <thrust/device_vector.h>
+#include <cuml/version_config.hpp>
 
 #include <Rcpp.h>
 
@@ -33,16 +34,17 @@ constexpr auto kRandMatIndPtr = "indptr";
 constexpr auto kRandMatSparseData = "sparse_data";
 constexpr auto kRandMatType = "type";
 
-template <typename T>
+template <typename T, template <typename> class V>
 __host__ Rcpp::Vector<Rcpp::traits::r_sexptype_traits<T>::rtype> toRcppVector(
-  MLCommon::device_buffer<T> const& d_data) {
-  auto const stream = d_data.get_stream();
+  V<T> const& d_data) {
+  auto stream_view = stream_allocator::getOrCreateStream();
 
   pinned_host_vector<T> h_data(d_data.size());
   CUDA_RT_CALL(cudaMemcpyAsync(/*dst=*/h_data.data(), /*src=*/d_data.data(),
                                /*count=*/sizeof(T) * d_data.size(),
-                               /*kind=*/cudaMemcpyDeviceToHost, stream));
-  CUDA_RT_CALL(cudaStreamSynchronize(stream));
+                               /*kind=*/cudaMemcpyDeviceToHost,
+                               /*stream=*/stream_view.value()));
+  CUDA_RT_CALL(cudaStreamSynchronize(/*stream=*/stream_view.value()));
 
   return Rcpp::Vector<Rcpp::traits::r_sexptype_traits<T>::rtype>(h_data.begin(),
                                                                  h_data.end());
@@ -50,16 +52,29 @@ __host__ Rcpp::Vector<Rcpp::traits::r_sexptype_traits<T>::rtype> toRcppVector(
 
 template <typename T>
 __host__ void toDeviceBuffer(
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(21, 10))
+  rmm::device_uvector<T>& dst,
+#else
   MLCommon::device_buffer<T>& dst,
+#endif
   Rcpp::Vector<Rcpp::traits::r_sexptype_traits<T>::rtype> const& src) {
-  auto const stream = dst.get_stream();
+  auto stream_view = stream_allocator::getOrCreateStream();
 
   auto h_data = Rcpp::as<pinned_host_vector<T>>(src);
+
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(21, 10))
+  dst.resize(src.size(), stream_view);
+#else
   dst.resize(src.size());
+#endif
+
   CUDA_RT_CALL(cudaMemcpyAsync(/*dst=*/dst.data(), /*src=*/h_data.data(),
                                /*count=*/sizeof(T) * h_data.size(),
-                               /*kind=*/cudaMemcpyHostToDevice, stream));
-  CUDA_RT_CALL(cudaStreamSynchronize(stream));
+                               /*kind=*/cudaMemcpyHostToDevice,
+                               /*stream=*/stream_view.value()));
+  CUDA_RT_CALL(cudaStreamSynchronize(/*stream=*/stream_view.value()));
 }
 
 struct RPROJCtx {
@@ -76,11 +91,17 @@ struct RPROJCtx {
       randomMatrix_(std::move(random_matrix)) {}
 
   __host__ RPROJCtx(std::unique_ptr<raft::handle_t> handle,
-                    Rcpp::List const& model_state)
+                    Rcpp::List const& model_state, cudaStream_t const stream)
     : handle_(std::move(handle)),
       params_(std::make_unique<ML::paramsRPROJ>()),
       randomMatrix_(std::make_unique<ML::rand_mat<double>>(
-        handle_->get_device_allocator(), handle_->get_stream())) {
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(21, 10))
+        stream
+#else
+        handle_->get_device_allocator(), stream
+#endif
+        )) {
     setState(model_state);
   }
 
@@ -155,8 +176,13 @@ __host__ SEXP rproj_fit(int const n_samples, int const n_features,
   handle_utils::initializeHandle(*handle, stream_view.value());
 
   auto random_matrix = std::make_unique<ML::rand_mat<double>>(
-    /*allocator=*/handle->get_device_allocator(),
-    /*stream=*/stream_view.value());
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(21, 10))
+    /*stream=*/stream_view.value()
+#else
+    /*allocator=*/handle->get_device_allocator(), /*stream=*/stream_view.value()
+#endif
+  );
 
   ML::RPROJfit(*handle, /*random_matrix=*/random_matrix.get(),
                /*params=*/params.get());
@@ -212,8 +238,8 @@ __host__ SEXP rproj_set_state(Rcpp::List const& model_state) {
   auto stream_view = stream_allocator::getOrCreateStream();
   auto handle = std::make_unique<raft::handle_t>();
   handle_utils::initializeHandle(*handle, stream_view.value());
-  auto model =
-    std::make_unique<RPROJCtx>(/*handle=*/std::move(handle), model_state);
+  auto model = std::make_unique<RPROJCtx>(
+    /*handle=*/std::move(handle), model_state, /*stream=*/stream_view.value());
 
   return Rcpp::XPtr<RPROJCtx>(model.release());
 }

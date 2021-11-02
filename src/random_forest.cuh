@@ -1,8 +1,10 @@
 #pragma once
 
-#include <cuml/ensemble/randomforest.hpp>
-
+#include "preprocessor.h"
 #include "treelite_utils.cuh"
+
+#include <cuml/ensemble/randomforest.hpp>
+#include <cuml/version_config.hpp>
 
 namespace cuml4r {
 
@@ -15,9 +17,20 @@ __host__ TreeliteHandle
 build_treelite_forest(ML::RandomForestMetaData<T, L> const* forest,
                       int const n_features, int const n_classes) {
   TreeliteHandle handle;
+
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(21, 10))
+
+  ML::build_treelite_forest(/*model=*/handle.get(), forest,
+                            /*num_features=*/n_features);
+
+#else
+
   ML::build_treelite_forest(/*model=*/handle.get(), forest,
                             /*num_features=*/n_features,
                             /*task_category=*/n_classes);
+
+#endif
 
   return handle;
 }
