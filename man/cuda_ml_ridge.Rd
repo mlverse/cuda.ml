@@ -93,7 +93,7 @@ Train a linear model with L2 regularization.
 library(cuda.ml)
 
 model <- cuda_ml_ridge(formula = mpg ~ ., data = mtcars, alpha = 1e-3)
-predictions <- predict(model, mtcars)
+predictions <- predict(model, mtcars[names(mtcars) != "mpg"])
 
 # predictions will be comparable to those from a `glmnet` model with `lambda`
 # set to 2e-3 and `alpha` set to 0
