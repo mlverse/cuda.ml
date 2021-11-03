@@ -181,7 +181,7 @@ cuda_ml_lasso_bridge <- function(processed,
   )
 
   new_linear_model(
-    cls = "cuda_ml_ols",
+    cls = "cuda_ml_lasso",
     xptr = model_xptr,
     blueprint = processed$blueprint
   )
