@@ -9,9 +9,8 @@ test_that("Ridge regressor works as expected", {
 
       if (!fit_intercept) {
         input <- mtcars
-        input[, which(names(mtcars) != "mpg")] <- scale(
-          input[, which(names(mtcars) != "mpg")],
-          scale = FALSE
+        input[names(mtcars) != "mpg"] <- scale(
+          input[names(mtcars) != "mpg"], scale = FALSE
         )
         input <- as.matrix(input)
       } else {
@@ -22,9 +21,9 @@ test_that("Ridge regressor works as expected", {
         sklearn_scaler <- sklearn$preprocessing$StandardScaler(
           copy = TRUE, with_mean = TRUE, with_std = TRUE
         )
-        sklearn_scaler$fit(as.matrix(mtcars[, which(names(mtcars) != "mpg")]))
+        sklearn_scaler$fit(as.matrix(mtcars[names(mtcars) != "mpg"]))
         sklearn_predictors <- sklearn_scaler$transform(
-          as.matrix(mtcars[, which(names(mtcars) != "mpg")])
+          as.matrix(mtcars[names(mtcars) != "mpg"])
         )
       } else {
         sklearn_predictors <- as.matrix(input[, which(names(mtcars) != "mpg")])
