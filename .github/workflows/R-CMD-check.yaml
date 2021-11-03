@@ -64,6 +64,8 @@ jobs:
         id: build-pkg
         run: |
           cd ..
+          ls -a
+          rm -v cuda.ml_*.tar.gz
           R CMD build cuda.ml
           ls -a
           echo "::set-output name=pkg-dir::$(pwd)"
