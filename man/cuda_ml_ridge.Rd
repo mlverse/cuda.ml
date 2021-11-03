@@ -103,13 +103,20 @@ predictions <- predict(model, mtcars)
 library(glmnet)
 
 glmnet_model <- glmnet(
-  x = as.matrix(mtcars[which(names(mtcars) != "mpg")]), y = mtcars$mpg,
+  x = as.matrix(mtcars[names(mtcars) != "mpg"]), y = mtcars$mpg,
   alpha = 0, lambda = 2e-3, nlambda = 1, standardize = FALSE
 )
 
 glm_predictions <- predict(
-  glmnet_model, as.matrix(mtcars[which(names(mtcars) != "mpg")]), s = 0
+  glmnet_model, as.matrix(mtcars[names(mtcars) != "mpg"]),
+  s = 0
 )
 
-print(max(abs(glm_predictions - predictions$.pred)))
+print(
+  all.equal(
+    as.numeric(glm_predictions),
+    predictions$.pred,
+    tolerance = 1e-3
+  )
+)
 }

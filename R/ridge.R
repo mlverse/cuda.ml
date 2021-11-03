@@ -33,16 +33,22 @@ ridge_validate_alpha <- function(alpha) {
 #' library(glmnet)
 #'
 #' glmnet_model <- glmnet(
-#'   x = as.matrix(mtcars[which(names(mtcars) != "mpg")]), y = mtcars$mpg,
+#'   x = as.matrix(mtcars[names(mtcars) != "mpg"]), y = mtcars$mpg,
 #'   alpha = 0, lambda = 2e-3, nlambda = 1, standardize = FALSE
 #' )
 #'
 #' glm_predictions <- predict(
-#'   glmnet_model, as.matrix(mtcars[which(names(mtcars) != "mpg")]),
+#'   glmnet_model, as.matrix(mtcars[names(mtcars) != "mpg"]),
 #'   s = 0
 #' )
 #'
-#' print(max(abs(glm_predictions - predictions$.pred)))
+#' print(
+#'   all.equal(
+#'     as.numeric(glm_predictions),
+#'     predictions$.pred,
+#'     tolerance = 1e-3
+#'   )
+#' )
 #' @export
 cuda_ml_ridge <- function(x, ...) {
   UseMethod("cuda_ml_ridge")
