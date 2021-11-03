@@ -2,6 +2,7 @@
 ^data-raw$
 ^man-roxygen$
 ^README\.md$
+^README\.html$
 ^NEWS\.md$
 ^src/\.gitignore$
 ^src/Makefile$

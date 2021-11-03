@@ -2,214 +2,214 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 .agglomerative_clustering <- function(x, pairwise_conn, metric, n_neighbors, n_clusters) {
-    .Call('_cuda_ml_agglomerative_clustering', PACKAGE = 'cuda.ml', x, pairwise_conn, metric, n_neighbors, n_clusters)
+    .Call(`_cuda_ml_agglomerative_clustering`, x, pairwise_conn, metric, n_neighbors, n_clusters)
 }
 
 .cd_fit <- function(x, y, fit_intercept, normalize_input, epochs, loss, alpha, l1_ratio, shuffle, tol) {
-    .Call('_cuda_ml_cd_fit', PACKAGE = 'cuda.ml', x, y, fit_intercept, normalize_input, epochs, loss, alpha, l1_ratio, shuffle, tol)
+    .Call(`_cuda_ml_cd_fit`, x, y, fit_intercept, normalize_input, epochs, loss, alpha, l1_ratio, shuffle, tol)
 }
 
 .has_cuML <- function() {
-    .Call('_cuda_ml_has_cuML', PACKAGE = 'cuda.ml')
+    .Call(`_cuda_ml_has_cuML`)
 }
 
 .cuML_major_version <- function() {
-    .Call('_cuda_ml_cuML_major_version', PACKAGE = 'cuda.ml')
+    .Call(`_cuda_ml_cuML_major_version`)
 }
 
 .cuML_minor_version <- function() {
-    .Call('_cuda_ml_cuML_minor_version', PACKAGE = 'cuda.ml')
+    .Call(`_cuda_ml_cuML_minor_version`)
 }
 
 .dbscan <- function(x, min_pts, eps, max_bytes_per_batch, verbosity) {
-    .Call('_cuda_ml_dbscan', PACKAGE = 'cuda.ml', x, min_pts, eps, max_bytes_per_batch, verbosity)
+    .Call(`_cuda_ml_dbscan`, x, min_pts, eps, max_bytes_per_batch, verbosity)
 }
 
 .fil_enabled <- function() {
-    .Call('_cuda_ml_fil_enabled', PACKAGE = 'cuda.ml')
+    .Call(`_cuda_ml_fil_enabled`)
 }
 
 .fil_load_model <- function(model_type, filename, algo, classification, threshold, storage_type, blocks_per_sm, threads_per_tree, n_items) {
-    .Call('_cuda_ml_fil_load_model', PACKAGE = 'cuda.ml', model_type, filename, algo, classification, threshold, storage_type, blocks_per_sm, threads_per_tree, n_items)
+    .Call(`_cuda_ml_fil_load_model`, model_type, filename, algo, classification, threshold, storage_type, blocks_per_sm, threads_per_tree, n_items)
 }
 
 .fil_get_num_classes <- function(model) {
-    .Call('_cuda_ml_fil_get_num_classes', PACKAGE = 'cuda.ml', model)
+    .Call(`_cuda_ml_fil_get_num_classes`, model)
 }
 
 .fil_predict <- function(model, x, output_class_probabilities) {
-    .Call('_cuda_ml_fil_predict', PACKAGE = 'cuda.ml', model, x, output_class_probabilities)
+    .Call(`_cuda_ml_fil_predict`, model, x, output_class_probabilities)
 }
 
 .glm_predict <- function(input, coef, intercept) {
-    .Call('_cuda_ml_glm_predict', PACKAGE = 'cuda.ml', input, coef, intercept)
+    .Call(`_cuda_ml_glm_predict`, input, coef, intercept)
 }
 
 .kmeans <- function(x, k, max_iters, tol, init_method, centroids, seed, verbosity) {
-    .Call('_cuda_ml_kmeans', PACKAGE = 'cuda.ml', x, k, max_iters, tol, init_method, centroids, seed, verbosity)
+    .Call(`_cuda_ml_kmeans`, x, k, max_iters, tol, init_method, centroids, seed, verbosity)
 }
 
 .knn_classifier_fit <- function(x, y, algo, metric, p, algo_params) {
-    .Call('_cuda_ml_knn_classifier_fit', PACKAGE = 'cuda.ml', x, y, algo, metric, p, algo_params)
+    .Call(`_cuda_ml_knn_classifier_fit`, x, y, algo, metric, p, algo_params)
 }
 
 .knn_classifier_predict <- function(model, x, n_neighbors) {
-    .Call('_cuda_ml_knn_classifier_predict', PACKAGE = 'cuda.ml', model, x, n_neighbors)
+    .Call(`_cuda_ml_knn_classifier_predict`, model, x, n_neighbors)
 }
 
 .knn_classifier_predict_probabilities <- function(model, x, n_neighbors) {
-    .Call('_cuda_ml_knn_classifier_predict_probabilities', PACKAGE = 'cuda.ml', model, x, n_neighbors)
+    .Call(`_cuda_ml_knn_classifier_predict_probabilities`, model, x, n_neighbors)
 }
 
 .knn_regressor_fit <- function(x, y, algo, metric, p, algo_params) {
-    .Call('_cuda_ml_knn_regressor_fit', PACKAGE = 'cuda.ml', x, y, algo, metric, p, algo_params)
+    .Call(`_cuda_ml_knn_regressor_fit`, x, y, algo, metric, p, algo_params)
 }
 
 .knn_regressor_predict <- function(model, x, n_neighbors) {
-    .Call('_cuda_ml_knn_regressor_predict', PACKAGE = 'cuda.ml', model, x, n_neighbors)
+    .Call(`_cuda_ml_knn_regressor_predict`, model, x, n_neighbors)
 }
 
 .ols_fit <- function(x, y, fit_intercept, normalize_input, algo) {
-    .Call('_cuda_ml_ols_fit', PACKAGE = 'cuda.ml', x, y, fit_intercept, normalize_input, algo)
+    .Call(`_cuda_ml_ols_fit`, x, y, fit_intercept, normalize_input, algo)
 }
 
 .pca_fit_transform <- function(x, tol, n_iters, verbosity, n_components, algo, whiten, transform_input) {
-    .Call('_cuda_ml_pca_fit_transform', PACKAGE = 'cuda.ml', x, tol, n_iters, verbosity, n_components, algo, whiten, transform_input)
+    .Call(`_cuda_ml_pca_fit_transform`, x, tol, n_iters, verbosity, n_components, algo, whiten, transform_input)
 }
 
 .pca_inverse_transform <- function(model, x) {
-    .Call('_cuda_ml_pca_inverse_transform', PACKAGE = 'cuda.ml', model, x)
+    .Call(`_cuda_ml_pca_inverse_transform`, model, x)
 }
 
 .pca_get_state <- function(model) {
-    .Call('_cuda_ml_pca_get_state', PACKAGE = 'cuda.ml', model)
+    .Call(`_cuda_ml_pca_get_state`, model)
 }
 
 .pca_set_state <- function(model_state) {
-    .Call('_cuda_ml_pca_set_state', PACKAGE = 'cuda.ml', model_state)
+    .Call(`_cuda_ml_pca_set_state`, model_state)
 }
 
 .rf_classifier_fit <- function(input, labels, n_trees, bootstrap, max_samples, n_streams, max_depth, max_leaves, max_features, n_bins, min_samples_leaf, min_samples_split, split_criterion, min_impurity_decrease, max_batch_size, verbosity) {
-    .Call('_cuda_ml_rf_classifier_fit', PACKAGE = 'cuda.ml', input, labels, n_trees, bootstrap, max_samples, n_streams, max_depth, max_leaves, max_features, n_bins, min_samples_leaf, min_samples_split, split_criterion, min_impurity_decrease, max_batch_size, verbosity)
+    .Call(`_cuda_ml_rf_classifier_fit`, input, labels, n_trees, bootstrap, max_samples, n_streams, max_depth, max_leaves, max_features, n_bins, min_samples_leaf, min_samples_split, split_criterion, min_impurity_decrease, max_batch_size, verbosity)
 }
 
 .rf_classifier_predict <- function(model_xptr, input, verbosity) {
-    .Call('_cuda_ml_rf_classifier_predict', PACKAGE = 'cuda.ml', model_xptr, input, verbosity)
+    .Call(`_cuda_ml_rf_classifier_predict`, model_xptr, input, verbosity)
 }
 
 .rf_classifier_predict_class_probabilities <- function(model_xptr, input) {
-    .Call('_cuda_ml_rf_classifier_predict_class_probabilities', PACKAGE = 'cuda.ml', model_xptr, input)
+    .Call(`_cuda_ml_rf_classifier_predict_class_probabilities`, model_xptr, input)
 }
 
 .rf_classifier_get_state <- function(model) {
-    .Call('_cuda_ml_rf_classifier_get_state', PACKAGE = 'cuda.ml', model)
+    .Call(`_cuda_ml_rf_classifier_get_state`, model)
 }
 
 .rf_classifier_set_state <- function(state) {
-    .Call('_cuda_ml_rf_classifier_set_state', PACKAGE = 'cuda.ml', state)
+    .Call(`_cuda_ml_rf_classifier_set_state`, state)
 }
 
 .rf_regressor_fit <- function(input, responses, n_trees, bootstrap, max_samples, n_streams, max_depth, max_leaves, max_features, n_bins, min_samples_leaf, min_samples_split, split_criterion, min_impurity_decrease, max_batch_size, verbosity) {
-    .Call('_cuda_ml_rf_regressor_fit', PACKAGE = 'cuda.ml', input, responses, n_trees, bootstrap, max_samples, n_streams, max_depth, max_leaves, max_features, n_bins, min_samples_leaf, min_samples_split, split_criterion, min_impurity_decrease, max_batch_size, verbosity)
+    .Call(`_cuda_ml_rf_regressor_fit`, input, responses, n_trees, bootstrap, max_samples, n_streams, max_depth, max_leaves, max_features, n_bins, min_samples_leaf, min_samples_split, split_criterion, min_impurity_decrease, max_batch_size, verbosity)
 }
 
 .rf_regressor_predict <- function(model_xptr, input, verbosity) {
-    .Call('_cuda_ml_rf_regressor_predict', PACKAGE = 'cuda.ml', model_xptr, input, verbosity)
+    .Call(`_cuda_ml_rf_regressor_predict`, model_xptr, input, verbosity)
 }
 
 .rf_regressor_get_state <- function(model) {
-    .Call('_cuda_ml_rf_regressor_get_state', PACKAGE = 'cuda.ml', model)
+    .Call(`_cuda_ml_rf_regressor_get_state`, model)
 }
 
 .rf_regressor_set_state <- function(state) {
-    .Call('_cuda_ml_rf_regressor_set_state', PACKAGE = 'cuda.ml', state)
+    .Call(`_cuda_ml_rf_regressor_set_state`, state)
 }
 
 .rproj_johnson_lindenstrauss_min_dim <- function(n_samples, eps) {
-    .Call('_cuda_ml_rproj_johnson_lindenstrauss_min_dim', PACKAGE = 'cuda.ml', n_samples, eps)
+    .Call(`_cuda_ml_rproj_johnson_lindenstrauss_min_dim`, n_samples, eps)
 }
 
 .rproj_fit <- function(n_samples, n_features, n_components, eps, gaussian_method, density, random_state) {
-    .Call('_cuda_ml_rproj_fit', PACKAGE = 'cuda.ml', n_samples, n_features, n_components, eps, gaussian_method, density, random_state)
+    .Call(`_cuda_ml_rproj_fit`, n_samples, n_features, n_components, eps, gaussian_method, density, random_state)
 }
 
 .rproj_transform <- function(rproj_ctx_xptr, input) {
-    .Call('_cuda_ml_rproj_transform', PACKAGE = 'cuda.ml', rproj_ctx_xptr, input)
+    .Call(`_cuda_ml_rproj_transform`, rproj_ctx_xptr, input)
 }
 
 .rproj_get_state <- function(model) {
-    .Call('_cuda_ml_rproj_get_state', PACKAGE = 'cuda.ml', model)
+    .Call(`_cuda_ml_rproj_get_state`, model)
 }
 
 .rproj_set_state <- function(model_state) {
-    .Call('_cuda_ml_rproj_set_state', PACKAGE = 'cuda.ml', model_state)
+    .Call(`_cuda_ml_rproj_set_state`, model_state)
 }
 
 .ridge_fit <- function(x, y, fit_intercept, normalize_input, alpha, algo) {
-    .Call('_cuda_ml_ridge_fit', PACKAGE = 'cuda.ml', x, y, fit_intercept, normalize_input, alpha, algo)
+    .Call(`_cuda_ml_ridge_fit`, x, y, fit_intercept, normalize_input, alpha, algo)
 }
 
 .svc_fit <- function(input, labels, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, sample_weights, verbosity) {
-    .Call('_cuda_ml_svc_fit', PACKAGE = 'cuda.ml', input, labels, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, sample_weights, verbosity)
+    .Call(`_cuda_ml_svc_fit`, input, labels, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, sample_weights, verbosity)
 }
 
 .svc_predict <- function(model_xptr, input, predict_class) {
-    .Call('_cuda_ml_svc_predict', PACKAGE = 'cuda.ml', model_xptr, input, predict_class)
+    .Call(`_cuda_ml_svc_predict`, model_xptr, input, predict_class)
 }
 
 .svc_get_state <- function(model) {
-    .Call('_cuda_ml_svc_get_state', PACKAGE = 'cuda.ml', model)
+    .Call(`_cuda_ml_svc_get_state`, model)
 }
 
 .svc_set_state <- function(state) {
-    .Call('_cuda_ml_svc_set_state', PACKAGE = 'cuda.ml', state)
+    .Call(`_cuda_ml_svc_set_state`, state)
 }
 
 .svr_fit <- function(X, y, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, epsilon, sample_weights, verbosity) {
-    .Call('_cuda_ml_svr_fit', PACKAGE = 'cuda.ml', X, y, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, epsilon, sample_weights, verbosity)
+    .Call(`_cuda_ml_svr_fit`, X, y, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, epsilon, sample_weights, verbosity)
 }
 
 .svr_predict <- function(svr_xptr, X) {
-    .Call('_cuda_ml_svr_predict', PACKAGE = 'cuda.ml', svr_xptr, X)
+    .Call(`_cuda_ml_svr_predict`, svr_xptr, X)
 }
 
 .svr_get_state <- function(model) {
-    .Call('_cuda_ml_svr_get_state', PACKAGE = 'cuda.ml', model)
+    .Call(`_cuda_ml_svr_get_state`, model)
 }
 
 .svr_set_state <- function(state) {
-    .Call('_cuda_ml_svr_set_state', PACKAGE = 'cuda.ml', state)
+    .Call(`_cuda_ml_svr_set_state`, state)
 }
 
 .tsne_fit <- function(x, dim, n_neighbors, theta, epssq, perplexity, perplexity_max_iter, perplexity_tol, early_exaggeration, late_exaggeration, exaggeration_iter, min_gain, pre_learning_rate, post_learning_rate, max_iter, min_grad_norm, pre_momentum, post_momentum, random_state, verbosity, initialize_embeddings, square_distances, algo) {
-    .Call('_cuda_ml_tsne_fit', PACKAGE = 'cuda.ml', x, dim, n_neighbors, theta, epssq, perplexity, perplexity_max_iter, perplexity_tol, early_exaggeration, late_exaggeration, exaggeration_iter, min_gain, pre_learning_rate, post_learning_rate, max_iter, min_grad_norm, pre_momentum, post_momentum, random_state, verbosity, initialize_embeddings, square_distances, algo)
+    .Call(`_cuda_ml_tsne_fit`, x, dim, n_neighbors, theta, epssq, perplexity, perplexity_max_iter, perplexity_tol, early_exaggeration, late_exaggeration, exaggeration_iter, min_gain, pre_learning_rate, post_learning_rate, max_iter, min_grad_norm, pre_momentum, post_momentum, random_state, verbosity, initialize_embeddings, square_distances, algo)
 }
 
 .tsvd_fit_transform <- function(x, tol, n_iters, verbosity, n_components, algo, transform_input) {
-    .Call('_cuda_ml_tsvd_fit_transform', PACKAGE = 'cuda.ml', x, tol, n_iters, verbosity, n_components, algo, transform_input)
+    .Call(`_cuda_ml_tsvd_fit_transform`, x, tol, n_iters, verbosity, n_components, algo, transform_input)
 }
 
 .tsvd_transform <- function(model, x) {
-    .Call('_cuda_ml_tsvd_transform', PACKAGE = 'cuda.ml', model, x)
+    .Call(`_cuda_ml_tsvd_transform`, model, x)
 }
 
 .tsvd_inverse_transform <- function(model, x) {
-    .Call('_cuda_ml_tsvd_inverse_transform', PACKAGE = 'cuda.ml', model, x)
+    .Call(`_cuda_ml_tsvd_inverse_transform`, model, x)
 }
 
 .umap_fit <- function(x, y, n_neighbors, n_components, n_epochs, learning_rate, min_dist, spread, set_op_mix_ratio, local_connectivity, repulsion_strength, negative_sample_rate, transform_queue_size, verbosity, a, b, init, target_n_neighbors, target_metric, target_weight, random_state, deterministic) {
-    .Call('_cuda_ml_umap_fit', PACKAGE = 'cuda.ml', x, y, n_neighbors, n_components, n_epochs, learning_rate, min_dist, spread, set_op_mix_ratio, local_connectivity, repulsion_strength, negative_sample_rate, transform_queue_size, verbosity, a, b, init, target_n_neighbors, target_metric, target_weight, random_state, deterministic)
+    .Call(`_cuda_ml_umap_fit`, x, y, n_neighbors, n_components, n_epochs, learning_rate, min_dist, spread, set_op_mix_ratio, local_connectivity, repulsion_strength, negative_sample_rate, transform_queue_size, verbosity, a, b, init, target_n_neighbors, target_metric, target_weight, random_state, deterministic)
 }
 
 .umap_transform <- function(model, x) {
-    .Call('_cuda_ml_umap_transform', PACKAGE = 'cuda.ml', model, x)
+    .Call(`_cuda_ml_umap_transform`, model, x)
 }
 
 .umap_get_state <- function(model) {
-    .Call('_cuda_ml_umap_get_state', PACKAGE = 'cuda.ml', model)
+    .Call(`_cuda_ml_umap_get_state`, model)
 }
 
 .umap_set_state <- function(state) {
-    .Call('_cuda_ml_umap_set_state', PACKAGE = 'cuda.ml', state)
+    .Call(`_cuda_ml_umap_set_state`, state)
 }
 

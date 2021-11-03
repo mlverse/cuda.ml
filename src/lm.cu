@@ -12,14 +12,6 @@
 
 #include <Rcpp.h>
 
-namespace cuml4r {
-namespace {
-
-constexpr auto kCoef = "coef";
-constexpr auto kIntercept = "intercept";
-
-}  // namespace
-
 __host__ Rcpp::List lm_fit(
   Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& y,
   lm::InterceptType const intercept_type, bool const fit_intercept,
@@ -88,8 +80,8 @@ __host__ Rcpp::List lm_fit(
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
   Rcpp::List model;
-  model[kCoef] = Rcpp::NumericVector(h_coef.begin(), h_coef.end());
-  model[kIntercept] = h_intercept;
+  model[lm::kCoef] = Rcpp::NumericVector(h_coef.begin(), h_coef.end());
+  model[lm::kIntercept] = h_intercept;
 
   return model;
 }

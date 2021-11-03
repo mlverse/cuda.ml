@@ -5,13 +5,29 @@
 
 #include <functional>
 
+#ifdef HAS_CUML
+
 namespace raft {
 
 class handle_t;
 
 }  // namespace raft
 
+#else
+
+#include "warn_cuml_missing.h"
+
+#endif
+
 namespace cuml4r {
+namespace lm {
+
+constexpr auto kCoef = "coef";
+constexpr auto kIntercept = "intercept";
+
+}  // namespace lm
+
+#ifdef HAS_CUML
 
 // generic template for fitting linear models
 Rcpp::List lm_fit(
@@ -19,5 +35,11 @@ Rcpp::List lm_fit(
   lm::InterceptType const intercept_type, bool const fit_intercept,
   bool const normalize_input,
   std::function<void(raft::handle_t&, lm::Params const&)> const& fit_impl);
+
+#else
+
+#include "warn_cuml_missing.h"
+
+#endif
 
 }  // namespace cuml4r

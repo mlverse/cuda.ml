@@ -12,7 +12,8 @@ Rcpp::NumericVector glm_predict(Rcpp::NumericMatrix const& input,
 
 #include "warn_cuml_missing.h"
 
-  return {};
+  // return some dummy values
+  return Rcpp::NumericVector(32);
 
 #endif
 }
