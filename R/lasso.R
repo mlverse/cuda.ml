@@ -33,14 +33,15 @@ lasso_validate_alpha <- function(alpha) {
 #' predictions <- predict(model, mtcars)
 #'
 #' # predictions will be comparable to those from a `glmnet` model with `lambda`
-#' # set to 0
+#' # set to 1e-3 and `alpha` set to 1
+#' # (in `glmnet`, `lambda` is the weight of the penalty term, and `alpha` is
+#' #  the elastic mixing parameter between L1 and L2 penalties.
 #'
 #' library(glmnet)
 #'
 #' glmnet_model <- glmnet(
 #'   x = as.matrix(mtcars[which(names(mtcars) != "mpg")]), y = mtcars$mpg,
-#'   alpha = 1e-3, lambda = 0, nlambda = 1,
-#'   standardize = FALSE
+#'   alpha = 1, lambda = 1e-3, nlambda = 1, standardize = FALSE
 #' )
 #'
 #' glm_predictions <- predict(
