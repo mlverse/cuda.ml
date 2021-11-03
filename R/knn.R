@@ -326,19 +326,14 @@ cuda_ml_knn_bridge <- function(processed, algo, metric, p, neighbors) {
 #' Make predictions on new data points.
 #'
 #' Make predictions on new data points using a CuML KNN model.
-#' See \code{\link{cuda_ml_predict}} for full documentation of parameters.
 #'
 #' @template predict
-#'
-#' @seealso cuda_ml_predict
+#' @template output-class-probabilities
 #'
 #' @importFrom ellipsis check_dots_used
 #' @export
-predict.cuda_ml_knn <- function(object, ...) {
+predict.cuda_ml_knn <- function(object, x, output_class_probabilities = NULL, ...) {
   check_dots_used()
-
-  x <- ..1
-  output_class_probabilities <- if (length(list(...)) > 1) ..2 else NULL
 
   processed <- hardhat::forge(x, object$blueprint)
 

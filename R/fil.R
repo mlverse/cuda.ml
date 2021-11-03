@@ -173,18 +173,14 @@ cuda_ml_fil_load_model <- function(filename,
 #' Make predictions on new data points.
 #'
 #' Make predictions on new data points using a FIL model.
-#' See \code{\link{cuda_ml_predict}} for full documentation of parameters.
 #'
 #' @template predict
+#' @template output-class-probabilities
 #'
-#' @seealso cuda_ml_predict
 #' @importFrom ellipsis check_dots_used
 #' @export
-predict.cuda_ml_fil <- function(object, ...) {
+predict.cuda_ml_fil <- function(object, x, output_class_probabilities = FALSE, ...) {
   check_dots_used()
-
-  x <- ..1
-  output_class_probabilities <- ifelse(length(list(...)) > 1, ..2, FALSE)
 
   num_classes <- .fil_get_num_classes(model = object$xptr)
   preds <- .fil_predict(

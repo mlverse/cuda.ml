@@ -4,21 +4,37 @@
 \alias{predict.cuda_ml_rand_forest}
 \title{Make predictions on new data points.}
 \usage{
-\method{predict}{cuda_ml_rand_forest}(object, ...)
+\method{predict}{cuda_ml_rand_forest}(
+  object,
+  x,
+  output_class_probabilities = NULL,
+  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+  ...
+)
 }
 \arguments{
 \item{object}{A trained CuML model.}
 
-\item{...}{See \code{\link{cuda_ml_predict}} for full documentation of all other
-parameters.}
+\item{x}{A matrix or dataframe containing new data points.}
+
+\item{output_class_probabilities}{Whether to output class probabilities.
+NOTE: setting \code{output_class_probabilities} to \code{TRUE} is only
+valid when the model being applied is a classification model and supports
+class probabilities output. CuML classification models supporting class
+probabilities include \code{knn}, \code{fil}, and \code{rand_forest}.
+A warning message will be emitted if \code{output_class_probabilities}
+is set to \code{TRUE} or \code{FALSE} but the model being applied does
+not support class probabilities output.}
+
+\item{cuML_log_level}{Log level within cuML library functions. Must be one of
+{"off", "critical", "error", "warn", "info", "debug", "trace"}.
+Default: off.}
+
+\item{...}{Additional arguments to \code{predict()}. Currently unused.}
 }
 \value{
 Predictions on new data points.
 }
 \description{
 Make predictions on new data points using a CuML random forest model.
-See \code{\link{cuda_ml_predict}} for full documentation of parameters.
-}
-\seealso{
-cuda_ml_predict
 }

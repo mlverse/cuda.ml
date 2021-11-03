@@ -359,19 +359,18 @@ cuda_ml_set_state.cuda_ml_rand_forest_model_state <- function(model_state) {
 #' Make predictions on new data points.
 #'
 #' Make predictions on new data points using a CuML random forest model.
-#' See \code{\link{cuda_ml_predict}} for full documentation of parameters.
 #'
 #' @template predict
+#' @template output-class-probabilities
+#' @template cuML-log-level
 #'
-#' @seealso cuda_ml_predict
 #' @importFrom ellipsis check_dots_used
 #' @export
-predict.cuda_ml_rand_forest <- function(object, ...) {
+predict.cuda_ml_rand_forest <- function(object, x,
+                                        output_class_probabilities = NULL,
+                                        cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+                                        ...) {
   check_dots_used()
-
-  x <- ..1
-  output_class_probabilities <- if (length(list(...)) > 1) ..2 else NULL
-  cuML_log_level <- ifelse(length(list(...)) > 2, ..3, "off")
 
   processed <- hardhat::forge(x, object$blueprint)
 
