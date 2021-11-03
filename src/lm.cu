@@ -1,6 +1,7 @@
 #include "async_utils.cuh"
 #include "cuda_utils.h"
 #include "handle_utils.h"
+#include "lm_constants.h"
 #include "lm_params.h"
 #include "matrix_utils.h"
 #include "pinned_host_vector.h"
@@ -11,6 +12,8 @@
 #include <thrust/device_vector.h>
 
 #include <Rcpp.h>
+
+namespace cuml4r {
 
 __host__ Rcpp::List lm_fit(
   Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& y,
@@ -80,8 +83,8 @@ __host__ Rcpp::List lm_fit(
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
   Rcpp::List model;
-  model[lm::kCoef] = Rcpp::NumericVector(h_coef.begin(), h_coef.end());
-  model[lm::kIntercept] = h_intercept;
+  model[cuml4r::lm::kCoef] = Rcpp::NumericVector(h_coef.begin(), h_coef.end());
+  model[cuml4r::lm::kIntercept] = h_intercept;
 
   return model;
 }

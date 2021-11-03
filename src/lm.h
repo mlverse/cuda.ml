@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Rcpp.h>
+#include "lm_constants.h"
 #include "lm_params.h"
 
 #include <functional>
@@ -20,12 +21,6 @@ class handle_t;
 #endif
 
 namespace cuml4r {
-namespace lm {
-
-constexpr auto kCoef = "coef";
-constexpr auto kIntercept = "intercept";
-
-}  // namespace lm
 
 #ifdef HAS_CUML
 
