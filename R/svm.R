@@ -76,7 +76,7 @@ svm_match_kernel_type <- function(kernel = c("rbf", "tanh", "polynomial", "linea
 #'   kernel = "rbf"
 #' )
 #'
-#' predictions <- predict(model, iris[-which(names(iris) == "Species")])
+#' predictions <- predict(model, iris[names(iris) != "Species"])
 #'
 #' # Regression
 #'

@@ -40,12 +40,12 @@ lasso_validate_alpha <- function(alpha) {
 #' library(glmnet)
 #'
 #' glmnet_model <- glmnet(
-#'   x = as.matrix(mtcars[which(names(mtcars) != "mpg")]), y = mtcars$mpg,
+#'   x = as.matrix(mtcars[names(mtcars) != "mpg"]), y = mtcars$mpg,
 #'   alpha = 1, lambda = 1e-3, nlambda = 1, standardize = FALSE
 #' )
 #'
 #' glm_predictions <- predict(
-#'   glmnet_model, as.matrix(mtcars[which(names(mtcars) != "mpg")]), s = 0
+#'   glmnet_model, as.matrix(mtcars[names(mtcars) != "mpg"]), s = 0
 #' )
 #'
 #' print(max(abs(glm_predictions - predictions$.pred)))
