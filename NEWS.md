@@ -1,3 +1,22 @@
+# cuml 0.3.0
+
+### Linear Models
+
+- Added support for OLS, ridge regression, and LASSO regression.
+
+### Misc
+
+- Fixed issue with CUDA architecture string being empty when building {cuda.ml}
+
+- {cuda.ml} source code was revised to be compatible with `libcuml++` version
+  21.06, 21.08, and 21.10
+
+- Added support for automatically downloading a pre-built version of `libcuml++`
+  and bundling & linking the downloaded `libcuml++` with the rest of the
+  {cuda.ml} installation when no pre-existing copy of `libcuml++` is found. This
+  is done so that new users can try out {cuda.ml} quickly without having to
+  install Conda or to build `libcuml++` from source manually.
+
 # cuml 0.2.0
 
 ### R Interface Improvements
