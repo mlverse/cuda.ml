@@ -71,7 +71,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">cuda.ml</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.1.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.0</span>
       </span>
     </div>
 
@@ -114,6 +114,26 @@
       <small>Source: <a href='https://github.com/mlverse/cuda.ml/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
+    <div id="cuml-030" class="section level1">
+<h1 class="page-header" data-toc-text="0.3.0">
+<a href="#cuml-030" class="anchor"></a>cuml 0.3.0</h1>
+<div id="linear-models" class="section level3">
+<h3 class="hasAnchor">
+<a href="#linear-models" class="anchor"></a>Linear Models</h3>
+<ul>
+<li>Added support for OLS, ridge regression, and LASSO regression.</li>
+</ul>
+</div>
+<div id="misc" class="section level3">
+<h3 class="hasAnchor">
+<a href="#misc" class="anchor"></a>Misc</h3>
+<ul>
+<li><p>Fixed issue with CUDA architecture string being empty when building {cuda.ml}</p></li>
+<li><p>{cuda.ml} source code was revised to be compatible with <code>libcuml++</code> version 21.06, 21.08, and 21.10</p></li>
+<li><p>Added support for automatically downloading a pre-built version of <code>libcuml++</code> and bundling &amp; linking the downloaded <code>libcuml++</code> with the rest of the {cuda.ml} installation when no pre-existing copy of <code>libcuml++</code> is found. This is done so that new users can try out {cuda.ml} quickly without having to install Conda or to build <code>libcuml++</code> from source manually.</p></li>
+</ul>
+</div>
+</div>
     <div id="cuml-020" class="section level1">
 <h1 class="page-header" data-toc-text="0.2.0">
 <a href="#cuml-020" class="anchor"></a>cuml 0.2.0</h1>
@@ -157,9 +177,9 @@
 <li>Fixed a missing <code>cudaEventRecord()</code> call in <code>cuml4r::async_copy()</code>.</li>
 </ul>
 </div>
-<div id="misc" class="section level3">
+<div id="misc-1" class="section level3">
 <h3 class="hasAnchor">
-<a href="#misc" class="anchor"></a>Misc</h3>
+<a href="#misc-1" class="anchor"></a>Misc</h3>
 <ul>
 <li><p>Added <code><a href="https://ellipsis.r-lib.org/reference/check_dots_used.html">ellipsis::check_dots_used()</a></code> checks for all <code>...</code> parameters in R.</p></li>
 <li><p>Renamed this package from {cuml4r} to {cuml} per suggestion from <a href='https://github.com/lorenzwalthert'>@lorenzwalthert</a> (context: <a href="https://github.com/mlverse/cuml/issues/75" class="uri">https://github.com/mlverse/cuml/issues/75</a>). The new name is shorter, and more importantly, is consistent with the mlverse naming convention for R packages (e.g., {keras}, {tensorflow}, {torch}, {tabnet}, etc).</p></li>
@@ -195,9 +215,9 @@
 <li><p>Added documentation for <code><a href="https://rdrr.io/r/stats/predict.html">predict()</a></code> functions per suggestion from <a href='https://github.com/topepo'>@topepo</a> in <a href="https://github.com/mlverse/cuml/issues/80" class="uri">https://github.com/mlverse/cuml/issues/80</a>.</p></li>
 </ul>
 </div>
-<div id="misc-1" class="section level3">
+<div id="misc-2" class="section level3">
 <h3 class="hasAnchor">
-<a href="#misc-1" class="anchor"></a>Misc</h3>
+<a href="#misc-2" class="anchor"></a>Misc</h3>
 <ul>
 <li><p>Configuration script was revised to work with RAPIDS cuML libraries installed via Conda or built from source. If RAPIDS cuML libraries could not be located during the configuration process, then a warning message will be emitted.</p></li>
 <li><p>Improved on the initial prototype of {cuml} by utilizing modern C++ constructs from <code>thrust</code> (<a href="https://github.com/NVIDIA/thrust" class="uri">https://github.com/NVIDIA/thrust</a>), making the C++ source code of this project more readable and maintainable.</p></li>

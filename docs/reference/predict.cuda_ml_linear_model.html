@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Build a specification for the "ivfpq" KNN query algorithm. — cuda_ml_knn_algo_ivfpq • cuda.ml</title>
+<title>Make predictions on new data points. — predict.cuda_ml_linear_model • cuda.ml</title>
 
 
 <!-- jquery -->
@@ -39,9 +39,9 @@
 
 
 
-<meta property="og:title" content="Build a specification for the "ivfpq" KNN query algorithm. — cuda_ml_knn_algo_ivfpq" />
-<meta property="og:description" content="Build a specification of the inverted-file-product-quantization KNN query
-algorithm, with all required parameters specified explicitly." />
+<meta property="og:title" content="Make predictions on new data points. — predict.cuda_ml_linear_model" />
+<meta property="og:description" content="Make predictions on new data points using a linear model.
+See cuda_ml_predict for full documentation of parameters." />
 
 
 
@@ -112,54 +112,39 @@ algorithm, with all required parameters specified explicitly." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Build a specification for the "ivfpq" KNN query algorithm.</h1>
-    <small class="dont-index">Source: <a href='https://github.com/mlverse/cuda.ml/blob/master/R/knn.R'><code>R/knn.R</code></a></small>
-    <div class="hidden name"><code>cuda_ml_knn_algo_ivfpq.Rd</code></div>
+    <h1>Make predictions on new data points.</h1>
+    <small class="dont-index">Source: <a href='https://github.com/mlverse/cuda.ml/blob/master/R/lm.R'><code>R/lm.R</code></a></small>
+    <div class="hidden name"><code>predict.cuda_ml_linear_model.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Build a specification of the inverted-file-product-quantization KNN query
-algorithm, with all required parameters specified explicitly.</p>
+    <p>Make predictions on new data points using a linear model.
+See <code><a href='cuda_ml_predict.html'>cuda_ml_predict</a></code> for full documentation of parameters.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>cuda_ml_knn_algo_ivfpq</span><span class='op'>(</span>
-  <span class='va'>nlist</span>,
-  <span class='va'>nprobe</span>,
-  <span class='va'>m</span>,
-  <span class='va'>n_bits</span>,
-  use_precomputed_tables <span class='op'>=</span> <span class='cn'>FALSE</span>
-<span class='op'>)</span></pre>
+    <pre class="usage"><span class='co'># S3 method for cuda_ml_linear_model</span>
+<span class='fu'><a href='https://rdrr.io/r/stats/predict.html'>predict</a></span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>nlist</th>
-      <td><p>Number of cells to partition dataset into.</p></td>
+      <th>object</th>
+      <td><p>A trained CuML model.</p></td>
     </tr>
     <tr>
-      <th>nprobe</th>
-      <td><p>At query time, the number of cells used for approximate nearest
-neighbor search.</p></td>
-    </tr>
-    <tr>
-      <th>m</th>
-      <td><p>Number of subquantizers.</p></td>
-    </tr>
-    <tr>
-      <th>n_bits</th>
-      <td><p>Bits allocated per subquantizer.</p></td>
-    </tr>
-    <tr>
-      <th>use_precomputed_tables</th>
-      <td><p>Whether to use precomputed tables.</p></td>
+      <th>...</th>
+      <td><p>See <code><a href='cuda_ml_predict.html'>cuda_ml_predict</a></code> for full documentation of all other
+parameters.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An object encapsulating all required parameters of the "ivfpq" KNN
-  query algorithm.</p>
+    <p>Predictions on new data points.</p>
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <div class='dont-index'><p>cuda_ml_predict</p></div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
