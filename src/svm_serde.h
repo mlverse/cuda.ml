@@ -1,10 +1,29 @@
 #pragma once
 
+#include "preprocessor.h"
+
 #include <cuml/matrix/kernelparams.h>
 #include <cuml/svm/svm_model.h>
 #include <cuml/svm/svm_parameter.h>
+#include <cuml/version_config.hpp>
 
 #include <Rcpp.h>
+
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(21, 10))
+
+namespace ML {
+namespace SVM {
+
+using svmParameter = SvmParameter;
+
+template <typename math_t>
+using svmModel = SvmModel<math_t>;
+
+}  // namespace SVM
+}  // namespace ML
+
+#endif
 
 namespace cuml4r {
 namespace detail {
