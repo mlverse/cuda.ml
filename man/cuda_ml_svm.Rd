@@ -183,7 +183,7 @@ model <- cuda_ml_svm(
   kernel = "rbf"
 )
 
-predictions <- predict(model, iris[-which(names(iris) == "Species")])
+predictions <- predict(model, iris[names(iris) != "Species"])
 
 # Regression
 

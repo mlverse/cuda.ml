@@ -49,7 +49,7 @@
 #'   trees = 100
 #' )
 #'
-#' predictions <- predict(model, iris[-which(names(iris) == "Species")])
+#' predictions <- predict(model, iris[names(iris) != "Species"])
 #'
 #' # Regression
 #'
@@ -59,7 +59,7 @@
 #'   trees = 100
 #' )
 #'
-#' predictions <- predict(model, mtcars[-which(names(mtcars) == "mpg")])
+#' predictions <- predict(model, mtcars[names(mtcars) != "mpg"])
 #' @export
 cuda_ml_rand_forest <- function(x, ...) {
   UseMethod("cuda_ml_rand_forest")

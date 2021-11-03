@@ -177,7 +177,7 @@ model <- cuda_ml_rand_forest(
   trees = 100
 )
 
-predictions <- predict(model, iris[-which(names(iris) == "Species")])
+predictions <- predict(model, iris[names(iris) != "Species"])
 
 # Regression
 
@@ -187,5 +187,5 @@ model <- cuda_ml_rand_forest(
   trees = 100
 )
 
-predictions <- predict(model, mtcars[-which(names(mtcars) == "mpg")])
+predictions <- predict(model, mtcars[names(mtcars) != "mpg"])
 }

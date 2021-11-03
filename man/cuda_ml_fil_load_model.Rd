@@ -91,7 +91,7 @@ library(xgboost)
 model_path <- file.path(tempdir(), "xgboost.model")
 
 model <- xgboost(
-  data = as.matrix(mtcars[which(names(mtcars) != "mpg")]),
+  data = as.matrix(mtcars[names(mtcars) != "mpg"]),
   label = as.matrix(mtcars["mpg"]),
   max.depth = 6,
   eta = 1,
@@ -108,7 +108,7 @@ model <- cuda_ml_fil_load_model(
   model_type = "xgboost"
 )
 
-preds <- predict(model, mtcars[which(names(mtcars) != "mpg")])
+preds <- predict(model, mtcars[names(mtcars) != "mpg"])
 
 print(preds)
 }
