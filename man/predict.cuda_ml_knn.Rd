@@ -4,21 +4,27 @@
 \alias{predict.cuda_ml_knn}
 \title{Make predictions on new data points.}
 \usage{
-\method{predict}{cuda_ml_knn}(object, ...)
+\method{predict}{cuda_ml_knn}(object, x, output_class_probabilities = NULL, ...)
 }
 \arguments{
 \item{object}{A trained CuML model.}
 
-\item{...}{See \code{\link{cuda_ml_predict}} for full documentation of all other
-parameters.}
+\item{x}{A matrix or dataframe containing new data points.}
+
+\item{output_class_probabilities}{Whether to output class probabilities.
+NOTE: setting \code{output_class_probabilities} to \code{TRUE} is only
+valid when the model being applied is a classification model and supports
+class probabilities output. CuML classification models supporting class
+probabilities include \code{knn}, \code{fil}, and \code{rand_forest}.
+A warning message will be emitted if \code{output_class_probabilities}
+is set to \code{TRUE} or \code{FALSE} but the model being applied does
+not support class probabilities output.}
+
+\item{...}{Additional arguments to \code{predict()}. Currently unused.}
 }
 \value{
 Predictions on new data points.
 }
 \description{
 Make predictions on new data points using a CuML KNN model.
-See \code{\link{cuda_ml_predict}} for full documentation of parameters.
-}
-\seealso{
-cuda_ml_predict
 }

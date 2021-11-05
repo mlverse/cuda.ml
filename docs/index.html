@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">cuda.ml</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.1.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.0</span>
       </span>
     </div>
 
@@ -72,180 +72,438 @@
       </header><div class="row">
   <div class="contents col-md-9">
 
-<div id="r-interface-for-cuml" class="section level1">
+<div id="cudaml" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
-<a href="#r-interface-for-cuml" class="anchor"></a>R interface for cuML</h1></div>
+<a href="#cudaml" class="anchor"></a>cuda.ml</h1></div>
+<!-- badges: start -->
 
-<p>This package provides a simple and intuitive R interface for RAPIDS <a href="https://github.com/rapidsai/cuml">cuML</a>, a suite of GPU-accelerated machine learning libraries powered by <a href="https://en.wikipedia.org/wiki/CUDA">CUDA</a>. It is under active development, and currently implements R interfaces for algorithms listed below (which is a subset of <a href="https://github.com/rapidsai/cuml#supported-algorithms">algorithms supported by RAPIDS cuML</a>).</p>
+<p>The goal of {cuda.ml} is to provide a simple and intuitive R interface for <a href="https://github.com/rapidsai/cuml">RAPIDS cuML</a>. RAPIDS cuML is a suite of GPU-accelerated machine learning libraries powered by <a href="https://en.wikipedia.org/wiki/CUDA">CUDA</a>. {cuda.ml} is under active development, and currently implements R interfaces for the algorithms listed below (which is a subset of <a href="https://github.com/rapidsai/cuml#supported-algorithms">algorithms supported by RAPIDS cuML</a>).</p>
 <div id="supported-algorithms" class="section level3">
 <h3 class="hasAnchor">
 <a href="#supported-algorithms" class="anchor"></a>Supported Algorithms</h3>
 <table class="table">
 <colgroup>
-<col width="33%">
-<col width="33%">
-<col width="33%">
+<col width="5%">
+<col width="5%">
+<col width="5%">
 </colgroup>
 <thead><tr class="header">
-<th>Category</th>
-<th>Algorithm</th>
-<th>Notes</th>
+<th>
+Category
+</th>
+<th>
+Algorithm
+</th>
+<th>
+Notes
+</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><strong>Clustering</strong></td>
-<td>Density-Based Spatial Clustering of Applications with Noise (DBSCAN)</td>
-<td>Only single-GPU implementation is supported at the moment</td>
+<td>
+<strong>Clustering</strong>
+</td>
+<td>
+Density-Based Spatial Clustering of Applications with Noise (DBSCAN)
+</td>
+<td>
+Only single-GPU implementation is supported at the moment
+</td>
 </tr>
 <tr class="even">
-<td></td>
-<td>K-Means</td>
-<td>Only single-GPU implementation is supported at the moment</td>
+<td>
+</td>
+<td>
+K-Means
+</td>
+<td>
+Only single-GPU implementation is supported at the moment
+</td>
 </tr>
 <tr class="odd">
-<td></td>
-<td>Single-Linkage Agglomerative Clustering</td>
-<td></td>
+<td>
+</td>
+<td>
+Single-Linkage Agglomerative Clustering
+</td>
+<td>
+</td>
 </tr>
 <tr class="even">
-<td><strong>Dimensionality Reduction</strong></td>
-<td>Principal Components Analysis (PCA)</td>
-<td>Only single-GPU implementation is supported at the moment</td>
+<td>
+<strong>Dimensionality Reduction</strong>
+</td>
+<td>
+Principal Components Analysis (PCA)
+</td>
+<td>
+Only single-GPU implementation is supported at the moment
+</td>
 </tr>
 <tr class="odd">
-<td></td>
-<td>Truncated Singular Value Decomposition (tSVD)</td>
-<td>Only single-GPU implementation is supported at the moment</td>
+<td>
+</td>
+<td>
+Truncated Singular Value Decomposition (tSVD)
+</td>
+<td>
+Only single-GPU implementation is supported at the moment
+</td>
 </tr>
 <tr class="even">
-<td></td>
-<td>Uniform Manifold Approximation and Projection (UMAP)</td>
-<td>Only single-GPU implementation is supported at the moment</td>
+<td>
+</td>
+<td>
+Uniform Manifold Approximation and Projection (UMAP)
+</td>
+<td>
+Only single-GPU implementation is supported at the moment
+</td>
 </tr>
 <tr class="odd">
-<td></td>
-<td>Random Projection</td>
-<td></td>
+<td>
+</td>
+<td>
+Random Projection
+</td>
+<td>
+</td>
 </tr>
 <tr class="even">
-<td></td>
-<td>t-Distributed Stochastic Neighbor Embedding (TSNE)</td>
-<td></td>
+<td>
+</td>
+<td>
+t-Distributed Stochastic Neighbor Embedding (TSNE)
+</td>
+<td>
+</td>
 </tr>
 <tr class="odd">
-<td><strong>Nonlinear Models for Regression or Classification</strong></td>
-<td>Random Forest (RF) Classification</td>
-<td>Only single-GPU implementation is supported at the moment</td>
+<td>
+<strong>Linear Models for Regression or Classification</strong>
+</td>
+<td>
+Linear Regression (OLS)
+</td>
+<td>
+</td>
 </tr>
 <tr class="even">
-<td></td>
-<td>Random Forest (RF) Regression</td>
-<td>Only single-GPU implementation is supported at the moment</td>
+<td>
+</td>
+<td>
+Linear Regression with Lasso or Ridge Regularization
+</td>
+<td>
+</td>
 </tr>
 <tr class="odd">
-<td></td>
-<td>Inference for decision tree-based models in XGBoost or LightGBM formats using the CuML Forest Inference Library (FIL)</td>
-<td>Requires linkage to the Treelite C library when {cuml} is installed. Treelite is used for model loading.</td>
+<td>
+<strong>Nonlinear Models for Regression or Classification</strong>
+</td>
+<td>
+Random Forest (RF) Classification
+</td>
+<td>
+Only single-GPU implementation is supported at the moment
+</td>
 </tr>
 <tr class="even">
-<td></td>
-<td>K-Nearest Neighbors (KNN) Classification</td>
-<td>Uses <a href="https://github.com/facebookresearch/faiss">Faiss</a> for Nearest Neighbors Query.</td>
+<td>
+</td>
+<td>
+Random Forest (RF) Regression
+</td>
+<td>
+Only single-GPU implementation is supported at the moment
+</td>
 </tr>
 <tr class="odd">
-<td></td>
-<td>K-Nearest Neighbors (KNN) Regression</td>
-<td>Uses <a href="https://github.com/facebookresearch/faiss">Faiss</a> for Nearest Neighbors Query.</td>
+<td>
+</td>
+<td>
+Inference for decision tree-based models in XGBoost or LightGBM formats using the CuML Forest Inference Library (FIL)
+</td>
+<td>
+Requires linkage to the Treelite C library when {cuml} is installed. Treelite is used for model loading.
+</td>
 </tr>
 <tr class="even">
-<td></td>
-<td>Support Vector Machine Classifier (SVC)</td>
-<td></td>
+<td>
+</td>
+<td>
+K-Nearest Neighbors (KNN) Classification
+</td>
+<td>
+Uses <a href="https://github.com/facebookresearch/faiss">Faiss</a> for Nearest Neighbors Query.
+</td>
 </tr>
 <tr class="odd">
-<td></td>
-<td>Epsilon-Support Vector Regression (SVR)</td>
-<td></td>
+<td>
+</td>
+<td>
+K-Nearest Neighbors (KNN) Regression
+</td>
+<td>
+Uses <a href="https://github.com/facebookresearch/faiss">Faiss</a> for Nearest Neighbors Query.
+</td>
+</tr>
+<tr class="even">
+<td>
+</td>
+<td>
+Support Vector Machine Classifier (SVC)
+</td>
+<td>
+</td>
+</tr>
+<tr class="odd">
+<td>
+</td>
+<td>
+Epsilon-Support Vector Regression (SVR)
+</td>
+<td>
+</td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
-<div id="quick-note-on-installing-the-rapids-cuml-library" class="section level1">
+<div id="examples" class="section level1">
 <h1 class="hasAnchor">
-<a href="#quick-note-on-installing-the-rapids-cuml-library" class="anchor"></a>Quick note on installing the RAPIDS cuML library:</h1>
-<p>Although Conda is the only officially supported distribution channel at the moment for RAPIDS cuML (i.e., see <a href="https://rapids.ai/start.html#get-rapids" class="uri">https://rapids.ai/start.html#get-rapids</a>), one can still build and install this library from source without relying on Conda. See <a href="https://github.com/yitao-li/cuml-installation-notes" class="uri">https://github.com/yitao-li/cuml-installation-notes</a> for build-from-source instructions.</p>
-</div>
-<div id="quick-install-instructions-for-ubuntu-20-04" class="section level1">
-<h1 class="hasAnchor">
-<a href="#quick-install-instructions-for-ubuntu-20-04" class="anchor"></a>Quick install instructions for Ubuntu 20-04:</h1>
-<div id="install-deps" class="section level2">
+<a href="#examples" class="anchor"></a>Examples</h1>
+<div id="using-cudaml-for-supervised-ml-tasks-through-parsnip" class="section level2">
 <h2 class="hasAnchor">
-<a href="#install-deps" class="anchor"></a>Install deps:</h2>
-<pre><code>sudo apt install -y cmake ccache</code></pre>
+<a href="#using-cudaml-for-supervised-ml-tasks-through-parsnip" class="anchor"></a>Using {cuda.ml} for supervised ML tasks through {parsnip}</h2>
+<p>{cuda.ml} provides {parsnip} bindings for supervised ML algorithms such as <code>rand_forest</code>, <code>nearest_neighbor</code>, <code>svm_rbf</code>, <code>svm_poly</code>, and <code>svm_linear</code>.</p>
+<p>The following example shows how {cuda.ml} can be used as a {parsnip} engine to build a SVM classifier.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span>, warn.conflicts <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://parsnip.tidymodels.org">parsnip</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">11235</span><span class="op">)</span>
+
+<span class="va">train_inds</span> <span class="op">&lt;-</span> <span class="va">iris</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>ind <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/ranking.html">row_number</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">Species</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice_sample</a></span><span class="op">(</span>prop <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span>
+
+<span class="va">train_data</span> <span class="op">&lt;-</span> <span class="va">iris</span><span class="op">[</span><span class="va">train_inds</span><span class="op">$</span><span class="va">ind</span>, <span class="op">]</span>
+<span class="va">test_data</span> <span class="op">&lt;-</span> <span class="va">iris</span><span class="op">[</span><span class="op">-</span><span class="va">train_inds</span><span class="op">$</span><span class="va">ind</span>, <span class="op">]</span>
+
+<span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://parsnip.tidymodels.org/reference/svm_rbf.html">svm_rbf</a></span><span class="op">(</span>mode <span class="op">=</span> <span class="st">"classification"</span>, rbf_sigma <span class="op">=</span> <span class="fl">10</span>, cost <span class="op">=</span> <span class="fl">50</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://parsnip.tidymodels.org/reference/set_engine.html">set_engine</a></span><span class="op">(</span><span class="st">"cuda.ml"</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://generics.r-lib.org/reference/fit.html">fit</a></span><span class="op">(</span><span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">train_data</span><span class="op">)</span>
+
+<span class="va">preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">test_data</span><span class="op">)</span>
+
+<span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Confusion matrix:\n\n"</span><span class="op">)</span>
+<span class="co">#&gt; Confusion matrix:</span>
+<span class="va">preds</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind.html">bind_cols</a></span><span class="op">(</span><span class="va">test_data</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">Species</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">yardstick</span><span class="fu">::</span><span class="fu"><a href="https://yardstick.tidymodels.org/reference/conf_mat.html">conf_mat</a></span><span class="op">(</span>truth <span class="op">=</span> <span class="va">Species</span>, estimate <span class="op">=</span> <span class="va">.pred_class</span><span class="op">)</span>
+<span class="co">#&gt;             Truth</span>
+<span class="co">#&gt; Prediction   setosa versicolor virginica</span>
+<span class="co">#&gt;   setosa         15          0         0</span>
+<span class="co">#&gt;   versicolor      0         12         1</span>
+<span class="co">#&gt;   virginica       0          3        14</span></code></pre></div>
 </div>
-<div id="install-cuda" class="section level2">
+<div id="using-cudaml-for-unsupervised-ml-tasks" class="section level2">
 <h2 class="hasAnchor">
-<a href="#install-cuda" class="anchor"></a>Install CUDA</h2>
+<a href="#using-cudaml-for-unsupervised-ml-tasks" class="anchor"></a>Using {cuda.ml} for unsupervised ML tasks</h2>
+<p>The following example shows how {cuda.ml} can be used for unsupervised ML tasks such as k-means clustering.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span>
+
+<span class="va">clustering</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cuda_ml_kmeans.html">cuda_ml_kmeans</a></span><span class="op">(</span>
+  <span class="va">iris</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">iris</span><span class="op">)</span> <span class="op">!=</span> <span class="st">"Species"</span><span class="op">)</span><span class="op">]</span>,
+  k <span class="op">=</span> <span class="fl">3</span>, max_iters <span class="op">=</span> <span class="fl">100</span>
+<span class="op">)</span>
+
+<span class="co"># Expected outcome: there is strong correlation</span>
+<span class="co"># between cluster labels and `iris$Species`</span>
+<span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">clustering</span><span class="op">)</span>
+<span class="co">#&gt; $labels</span>
+<span class="co">#&gt;   [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</span>
+<span class="co">#&gt;  [38] 1 1 1 1 1 1 1 1 1 1 1 1 1 0 2 0 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2</span>
+<span class="co">#&gt;  [75] 2 2 2 0 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 0 2 0 0 0 0 2 0 0 0 0</span>
+<span class="co">#&gt; [112] 0 0 2 2 0 0 0 0 2 0 2 0 2 0 0 2 2 0 0 0 0 0 2 0 0 0 0 2 0 0 0 2 0 0 0 2 0</span>
+<span class="co">#&gt; [149] 0 2</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; $centroids</span>
+<span class="co">#&gt;          [,1]     [,2]     [,3]     [,4]</span>
+<span class="co">#&gt; [1,] 6.853846 3.076923 5.715385 2.053846</span>
+<span class="co">#&gt; [2,] 5.006000 3.428000 1.462000 0.246000</span>
+<span class="co">#&gt; [3,] 5.883607 2.740984 4.388525 1.434426</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; $inertia</span>
+<span class="co">#&gt; [1] 78.85567</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; $n_iter</span>
+<span class="co">#&gt; [1] 10</span>
+
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span>, warn.conflicts <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
+<span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>cluster_id <span class="op">=</span> <span class="va">clustering</span><span class="op">$</span><span class="va">labels</span>, species <span class="op">=</span> <span class="va">iris</span><span class="op">$</span><span class="va">Species</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">cluster_id</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">count</a></span><span class="op">(</span><span class="va">species</span><span class="op">)</span>
+<span class="co">#&gt; # A tibble: 5 × 3</span>
+<span class="co">#&gt; # Groups:   cluster_id [3]</span>
+<span class="co">#&gt;   cluster_id species        n</span>
+<span class="co">#&gt;        &lt;int&gt; &lt;fct&gt;      &lt;int&gt;</span>
+<span class="co">#&gt; 1          0 versicolor     3</span>
+<span class="co">#&gt; 2          0 virginica     36</span>
+<span class="co">#&gt; 3          1 setosa        50</span>
+<span class="co">#&gt; 4          2 versicolor    47</span>
+<span class="co">#&gt; 5          2 virginica     14</span></code></pre></div>
+</div>
+<div id="using-cudaml-for-visualizations" class="section level2">
+<h2 class="hasAnchor">
+<a href="#using-cudaml-for-visualizations" class="anchor"></a>Using {cuda.ml} for visualizations</h2>
+<p>{cuda.ml} also features R interfaces for algorithms such as UMAP and t-SNE, which are useful when one needs to visualize clusters of high-dimensional data points by embedding them onto low-dimensional manifolds (i.e., 4 dimensions or fewer).</p>
+<p>For example, the code snippet below shows how <code><a href="reference/cuda_ml_umap.html">cuda_ml_umap()</a></code> can be used to visualize the MNIST hand-written digits dataset, and also, the coloring based on the true label of each sample demonstrates how well the UMAP algorithm transforms different hand writings of the same digit into nearby points in a 2D embedding:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://magrittr.tidyverse.org">magrittr</a></span><span class="op">)</span>
+
+<span class="co"># load mnist</span>
+<span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="st">"data-raw/load-mnist.R"</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="va">mnist_images</span><span class="op">)</span>
+<span class="co">#&gt;  int [1:28, 1:28, 1:60000] 0 0 0 0 0 0 0 0 0 0 ...</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="va">mnist_labels</span><span class="op">)</span>
+<span class="co">#&gt;  int [1:60000(1d)] 5 0 4 1 9 2 1 3 1 4 ...</span>
+
+
+<span class="co"># flatten each image to a 1d array, combine into a matrix with 1 row per image</span>
+<span class="va">flatten</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">img</span><span class="op">)</span> <span class="op">{</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">img</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="cn">NULL</span>
+  <span class="va">img</span>
+<span class="op">}</span>
+
+<span class="va">flattened_mnist_images</span> <span class="op">&lt;-</span>
+  <span class="va">mnist_images</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/base/asplit.html">asplit</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="va">flatten</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">.</span><span class="op">)</span>
+
+<span class="co"># embed</span>
+<span class="va">embedding</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cuda_ml_umap.html">cuda_ml_umap</a></span><span class="op">(</span>
+  <span class="va">flattened_mnist_images</span>, n_components <span class="op">=</span> <span class="fl">2</span>, n_neighbors <span class="op">=</span> <span class="fl">50</span>,
+  local_connectivity <span class="op">=</span> <span class="fl">15</span>, repulsion_strength <span class="op">=</span> <span class="fl">10</span>
+<span class="op">)</span>
+
+<span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="va">embedding</span><span class="op">$</span><span class="va">transformed_data</span><span class="op">)</span>
+<span class="co">#&gt;  num [1:60000, 1:2] -5.81 -31.26 11.1 7.35 11.87 ...</span>
+
+<span class="co"># visualize</span>
+<span class="va">embedding</span><span class="op">$</span><span class="va">transformed_data</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>Label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">mnist_labels</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">V1</span>, y <span class="op">=</span> <span class="va">V2</span>, color <span class="op">=</span> <span class="va">Label</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>alpha <span class="op">=</span> <span class="fl">.5</span>, size <span class="op">=</span> <span class="fl">.5</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"UMAP: Uniform Manifold Approximation and Projection"</span>,
+       subtitle <span class="op">=</span> <span class="st">"Two Dimensional Embedding of MNIST"</span><span class="op">)</span></code></pre></div>
+<p><img src="reference/figures/README-umap-example-1.png" width="100%"></p>
+<p>From this type of visualization, we can qualitatively understand the following about the MNIST dataset:</p>
+<ul>
+<li>The dataset can be reasonably classified into some number of categories.</li>
+<li>The right number of categories may be any where between 9 and 11.</li>
+<li>While there are some categories that are clearly distinguishable from others, there are others that have less clear boundaries with their neighbors.</li>
+<li>A small fraction of data points did not fit particularly well into any of the categories.</li>
+<li>Most data points belonging to the same digit category are clustered together in the UMAP output</li>
+</ul>
+</div>
+<div id="installation" class="section level2">
+<h2 class="hasAnchor">
+<a href="#installation" class="anchor"></a>Installation</h2>
+<p>In order for {cuda.ml} to work as expected, the C++/CUDA source code of {cuda.ml} must be linked with CUDA runtime and a valid copy of the RAPIDS cuML library.</p>
+<p>Before installing {cuda.ml} itself, it may be worthwhile to take a quick look through the sub-sections below on how to properly setup all of {cuda.ml}’s required runtime dependencies.</p>
+<div id="quick-note-on-installing-the-rapids-cuml-library" class="section level3">
+<h3 class="hasAnchor">
+<a href="#quick-note-on-installing-the-rapids-cuml-library" class="anchor"></a>Quick note on installing the RAPIDS cuML library:</h3>
+<p>Although Conda is the only officially supported distribution channel at the moment for RAPIDS cuML (i.e., see <a href="https://rapids.ai/start.html#get-rapids" class="uri">https://rapids.ai/start.html#get-rapids</a>), you can still build and install this library from source without relying on Conda. See <a href="https://github.com/yitao-li/cuml-installation-notes" class="uri">https://github.com/yitao-li/cuml-installation-notes</a> for build-from-source instructions.</p>
+</div>
+<div id="quick-install-instructions-for-ubuntu-20-04" class="section level3">
+<h3 class="hasAnchor">
+<a href="#quick-install-instructions-for-ubuntu-20-04" class="anchor"></a>Quick install instructions for Ubuntu 20-04:</h3>
+<div id="install-deps" class="section level4">
+<h4 class="hasAnchor">
+<a href="#install-deps" class="anchor"></a>Install deps:</h4>
+<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>sudo apt install <span class="sc">-</span>y cmake ccache libblas3 liblapack3</span></code></pre></div>
+</div>
+</div>
+<div id="install-cuda" class="section level3">
+<h3 class="hasAnchor">
+<a href="#install-cuda" class="anchor"></a>Install CUDA</h3>
 <p>(consult <a href="https://developer.nvidia.com/cuda-downloads" class="uri">https://developer.nvidia.com/cuda-downloads</a> for other platforms)</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> https://developer.download.nvidia.com/compute/cuda/11.4.2/local_installers/cuda-repo-ubuntu2004-11-4-local_11.4.2-470.57.02-1_amd64.deb</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> dpkg <span class="at">-i</span> cuda-repo-ubuntu2004-11-4-local_11.4.2-470.57.02-1_amd64.deb</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt-key add /var/cuda-repo-ubuntu2004-11-4-local/7fa2af80.pub</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt-get update</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt-get <span class="at">-y</span> install cuda</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> https://developer.download.nvidia.com/compute/cuda/11.4.2/local_installers/cuda-repo-ubuntu2004-11-4-local_11.4.2-470.57.02-1_amd64.deb</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> dpkg <span class="at">-i</span> cuda-repo-ubuntu2004-11-4-local_11.4.2-470.57.02-1_amd64.deb</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt-key add /var/cuda-repo-ubuntu2004-11-4-local/7fa2af80.pub</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt-get update</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt-get <span class="at">-y</span> install cuda</span></code></pre></div>
 </div>
-<div id="add-cuda-executables-to-path" class="section level2">
-<h2 class="hasAnchor">
-<a href="#add-cuda-executables-to-path" class="anchor"></a>Add cuda executables to path</h2>
-<p>(nvcc is needed for cuml installation)</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"export PATH=</span><span class="va">$PATH</span><span class="st">:/usr/local/cuda/bin"</span> <span class="op">&gt;&gt;</span> ~/.bashrc</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> ~/.bashrc</span></code></pre></div>
+<div id="add-cuda-executables-to-path" class="section level3">
+<h3 class="hasAnchor">
+<a href="#add-cuda-executables-to-path" class="anchor"></a>Add CUDA executables to path</h3>
+<p>(nvcc is needed for building the C++/CUDA source code of {cuda.ml})</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"export PATH=</span><span class="va">$PATH</span><span class="st">:/usr/local/cuda/bin"</span> <span class="op">&gt;&gt;</span> ~/.bashrc</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> ~/.bashrc</span></code></pre></div>
 </div>
-<div id="install-miniconda" class="section level2">
-<h2 class="hasAnchor">
-<a href="#install-miniconda" class="anchor"></a>Install Miniconda:</h2>
-<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">chmod</span> +x Miniconda3-latest-Linux-x86_64.sh</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./Miniconda3-latest-Linux-x86_64.sh</span> <span class="at">-b</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># consult https://rapids.ai/start.html for alternatives</span></span></code></pre></div>
+<div id="install-miniconda" class="section level3">
+<h3 class="hasAnchor">
+<a href="#install-miniconda" class="anchor"></a>Install Miniconda:</h3>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">wget</span> https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">chmod</span> +x Miniconda3-latest-Linux-x86_64.sh</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./Miniconda3-latest-Linux-x86_64.sh</span> <span class="at">-b</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># consult https://rapids.ai/start.html for alternatives</span></span></code></pre></div>
 </div>
-<div id="create-and-configure-the-conda-env" class="section level2">
-<h2 class="hasAnchor">
-<a href="#create-and-configure-the-conda-env" class="anchor"></a>Create and configure the conda env</h2>
-<pre><code># This is a relatively big download, may take a while
-~/miniconda3/bin/conda create -n rapids-21.08 -c rapidsai -c nvidia -c conda-forge \
-    rapids-blazing=21.08 python=3.8 cudatoolkit=11.2</code></pre>
+<div id="create-and-configure-the-conda-env" class="section level3">
+<h3 class="hasAnchor">
+<a href="#create-and-configure-the-conda-env" class="anchor"></a>Create and configure the conda env</h3>
+<div class="sourceCode" id="cb8"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># This is a relatively big download, may take a while</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="sc">~</span><span class="er">/</span>miniconda3<span class="sc">/</span>bin<span class="sc">/</span>conda create <span class="sc">-</span>n rapids<span class="fl">-21.08</span> <span class="sc">-</span>c rapidsai <span class="sc">-</span>c nvidia <span class="sc">-</span>c conda<span class="sc">-</span>forge \</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    rapids<span class="sc">-</span>blazing<span class="ot">=</span><span class="fl">21.08</span> python<span class="ot">=</span><span class="fl">3.8</span> cudatoolkit<span class="ot">=</span><span class="fl">11.2</span></span></code></pre></div>
 </div>
-<div id="activate-the-conda-env" class="section level2">
-<h2 class="hasAnchor">
-<a href="#activate-the-conda-env" class="anchor"></a>Activate the conda env:</h2>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">.</span> ~/miniconda3/bin/activate</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate rapids-21.08</span></code></pre></div>
+<div id="activate-the-conda-env" class="section level3">
+<h3 class="hasAnchor">
+<a href="#activate-the-conda-env" class="anchor"></a>Activate the conda env:</h3>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="bu">.</span> ~/miniconda3/bin/activate</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate rapids-21.08</span></code></pre></div>
 </div>
-<div id="consider-adjusting-ld_library_path" class="section level2">
-<h2 class="hasAnchor">
+<div id="consider-adjusting-ld_library_path" class="section level3">
+<h3 class="hasAnchor">
 <a href="#consider-adjusting-ld_library_path" class="anchor"></a>Consider adjusting <code>LD_LIBRARY_PATH</code>
-</h2>
+</h3>
 <p>The subsequent steps may (or may not) fail without the following:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">LD_LIBRARY_PATH</span><span class="op">=</span>~/miniconda3/envs/rapids-21.08/lib</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">LD_LIBRARY_PATH</span><span class="op">=</span>~/miniconda3/envs/rapids-21.08/lib</span></code></pre></div>
 <p>If you get some error indicating a GLIBC version mismatch in the subsequent steps, then please try adjusting <code>LD_LIBRARY_PATH</code> as a workaround.</p>
 </div>
-<div id="consider-enabling-ccache" class="section level2">
-<h2 class="hasAnchor">
-<a href="#consider-enabling-ccache" class="anchor"></a>Consider enabling ccache</h2>
+<div id="consider-enabling-ccache" class="section level3">
+<h3 class="hasAnchor">
+<a href="#consider-enabling-ccache" class="anchor"></a>Consider enabling ccache</h3>
 <p>To speed up recompilation times during development, set this env var:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"export CUML4R_ENABLE_CCACHE=1"</span> <span class="op">&gt;&gt;</span> ~/.bashrc</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="bu">.</span> ~/.bashrc</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"export CUML4R_ENABLE_CCACHE=1"</span> <span class="op">&gt;&gt;</span> ~/.bashrc</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="bu">.</span> ~/.bashrc</span></code></pre></div>
 </div>
-<div id="install-cuml-the-r-package" class="section level2">
+<div id="install-cudaml-the-r-package" class="section level3">
+<h3 class="hasAnchor">
+<a href="#install-cudaml-the-r-package" class="anchor"></a>Install {cuda.ml} the R package:</h3>
+<p>You can install the released version of {cuda.ml} from <a href="https://CRAN.R-project.org">CRAN</a> with:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"cuda.ml"</span><span class="op">)</span></code></pre></div>
+<p>And the development version from <a href="https://github.com/">GitHub</a> with:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># install.packages("devtools")</span>
+<span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html">install_github</a></span><span class="op">(</span><span class="st">"mlverse/cuda.ml"</span><span class="op">)</span></code></pre></div>
+</div>
+</div>
+<div id="appendix" class="section level2">
 <h2 class="hasAnchor">
-<a href="#install-cuml-the-r-package" class="anchor"></a>Install cuml the R package:</h2>
-<p>CRAN release:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>Rscript <span class="sc">-</span>e <span class="st">'install.packages("cuml")'</span></span></code></pre></div>
-<p>Development version from github</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>Rscript <span class="sc">-</span>e <span class="st">'remotes::install_github("mlverse/cuml")'</span></span></code></pre></div>
+<a href="#appendix" class="anchor"></a>Appendix</h2>
+<details><summary>
+Inspect MNIST images
+</summary><div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu">plot_mnist</span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">64</span><span class="op">)</span></code></pre></div>
+<img src="reference/figures/README-mnist-1.png" width="100%"></details>
 </div>
 </div>
 
@@ -281,8 +539,8 @@
   <div class="dev-status">
 <h2>Dev status</h2>
 <ul class="list-unstyled">
-<li><a href="https://cran.r-project.org/package=cuml"><img src="https://www.r-pkg.org/badges/version/cuml" alt="CRAN_Status_Badge"></a></li>
-<li><a href="https://www.r-pkg.org/pkg/cuml"><img src="https://cranlogs.r-pkg.org/badges/cuml?color=brightgreen" style=""></a></li>
+<li><a href="https://cran.r-project.org/package=cuda.ml"><img src="https://www.r-pkg.org/badges/version/cuda.ml" alt="CRAN_Status_Badge"></a></li>
+<li><a href="https://www.r-pkg.org/pkg/cuda.ml"><img src="https://cranlogs.r-pkg.org/badges/cuda.ml?color=brightgreen" style=""></a></li>
 </ul>
 </div>
 </div>

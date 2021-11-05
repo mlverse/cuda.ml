@@ -4,21 +4,18 @@
 \alias{predict.cuda_ml_linear_model}
 \title{Make predictions on new data points.}
 \usage{
-\method{predict}{cuda_ml_linear_model}(object, ...)
+\method{predict}{cuda_ml_linear_model}(object, x, ...)
 }
 \arguments{
 \item{object}{A trained CuML model.}
 
-\item{...}{See \code{\link{cuda_ml_predict}} for full documentation of all other
-parameters.}
+\item{x}{A matrix or dataframe containing new data points.}
+
+\item{...}{Additional arguments to \code{predict()}. Currently unused.}
 }
 \value{
 Predictions on new data points.
 }
 \description{
 Make predictions on new data points using a linear model.
-See \code{\link{cuda_ml_predict}} for full documentation of parameters.
-}
-\seealso{
-cuda_ml_predict
 }

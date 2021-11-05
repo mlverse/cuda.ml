@@ -144,66 +144,6 @@ cuda_ml_can_predict_class_probabilities.cuda_ml_knn <- cuda_ml_is_classifier
 
 cuda_ml_can_predict_class_probabilities.cuda_ml_rand_forest <- cuda_ml_is_classifier
 
-#' Make predictions on new data points.
-#'
-#' Use a trained CuML model to make predictions on new data points.
-#' Notice calling \code{cuda_ml_predict()} will be identical to calling the
-#' \code{predict()} S3 generic, except for \code{cuda_ml_predict()} also comes
-#' with proper documentation on all possible predict options (such as
-#' \code{output_class_probabilities}) and will emit a sensible warning message
-#' when a predict option is not applicable for a given model.
-#'
-#' @param model A trained CuML model.
-#' @param x A matrix or dataframe containing new data points.
-#' @param output_class_probabilities Whether to output class probabilities.
-#'   NOTE: setting \code{output_class_probabilities} to \code{TRUE} is only
-#'   valid when the model being applied is a classification model and supports
-#'   class probabilities output. CuML classification models supporting class
-#'   probabilities include \code{knn}, \code{fil}, and \code{rand_forest}.
-#'   A warning message will be emitted if \code{output_class_probabilities}
-#'   is set to \code{TRUE} or \code{FALSE} but the model being applied does
-#'   not support class probabilities output.
-#' @param ... Additional arguments to \code{predict()}. Currently unused.
-#'
-#' @return Predictions on new data points.
-#'
-#' @importFrom ellipsis check_dots_used
-#' @name cuda_ml_predict
-#' @export
-cuda_ml_predict <- function(model, x, output_class_probabilities = NULL, ...) {
-  check_dots_used()
-  UseMethod("cuda_ml_predict")
-}
-
-#' @export
-cuda_ml_predict.default <- function(model, x, output_class_probabilities = NULL, ...) {
-  report_undefined_fn("cuda_ml_predict", model)
-}
-
-#' @export
-cuda_ml_predict.cuda_ml_model <- function(model, x, output_class_probabilities = NULL, ...) {
-  can_predict_class_probabilities <- cuda_ml_can_predict_class_probabilities(model)
-
-  if (!can_predict_class_probabilities &&
-    identical(output_class_probabilities, TRUE)) {
-    model_cls <- class(model)
-    model_cls <- model_cls[which(startsWith(model_cls, "cuda_ml_"))]
-    model_type <- ifelse(cuda_ml_is_classifier(model), "Classifier", "Regressor")
-    warning(
-      model_type,
-      " of type '",
-      paste(model_cls, collapse = " "),
-      "' does not support outputting class probabilities!"
-    )
-  }
-
-  if (can_predict_class_probabilities && !is.null(output_class_probabilities)) {
-    predict(model, x, as.logical(output_class_probabilities), ...)
-  } else {
-    predict(model, x, ...)
-  }
-}
-
 #' Serialize a CuML model
 #'
 #' Given a CuML model, serialize its state into a connection.

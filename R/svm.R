@@ -435,17 +435,15 @@ cuda_ml_set_state.cuda_ml_svr_model_state <- function(model_state) {
 #' Make predictions on new data points.
 #'
 #' Make predictions on new data points using a CuML SVM model.
-#' See \code{\link{cuda_ml_predict}} for full documentation of parameters.
 #'
 #' @template predict
 #'
-#' @seealso cuda_ml_predict
 #' @importFrom ellipsis check_dots_used
 #' @export
-predict.cuda_ml_svm <- function(object, ...) {
+predict.cuda_ml_svm <- function(object, x, ...) {
   check_dots_used()
 
-  processed <- hardhat::forge(..1, object$blueprint)
+  processed <- hardhat::forge(x, object$blueprint)
 
   predict_cuda_ml_svm_bridge(model = object, processed = processed)
 }

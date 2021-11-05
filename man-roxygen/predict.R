@@ -1,5 +1,5 @@
 #' @param object A trained CuML model.
-#' @param ... See \code{\link{cuda_ml_predict}} for full documentation of all other
-#'   parameters.
+#' @param x A matrix or dataframe containing new data points.
+#' @param ... Additional arguments to \code{predict()}. Currently unused.
 #'
 #' @return Predictions on new data points.

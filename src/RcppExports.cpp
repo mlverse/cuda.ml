@@ -144,13 +144,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // glm_predict
-Rcpp::NumericVector glm_predict(Rcpp::NumericMatrix const& input, Rcpp::NumericVector const& coef, double const intercept);
+Rcpp::NumericVector glm_predict(SEXP input, SEXP coef, double const intercept);
 RcppExport SEXP _cuda_ml_glm_predict(SEXP inputSEXP, SEXP coefSEXP, SEXP interceptSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type input(inputSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector const& >::type coef(coefSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type coef(coefSEXP);
     Rcpp::traits::input_parameter< double const >::type intercept(interceptSEXP);
     rcpp_result_gen = Rcpp::wrap(glm_predict(input, coef, intercept));
     return rcpp_result_gen;

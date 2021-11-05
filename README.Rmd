@@ -40,6 +40,8 @@ the algorithms listed below
 | | Uniform Manifold Approximation and Projection (UMAP) | Only single-GPU implementation is supported at the moment |
 | | Random Projection | |
 | | t-Distributed Stochastic Neighbor Embedding (TSNE) | |
+| **Linear Models for Regression or Classification** | Linear Regression (OLS) | |
+| | Linear Regression with Lasso or Ridge Regularization | |
 | **Nonlinear Models for Regression or Classification** | Random Forest (RF) Classification | Only single-GPU implementation is supported at the moment |
 | | Random Forest (RF) Regression | Only single-GPU implementation is supported at the moment |
 | | Inference for decision tree-based models in XGBoost or LightGBM formats using the CuML Forest Inference Library (FIL) | Requires linkage to the Treelite C library when {cuml} is installed. Treelite is used for model loading. |

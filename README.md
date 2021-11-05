@@ -64,6 +64,16 @@ The goal of {cuda.ml} is to provide a simple and intuitive R interface for [RAPI
 <td></td>
 </tr>
 <tr class="odd">
+<td><strong>Linear Models for Regression or Classification</strong></td>
+<td>Linear Regression (OLS)</td>
+<td></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Linear Regression with Lasso or Ridge Regularization</td>
+<td></td>
+</tr>
+<tr class="odd">
 <td><strong>Nonlinear Models for Regression or Classification</strong></td>
 <td>Random Forest (RF) Classification</td>
 <td>Only single-GPU implementation is supported at the moment</td>

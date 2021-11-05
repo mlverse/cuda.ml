@@ -1,5 +1,11 @@
 #include "cd.h"
 
+#ifndef HAS_CUML
+
+#include "example_linear_model.h"
+
+#endif
+
 // [[Rcpp::export(".cd_fit")]]
 Rcpp::List cd_fit(Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& y,
                   bool const fit_intercept, bool const normalize_input,
@@ -14,7 +20,7 @@ Rcpp::List cd_fit(Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& y,
 
 #include "warn_cuml_missing.h"
 
-  return {};
+  return cuml4r_example_linear_model();
 
 #endif
 }

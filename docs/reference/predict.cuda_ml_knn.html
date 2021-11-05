@@ -40,8 +40,7 @@
 
 
 <meta property="og:title" content="Make predictions on new data points. — predict.cuda_ml_knn" />
-<meta property="og:description" content="Make predictions on new data points using a CuML KNN model.
-See cuda_ml_predict for full documentation of parameters." />
+<meta property="og:description" content="Make predictions on new data points using a CuML KNN model." />
 
 
 
@@ -73,7 +72,7 @@ See cuda_ml_predict for full documentation of parameters." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">cuda.ml</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.2.1.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.0</span>
       </span>
     </div>
 
@@ -118,12 +117,11 @@ See cuda_ml_predict for full documentation of parameters." />
     </div>
 
     <div class="ref-description">
-    <p>Make predictions on new data points using a CuML KNN model.
-See <code><a href='cuda_ml_predict.html'>cuda_ml_predict</a></code> for full documentation of parameters.</p>
+    <p>Make predictions on new data points using a CuML KNN model.</p>
     </div>
 
     <pre class="usage"><span class='co'># S3 method for cuda_ml_knn</span>
-<span class='fu'><a href='https://rdrr.io/r/stats/predict.html'>predict</a></span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>...</span><span class='op'>)</span></pre>
+<span class='fu'><a href='https://rdrr.io/r/stats/predict.html'>predict</a></span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>x</span>, output_class_probabilities <span class='op'>=</span> <span class='cn'>NULL</span>, <span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -133,18 +131,29 @@ See <code><a href='cuda_ml_predict.html'>cuda_ml_predict</a></code> for full doc
       <td><p>A trained CuML model.</p></td>
     </tr>
     <tr>
+      <th>x</th>
+      <td><p>A matrix or dataframe containing new data points.</p></td>
+    </tr>
+    <tr>
+      <th>output_class_probabilities</th>
+      <td><p>Whether to output class probabilities.
+NOTE: setting <code>output_class_probabilities</code> to <code>TRUE</code> is only
+valid when the model being applied is a classification model and supports
+class probabilities output. CuML classification models supporting class
+probabilities include <code>knn</code>, <code>fil</code>, and <code>rand_forest</code>.
+A warning message will be emitted if <code>output_class_probabilities</code>
+is set to <code>TRUE</code> or <code>FALSE</code> but the model being applied does
+not support class probabilities output.</p></td>
+    </tr>
+    <tr>
       <th>...</th>
-      <td><p>See <code><a href='cuda_ml_predict.html'>cuda_ml_predict</a></code> for full documentation of all other
-parameters.</p></td>
+      <td><p>Additional arguments to <code><a href='https://rdrr.io/r/stats/predict.html'>predict()</a></code>. Currently unused.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>Predictions on new data points.</p>
-    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
-
-    <div class='dont-index'><p>cuda_ml_predict</p></div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
