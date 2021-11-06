@@ -2,9 +2,9 @@
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
   push:
-    branches: [main, master]
+    branches: [main]
   pull_request:
-    branches: [main, master]
+    branches: [main]
 
 name: R-CMD-check
 
@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         cuda: ['11.2.1']
-        cuml: ['21.08']
+        cuml: ['21.08', '21.10']
         r: ['release', 'devel']
 
     runs-on: ['self-hosted', 'gpu']
