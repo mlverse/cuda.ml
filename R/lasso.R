@@ -13,14 +13,9 @@ lasso_validate_alpha <- function(alpha) {
 #' @template supervised-model-output
 #' @template ellipsis-unused
 #' @template lm
+#' @template coordinate-descend
 #' @param alpha Multiplier of the L1 penalty term (i.e., the result would become
 #'   and Ordinary Least Square model if \code{alpha} were set to 0). Default: 1.
-#' @param max_iter The maximum number of coordinate descent iterations.
-#'   Default: 1000L.
-#' @param tol Stop the coordinate descent when the duality gap is below this
-#'   threshold. Default: 1e-3.
-#' @param selection If "random", then instead of updating coefficients in cyclic
-#'   order, a random coefficient is updated in each iteration. Default: "cyclic".
 #'
 #' @return A LASSO regressor that can be used with the 'predict' S3 generic to
 #'   make predictions on new data points.
