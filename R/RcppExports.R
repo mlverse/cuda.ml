@@ -41,10 +41,6 @@
     .Call(`_cuda_ml_fil_predict`, model, x, output_class_probabilities)
 }
 
-.glm_predict <- function(input, coef, intercept) {
-    .Call(`_cuda_ml_glm_predict`, input, coef, intercept)
-}
-
 .kmeans <- function(x, k, max_iters, tol, init_method, centroids, seed, verbosity) {
     .Call(`_cuda_ml_kmeans`, x, k, max_iters, tol, init_method, centroids, seed, verbosity)
 }
@@ -67,6 +63,10 @@
 
 .knn_regressor_predict <- function(model, x, n_neighbors) {
     .Call(`_cuda_ml_knn_regressor_predict`, model, x, n_neighbors)
+}
+
+.lm_predict <- function(input, coef, intercept) {
+    .Call(`_cuda_ml_lm_predict`, input, coef, intercept)
 }
 
 .ols_fit <- function(x, y, fit_intercept, normalize_input, algo) {

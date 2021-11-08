@@ -64,13 +64,13 @@ add_library(
   dbscan.cu
   fil.cpp
   fil.cu
-  glm.cpp
-  glm.cu
   kmeans.cpp
   kmeans.cu
   knn.cpp
   knn.cu
   lm.cu
+  lm_predict.cpp
+  lm_predict.cu
   ols.cpp
   ols.cu
   ols_fit_impl.cu

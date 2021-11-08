@@ -30,7 +30,7 @@ predict.cuda_ml_linear_model <- function(object, x, ...) {
 
   processed <- hardhat::forge(x, object$blueprint)
 
-  preds <- .glm_predict(
+  preds <- .lm_predict(
     input = as.matrix(processed$predictors),
     coef = object$xptr$coef,
     intercept = object$xptr$intercept

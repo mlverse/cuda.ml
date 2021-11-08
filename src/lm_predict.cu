@@ -14,9 +14,9 @@
 
 namespace cuml4r {
 
-Rcpp::NumericVector glm_predict(Rcpp::NumericMatrix const& input,
-                                Rcpp::NumericVector const& coef,
-                                double const intercept) {
+Rcpp::NumericVector lm_predict(Rcpp::NumericMatrix const& input,
+                               Rcpp::NumericVector const& coef,
+                               double const intercept) {
   auto const m = Matrix<>(input, /*transpose=*/true);
   auto const n_rows = m.numCols;
   auto const n_cols = m.numRows;

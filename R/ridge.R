@@ -23,7 +23,7 @@ ridge_validate_alpha <- function(alpha) {
 #' library(cuda.ml)
 #'
 #' model <- cuda_ml_ridge(formula = mpg ~ ., data = mtcars, alpha = 1e-3)
-#' predictions <- predict(model, mtcars[names(mtcars) != "mpg"])
+#' cuda_ml_predictions <- predict(model, mtcars[names(mtcars) != "mpg"])
 #'
 #' # predictions will be comparable to those from a `glmnet` model with `lambda`
 #' # set to 2e-3 and `alpha` set to 0
@@ -37,15 +37,15 @@ ridge_validate_alpha <- function(alpha) {
 #'   alpha = 0, lambda = 2e-3, nlambda = 1, standardize = FALSE
 #' )
 #'
-#' glm_predictions <- predict(
+#' glmnet_predictions <- predict(
 #'   glmnet_model, as.matrix(mtcars[names(mtcars) != "mpg"]),
 #'   s = 0
 #' )
 #'
 #' print(
 #'   all.equal(
-#'     as.numeric(glm_predictions),
-#'     predictions$.pred,
+#'     as.numeric(glmnet_predictions),
+#'     cuda_ml_predictions$.pred,
 #'     tolerance = 1e-3
 #'   )
 #' )
