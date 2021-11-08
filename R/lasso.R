@@ -30,7 +30,7 @@ lasso_validate_alpha <- function(alpha) {
 #' library(cuda.ml)
 #'
 #' model <- cuda_ml_lasso(formula = mpg ~ ., data = mtcars, alpha = 1e-3)
-#' predictions <- predict(model, mtcars)
+#' cuda_ml_predictions <- predict(model, mtcars)
 #'
 #' # predictions will be comparable to those from a `glmnet` model with `lambda`
 #' # set to 1e-3 and `alpha` set to 1
@@ -48,7 +48,13 @@ lasso_validate_alpha <- function(alpha) {
 #'   glmnet_model, as.matrix(mtcars[names(mtcars) != "mpg"]), s = 0
 #' )
 #'
-#' print(max(abs(glm_predictions - predictions$.pred)))
+#' print(
+#'   all.equal(
+#'     as.numeric(glm_predictions),
+#'     cuda_ml_predictions$.pred,
+#'     tolerance = 1e-2
+#'   )
+#' )
 #' @export
 cuda_ml_lasso <- function(x, ...) {
   UseMethod("cuda_ml_lasso")
