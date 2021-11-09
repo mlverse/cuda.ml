@@ -53,7 +53,6 @@ add_library(
   fil_utils.cu
   handle_utils.cu
   stream_allocator.cu
-  svm_serde.cu
   # models & algorithms
   agglomerative_clustering.cpp
   agglomerative_clustering.cu
@@ -86,10 +85,14 @@ add_library(
   ridge.cpp
   ridge.cu
   ridge_fit_impl.cu
+  sgd.cpp
+  sgd.cu
+  sgd_fit_impl.cu
   svm_classifier.cpp
   svm_classifier.cu
   svm_regressor.cpp
   svm_regressor.cu
+  svm_serde.cu
   tsne.cpp
   tsne.cu
   tsvd.cpp

@@ -525,6 +525,31 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// sgd_fit
+Rcpp::List sgd_fit(Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& y, bool const fit_intercept, int const batch_size, int const epochs, int const lr_type, double const eta0, double const power_t, int const loss, int const penalty, double const alpha, double const l1_ratio, bool const shuffle, double const tol, int const n_iter_no_change);
+RcppExport SEXP _cuda_ml_sgd_fit(SEXP xSEXP, SEXP ySEXP, SEXP fit_interceptSEXP, SEXP batch_sizeSEXP, SEXP epochsSEXP, SEXP lr_typeSEXP, SEXP eta0SEXP, SEXP power_tSEXP, SEXP lossSEXP, SEXP penaltySEXP, SEXP alphaSEXP, SEXP l1_ratioSEXP, SEXP shuffleSEXP, SEXP tolSEXP, SEXP n_iter_no_changeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector const& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< bool const >::type fit_intercept(fit_interceptSEXP);
+    Rcpp::traits::input_parameter< int const >::type batch_size(batch_sizeSEXP);
+    Rcpp::traits::input_parameter< int const >::type epochs(epochsSEXP);
+    Rcpp::traits::input_parameter< int const >::type lr_type(lr_typeSEXP);
+    Rcpp::traits::input_parameter< double const >::type eta0(eta0SEXP);
+    Rcpp::traits::input_parameter< double const >::type power_t(power_tSEXP);
+    Rcpp::traits::input_parameter< int const >::type loss(lossSEXP);
+    Rcpp::traits::input_parameter< int const >::type penalty(penaltySEXP);
+    Rcpp::traits::input_parameter< double const >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< double const >::type l1_ratio(l1_ratioSEXP);
+    Rcpp::traits::input_parameter< bool const >::type shuffle(shuffleSEXP);
+    Rcpp::traits::input_parameter< double const >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< int const >::type n_iter_no_change(n_iter_no_changeSEXP);
+    rcpp_result_gen = Rcpp::wrap(sgd_fit(x, y, fit_intercept, batch_size, epochs, lr_type, eta0, power_t, loss, penalty, alpha, l1_ratio, shuffle, tol, n_iter_no_change));
+    return rcpp_result_gen;
+END_RCPP
+}
 // svc_fit
 SEXP svc_fit(Rcpp::NumericMatrix const& input, Rcpp::NumericVector const& labels, double const cost, int const kernel, double const gamma, double const coef0, int const degree, double const tol, int const max_iter, int const nochange_steps, double const cache_size, Rcpp::NumericVector const& sample_weights, int const verbosity);
 RcppExport SEXP _cuda_ml_svc_fit(SEXP inputSEXP, SEXP labelsSEXP, SEXP costSEXP, SEXP kernelSEXP, SEXP gammaSEXP, SEXP coef0SEXP, SEXP degreeSEXP, SEXP tolSEXP, SEXP max_iterSEXP, SEXP nochange_stepsSEXP, SEXP cache_sizeSEXP, SEXP sample_weightsSEXP, SEXP verbositySEXP) {
@@ -820,6 +845,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuda_ml_rproj_get_state", (DL_FUNC) &_cuda_ml_rproj_get_state, 1},
     {"_cuda_ml_rproj_set_state", (DL_FUNC) &_cuda_ml_rproj_set_state, 1},
     {"_cuda_ml_ridge_fit", (DL_FUNC) &_cuda_ml_ridge_fit, 6},
+    {"_cuda_ml_sgd_fit", (DL_FUNC) &_cuda_ml_sgd_fit, 15},
     {"_cuda_ml_svc_fit", (DL_FUNC) &_cuda_ml_svc_fit, 13},
     {"_cuda_ml_svc_predict", (DL_FUNC) &_cuda_ml_svc_predict, 3},
     {"_cuda_ml_svc_get_state", (DL_FUNC) &_cuda_ml_svc_get_state, 1},
