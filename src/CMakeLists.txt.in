@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall  -fno-omit-frame-pointer -fsanitize=address")
 add_definitions(-DHAS_CUML)
 
 include(FetchContent)
@@ -42,6 +42,8 @@ include_directories(@R_INCLUDE_DIR@)
 include_directories(@RCPP_INCLUDE_DIR@)
 
 include_directories(${TREELITE_C_API_INCLUDE_DIR})
+
+add_compile_options("-fsanitize=address")
 
 add_library(
   cuda.ml
@@ -129,4 +131,4 @@ endif(Treelite_FOUND)
 include_directories(${CUML4R_INCLUDE_DIRS})
 
 # Link cuda.ml
-target_link_libraries(${CUML4R_LIBS})
+target_link_libraries(${CUML4R_LIBS} -fno-omit-frame-pointer -fsanitize=address)
