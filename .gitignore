@@ -5,3 +5,5 @@ tests/testthat/testthat-problems.rds
 README_cache
 data-raw/*.gz
 libcuml/
+src/_deps/*
+src/eval_gpu_archs*
