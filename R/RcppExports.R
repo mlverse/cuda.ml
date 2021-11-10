@@ -149,6 +149,10 @@
     .Call(`_cuda_ml_ridge_fit`, x, y, fit_intercept, normalize_input, alpha, algo)
 }
 
+.sgd_fit <- function(x, y, fit_intercept, batch_size, epochs, lr_type, eta0, power_t, loss, penalty, alpha, l1_ratio, shuffle, tol, n_iter_no_change) {
+    .Call(`_cuda_ml_sgd_fit`, x, y, fit_intercept, batch_size, epochs, lr_type, eta0, power_t, loss, penalty, alpha, l1_ratio, shuffle, tol, n_iter_no_change)
+}
+
 .svc_fit <- function(input, labels, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, sample_weights, verbosity) {
     .Call(`_cuda_ml_svc_fit`, input, labels, cost, kernel, gamma, coef0, degree, tol, max_iter, nochange_steps, cache_size, sample_weights, verbosity)
 }
