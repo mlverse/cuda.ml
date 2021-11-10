@@ -284,17 +284,8 @@ if (is.null(find_nvcc(stop_if_missing = FALSE)) || !has_libcuml()) {
   wd <- getwd()
   on.exit(setwd(wd))
   setwd(pkg_root())
-  stubs_header_dir <- normalizePath(file.path(getwd(), "src", "stubs"))
-  writeLines(
-    c(
-      sprintf("PKG_CPPFLAGS = -I'%s'", stubs_header_dir),
-      # optimize for size
-      "strippedLib: $(SHLIB)",
-      "\tif test -e '/usr/bin/strip'; then /usr/bin/strip --strip-debug $(SHLIB); fi",
-      ".phony: strippedLib"
-    ),
-    con = file.path(pkg_root(), "src", "Makevars")
-  )
+  define(PKG_CPPFLAGS = normalizePath(file.path(getwd(), "src", "stubs")))
 } else {
+  define(PKG_CPPFLAGS = "")
   run_cmake()
 }
