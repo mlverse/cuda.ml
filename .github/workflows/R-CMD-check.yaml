@@ -17,24 +17,31 @@ jobs:
         cuda: ['11.2.1']
         cuml: ['21.08', '21.10']
         r: ['release', 'devel']
+        asan: ['false', 'true']
 
     runs-on: ['self-hosted', 'gpu']
     container:
       image: nvidia/cuda:${{ matrix.cuda }}-devel-ubuntu18.04
       options: --gpus all
 
-    name: 'R: ${{ matrix.r }}, CUDA: ${{ matrix.cuda }}, CUML: ${{ matrix.cuml }}'
+    name: 'R: ${{ matrix.r }}, CUDA: ${{ matrix.cuda }}, CUML: ${{ matrix.cuml }}, ASAN: ${{ matrix.asan }}'
 
     env:
+      NOT_CRAN: true
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
       CUML_VERSION: ${{ matrix.cuml }}
+      CUML4R_ENABLE_ASAN: ${{ matrix.asan }}
       DEBIAN_FRONTEND: 'noninteractive'
 
     steps:
       - run: |
           apt-get update -y
           apt-get install -y sudo software-properties-common dialog apt-utils tzdata
+          if [[ $CUML4R_ENABLE_ASAN == 'true' ]]; then
+            apt-get install -y libasan5
+          fi
+        shell: bash
 
       - name: Setup cmake
         uses: jwlawson/actions-setup-cmake@v1.9
@@ -70,6 +77,9 @@ jobs:
           ls -a
           echo "::set-output name=pkg-dir::$(pwd)"
 
+      - run: cp -v cuda.ml/.lsan-suppressions.txt /tmp
+        working-directory: ${{ steps.build-pkg.outputs.pkg-dir }}
+
       - name: Check {cuda.ml} package
         run: |
           print(list.files("."))
@@ -78,7 +88,23 @@ jobs:
 
           reticulate::install_miniconda(force = TRUE)
 
-          rcmdcheck::rcmdcheck(path = pkg[[1]], args = c("--no-manual", "--as-cran"), check_dir="check")
+          rcmdcheck_env <- (
+            if (identical(Sys.getenv("CUML4R_ENABLE_ASAN"), "true")) {
+              c(
+                LD_PRELOAD = "/usr/lib/x86_64-linux-gnu/libasan.so.5",
+                ASAN_OPTIONS = "halt_on_error=0,new_delete_type_mismatch=0,alloc_dealloc_mismatch=0,protect_shadow_gap=0",
+                LSAN_OPTIONS = "suppressions=/tmp/.lsan-suppressions.txt"
+              )
+            } else {
+              character()
+            }
+          )
+          rcmdcheck::rcmdcheck(
+            path = pkg[[1]],
+            args = c("--no-manual", "--as-cran"),
+            check_dir="check",
+            env = rcmdcheck_env
+          )
         shell: Rscript {0}
         working-directory: ${{ steps.build-pkg.outputs.pkg-dir }}
 
@@ -87,10 +113,18 @@ jobs:
         run: |
           find check -name 'testthat.Rout*' -type f -exec cat '{}' \; || :
         shell: bash
+        working-directory: ${{ steps.build-pkg.outputs.pkg-dir }}
+
+      - name: Check for sanitizer error(s)
+        if: ${{ always() }}
+        run: |
+          ! find check -name 'testthat.Rout*' -type f -exec egrep -C 50 'ERROR: .*Sanitizer:' '{}' +
+        shell: bash
+        working-directory: ${{ steps.build-pkg.outputs.pkg-dir }}
 
       - name: Upload check results
         if: ${{ failure() }}
         uses: actions/upload-artifact@main
         with:
           name: ${{ runner.os }}-r${{ matrix.r }}-results
-          path: check
+          path: ${{ steps.build-pkg.outputs.pkg-dir }}/check

@@ -30,3 +30,4 @@
 ^man/figures$
 ^libcuml/*
 ^\.github$
+^\.lsan-suppressions\.txt$
