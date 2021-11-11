@@ -1,0 +1,18 @@
+# Known memory leaks in external dependencies that are test-only
+# (i.e., dependencies that are not needed for normal {cuda.ml} use cases)
+leak:bash
+leak:numpy
+leak:scipy
+leak:PyInit
+leak:PyObject
+leak:PyUnicode
+leak:PyType
+leak:PyBytes
+leak:set_table_resize
+leak:resize_compact
+leak:libpython
+leak:in_newCurlUrl
+leak:Perl_safesysrealloc
+# Known problems in `libcuml++`
+leak:UMAPAlgo::Optimize::find_params_ab
+leak:ML::GLM::olsFit
