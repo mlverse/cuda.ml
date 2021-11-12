@@ -13,22 +13,13 @@ elastic_net_validate_alpha <- function(alpha) {
 #' @template ellipsis-unused
 #' @template lm
 #' @template coordinate-descend
+#' @template l1_ratio
 #' @param alpha Multiplier of the penalty term (i.e., the result would become
 #'   and Ordinary Least Square model if \code{alpha} were set to 0). Default: 1.
 #'   For numerical reasons, running elastic regression with \code{alpha} set to
 #'   0 is not advised. For the \code{alpha}-equals-to-0 scenario, one should use
 #'   \code{cuda_ml_ols} to train an OLS model instead.
 #'   Default: 1.
-#' @param l1_ratio The ElasticNet mixing parameter, with 0 <= l1_ratio <= 1.
-#'   For l1_ratio = 0 the penalty is an L2 penalty. For l1_ratio = 1 it is an L1
-#'   penalty.
-#'   For 0 < l1_ratio < 1, the penalty is a combination of L1 and L2.
-#'   The penalty term is computed using the following formula:
-#'     penalty = \code{alpha} * \code{l1_ratio} * ||w||_1 +
-#'               0.5 * \code{alpha} * (1 - \code{l1_ratio}) * ||w||^2_2
-#'   where ||w||_1 is the L1 norm of the coefficients, and ||w||_2 is the L2
-#'   norm of the coefficients.
-#'   Default: 0.5.
 #'
 #' @return An elastic net regressor that can be used with the 'predict' S3
 #'   generic to make predictions on new data points.
