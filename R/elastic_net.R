@@ -193,7 +193,7 @@ cuda_ml_elastic_net_bridge <- function(processed,
     epochs = as.integer(max_iter),
     loss = 0L, # squared loss
     alpha = as.numeric(alpha),
-    l1_ratio = l1_ratio,
+    l1_ratio = as.numeric(l1_ratio),
     shuffle = identical(selection, "random"),
     tol = as.numeric(tol)
   )
