@@ -1,0 +1,13 @@
+#!/usr/bin/bash
+
+# Launch rstudio-desktop with the cuML conda env and a few env vars
+# Only intended for interactive package development.
+
+export CUML4R_ENABLE_CCACHE=1
+export PATH="$PATH:/usr/local/cuda/bin"
+. ~/miniconda3/bin/activate
+conda activate rapids-21.08
+NCPUS=$(echo "($(grep ^processor /proc/cpuinfo | wc -l) * .9)/1" | bc)
+echo "Setting NCPUS = $NCPUS"
+export MAKEFLAGS="-j$NCPUS"
+rstudio cuda.ml.Rproj
