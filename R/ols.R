@@ -15,7 +15,8 @@ ols_match_method <- function(method = c("svd", "eig", "qr")) {
 #' @template supervised-model-inputs
 #' @template supervised-model-output
 #' @template ellipsis-unused
-#' @template lm
+#' @template fit-intercept
+#' @template normalize-input
 #' @param method Must be one of {"svd", "eig", "qr"}.
 #'
 #'   - "svd": compute SVD decomposition using Jacobi iterations.

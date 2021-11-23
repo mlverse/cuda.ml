@@ -36,7 +36,7 @@ sgd_match_learning_rate <- function(learning_rate = c("constant", "invscaling", 
 #' @template supervised-model-inputs
 #' @template supervised-model-output
 #' @template ellipsis-unused
-#' @template lm
+#' @template fit-intercept
 #' @template l1_ratio
 #' @param loss Loss function, must be one of {"squared_loss", "log", "hinge"}.
 #' @param penalty Type of regularization to perform, must be one of

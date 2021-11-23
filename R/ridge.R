@@ -11,7 +11,8 @@ ridge_validate_alpha <- function(alpha) {
 #' @template supervised-model-inputs
 #' @template supervised-model-output
 #' @template ellipsis-unused
-#' @template lm
+#' @template fit-intercept
+#' @template normalize-input
 #' @param alpha Multiplier of the L2 penalty term (i.e., the result would become
 #'   and Ordinary Least Square model if \code{alpha} were set to 0). Default: 1.
 #'

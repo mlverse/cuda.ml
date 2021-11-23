@@ -173,10 +173,6 @@ and the predictor terms on the right-hand side.}
 \item{data}{When a __recipe__ or __formula__ is used, \code{data} is
 specified as a  __data frame__ containing the predictors and (if
 applicable) the outcome.}
-
-\item{normalize_input}{Ignored when \code{fit_intercept} is FALSE. If TRUE,
-then the predictors will be normalized to have a L2 norm of 1.
-Default: FALSE.}
 }
 \value{
 A linear model that can be used with the 'predict' S3 generic to make

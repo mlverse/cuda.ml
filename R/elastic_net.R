@@ -11,7 +11,8 @@ elastic_net_validate_alpha <- function(alpha) {
 #' @template supervised-model-inputs
 #' @template supervised-model-output
 #' @template ellipsis-unused
-#' @template lm
+#' @template fit-intercept
+#' @template normalize-input
 #' @template coordinate-descend
 #' @template l1_ratio
 #' @param alpha Multiplier of the penalty term (i.e., the result would become
