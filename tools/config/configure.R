@@ -303,6 +303,7 @@ if (is.null(find_nvcc(stop_if_missing = FALSE)) || !has_libcuml()) {
   on.exit(setwd(wd))
   setwd(pkg_root())
   define(PKG_CPPFLAGS = normalizePath(file.path(getwd(), "src", "stubs")))
+  define(MAKEFLAGS = "")
 } else {
   define(PKG_CPPFLAGS = "")
   n_jobs <- (
