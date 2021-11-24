@@ -18,6 +18,15 @@
 #'                `libcuml` if no existing `libcuml` is specified with the
 #'                'CUML_PREFIX' env variable. Set DOWNLOAD_CUML=0 to disable
 #'                this default behavior.
+#'
+#' DISABLE_PARALLEL_BUILD: Parallel build using max($(nproc) - 1, 1) cores is
+#'                         enabled by default but can be disabled by setting
+#'                         this env variable.
+#'
+#' CUML4R_CMAKE_PARALLEL_LEVEL: If not set and parallel build is enabled, then
+#'                              max($(nproc) - 1, 1) cores will be used by the
+#'                              build process. If set, then the number of cores
+#'                              specified will be used.
 format_msg <- function(...) {
   msg <- c(...)
 
@@ -228,6 +237,14 @@ find_nvcc <- function(stop_if_missing = TRUE) {
   return(list(path = nvcc_path, version = cuda_version))
 }
 
+nproc <- function() {
+  # Try to run `nproc` to detect number of cores available
+  tryCatch(
+    as.integer(system2("nproc", stdout = TRUE, stderr = NULL)),
+    error = function(e) 2L
+  )
+}
+
 run_cmake <- function() {
   wd <- getwd()
   on.exit(setwd(wd))
@@ -255,6 +272,7 @@ run_cmake <- function() {
   Sys.setenv(CMAKE_PREFIX_PATH = cmake_prefix_path)
 
   setwd(file.path(pkg_root(), "src"))
+
   cmake_args <- c(
     ".",
     "-DCMAKE_CUDA_ARCHITECTURES=NATIVE",
@@ -287,5 +305,19 @@ if (is.null(find_nvcc(stop_if_missing = FALSE)) || !has_libcuml()) {
   define(PKG_CPPFLAGS = normalizePath(file.path(getwd(), "src", "stubs")))
 } else {
   define(PKG_CPPFLAGS = "")
+  n_jobs <- (
+    if (!is.na(Sys.getenv("DISABLE_PARALLEL_BUILD", unset = NA))) {
+      1L
+    } else {
+      user_specified_parallel_level <- Sys.getenv("CUML4R_CMAKE_PARALLEL_LEVEL", unset = NA)
+      if (!is.na(user_specified_parallel_level)) {
+        as.integer(user_specified_parallel_level)
+      } else {
+        max(nproc() - 1L, 1L)
+      }
+    }
+  )
+  define(MAKEFLAGS = paste0("-j", n_jobs))
+
   run_cmake()
 }
