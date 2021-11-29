@@ -94,8 +94,7 @@ The penalty term is computed using the following formula:
   penalty = \code{alpha} * \code{l1_ratio} * ||w||_1 +
             0.5 * \code{alpha} * (1 - \code{l1_ratio}) * ||w||^2_2
 where ||w||_1 is the L1 norm of the coefficients, and ||w||_2 is the L2
-norm of the coefficients.
-Default: 0.5.}
+norm of the coefficients.}
 
 \item{max_iter}{The maximum number of coordinate descent iterations.
 Default: 1000L.}

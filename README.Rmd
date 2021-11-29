@@ -233,6 +233,15 @@ chmod +x Miniconda3-latest-Linux-x86_64.sh
     rapids-blazing=21.08 python=3.8 cudatoolkit=11.2
 ```
 
+### Install cmake
+CUDA dependencies require a relatively recent version of CMake, so you need to install it manually
+```bash
+wget https://github.com/Kitware/CMake/releases/download/v3.22.0/cmake-3.22.0.tar.gz
+cd cmake-3.22.0
+./bootstrap && make -j8 && sudo make install
+cd ..
+```
+
 ### Activate the conda env:
 ```bash
 . ~/miniconda3/bin/activate

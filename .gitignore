@@ -7,3 +7,8 @@ data-raw/*.gz
 libcuml/
 src/_deps/*
 src/eval_gpu_archs*
+cuda.ml.Rcheck
+*.so
+*.cmake
+*.a
+00check.log
