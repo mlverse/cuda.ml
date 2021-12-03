@@ -82,6 +82,8 @@ add_library(
   ols_fit_impl.cu
   pca.cpp
   pca.cu
+  qn.cpp
+  qn.cu
   random_forest_classifier.cpp
   random_forest_classifier.cu
   random_forest_regressor.cpp
