@@ -312,6 +312,43 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// qn_fit
+Rcpp::List qn_fit(Rcpp::NumericMatrix const& X, Rcpp::NumericVector const& y, int const loss_type, bool const fit_intercept, double const l1, double const l2, int const max_iters, double const tol, double const delta, int const linesearch_max_iters, int const lbfgs_memory, Rcpp::NumericVector const& sample_weight);
+RcppExport SEXP _cuda_ml_qn_fit(SEXP XSEXP, SEXP ySEXP, SEXP loss_typeSEXP, SEXP fit_interceptSEXP, SEXP l1SEXP, SEXP l2SEXP, SEXP max_itersSEXP, SEXP tolSEXP, SEXP deltaSEXP, SEXP linesearch_max_itersSEXP, SEXP lbfgs_memorySEXP, SEXP sample_weightSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector const& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< int const >::type loss_type(loss_typeSEXP);
+    Rcpp::traits::input_parameter< bool const >::type fit_intercept(fit_interceptSEXP);
+    Rcpp::traits::input_parameter< double const >::type l1(l1SEXP);
+    Rcpp::traits::input_parameter< double const >::type l2(l2SEXP);
+    Rcpp::traits::input_parameter< int const >::type max_iters(max_itersSEXP);
+    Rcpp::traits::input_parameter< double const >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< double const >::type delta(deltaSEXP);
+    Rcpp::traits::input_parameter< int const >::type linesearch_max_iters(linesearch_max_itersSEXP);
+    Rcpp::traits::input_parameter< int const >::type lbfgs_memory(lbfgs_memorySEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector const& >::type sample_weight(sample_weightSEXP);
+    rcpp_result_gen = Rcpp::wrap(qn_fit(X, y, loss_type, fit_intercept, l1, l2, max_iters, tol, delta, linesearch_max_iters, lbfgs_memory, sample_weight));
+    return rcpp_result_gen;
+END_RCPP
+}
+// qn_predict
+Rcpp::NumericVector qn_predict(Rcpp::NumericMatrix const& X, int const n_classes, Rcpp::NumericMatrix const& coefs, int const loss_type, bool const fit_intercept);
+RcppExport SEXP _cuda_ml_qn_predict(SEXP XSEXP, SEXP n_classesSEXP, SEXP coefsSEXP, SEXP loss_typeSEXP, SEXP fit_interceptSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< int const >::type n_classes(n_classesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix const& >::type coefs(coefsSEXP);
+    Rcpp::traits::input_parameter< int const >::type loss_type(loss_typeSEXP);
+    Rcpp::traits::input_parameter< bool const >::type fit_intercept(fit_interceptSEXP);
+    rcpp_result_gen = Rcpp::wrap(qn_predict(X, n_classes, coefs, loss_type, fit_intercept));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rf_classifier_fit
 SEXP rf_classifier_fit(Rcpp::NumericMatrix const& input, Rcpp::IntegerVector const& labels, int const n_trees, bool const bootstrap, float const max_samples, int const n_streams, int const max_depth, int const max_leaves, float const max_features, int const n_bins, int const min_samples_leaf, int const min_samples_split, int const split_criterion, float const min_impurity_decrease, int const max_batch_size, int const verbosity);
 RcppExport SEXP _cuda_ml_rf_classifier_fit(SEXP inputSEXP, SEXP labelsSEXP, SEXP n_treesSEXP, SEXP bootstrapSEXP, SEXP max_samplesSEXP, SEXP n_streamsSEXP, SEXP max_depthSEXP, SEXP max_leavesSEXP, SEXP max_featuresSEXP, SEXP n_binsSEXP, SEXP min_samples_leafSEXP, SEXP min_samples_splitSEXP, SEXP split_criterionSEXP, SEXP min_impurity_decreaseSEXP, SEXP max_batch_sizeSEXP, SEXP verbositySEXP) {
@@ -830,6 +867,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_cuda_ml_pca_inverse_transform", (DL_FUNC) &_cuda_ml_pca_inverse_transform, 2},
     {"_cuda_ml_pca_get_state", (DL_FUNC) &_cuda_ml_pca_get_state, 1},
     {"_cuda_ml_pca_set_state", (DL_FUNC) &_cuda_ml_pca_set_state, 1},
+    {"_cuda_ml_qn_fit", (DL_FUNC) &_cuda_ml_qn_fit, 12},
+    {"_cuda_ml_qn_predict", (DL_FUNC) &_cuda_ml_qn_predict, 5},
     {"_cuda_ml_rf_classifier_fit", (DL_FUNC) &_cuda_ml_rf_classifier_fit, 16},
     {"_cuda_ml_rf_classifier_predict", (DL_FUNC) &_cuda_ml_rf_classifier_predict, 3},
     {"_cuda_ml_rf_classifier_predict_class_probabilities", (DL_FUNC) &_cuda_ml_rf_classifier_predict_class_probabilities, 2},

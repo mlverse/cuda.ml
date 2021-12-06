@@ -89,6 +89,14 @@
     .Call(`_cuda_ml_pca_set_state`, model_state)
 }
 
+.qn_fit <- function(X, y, loss_type, fit_intercept, l1, l2, max_iters, tol, delta, linesearch_max_iters, lbfgs_memory, sample_weight) {
+    .Call(`_cuda_ml_qn_fit`, X, y, loss_type, fit_intercept, l1, l2, max_iters, tol, delta, linesearch_max_iters, lbfgs_memory, sample_weight)
+}
+
+.qn_predict <- function(X, n_classes, coefs, loss_type, fit_intercept) {
+    .Call(`_cuda_ml_qn_predict`, X, n_classes, coefs, loss_type, fit_intercept)
+}
+
 .rf_classifier_fit <- function(input, labels, n_trees, bootstrap, max_samples, n_streams, max_depth, max_leaves, max_features, n_bins, min_samples_leaf, min_samples_split, split_criterion, min_impurity_decrease, max_batch_size, verbosity) {
     .Call(`_cuda_ml_rf_classifier_fit`, input, labels, n_trees, bootstrap, max_samples, n_streams, max_depth, max_leaves, max_features, n_bins, min_samples_leaf, min_samples_split, split_criterion, min_impurity_decrease, max_batch_size, verbosity)
 }
