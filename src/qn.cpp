@@ -1,17 +1,17 @@
 #include "qn.h"
 
 // [[Rcpp::export(".qn_fit")]]
-Rcpp::List qn_fit(Rcpp::NumericMatrix const& X, Rcpp::NumericVector const& y,
-                  int const loss_type, bool const fit_intercept,
-                  double const l1, double const l2, int const max_iters,
-                  double const tol, double const delta,
+Rcpp::List qn_fit(Rcpp::NumericMatrix const& X, Rcpp::IntegerVector const& y,
+                  int const n_classes, int const loss_type,
+                  bool const fit_intercept, double const l1, double const l2,
+                  int const max_iters, double const tol, double const delta,
                   int const linesearch_max_iters, int const lbfgs_memory,
                   Rcpp::NumericVector const& sample_weight) {
 #ifdef HAS_CUML
 
-  return cuml4r::qn_fit(X, y, loss_type, fit_intercept, l1, l2, max_iters, tol,
-                        delta, linesearch_max_iters, lbfgs_memory,
-                        sample_weight);
+  return cuml4r::qn_fit(X, y, n_classes, loss_type, fit_intercept, l1, l2,
+                        max_iters, tol, delta, linesearch_max_iters,
+                        lbfgs_memory, sample_weight);
 
 #else
 
