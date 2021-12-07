@@ -13,7 +13,6 @@
 #include <Rcpp.h>
 
 #include <limits>
-#include <unordered_set>
 
 namespace cuml4r {
 
@@ -29,11 +28,11 @@ constexpr auto kNumIters = "n_iters";
 }  // namespace
 
 __host__ Rcpp::List qn_fit(Rcpp::NumericMatrix const& X,
-                           Rcpp::NumericVector const& y, int const loss_type,
-                           bool const fit_intercept, double const l1,
-                           double const l2, int const max_iters,
-                           double const tol, double const delta,
-                           int const linesearch_max_iters,
+                           Rcpp::IntegerVector const& y, int const n_classes,
+                           int const loss_type, bool const fit_intercept,
+                           double const l1, double const l2,
+                           int const max_iters, double const tol,
+                           double const delta, int const linesearch_max_iters,
                            int const lbfgs_memory,
                            Rcpp::NumericVector const& sample_weight) {
   auto const m = Matrix<>(X, /*transpose=*/true);
@@ -65,8 +64,6 @@ __host__ Rcpp::List qn_fit(Rcpp::NumericMatrix const& X,
                  h_sample_weight.cend(), d_sample_weight.begin());
   }
 
-  int const n_classes =
-    std::unordered_set<double>(h_y.cbegin(), h_y.cend()).size();
   auto const n_classes_dim = (n_classes - (loss_type == 0 ? 1 : 0));
   int const n_coefs_per_class = (fit_intercept ? n_features + 1 : n_features);
   thrust::device_vector<double> d_coefs(n_coefs_per_class * n_classes_dim);

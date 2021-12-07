@@ -89,8 +89,8 @@
     .Call(`_cuda_ml_pca_set_state`, model_state)
 }
 
-.qn_fit <- function(X, y, loss_type, fit_intercept, l1, l2, max_iters, tol, delta, linesearch_max_iters, lbfgs_memory, sample_weight) {
-    .Call(`_cuda_ml_qn_fit`, X, y, loss_type, fit_intercept, l1, l2, max_iters, tol, delta, linesearch_max_iters, lbfgs_memory, sample_weight)
+.qn_fit <- function(X, y, n_classes, loss_type, fit_intercept, l1, l2, max_iters, tol, delta, linesearch_max_iters, lbfgs_memory, sample_weight) {
+    .Call(`_cuda_ml_qn_fit`, X, y, n_classes, loss_type, fit_intercept, l1, l2, max_iters, tol, delta, linesearch_max_iters, lbfgs_memory, sample_weight)
 }
 
 .qn_predict <- function(X, n_classes, coefs, loss_type, fit_intercept) {
