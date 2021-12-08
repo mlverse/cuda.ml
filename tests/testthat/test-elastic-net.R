@@ -11,7 +11,8 @@ test_that("Elastic net regressor works as expected", {
         if (!fit_intercept) {
           input <- mtcars
           input[, which(names(mtcars) != "mpg")] <- scale(
-            input[, which(names(mtcars) != "mpg")], scale = FALSE
+            input[, which(names(mtcars) != "mpg")],
+            scale = FALSE
           )
           input <- as.matrix(input)
         } else {

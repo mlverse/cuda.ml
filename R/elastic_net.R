@@ -47,7 +47,8 @@ elastic_net_validate_alpha <- function(alpha) {
 #' )
 #'
 #' glm_predictions <- predict(
-#'   glmnet_model, as.matrix(mtcars[names(mtcars) != "mpg"]), s = 0
+#'   glmnet_model, as.matrix(mtcars[names(mtcars) != "mpg"]),
+#'   s = 0
 #' )
 #'
 #' print(
@@ -57,7 +58,6 @@ elastic_net_validate_alpha <- function(alpha) {
 #'     tolerance = 1e-2
 #'   )
 #' )
-#'
 #' @export
 cuda_ml_elastic_net <- function(x, ...) {
   UseMethod("cuda_ml_elastic_net")

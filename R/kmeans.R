@@ -40,7 +40,8 @@ kmeans_match_init_method <- function(m = c("kmeans++", "random")) {
 #' library(cuda.ml)
 #'
 #' kclust <- cuda_ml_kmeans(
-#'   iris[names(iris) != "Species"], k = 3, max_iters = 100
+#'   iris[names(iris) != "Species"],
+#'   k = 3, max_iters = 100
 #' )
 #'
 #' print(kclust)

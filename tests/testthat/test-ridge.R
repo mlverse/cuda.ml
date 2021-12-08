@@ -10,7 +10,8 @@ test_that("Ridge regressor works as expected", {
       if (!fit_intercept) {
         input <- mtcars
         input[names(mtcars) != "mpg"] <- scale(
-          input[names(mtcars) != "mpg"], scale = FALSE
+          input[names(mtcars) != "mpg"],
+          scale = FALSE
         )
         input <- as.matrix(input)
       } else {

@@ -41,7 +41,8 @@ lasso_validate_alpha <- function(alpha) {
 #' )
 #'
 #' glm_predictions <- predict(
-#'   glmnet_model, as.matrix(mtcars[names(mtcars) != "mpg"]), s = 0
+#'   glmnet_model, as.matrix(mtcars[names(mtcars) != "mpg"]),
+#'   s = 0
 #' )
 #'
 #' print(
