@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         cuda: ['11.2.1']
-        cuml: ['21.08', '21.10']
+        cuml: ['21.08', '21.10', '21.12']
         r: ['release', 'devel']
         asan: ['false', 'true']
 
