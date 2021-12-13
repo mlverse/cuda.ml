@@ -130,9 +130,9 @@ cuda_ml_ols.recipe <- function(x, data,
 }
 
 cuda_ml_ols_bridge <- function(processed,
-                               method = c("svd", "eig", "qr"),
-                               fit_intercept = TRUE,
-                               normalize_input = FALSE,
+                               method,
+                               fit_intercept,
+                               normalize_input,
                                ...) {
   validate_lm_input(processed)
 

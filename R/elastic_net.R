@@ -158,11 +158,11 @@ cuda_ml_elastic_net.recipe <- function(x, data,
 }
 
 cuda_ml_elastic_net_bridge <- function(processed,
-                                       alpha = 1, l1_ratio = 0.5,
-                                       max_iter = 1000L, tol = 1e-3,
-                                       fit_intercept = TRUE,
-                                       normalize_input = FALSE,
-                                       selection = c("cyclic", "random"),
+                                       alpha, l1_ratio,
+                                       max_iter, tol,
+                                       fit_intercept,
+                                       normalize_input,
+                                       selection,
                                        ...) {
   validate_lm_input(processed)
   elastic_net_validate_alpha(alpha)

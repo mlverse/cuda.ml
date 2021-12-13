@@ -152,11 +152,11 @@ cuda_ml_lasso.recipe <- function(x, data,
 }
 
 cuda_ml_lasso_bridge <- function(processed,
-                                 alpha = 1,
-                                 max_iter = 1000L, tol = 1e-3,
-                                 fit_intercept = TRUE,
-                                 normalize_input = FALSE,
-                                 selection = c("cyclic", "random"),
+                                 alpha,
+                                 max_iter, tol,
+                                 fit_intercept,
+                                 normalize_input,
+                                 selection,
                                  ...) {
   validate_lm_input(processed)
   lasso_validate_alpha(alpha)
