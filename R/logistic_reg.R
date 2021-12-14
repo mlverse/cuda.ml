@@ -140,9 +140,7 @@ logistic_reg_build_sample_weight <- function(sample_weight,
 #' #   control = glm.control(epsilon = 1e-8, maxit = 100)
 #' # )
 #' #
-#' # predict(model, iris_data) %>% boot::inv.logit() # apply the inverse of the
-#' #                                                 # link function to obtain
-#' #                                                 # the probability values
+#' # predict(model, iris_data, type = "response")
 #' @export
 cuda_ml_logistic_reg <- function(x, ...) {
   UseMethod("cuda_ml_logistic_reg")

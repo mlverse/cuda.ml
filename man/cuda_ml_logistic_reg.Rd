@@ -139,7 +139,5 @@ predictions <- predict(model, X)
 #   control = glm.control(epsilon = 1e-8, maxit = 100)
 # )
 #
-# predict(model, iris_data) \%>\% boot::inv.logit() # apply the inverse of the
-#                                                 # link function to obtain
-#                                                 # the probability values
+# predict(model, iris_data, type = "response")
 }
