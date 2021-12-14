@@ -47,7 +47,8 @@ Run the K means clustering algorithm.
 library(cuda.ml)
 
 kclust <- cuda_ml_kmeans(
-  iris[names(iris) != "Species"], k = 3, max_iters = 100
+  iris[names(iris) != "Species"],
+  k = 3, max_iters = 100
 )
 
 print(kclust)

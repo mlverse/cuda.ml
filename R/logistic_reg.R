@@ -129,6 +129,20 @@ logistic_reg_build_sample_weight <- function(sample_weight,
 #'
 #' model <- cuda_ml_logistic_reg(X, y, max_iters = 100)
 #' predictions <- predict(model, X)
+#'
+#' # NOTE: if we were only performing binary classifications (e.g., by having
+#' # `iris_data <- iris %>% mutate(Species = (Species == "setosa"))`), then the
+#' # above would be conceptually equivalent to the following:
+#' #
+#' # iris_data <- iris %>% mutate(Species = (Species == "setosa"))
+#' # model <- glm(
+#' #   Species ~ ., data = iris_data, family = binomial(link = "logit"),
+#' #   control = glm.control(epsilon = 1e-8, maxit = 100)
+#' # )
+#' #
+#' # predict(model, iris_data) %>% boot::inv.logit() # apply the inverse of the
+#' #                                                 # link function to obtain
+#' #                                                 # the probability values
 #' @export
 cuda_ml_logistic_reg <- function(x, ...) {
   UseMethod("cuda_ml_logistic_reg")

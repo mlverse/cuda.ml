@@ -94,14 +94,14 @@ L-BFGS will be used. Default: "l2".}
 Default: 1.0.}
 
 \item{class_weight}{If \code{NULL}, then each class has equal weight of
-\code{1}. If otherwise, then each entry in \code{sample_weight} will
-be adjusted by multiplying its original value with the class weight of
-the corresponding sample's class.
+\code{1}.
 If \code{class_weight} is set to \code{"balanced"}, then weights will be
-inversely proportional to class frequencies in the input data. If
-otherwise, then a named list should be provided with names being class
-labels and values being weight associated with each class to specify a
-different assignment of weights to classes.
+inversely proportional to class frequencies in the input data.
+If otherwise, then \code{class_weight} must be a named numeric vector of
+weight values, with names being class labels.
+If \code{class_weight} is not \code{NULL}, then each entry in
+\code{sample_weight} will be adjusted by multiplying its original value
+with the class weight of the corresponding sample's class.
 Default: NULL.}
 
 \item{sample_weight}{Array of weights assigned to individual samples.
@@ -128,4 +128,18 @@ y <- iris$Species
 
 model <- cuda_ml_logistic_reg(X, y, max_iters = 100)
 predictions <- predict(model, X)
+
+# NOTE: if we were only performing binary classifications (e.g., by having
+# `iris_data <- iris \%>\% mutate(Species = (Species == "setosa"))`), then the
+# above would be conceptually equivalent to the following:
+#
+# iris_data <- iris \%>\% mutate(Species = (Species == "setosa"))
+# model <- glm(
+#   Species ~ ., data = iris_data, family = binomial(link = "logit"),
+#   control = glm.control(epsilon = 1e-8, maxit = 100)
+# )
+#
+# predict(model, iris_data) \%>\% boot::inv.logit() # apply the inverse of the
+#                                                 # link function to obtain
+#                                                 # the probability values
 }
