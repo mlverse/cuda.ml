@@ -60,8 +60,10 @@
 #' )
 #'
 #' predictions <- predict(model, mtcars[names(mtcars) != "mpg"])
+#' @importFrom ellipsis check_dots_used
 #' @export
 cuda_ml_rand_forest <- function(x, ...) {
+  check_dots_used()
   UseMethod("cuda_ml_rand_forest")
 }
 
