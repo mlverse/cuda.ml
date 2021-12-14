@@ -141,8 +141,10 @@ logistic_reg_build_sample_weight <- function(sample_weight,
 #' # )
 #' #
 #' # predict(model, iris_data, type = "response")
+#' @importFrom ellipsis check_dots_used
 #' @export
 cuda_ml_logistic_reg <- function(x, ...) {
+  check_dots_used()
   UseMethod("cuda_ml_logistic_reg")
 }
 
