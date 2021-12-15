@@ -87,8 +87,10 @@ svm_match_kernel_type <- function(kernel = c("rbf", "tanh", "polynomial", "linea
 #' )
 #'
 #' predictions <- predict(model, mtcars)
+#' @importFrom ellipsis check_dots_used
 #' @export
 cuda_ml_svm <- function(x, ...) {
+  check_dots_used()
   UseMethod("cuda_ml_svm")
 }
 

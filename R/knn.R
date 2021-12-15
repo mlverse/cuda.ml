@@ -189,8 +189,10 @@ cuda_ml_knn_algo_ivfsq <- function(nlist, nprobe,
 #'
 #' predictions <- predict(model, test_pts)
 #' print(predictions, n = 30)
+#' @importFrom ellipsis check_dots_used
 #' @export
 cuda_ml_knn <- function(x, ...) {
+  check_dots_used()
   UseMethod("cuda_ml_knn")
 }
 

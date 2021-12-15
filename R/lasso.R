@@ -52,8 +52,10 @@ lasso_validate_alpha <- function(alpha) {
 #'     tolerance = 1e-2
 #'   )
 #' )
+#' @importFrom ellipsis check_dots_used
 #' @export
 cuda_ml_lasso <- function(x, ...) {
+  check_dots_used()
   UseMethod("cuda_ml_lasso")
 }
 

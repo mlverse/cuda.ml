@@ -50,8 +50,10 @@ ols_match_method <- function(method = c("svd", "eig", "qr")) {
 #'     tolerance = 1e-3
 #'   )
 #' )
+#' @importFrom ellipsis check_dots_used
 #' @export
 cuda_ml_ols <- function(x, ...) {
+  check_dots_used()
   UseMethod("cuda_ml_ols")
 }
 
