@@ -33,8 +33,7 @@ test_that("OLS regressor works as expected", {
 
       for (algo in c("svd", "eig", "qr")) {
         cuda_ml_ols_regressor <- cuda_ml_ols(
-          mpg ~ ., input,
-          algorithm = algo,
+          mpg ~ ., input, method = algo,
           fit_intercept = fit_intercept,
           normalize_input = normalize_input
         )
