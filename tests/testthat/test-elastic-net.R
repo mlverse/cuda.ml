@@ -47,13 +47,13 @@ test_that("Elastic net regressor works as expected", {
         )
 
         cuda_ml_elastic_net_regressor <- cuda_ml_elastic_net(
-          mpg ~ ., input,
+          mpg ~ ., data = input,
           alpha = 1e-3,
+          l1_ratio = l1_ratio,
           max_iter = 10000,
           tol = 1e-4,
           fit_intercept = fit_intercept,
-          normalize_input = normalize_input,
-          l1_ratio = l1_ratio
+          normalize_input = normalize_input
         )
         cuda_ml_elastic_net_regressor_preds <- predict(
           cuda_ml_elastic_net_regressor, input
@@ -62,7 +62,7 @@ test_that("Elastic net regressor works as expected", {
         expect_equal(
           cuda_ml_elastic_net_regressor_preds$.pred,
           as.numeric(sklearn_elastic_net_regressor_preds),
-          tol = 0.2,
+          tol = 0.3,
           scale = 1
         )
       }

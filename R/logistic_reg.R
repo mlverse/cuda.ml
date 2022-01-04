@@ -275,8 +275,7 @@ cuda_ml_logistic_reg_bridge <- function(processed,
                                         penalty, tol, C,
                                         class_weight, sample_weight,
                                         max_iters, linesearch_max_iters,
-                                        l1_ratio,
-                                        ...) {
+                                        l1_ratio) {
   hardhat::validate_predictors_are_numeric(processed$predictors)
   hardhat::validate_outcomes_are_univariate(processed$outcomes)
   hardhat::validate_outcomes_are_factors(processed$outcomes)

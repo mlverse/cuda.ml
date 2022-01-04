@@ -85,6 +85,7 @@ cuda_ml_elastic_net.data.frame <- function(x, y,
   cuda_ml_elastic_net_bridge(
     processed = processed,
     alpha = alpha,
+    l1_ratio = l1_ratio,
     max_iter = max_iter,
     tol = tol,
     fit_intercept = fit_intercept,
@@ -107,6 +108,7 @@ cuda_ml_elastic_net.matrix <- function(x, y,
   cuda_ml_elastic_net_bridge(
     processed = processed,
     alpha = alpha,
+    l1_ratio = l1_ratio,
     max_iter = max_iter,
     tol = tol,
     fit_intercept = fit_intercept,
@@ -129,6 +131,7 @@ cuda_ml_elastic_net.formula <- function(formula, data,
   cuda_ml_elastic_net_bridge(
     processed = processed,
     alpha = alpha,
+    l1_ratio = l1_ratio,
     max_iter = max_iter,
     tol = tol,
     fit_intercept = fit_intercept,
@@ -151,6 +154,7 @@ cuda_ml_elastic_net.recipe <- function(x, data,
   cuda_ml_elastic_net_bridge(
     processed = processed,
     alpha = alpha,
+    l1_ratio = l1_ratio,
     max_iter = max_iter,
     tol = tol,
     fit_intercept = fit_intercept,
@@ -164,8 +168,7 @@ cuda_ml_elastic_net_bridge <- function(processed,
                                        max_iter, tol,
                                        fit_intercept,
                                        normalize_input,
-                                       selection,
-                                       ...) {
+                                       selection = c("cyclic", "random")) {
   validate_lm_input(processed)
   elastic_net_validate_alpha(alpha)
   selection <- match.arg(selection)

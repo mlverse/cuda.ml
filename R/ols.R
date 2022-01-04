@@ -134,8 +134,7 @@ cuda_ml_ols.recipe <- function(x, data,
 cuda_ml_ols_bridge <- function(processed,
                                method,
                                fit_intercept,
-                               normalize_input,
-                               ...) {
+                               normalize_input) {
   validate_lm_input(processed)
 
   x <- as.matrix(processed$predictors)

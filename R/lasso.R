@@ -158,8 +158,7 @@ cuda_ml_lasso_bridge <- function(processed,
                                  max_iter, tol,
                                  fit_intercept,
                                  normalize_input,
-                                 selection,
-                                 ...) {
+                                 selection = c("cyclic", "random")) {
   validate_lm_input(processed)
   lasso_validate_alpha(alpha)
   selection <- match.arg(selection)

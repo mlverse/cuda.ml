@@ -134,8 +134,7 @@ cuda_ml_ridge.recipe <- function(x, data,
 cuda_ml_ridge_bridge <- function(processed,
                                  alpha,
                                  fit_intercept,
-                                 normalize_input,
-                                 ...) {
+                                 normalize_input) {
   validate_lm_input(processed)
   ridge_validate_alpha(alpha)
 
