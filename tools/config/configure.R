@@ -27,77 +27,6 @@
 #'                              max($(nproc) - 1, 1) cores will be used by the
 #'                              build process. If set, then the number of cores
 #'                              specified will be used.
-format_msg <- function(...) {
-  msg <- c(...)
-
-  if (require(cli, quietly = TRUE)) {
-    msg <- cli::ansi_strwrap(msg)
-    msg <- cli::boxx(msg, border_style = "double")
-  } else {
-    msg <- strwrap(msg)
-    msg <- paste("*\t", c("", msg, ""))
-    msg <- paste(msg, collapse = "\n")
-    starline <- paste(rep("*", 0.9 * getOption("width")), collapse = "")
-    msg <- paste(c(starline, msg, starline), collapse = "\n")
-  }
-
-  msg
-}
-
-stop2 <- function(...) {
-  stop("\n", format_msg(...), call. = FALSE)
-}
-
-warning2 <- function(...) {
-  warning("\n", format_msg(...), immediate. = TRUE, call. = FALSE)
-}
-
-check_path <- function(path) {
-  cuml_headers_dir <- file.path(path, "include", "cuml")
-  dir.exists(cuml_headers_dir)
-}
-
-# A list containing libcuml download links for "cuml_versions" and CUDA major versions.
-libcuml_versions <- list(
-  "21.08" = list(
-    "11" = "https://github.com/mlverse/libcuml-builds/releases/download/v21.08-cuda11.2.1/libcuml-21.08-cuda11.2.1.zip"
-  ),
-  "21.10" = list(
-    "11" = "https://github.com/mlverse/libcuml-builds/releases/download/v21.10-cuda11.2.1/libcuml-21.10-cuda11.2.1.zip"
-  ),
-  "21.12" = list(
-    "11" = "https://github.com/mlverse/libcuml-builds/releases/download/v21.12-cuda11.2.1/libcuml-21.12-cuda11.2.1.zip"
-  )
-)
-
-download_libcuml <- function(cuml_version = Sys.getenv("CUML_VERSION", unset = "21.08")) {
-  wd <- getwd()
-  on.exit(setwd(wd))
-  setwd(pkg_root())
-
-  if (Sys.getenv("DOWNLOAD_CUML", unset = 1) == 0) {
-    stop2("No `libcuml` installation has been found and downloading has been prevented by `CUML_NO_DOWNLOAD`.")
-  }
-
-  old_timeout <- getOption("timeout")
-  options(timeout = 1000)
-  on.exit(options(timeout = old_timeout), add = TRUE)
-
-  tmp <- tempfile(fileext = ".zip")
-  cuda_version <- as.character(find_nvcc()$version$major)
-
-  url <- Sys.getenv("CUML_URL")
-  if (!nzchar(url)) {
-    url <- libcuml_versions[[cuml_version]][[cuda_version]]
-  }
-
-  download.file(url, tmp)
-  unzip(tmp, exdir = ".")
-
-  zip_file_name <- basename(url)
-  dir_name <- gsub("\\.zip$", "", zip_file_name)
-  file.rename(file.path(".", dir_name), file.path(".", "libcuml"))
-}
 
 pkg_root <- function() {
   # devtools::load_all() might run the config script from the `src` directory.
@@ -116,137 +45,22 @@ pkg_root <- function() {
   return(pkg_root)
 }
 
-get_cuml_prefix <- function() {
-  cuml_prefix <- Sys.getenv("CUML_PREFIX", unset = NA_character_)
-  if (is.na(cuml_prefix)) {
-    # Try the 'CUDA_PATH' env variable if it is present.
-    cuml_prefix <- Sys.getenv("CUDA_PATH", unset = NA_character_)
-  }
-  if (is.na(cuml_prefix)) {
-    cuml_prefix <- "/usr"
-    if (check_path(cuml_prefix)) {
-      warning2(
-        "'CUML_PREFIX' env variable is missing",
-        "will boldly assume it is '/usr' !"
-      )
-      return(cuml_prefix)
-    } else {
+load_libcuml_versions <- function() {
+  wd <- file.path(pkg_root(), "tools", "config")
 
-      # devtools::load_all() might run the config script from the `src` directory.
-      cuml_prefix <- file.path(pkg_root(), "libcuml")
-      if (check_path(cuml_prefix)) {
-        return(cuml_prefix)
-      }
-
-      # We will download a pre-built copy of `libcuml`
-      return(NA_character_)
-    }
-  }
-
-  return(cuml_prefix)
+  source(file.path(wd, "libcuml_versions.R"))
 }
 
-has_libcuml <- function() {
+load_util_fns <- function() {
+  wd <- file.path(pkg_root(), "tools", "config", "utils")
 
-  # this is here to make sure we only proceed to automatically downloading if we
-  # find a compatible nvcc version.
-  find_nvcc()
-
-  cuml_prefix <- get_cuml_prefix()
-  if (is.na(cuml_prefix)) {
-    # Skip subsequent checks if we are downloading a pre-built copy of `libcuml`
-    TRUE
-  } else {
-    cuml_headers_dir <- file.path(cuml_prefix, "include", "cuml")
-
-    if (!dir.exists(cuml_headers_dir)) {
-      warning2(
-        paste0(cuml_headers_dir, " does not exist or is not a directory!"),
-        "",
-        "{cuda.ml} requires a valid RAPIDS installation.",
-        "Please follow https://rapids.ai/start.html to install RAPIDS first"
-      )
-      warning2(
-        "{cuda.ml} must be installed from an environment containing a valid",
-        "CUML_PREFIX env variable such that \"${CUML_PREFIX}/include/cuml\"",
-        "is the directory of RAPIDS cuML header files and \"${CUML_PREFIX}/lib\"",
-        "is the directory of RAPIDS cuML shared library files.)."
-      )
-      FALSE
-    } else {
-      TRUE
-    }
+  for (f in c("cuml.R", "logging.R", "nvcc.R", "platform.R")) {
+    source(file.path(wd, f))
   }
 }
 
-
-nvcc_version_from_path <- function(nvcc) {
-  suppressWarnings(
-    nvcc <- tryCatch(system2(nvcc, "--version", stdout = TRUE, stderr = TRUE), error = function(e) NULL)
-  )
-
-  if (is.null(nvcc) || !any(grepl("release", nvcc))) {
-    return(NULL)
-  }
-
-  version <- gsub(".*release |, V.*", "", nvcc[grepl("release", nvcc)])
-  package_version(version)
-}
-
-find_nvcc <- function(stop_if_missing = TRUE) {
-
-  # Check if nvcc from path is available
-  nvcc_path <- "nvcc"
-  cuda_version <- nvcc_version_from_path(nvcc_path)
-
-  # Check if nvcc from CUDA_HOME is available
-  cuda_home <- Sys.getenv("CUDA_HOME")
-  if (nzchar(cuda_home) && is.null(cuda_version)) {
-    nvcc_path <- file.path(cuda_home, "bin", "nvcc")
-    cuda_version <- nvcc_version_from_path(nvcc_path)
-  }
-
-  # Check nvcc from default install location.
-  if (is.null(cuda_version)) {
-    nvcc_path <- "/usr/local/cuda/bin/nvcc"
-    cuda_version <- nvcc_version_from_path(nvcc_path)
-  }
-
-  # No nvcc found! Error!
-  if (is.null(cuda_version)) {
-    if (stop_if_missing) {
-      stop2(
-        "Unable to locate a CUDA compiler (nvcc).",
-        "Please ensure it is present in PATH (e.g., run",
-        "`export PATH=\"${PATH}:/usr/local/cuda/bin\"` or",
-        "similar) and try again."
-      )
-    } else {
-      return(NULL)
-    }
-  }
-
-  # Nvcc found but wrong cuda version.
-  minimum_supported <- package_version("11.0")
-  if (cuda_version < minimum_supported) {
-    stop2(
-      paste0("Found nvcc '", nvcc_path, "'"),
-      paste0("CUDA version '", cuda_version, "' is not supported."),
-      paste0("The minimum required version is '", minimum_supported, "'")
-    )
-  }
-
-  # return nvcc path.
-  return(list(path = nvcc_path, version = cuda_version))
-}
-
-nproc <- function() {
-  # Try to run `nproc` to detect number of cores available
-  tryCatch(
-    as.integer(system2("nproc", stdout = TRUE, stderr = NULL)),
-    error = function(e) 2L
-  )
-}
+load_libcuml_versions()
+load_util_fns()
 
 run_cmake <- function() {
   wd <- getwd()
