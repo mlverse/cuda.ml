@@ -6,6 +6,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 
 add_definitions(-DHAS_CUML)
 
+# NOTE: at the moment only the `rapids_cuda_init_architectures` function
+# from the rapids-cmake repo is used here, and the version from the 21.10
+# branch of rapids-cmake works fine, regardless of which version of libcuml
+# we are building with. However, if in future any cuml-version-specific
+# function from rapids-cmake is used here, then we will need to make the
+# GIT_TAG choice below dependent on the libcuml version.
 include(FetchContent)
 FetchContent_Declare(
   rapids-cmake

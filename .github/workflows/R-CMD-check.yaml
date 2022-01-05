@@ -43,11 +43,6 @@ jobs:
           fi
         shell: bash
 
-      - name: Setup cmake
-        uses: jwlawson/actions-setup-cmake@v1.9
-        with:
-          cmake-version: '3.21.x'
-
       - uses: actions/checkout@v2
 
       - uses: r-lib/actions/setup-pandoc@v1

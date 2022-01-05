@@ -54,7 +54,7 @@ load_libcuml_versions <- function() {
 load_util_fns <- function() {
   wd <- file.path(pkg_root(), "tools", "config", "utils")
 
-  for (f in c("cuml.R", "logging.R", "nvcc.R", "platform.R")) {
+  for (f in c("cuml.R", "cmake.R", "logging.R", "nvcc.R", "platform.R")) {
     source(file.path(wd, f))
   }
 }
@@ -108,7 +108,11 @@ run_cmake <- function() {
       "-DCMAKE_INSTALL_RPATH:STRING='$ORIGIN'"
     )
   }
-  rc <- system2("cmake", args = cmake_args)
+  cmake_bin <- find_or_download_cmake(
+    min_version = cuda_ml_min_cmake_version,
+    exdir = file.path(pkg_root(), "tools")
+  )
+  rc <- system2(cmake_bin, args = cmake_args)
 
   if (rc != 0) {
     stop("Failed to run 'cmake'!")
