@@ -10,4 +10,3 @@ libcuml_versions <- list(
     "11" = "https://github.com/mlverse/libcuml-builds/releases/download/v21.12-cuda11.2.1/libcuml-21.12-cuda11.2.1.zip"
   )
 )
-

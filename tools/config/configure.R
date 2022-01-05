@@ -133,8 +133,7 @@ if (is.null(find_nvcc(stop_if_missing = FALSE)) || !has_libcuml()) {
       } else {
         max(nproc() - 1L, 1L)
       }
-    }
-  )
+    })
   define(MAKEFLAGS = paste0("-j", n_jobs))
 
   run_cmake()
