@@ -1,5 +1,13 @@
 # cuda.ml (development version)
 
+# cuml 0.3.1
+
+### Misc
+
+- Addressed feedback from CRAN. Debugging symbols were previously stripped from
+  a DSO to reduce package size. Now debugging symbols are preserved in
+  accordance with the CRAN policy.
+
 # cuml 0.3.0
 
 ### Linear Models
