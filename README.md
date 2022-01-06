@@ -74,36 +74,41 @@ The goal of {cuda.ml} is to provide a simple and intuitive R interface for [RAPI
 <td></td>
 </tr>
 <tr class="odd">
+<td></td>
+<td>Logistic Regression</td>
+<td></td>
+</tr>
+<tr class="even">
 <td><strong>Nonlinear Models for Regression or Classification</strong></td>
 <td>Random Forest (RF) Classification</td>
 <td>Only single-GPU implementation is supported at the moment</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td></td>
 <td>Random Forest (RF) Regression</td>
 <td>Only single-GPU implementation is supported at the moment</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td></td>
 <td>Inference for decision tree-based models in XGBoost or LightGBM formats using the CuML Forest Inference Library (FIL)</td>
 <td>Requires linkage to the Treelite C library when {cuml} is installed. Treelite is used for model loading.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td></td>
 <td>K-Nearest Neighbors (KNN) Classification</td>
 <td>Uses <a href="https://github.com/facebookresearch/faiss">Faiss</a> for Nearest Neighbors Query.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td></td>
 <td>K-Nearest Neighbors (KNN) Regression</td>
 <td>Uses <a href="https://github.com/facebookresearch/faiss">Faiss</a> for Nearest Neighbors Query.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td></td>
 <td>Support Vector Machine Classifier (SVC)</td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td></td>
 <td>Epsilon-Support Vector Regression (SVR)</td>
 <td></td>
@@ -309,6 +314,17 @@ chmod +x Miniconda3-latest-Linux-x86_64.sh
     # This is a relatively big download, may take a while
     ~/miniconda3/bin/conda create -n rapids-21.08 -c rapidsai -c nvidia -c conda-forge \
         rapids-blazing=21.08 python=3.8 cudatoolkit=11.2
+
+### Install cmake
+
+CUDA dependencies require a relatively recent version of CMake, so you need to install it manually
+
+``` bash
+wget https://github.com/Kitware/CMake/releases/download/v3.22.0/cmake-3.22.0.tar.gz
+cd cmake-3.22.0
+./bootstrap && make -j8 && sudo make install
+cd ..
+```
 
 ### Activate the conda env:
 
