@@ -5,7 +5,7 @@ Version: 0.3.1.9000
 Authors@R:
     c(person(given = "Yitao",
            family = "Li",
-           role = c("aut", "cph", "cre"),
+           role = c("aut", "cph"),
            email = "yitao@rstudio.com",
            comment = c(ORCID = "0000-0002-1261-905X")),
       person(given = "Tomasz",
@@ -14,11 +14,11 @@ Authors@R:
              email = "tomasz.kalinowski@rstudio.com"),
       person(given = "Daniel",
              family = "Falbel",
-             role = c("cph", "ctb"),
+             role = c("aut", "cre", "cph"),
              email = "daniel@rstudio.com"),
       person(given = "RStudio",
            role = c("cph", "fnd")))
-Maintainer: Yitao Li <yitao@rstudio.com>
+Maintainer: Daniel Falbel <daniel@rstudio.com>
 Description: R interface for RAPIDS cuML (<https://github.com/rapidsai/cuml>),
     a suite of GPU-accelerated machine learning libraries powered by CUDA
     (<https://en.wikipedia.org/wiki/CUDA>).
