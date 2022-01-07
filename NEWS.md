@@ -1,4 +1,18 @@
-# cuda.ml (development version)
+# cuml 0.3.2
+
+### Linear Models
+
+- Implemented support for logistic regression.
+
+### Misc
+
+- {cuda.ml} installation process will no longer require the presence of cmake
+  v3.21+. If the required version of cmake is absent, then the installation
+  process will use a temporary copy of cmake downloaded from
+  https://github.com/Kitware/CMake/releases.
+
+- Moving forward, Daniel Falbel (https://github.com/dfalbel) will be the new
+  maintainer of {cuda.ml}.
 
 # cuml 0.3.1
 
