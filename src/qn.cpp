@@ -1,5 +1,27 @@
 #include "qn.h"
 
+#ifndef HAS_CUML
+
+#include "qn_constants.h"
+
+namespace {
+
+Rcpp::List cuml4r_example_qn_model() {
+  // return a trivial model
+  Rcpp::List model;
+  model[cuml4r::qn::kCoefs] = Rcpp::NumericMatrix(3, 3);
+  model[cuml4r::qn::kFitIntercept] = true;
+  model[cuml4r::qn::kLossType] = 0;
+  model[cuml4r::qn::kNumClasses] = 3;
+  model[cuml4r::qn::kObjective] = 0;
+
+  return model;
+}
+
+}  // namespace
+
+#endif
+
 // [[Rcpp::export(".qn_fit")]]
 Rcpp::List qn_fit(Rcpp::NumericMatrix const& X, Rcpp::IntegerVector const& y,
                   int const n_classes, int const loss_type,
@@ -17,7 +39,7 @@ Rcpp::List qn_fit(Rcpp::NumericMatrix const& X, Rcpp::IntegerVector const& y,
 
 #include "warn_cuml_missing.h"
 
-  return Rcpp::List();
+  return cuml4r_example_qn_model();
 
 #endif
 }
@@ -35,7 +57,8 @@ Rcpp::NumericVector qn_predict(Rcpp::NumericMatrix const& X,
 
 #include "warn_cuml_missing.h"
 
-  return {};
+  // return some dummy values
+  return Rcpp::NumericVector(32);
 
 #endif
 }

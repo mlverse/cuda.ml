@@ -92,7 +92,9 @@ logistic_reg_build_sample_weight <- function(sample_weight,
 #' Orthant-Wise Limited Memory Quasi-Newton (OWL-QN) if there is L1
 #' regularization, Limited Memory BFGS (L-BFGS) otherwise).
 #'
-#' @template model-with-numeric-input
+#' @template supervised-model-inputs
+#' @template supervised-model-output
+#' @template ellipsis-unused
 #' @template fit-intercept
 #' @param penalty The penalty type, must be one of
 #'   {"none", "l1", "l2", "elasticnet"}.

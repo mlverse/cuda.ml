@@ -74,8 +74,18 @@ cuda_ml_logistic_reg(x, ...)
 )
 }
 \arguments{
-\item{x}{The input matrix or dataframe. Each data point should be a row
-and should consist of numeric values only.}
+\item{x}{Depending on the context:
+
+  * A __data frame__ of predictors.
+  * A __matrix__ of predictors.
+  * A __recipe__ specifying a set of preprocessing steps
+  * created from [recipes::recipe()].
+  * A __formula__ specifying the predictors and the outcome.}
+
+\item{...}{Optional arguments; currently unused.}
+
+\item{y}{A numeric vector (for regression) or factor (for classification) of
+desired responses.}
 
 \item{fit_intercept}{If TRUE, then the model tries to correct for the global
 mean of the response variable. If FALSE, then the model expects data to be
@@ -114,6 +124,13 @@ iteration used in the LBFGS- and OWL- QN solvers. Default: 50L.}
 
 \item{l1_ratio}{The Elastic-Net mixing parameter, must \code{NULL} or be
 within the range of [0, 1]. Default: NULL.}
+
+\item{formula}{A formula specifying the outcome terms on the left-hand side,
+and the predictor terms on the right-hand side.}
+
+\item{data}{When a __recipe__ or __formula__ is used, \code{data} is
+specified as a  __data frame__ containing the predictors and (if
+applicable) the outcome.}
 }
 \description{
 Train a logistic regression model using Quasi-Newton (QN) algorithms (i.e.,

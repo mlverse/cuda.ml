@@ -123,10 +123,10 @@ if (is.null(find_nvcc(stop_if_missing = FALSE)) || !has_libcuml()) {
   wd <- getwd()
   on.exit(setwd(wd))
   setwd(pkg_root())
-  define(PKG_CPPFLAGS = normalizePath(file.path(getwd(), "src", "stubs")))
-  define(MAKEFLAGS = "")
+  define(STUBS_HEADERS_DIR = normalizePath(file.path(getwd(), "src", "stubs")))
+  define(CUSTOMIZED_MAKEFLAGS = "")
 } else {
-  define(PKG_CPPFLAGS = "")
+  define(STUBS_HEADERS_DIR = "")
   n_jobs <- (
     if (!is.na(Sys.getenv("DISABLE_PARALLEL_BUILD", unset = NA))) {
       1L
@@ -138,7 +138,7 @@ if (is.null(find_nvcc(stop_if_missing = FALSE)) || !has_libcuml()) {
         max(nproc() - 1L, 1L)
       }
     })
-  define(MAKEFLAGS = paste0("-j", n_jobs))
+  define(CUSTOMIZED_MAKEFLAGS = paste0("MAKEFLAGS += '-j", n_jobs, "'"))
 
   run_cmake()
 }

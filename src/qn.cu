@@ -4,6 +4,7 @@
 #include "matrix_utils.h"
 #include "pinned_host_vector.h"
 #include "preprocessor.h"
+#include "qn_constants.h"
 #include "stream_allocator.h"
 
 #include <thrust/async/copy.h>
@@ -15,17 +16,6 @@
 #include <limits>
 
 namespace cuml4r {
-
-namespace {
-
-constexpr auto kCoefs = "coefs";
-constexpr auto kFitIntercept = "fit_intercept";
-constexpr auto kLossType = "loss_type";
-constexpr auto kNumClasses = "n_classes";
-constexpr auto kObjective = "objective";
-constexpr auto kNumIters = "n_iters";
-
-}  // namespace
 
 __host__ Rcpp::List qn_fit(Rcpp::NumericMatrix const& X,
                            Rcpp::IntegerVector const& y, int const n_classes,
@@ -90,13 +80,13 @@ __host__ Rcpp::List qn_fit(Rcpp::NumericMatrix const& X,
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
   Rcpp::List model;
-  model[kCoefs] =
+  model[qn::kCoefs] =
     Rcpp::NumericMatrix(n_coefs_per_class, n_classes_dim, h_coefs.cbegin());
-  model[kFitIntercept] = fit_intercept;
-  model[kLossType] = loss_type;
-  model[kNumClasses] = n_classes;
-  model[kObjective] = objective;
-  model[kNumIters] = n_iters;
+  model[qn::kFitIntercept] = fit_intercept;
+  model[qn::kLossType] = loss_type;
+  model[qn::kNumClasses] = n_classes;
+  model[qn::kObjective] = objective;
+  model[qn::kNumIters] = n_iters;
 
   return model;
 }
