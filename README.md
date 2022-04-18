@@ -321,6 +321,7 @@ CUDA dependencies require a relatively recent version of CMake, so you need to i
 
 ``` bash
 wget https://github.com/Kitware/CMake/releases/download/v3.22.0/cmake-3.22.0.tar.gz
+tax xzvf cmake-3.22.0.tar.gz
 cd cmake-3.22.0
 ./bootstrap && make -j8 && sudo make install
 cd ..
