@@ -238,6 +238,7 @@ chmod +x Miniconda3-latest-Linux-x86_64.sh
 CUDA dependencies require a relatively recent version of CMake, so you need to install it manually
 ```bash
 wget https://github.com/Kitware/CMake/releases/download/v3.22.0/cmake-3.22.0.tar.gz
+tax xzvf cmake-3.22.0.tar.gz
 cd cmake-3.22.0
 ./bootstrap && make -j8 && sudo make install
 cd ..
@@ -271,7 +272,7 @@ echo "export CUML4R_ENABLE_CCACHE=1" >> ~/.bashrc
 
 ### Install {cuda.ml} the R package:
 
-You can install the released version of {cuda.ml} from
+From an R prompt, you can install the released version of {cuda.ml} from
 [CRAN](https://CRAN.R-project.org) with:
 
 ``` r
