@@ -73,9 +73,10 @@ run_cmake <- function() {
 
   cuml_prefix <- get_cuml_prefix()
   bundle_libcuml <- FALSE
+  warning(cuml_prefix)
   if (is.na(cuml_prefix)) {
     cuml_prefix <- normalizePath(file.path(pkg_root(), "libcuml"))
-    message("Downloading libcuml!! -----------")
+    warning("Downloading libcuml!! -----------")
     download_libcuml()
     dir.create("inst")
     file.rename(file.path("libcuml", "lib"), file.path("inst", "libs"))
@@ -119,7 +120,7 @@ run_cmake <- function() {
     stop("Failed to run 'cmake'!")
   }
 }
-
+warning("Starting configuration!")
 if (is.null(find_nvcc(stop_if_missing = FALSE)) || !has_libcuml()) {
   wd <- getwd()
   on.exit(setwd(wd))
@@ -127,6 +128,7 @@ if (is.null(find_nvcc(stop_if_missing = FALSE)) || !has_libcuml()) {
   define(STUBS_HEADERS_DIR = normalizePath(file.path(getwd(), "src", "stubs")))
   define(CUSTOMIZED_MAKEFLAGS = "")
 } else {
+  warning("Will run cmake")
   define(STUBS_HEADERS_DIR = "")
   n_jobs <- (
     if (!is.na(Sys.getenv("DISABLE_PARALLEL_BUILD", unset = NA))) {
