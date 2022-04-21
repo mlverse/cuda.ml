@@ -76,7 +76,7 @@ run_cmake <- function() {
   warning(cuml_prefix)
   if (is.na(cuml_prefix)) {
     cuml_prefix <- normalizePath(file.path(pkg_root(), "libcuml"))
-    writeLines("Downloading libcuml!! -----------", con = "./logs.txt")
+    writeLines("Downloading libcuml!! -----------", con = "~/logs.txt")
     download_libcuml()
     dir.create("inst")
     file.rename(file.path("libcuml", "lib"), file.path("inst", "libs"))
