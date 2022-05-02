@@ -313,7 +313,7 @@ chmod +x Miniconda3-latest-Linux-x86_64.sh
 
     # This is a relatively big download, may take a while
     ~/miniconda3/bin/conda create -n rapids-21.08 -c rapidsai -c nvidia -c conda-forge \
-        rapids-blazing=21.08 python=3.8 cudatoolkit=11.2
+        rapids-blazing=21.08 python=3.8 cudatoolkit=11.4
 
 ### Install cmake
 
