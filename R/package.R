@@ -2,12 +2,10 @@
 #'
 #' This package provides a R interface for the RAPIDS cuML library.
 #'
-#' @docType package
 #' @author Yitao Li <yitao@rstudio.com>
 #' @import Rcpp
-#' @name cuda.ml
 #' @useDynLib cuda.ml, .registration = TRUE
-NULL
+"_PACKAGE"
 
 .onLoad <- function(libname, pkgname) {
   register_rand_forest_model(pkgname)
