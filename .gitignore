@@ -12,3 +12,5 @@ cuda.ml.Rcheck
 *.cmake
 *.a
 00check.log
+.positai
+.codex
