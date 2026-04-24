@@ -78,12 +78,14 @@ cuda_ml_inverse_transform.cuda_ml_pca <- function(model, x, ...) {
   .pca_inverse_transform(model = model, x = as.matrix(x))
 }
 
+#' @export
 cuda_ml_get_state.cuda_ml_pca <- function(model) {
   model_state <- .pca_get_state(model)
 
   new_model_state(model_state, "cuda_ml_pca_model_state")
 }
 
+#' @export
 cuda_ml_set_state.cuda_ml_pca_model_state <- function(model_state) {
   model_state <- .pca_set_state(model_state)
 

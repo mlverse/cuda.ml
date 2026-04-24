@@ -150,12 +150,14 @@ cuda_ml_umap <- function(x, y = NULL, n_components = 2L, n_neighbors = 15L,
   model
 }
 
+#' @export
 cuda_ml_get_state.cuda_ml_umap <- function(model) {
   model_state <- .umap_get_state(model)
 
   new_model_state(model_state, "cuda_ml_umap_model_state")
 }
 
+#' @export
 cuda_ml_set_state.cuda_ml_umap_model_state <- function(model_state) {
   model_obj <- .umap_set_state(model_state)
 

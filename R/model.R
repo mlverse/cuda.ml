@@ -184,6 +184,7 @@ cuda_ml_get_state <- function(model) {
   UseMethod("cuda_ml_get_state")
 }
 
+#' @export
 cuda_ml_get_state.default <- function(model) {
   stop(
     "Model of type '", paste(class(model), collapse = " "), "' does not ",
@@ -191,6 +192,7 @@ cuda_ml_get_state.default <- function(model) {
   )
 }
 
+#' @export
 cuda_ml_get_state.cuda_ml_model <- function(model) {
   # Default implementation: assume the entire model object can be serializabled
   # by `base::serialize()`.
@@ -199,6 +201,7 @@ cuda_ml_get_state.cuda_ml_model <- function(model) {
   new_model_state(model_state, cls = NULL)
 }
 
+#' @export
 cuda_ml_set_state.cuda_ml_model_state <- function(model_state) {
   # Default implementation: assume the entire model state can be unserialized by
   # `base::unserialize()`.
@@ -233,6 +236,7 @@ cuda_ml_set_state <- function(model_state) {
   UseMethod("cuda_ml_set_state")
 }
 
+#' @export
 cuda_ml_set_state.default <- function(model_state) {
   stop(
     "No unserialization routine found for model state of type '",
