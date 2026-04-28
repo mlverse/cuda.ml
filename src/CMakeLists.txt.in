@@ -128,6 +128,7 @@ find_package(Treelite)
 if(Treelite_FOUND)
   set(CUML4R_LIBS ${CUML4R_LIBS} treelite::treelite treelite::treelite_runtime)
   set(CUML4R_INCLUDE_DIRS ${CUML4R_INCLUDE_DIRS} ${Treelite_INCLUDE_DIRS})
+  message(STATUS "Treelite found, ignoring stub headers: ${CUML_STUB_HEADERS_DIR}")
 else()
   message(
     WARNING
