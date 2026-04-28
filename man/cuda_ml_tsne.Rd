@@ -36,7 +36,7 @@ and should consist of numeric values only.}
 \item{n_neighbors}{The number of datapoints to use in the attractive forces.
 Default: ceiling(3 * perplexity).}
 
-\item{method}{T-SNE method, must be one of {"barnes_hut", "fft", "exact"}.
+\item{method}{T-SNE method, must be one of \{"barnes_hut", "fft", "exact"\}.
 The "exact" method will be more accurate but slower. Both "barnes_hut" and
 "fft" methods are fast approximations.}
 
@@ -51,7 +51,7 @@ at least 250. Default: 1000L.}
 (10, 1000). If the learning rate is too high, then t-SNE result could look
 like a cloud / ball of points.}
 
-\item{learning_rate_method}{Must be one of {"adaptive", "none"}. If
+\item{learning_rate_method}{Must be one of \{"adaptive", "none"\}. If
 "adaptive", then learning rate, early exaggeration, and perplexity are
 automatically tuned based on input size. Default: "adaptive".}
 
@@ -94,7 +94,7 @@ runs, even with the same \code{seed} being used for each run.
 Default: NULL.}
 
 \item{cuML_log_level}{Log level within cuML library functions. Must be one of
-{"off", "critical", "error", "warn", "info", "debug", "trace"}.
+\{"off", "critical", "error", "warn", "info", "debug", "trace"\}.
 Default: off.}
 }
 \value{

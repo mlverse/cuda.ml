@@ -32,7 +32,7 @@ the initial value of a centroid. Default: "kmeans++".}
 \item{seed}{Seed to the random number generator. Default: 0.}
 
 \item{cuML_log_level}{Log level within cuML library functions. Must be one of
-{"off", "critical", "error", "warn", "info", "debug", "trace"}.
+\{"off", "critical", "error", "warn", "info", "debug", "trace"\}.
 Default: off.}
 }
 \value{

@@ -41,7 +41,7 @@ new_umap_model <- function(model) {
 #' @param learning_rate The initial learning rate for the embedding
 #'   optimization. Default: 1.0.
 #' @param init Initialization mode of the low dimensional embedding. Must be
-#'   one of {"spectral", "random"}. Default: "spectral".
+#'   one of \{"spectral", "random"\}. Default: "spectral".
 #' @param min_dist The effective minimum distance between embedded points.
 #'   Default: 0.1.
 #' @param spread The effective scale of embedded points. In combination with
@@ -71,7 +71,7 @@ new_umap_model <- function(model) {
 #'   the target simplcial set. Default: n_neighbors.
 #' @param target_metric The metric for measuring distance between the actual and
 #'   and the target values (\code{y}) if using supervised dimension reduction.
-#'   Must be one of {"categorical", "euclidean"}. Default: "categorical".
+#'   Must be one of \{"categorical", "euclidean"\}. Default: "categorical".
 #' @param target_weight Weighting factor between data topology and target
 #'   topology. A value of 0.0 weights entirely on data, a value of 1.0 weights
 #'   entirely on target. The default of 0.5 balances the weighting equally

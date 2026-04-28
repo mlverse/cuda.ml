@@ -48,7 +48,7 @@ low dimensional embedding. Default: 500.}
 optimization. Default: 1.0.}
 
 \item{init}{Initialization mode of the low dimensional embedding. Must be
-one of {"spectral", "random"}. Default: "spectral".}
+one of \{"spectral", "random"\}. Default: "spectral".}
 
 \item{min_dist}{The effective minimum distance between embedded points.
 Default: 0.1.}
@@ -88,7 +88,7 @@ the target simplcial set. Default: n_neighbors.}
 
 \item{target_metric}{The metric for measuring distance between the actual and
 and the target values (\code{y}) if using supervised dimension reduction.
-Must be one of {"categorical", "euclidean"}. Default: "categorical".}
+Must be one of \{"categorical", "euclidean"\}. Default: "categorical".}
 
 \item{target_weight}{Weighting factor between data topology and target
 topology. A value of 0.0 weights entirely on data, a value of 1.0 weights
@@ -106,7 +106,7 @@ If the PRNG seed is not set, then the trained embeddings will not be
 deterministic.}
 
 \item{cuML_log_level}{Log level within cuML library functions. Must be one of
-{"off", "critical", "error", "warn", "info", "debug", "trace"}.
+\{"off", "critical", "error", "warn", "info", "debug", "trace"\}.
 Default: off.}
 }
 \value{

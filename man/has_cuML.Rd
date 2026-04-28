@@ -2,17 +2,17 @@
 % Please edit documentation in R/cuml_utils.R
 \name{has_cuML}
 \alias{has_cuML}
-\title{Determine whether {cuda.ml} was linked to a valid version of the RAPIDS cuML
+\title{Determine whether \{cuda.ml\} was linked to a valid version of the RAPIDS cuML
 shared library.}
 \usage{
 has_cuML()
 }
 \value{
-A logical value indicating whether the current installation {cuda.ml}
+A logical value indicating whether the current installation \{cuda.ml\}
   was linked to a valid version of the RAPIDS cuML shared library.
 }
 \description{
-Determine whether {cuda.ml} was linked to a valid version of the RAPIDS cuML
+Determine whether \{cuda.ml\} was linked to a valid version of the RAPIDS cuML
 shared library.
 }
 \examples{
@@ -22,7 +22,7 @@ library(cuda.ml)
 if (!has_cuML()) {
   warning(
     "Please install the RAPIDS cuML shared library first, and then re-",
-    "install {cuda.ml}."
+    "install \{cuda.ml\}."
   )
 }
 }

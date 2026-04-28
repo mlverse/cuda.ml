@@ -92,7 +92,7 @@ mean of the response variable. If FALSE, then the model expects data to be
 centered. Default: TRUE.}
 
 \item{penalty}{The penalty type, must be one of
-{"none", "l1", "l2", "elasticnet"}.
+\{"none", "l1", "l2", "elasticnet"\}.
 If "none" or "l2" is selected, then L-BFGS solver will be used.
 If "l1" is selected, solver OWL-QN will be used.
 If "elasticnet" is selected, OWL-QN will be used if l1_ratio > 0, otherwise

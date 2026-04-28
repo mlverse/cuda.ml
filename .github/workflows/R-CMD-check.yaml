@@ -32,12 +32,15 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
           needs: check
 
-      - uses: r-lib/actions/check-r-package@v2
-        with:
-          args: 'c("--no-manual", "--as-cran")'
+      - name: Build
+        run: R CMD build .
+
+      - name: Check
+        run: R CMD check --no-manual --as-cran cuda.ml_*.tar.gz
+        env:
+          _R_CHECK_CRAN_INCOMING_: false
 
   build-image:
     runs-on: ubuntu-latest
