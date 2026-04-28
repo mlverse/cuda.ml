@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cuda: ['11.2.1']
+        cuda: ['11.2.2']
         cuml: ['21.12']
         r: ['release']
 
