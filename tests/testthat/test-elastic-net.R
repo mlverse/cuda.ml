@@ -33,7 +33,7 @@ test_that("Elastic net regressor works as expected", {
 
         sklearn_elastic_net_regressor <- sklearn$linear_model$ElasticNet(
           alpha = 1e-3,
-          max_iter = 10000,
+          max_iter = 10000L,
           tol = 1e-4,
           fit_intercept = fit_intercept,
           l1_ratio = l1_ratio
