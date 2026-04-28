@@ -25,7 +25,7 @@ jobs:
       - "runs-on=${{ github.run_id }}/family=g4dn.xlarge/image=ubuntu24-gpu-x64/spot=true"
 
     container:
-      image: nvidia/cuda:${{ matrix.cuda }}-devel-ubuntu18.04
+      image: nvidia/cuda:${{ matrix.cuda }}-devel-ubuntu20.04
       options: --gpus all --runtime=nvidia
 
     name: 'R: ${{ matrix.r }}, CUDA: ${{ matrix.cuda }}, CUML: ${{ matrix.cuml }}'
