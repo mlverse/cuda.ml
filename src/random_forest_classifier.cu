@@ -9,8 +9,9 @@
 #include "random_forest_serde.cuh"
 #include "stream_allocator.h"
 
+#ifndef CUML4R_TREELITE_C_API_MISSING
 #include <cuml/fil/fil.h>
-#include <thrust/async/copy.h>
+#endif
 #include <thrust/device_vector.h>
 #include <cuml/tree/decisiontree.hpp>
 #include <cuml/version_config.hpp>
@@ -25,9 +26,9 @@
 namespace cuml4r {
 namespace {
 
-constexpr auto kRfClassiferNumFeatures = "n_features";
-constexpr auto kRfClassifierForest = "forest";
-constexpr auto kRfClassifierInvLabelsMap = "inv_labels_map";
+CUML4R_MAYBE_UNUSED constexpr auto kRfClassiferNumFeatures = "n_features";
+CUML4R_MAYBE_UNUSED constexpr auto kRfClassifierForest = "forest";
+CUML4R_MAYBE_UNUSED constexpr auto kRfClassifierInvLabelsMap = "inv_labels_map";
 
 using RandomForestClassifierUPtr =
   std::unique_ptr<ML::RandomForestClassifierD,
@@ -226,7 +227,7 @@ __host__ SEXP rf_classifier_fit(
   auto rf = RandomForestClassifierUPtr(new ML::RandomForestClassifierD);
 
   auto stream_view = stream_allocator::getOrCreateStream();
-  raft::handle_t handle(n_streams);
+  raft::handle_t handle;
   handle_utils::initializeHandle(handle, stream_view.value());
 
   // rf input data & labels
@@ -246,7 +247,8 @@ __host__ SEXP rf_classifier_fit(
     ML::fit(handle, rf_ptr, d_input.data().get(), n_samples, n_features,
             d_labels.data().get(),
             /*n_unique_labels=*/static_cast<int>(labels_map.size()),
-#if CUML4R_CONCAT(0x, CUML_VERSION_MINOR) >= 0x08
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(21, 8))
 
             ML::set_rf_params(
               max_depth, max_leaves, max_features, n_bins, min_samples_leaf,
@@ -270,7 +272,14 @@ __host__ SEXP rf_classifier_fit(
               /*use_experimental_backend=*/false, max_batch_size),
 
 #endif
-            /*verbosity=*/verbosity);
+            /*verbosity=*/
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+            static_cast<rapids_logger::level_enum>(verbosity)
+#else
+            verbosity
+#endif
+    );
 
     CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
     if (rf_ptr != rf.get()) {
@@ -299,7 +308,14 @@ __host__ Rcpp::IntegerVector rf_classifier_predict(
         raft::handle_t const& handle, double* const d_input,
         int* const d_preds) {
         ML::predict(handle, /*forest=*/rf, d_input, n_samples, n_features,
-                    /*predictions=*/d_preds, verbosity);
+                    /*predictions=*/d_preds,
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+                    static_cast<rapids_logger::level_enum>(verbosity)
+#else
+                    verbosity
+#endif
+        );
       });
   } else {
     return rf_classifier_predict<float, float>(

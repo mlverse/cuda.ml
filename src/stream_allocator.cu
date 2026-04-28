@@ -1,7 +1,6 @@
 #ifdef HAS_CUML
 
 #include "cuda_utils.h"
-#include "device_allocator.h"
 #include "stream_allocator.h"
 
 #include <rmm/cuda_stream.hpp>
@@ -42,7 +41,6 @@ __host__ rmm::cuda_stream_view getOrCreateStream() {
   if (it != cuda_streams_map.end()) {
     return it->second.value();
   }
-  auto const device_allocator = getDeviceAllocator();
   auto stream = rmm::cuda_stream();
   auto stream_view = stream.view();
   cudaStreamsMap().emplace(dev_id, std::move(stream));

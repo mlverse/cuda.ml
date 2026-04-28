@@ -10,6 +10,14 @@
 #define CUML4R_NODISCARD
 #endif
 
+#if __has_cpp_attribute(maybe_unused)
+#define CUML4R_MAYBE_UNUSED [[maybe_unused]]
+#elif defined(__GNUC__)
+#define CUML4R_MAYBE_UNUSED __attribute__((unused))
+#else
+#define CUML4R_MAYBE_UNUSED
+#endif
+
 // NOTE: the idea for the following is borrowed from
 // https://github.com/facebook/folly/blob/7a18d1823185495cae6676258ee64afd7e36c84c/folly/Preprocessor.h#L88-L105
 #define CUML4R_CONCAT_IMPL(a, b) a##b

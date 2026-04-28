@@ -2,12 +2,31 @@
 
 #include "preprocessor.h"
 
-#include <cuml/matrix/kernelparams.h>
-#include <cuml/svm/svm_model.h>
-#include <cuml/svm/svm_parameter.h>
 #include <cuml/version_config.hpp>
 
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+#include <cuml/matrix/kernel_params.hpp>
+#else
+#include <cuml/matrix/kernelparams.h>
+#endif
+
+#include <cuml/svm/svm_model.h>
+#include <cuml/svm/svm_parameter.h>
+
 #include <Rcpp.h>
+
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+namespace MLCommon {
+namespace Matrix {
+
+using KernelParams = ML::matrix::KernelParams;
+using KernelType = ML::matrix::KernelType;
+
+}  // namespace Matrix
+}  // namespace MLCommon
+#endif
 
 #if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
      CUML4R_LIBCUML_VERSION(21, 10))

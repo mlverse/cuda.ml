@@ -15,6 +15,8 @@ expect_libcuml <- function() {
 
 expect_libcuml()
 
+reticulate::py_require("scikit-learn")
+
 sklearn <- tryCatch(reticulate::import("sklearn"),
   error = function(e) {
     reticulate::py_install("sklearn", pip = TRUE)

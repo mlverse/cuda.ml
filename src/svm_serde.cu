@@ -8,6 +8,31 @@
 namespace cuml4r {
 namespace detail {
 
+namespace {
+
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+__host__ double*& svmSupportData(ML::SVM::svmModel<double>& svm_model) {
+  return svm_model.support_matrix.data;
+}
+
+__host__ double const* svmSupportData(
+  ML::SVM::svmModel<double> const& svm_model) {
+  return svm_model.support_matrix.data;
+}
+#else
+__host__ double*& svmSupportData(ML::SVM::svmModel<double>& svm_model) {
+  return svm_model.x_support;
+}
+
+__host__ double const* svmSupportData(
+  ML::SVM::svmModel<double> const& svm_model) {
+  return svm_model.x_support;
+}
+#endif
+
+}  // namespace
+
 __host__ Rcpp::List getState(
   MLCommon::Matrix::KernelParams const& kernel_params) {
   Rcpp::List state;
@@ -28,7 +53,7 @@ __host__ Rcpp::List getState(ML::SVM::svmParameter const& svm_params) {
   state[kSvmParamsMaxIter] = svm_params.max_iter;
   state[kSvmParamsNoChangeSteps] = svm_params.nochange_steps;
   state[kSvmParamsTol] = svm_params.tol;
-  state[kSvmParamsVerbosity] = svm_params.verbosity;
+  state[kSvmParamsVerbosity] = static_cast<int>(svm_params.verbosity);
   state[kSvmParamsEpsilon] = svm_params.epsilon;
   state[kSvmParamsType] = static_cast<int>(svm_params.svmType);
 
@@ -38,7 +63,7 @@ __host__ Rcpp::List getState(ML::SVM::svmParameter const& svm_params) {
 __host__ Rcpp::List getState(ML::SVM::svmModel<double> const& svm_model,
                              raft::handle_t const& handle) {
   Rcpp::List state;
-  auto* const stream = handle.get_stream();
+  cudaStream_t const stream = handle.get_stream();
 
   pinned_host_vector<double> h_dual_coefs(svm_model.n_support);
   CUDA_RT_CALL(cudaMemcpyAsync(
@@ -51,7 +76,7 @@ __host__ Rcpp::List getState(ML::SVM::svmModel<double> const& svm_model,
                                          svm_model.n_cols);
   CUDA_RT_CALL(cudaMemcpyAsync(
     /*dst=*/h_x_support.data(),
-    /*src=*/svm_model.x_support,
+    /*src=*/svmSupportData(svm_model),
     /*count=*/svm_model.n_support * svm_model.n_cols * sizeof(double),
     /*kind=*/cudaMemcpyDeviceToHost, stream));
 
@@ -103,7 +128,13 @@ __host__ void setState(ML::SVM::svmParameter& svm_params,
   svm_params.max_iter = state[kSvmParamsMaxIter];
   svm_params.nochange_steps = state[kSvmParamsNoChangeSteps];
   svm_params.tol = state[kSvmParamsTol];
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+  svm_params.verbosity = static_cast<rapids_logger::level_enum>(
+    Rcpp::as<int>(state[kSvmParamsVerbosity]));
+#else
   svm_params.verbosity = state[kSvmParamsVerbosity];
+#endif
   svm_params.epsilon = state[kSvmParamsEpsilon];
   svm_params.svmType =
     static_cast<ML::SVM::SvmType>(Rcpp::as<int>(state[kSvmParamsType]));
@@ -118,7 +149,7 @@ __host__ void setState(ML::SVM::svmModel<double>& svm_model,
   svm_model.n_cols = n_cols;
   svm_model.b = state[kSvmModelB];
 
-  auto const stream_view = handle.get_stream_view();
+  cudaStream_t const stream = handle.get_stream();
 
   CUDA_RT_CALL(cudaMalloc(&svm_model.dual_coefs, n_support * sizeof(double)));
   auto const h_dual_coefs =
@@ -128,18 +159,24 @@ __host__ void setState(ML::SVM::svmModel<double>& svm_model,
     /*src=*/h_dual_coefs.data(),
     /*count=*/n_support * sizeof(double),
     /*kind=*/cudaMemcpyHostToDevice,
-    /*stream=*/stream_view.value()));
+    /*stream=*/stream));
 
   CUDA_RT_CALL(
-    cudaMalloc(&svm_model.x_support, n_support * n_cols * sizeof(double)));
+    cudaMalloc(&svmSupportData(svm_model), n_support * n_cols * sizeof(double)));
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+  svm_model.support_matrix.nnz = n_support * n_cols;
+  svm_model.support_matrix.indptr = nullptr;
+  svm_model.support_matrix.indices = nullptr;
+#endif
   auto const h_x_support =
     Rcpp::as<pinned_host_vector<double>>(state[kSvmModelSupportVectors]);
   CUDA_RT_CALL(cudaMemcpyAsync(
-    /*dst=*/svm_model.x_support,
+    /*dst=*/svmSupportData(svm_model),
     /*src=*/h_x_support.data(),
     /*count=*/n_support * n_cols * sizeof(double),
     /*kind=*/cudaMemcpyHostToDevice,
-    /*stream=*/stream_view.value()));
+    /*stream=*/stream));
 
   CUDA_RT_CALL(cudaMalloc(&svm_model.support_idx, n_support * sizeof(int)));
   auto const h_support_idx =
@@ -149,7 +186,7 @@ __host__ void setState(ML::SVM::svmModel<double>& svm_model,
     /*src=*/h_support_idx.data(),
     /*count=*/n_support * sizeof(int),
     /*kind=*/cudaMemcpyHostToDevice,
-    /*stream=*/stream_view.value()));
+    /*stream=*/stream));
 
   int const n_classes = state[kSvmModelNumClasses];
   svm_model.n_classes = n_classes;
@@ -163,9 +200,9 @@ __host__ void setState(ML::SVM::svmModel<double>& svm_model,
     /*src=*/h_unique_labels.data(),
     /*count=*/n_classes * sizeof(double),
     /*kind=*/cudaMemcpyHostToDevice,
-    /*stream=*/stream_view.value()));
+    /*stream=*/stream));
 
-  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
+  CUDA_RT_CALL(cudaStreamSynchronize(stream));
 }
 
 }  // namespace detail

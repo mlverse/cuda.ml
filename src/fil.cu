@@ -8,8 +8,9 @@
 #include "stream_allocator.h"
 #include "treelite_utils.cuh"
 
+#ifndef CUML4R_TREELITE_C_API_MISSING
+
 #include <cuml/fil/fil.h>
-#include <thrust/async/copy.h>
 #include <thrust/device_vector.h>
 #include <treelite/c_api.h>
 
@@ -172,3 +173,5 @@ __host__ Rcpp::NumericMatrix fil_predict(
 }
 
 }  // namespace cuml4r
+
+#endif

@@ -10,6 +10,7 @@
 ^src/CMakeLists\.txt$
 ^src/CMakeCache\.txt$
 ^src/CMakeFiles/*
+^src/\.cmake-build/*
 ^src/_deps/*
 ^src/eval_gpu_archs*
 ^src/*\.o$

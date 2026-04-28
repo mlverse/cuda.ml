@@ -1,6 +1,8 @@
 #include "lm_params.h"
+#include "preprocessor.h"
 
 #include <cuml/linear_model/glm.hpp>
+#include <cuml/version_config.hpp>
 
 namespace cuml4r {
 namespace detail {
@@ -14,7 +16,12 @@ __host__ void ols_fit_impl(raft::handle_t& handle, lm::Params const& params,
                   /*coef=*/params.d_coef,
                   /*intercept=*/params.intercept,
                   /*fit_intercept=*/params.fit_intercept,
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) < \
+     CUML4R_LIBCUML_VERSION(24, 0))
                   /*normalize=*/params.normalize_input, algo);
+#else
+                  algo);
+#endif
 }
 
 }  // namespace detail

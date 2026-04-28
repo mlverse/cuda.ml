@@ -8,7 +8,6 @@
 #include "preprocessor.h"
 #include "stream_allocator.h"
 
-#include <thrust/async/copy.h>
 #include <thrust/device_vector.h>
 
 #include <Rcpp.h>

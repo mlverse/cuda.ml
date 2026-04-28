@@ -1,6 +1,8 @@
 #pragma once
 
+#ifndef CUML4R_TREELITE_C_API_MISSING
 #define CUML4R_TREELITE_C_API_MISSING
+#endif
 
 // NOTE: disabling this message for now per human feedback from CRAN
 

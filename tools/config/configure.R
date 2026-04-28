@@ -14,6 +14,20 @@
 #'              "${CUML_PREFIX}/", then no pre-built copy of `libcuml` will be
 #'              downloaded.
 #'
+#' CUML_BOOTSTRAP: The default is to bootstrap RAPIDS cuML from pip wheels if
+#'                 no existing `libcuml` is found and a suitable NVIDIA
+#'                 GPU/driver, `nvcc`, and Python package installer are
+#'                 available. Set CUML_BOOTSTRAP=0 to disable this behavior.
+#'
+#' CUML_BOOTSTRAP_CACHE: Override the cache directory used for bootstrapped
+#'                       RAPIDS headers and shared libraries.
+#'
+#' CUML_CUDA_ARCHITECTURES: Override CMAKE_CUDA_ARCHITECTURES. Defaults to
+#'                          detected GPU architectures supported by nvcc.
+#'
+#' CUML_RAPIDS_CMAKE_SOURCE_DIR: Override the local rapids-cmake checkout used
+#'                               by CMake FetchContent.
+#'
 #' DOWNLOAD_CUML: The default is to automatically download a pre-built copy of
 #'                `libcuml` if no existing `libcuml` is specified with the
 #'                'CUML_PREFIX' env variable. Set DOWNLOAD_CUML=0 to disable
@@ -54,7 +68,7 @@ load_libcuml_versions <- function() {
 load_util_fns <- function() {
   wd <- file.path(pkg_root(), "tools", "config", "utils")
 
-  for (f in c("cuml.R", "cmake.R", "logging.R", "nvcc.R", "platform.R")) {
+  for (f in c("logging.R", "platform.R", "nvcc.R", "bootstrap.R", "cuml.R", "cmake.R")) {
     source(file.path(wd, f))
   }
 }
@@ -62,21 +76,57 @@ load_util_fns <- function() {
 load_libcuml_versions()
 load_util_fns()
 
+find_rapids_cmake_source_dir <- function(src_dir, build_dir) {
+  candidates <- c(
+    Sys.getenv("CUML_RAPIDS_CMAKE_SOURCE_DIR", unset = NA),
+    file.path(src_dir, "_deps", "rapids-cmake-src"),
+    file.path(build_dir, "_deps", "rapids-cmake-src")
+  )
+  candidates <- candidates[!is.na(candidates)]
+
+  for (candidate in candidates) {
+    if (file.exists(file.path(candidate, "rapids-cmake", "rapids-cuda.cmake"))) {
+      return(normalizePath(candidate))
+    }
+  }
+
+  NA_character_
+}
+
 run_cmake <- function() {
   wd <- getwd()
   on.exit(setwd(wd))
   setwd(pkg_root())
+  nvcc <- find_nvcc()
 
   define(R_INCLUDE_DIR = R.home("include"))
   define(RCPP_INCLUDE_DIR = system.file("include", package = "Rcpp"))
   configure_file(file.path("src", "CMakeLists.txt.in"))
 
+  cmake_bin <- find_or_download_cmake(
+    min_version = cuda_ml_min_cmake_version,
+    exdir = file.path(pkg_root(), "tools")
+  )
+  src_dir <- normalizePath(file.path(pkg_root(), "src"))
+  build_dir <- file.path(src_dir, ".cmake-build")
+  dir.create(build_dir, recursive = TRUE, showWarnings = FALSE)
+
+  define(
+    CMAKE_BIN = shQuote(cmake_bin),
+    CMAKE_BUILD_DIR = shQuote(build_dir),
+    CMAKE_BUILD_OUTPUT = shQuote(file.path(build_dir, "cuda.ml.so"))
+  )
+  configure_file(
+    file.path("tools", "config", "Makefile.cmake.in"),
+    target = file.path("src", "Makefile")
+  )
+
   cuml_prefix <- get_cuml_prefix()
   bundle_libcuml <- FALSE
   if (is.na(cuml_prefix)) {
-    cuml_prefix <- normalizePath(file.path(pkg_root(), "libcuml"))
+    cuml_prefix <- normalizePath(file.path(pkg_root(), "libcuml"), mustWork = FALSE)
     download_libcuml()
-    dir.create("inst")
+    dir.create("inst", showWarnings = FALSE)
     file.rename(file.path("libcuml", "lib"), file.path("inst", "libs"))
     file.symlink(file.path("..", "inst", "libs"), file.path("libcuml", "lib"))
     libs <- c("libtreelite", "libtreelite_runtime", "libcuml++")
@@ -88,30 +138,43 @@ run_cmake <- function() {
   )
   Sys.setenv(CMAKE_PREFIX_PATH = cmake_prefix_path)
 
-  setwd(file.path(pkg_root(), "src"))
-
+  cuda_architectures <- Sys.getenv("CUML_CUDA_ARCHITECTURES", unset = NA)
+  if (is.na(cuda_architectures)) {
+    cuda_architectures <- infer_cuda_architectures(nvcc)
+  }
   cmake_args <- c(
-    ".",
-    "-DCMAKE_CUDA_ARCHITECTURES=NATIVE",
+    "-S", src_dir,
+    "-B", build_dir,
+    paste0("-DCMAKE_CUDA_ARCHITECTURES=", cuda_architectures),
     paste0("-DCUML_INCLUDE_DIR=", file.path(cuml_prefix, "include")),
     paste0("-DCUML_LIB_DIR=", file.path(cuml_prefix, "lib")),
+    paste0("-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=", build_dir),
     paste0(
-      "-DCUML_STUB_HEADERS_DIR=", normalizePath(file.path(getwd(), "stubs"))
+      "-DCUML_STUB_HEADERS_DIR=", normalizePath(file.path(src_dir, "stubs"))
     ),
-    paste0("-DCMAKE_CUDA_COMPILER=", find_nvcc()$path),
+    paste0("-DCMAKE_CUDA_COMPILER=", nvcc$path),
     "-DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE"
   )
+  rapids_cmake_source_dir <- find_rapids_cmake_source_dir(src_dir, build_dir)
+  if (!is.na(rapids_cmake_source_dir)) {
+    cmake_args <- c(
+      cmake_args,
+      paste0("-DFETCHCONTENT_SOURCE_DIR_RAPIDS-CMAKE=", rapids_cmake_source_dir)
+    )
+  }
   if (bundle_libcuml) {
     cmake_args <- c(
       cmake_args,
       "-DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=TRUE",
       "-DCMAKE_INSTALL_RPATH:STRING='$ORIGIN'"
     )
+  } else if (!identical(Sys.getenv("CUML_SET_RPATH", unset = "1"), "0")) {
+    cmake_args <- c(
+      cmake_args,
+      "-DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=TRUE",
+      paste0("-DCMAKE_INSTALL_RPATH:STRING=", file.path(cuml_prefix, "lib"))
+    )
   }
-  cmake_bin <- find_or_download_cmake(
-    min_version = cuda_ml_min_cmake_version,
-    exdir = file.path(pkg_root(), "tools")
-  )
   rc <- system2(cmake_bin, args = cmake_args)
 
   if (rc != 0) {
@@ -119,7 +182,12 @@ run_cmake <- function() {
   }
 }
 
-if (is.null(find_nvcc(stop_if_missing = FALSE)) || !has_libcuml()) {
+nvcc <- find_nvcc(stop_if_missing = FALSE)
+if (is.null(nvcc) && !cuml_cran_like()) {
+  warn_missing_nvcc()
+}
+
+if (is.null(nvcc) || !has_libcuml(nvcc = nvcc)) {
   wd <- getwd()
   on.exit(setwd(wd))
   setwd(pkg_root())
@@ -139,6 +207,7 @@ if (is.null(find_nvcc(stop_if_missing = FALSE)) || !has_libcuml()) {
       }
     })
   define(CUSTOMIZED_MAKEFLAGS = paste0("MAKEFLAGS += '-j", n_jobs, "'"))
+  define(CMAKE_BUILD_PARALLEL_ARGS = paste("--parallel", n_jobs))
 
   run_cmake()
 }

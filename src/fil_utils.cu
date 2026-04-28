@@ -1,5 +1,7 @@
 #include "fil_utils.h"
 
+#ifndef CUML4R_TREELITE_C_API_MISSING
+
 namespace cuml4r {
 namespace fil {
 
@@ -19,3 +21,5 @@ __host__ forest_uptr make_forest(raft::handle_t const& handle,
 
 }  // namespace fil
 }  // namespace cuml4r
+
+#endif

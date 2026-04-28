@@ -9,7 +9,6 @@
 #include "random_forest_serde.cuh"
 #include "stream_allocator.h"
 
-#include <thrust/async/copy.h>
 #include <thrust/device_vector.h>
 #include <cuml/version_config.hpp>
 
@@ -23,8 +22,8 @@ namespace cuml4r {
 
 namespace {
 
-constexpr auto kRfRegressorNumFeatures = "n_features";
-constexpr auto kRfRegressorForest = "forest";
+CUML4R_MAYBE_UNUSED constexpr auto kRfRegressorNumFeatures = "n_features";
+CUML4R_MAYBE_UNUSED constexpr auto kRfRegressorForest = "forest";
 
 using RandomForestRegressorUPtr =
   std::unique_ptr<ML::RandomForestRegressorD,
@@ -151,7 +150,7 @@ __host__ SEXP rf_regressor_fit(
   auto rf = RandomForestRegressorUPtr(new ML::RandomForestRegressorD);
 
   auto stream_view = stream_allocator::getOrCreateStream();
-  raft::handle_t handle(n_streams);
+  raft::handle_t handle;
   handle_utils::initializeHandle(handle, stream_view.value());
 
   // rf input data & responses
@@ -170,7 +169,8 @@ __host__ SEXP rf_regressor_fit(
     ML::fit(
       handle, rf_ptr, d_input.data().get(), n_samples, n_features,
       /*labels=*/d_responses.data().get(),
-#if CUML4R_CONCAT(0x, CUML_VERSION_MINOR) >= 0x08
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(21, 8))
 
       ML::set_rf_params(max_depth, max_leaves, max_features, n_bins,
                         min_samples_leaf, min_samples_split,
@@ -192,7 +192,14 @@ __host__ SEXP rf_regressor_fit(
         /*use_experimental_backend=*/false, max_batch_size),
 
 #endif
-      /*verbosity=*/verbosity);
+      /*verbosity=*/
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+      static_cast<rapids_logger::level_enum>(verbosity)
+#else
+      verbosity
+#endif
+    );
 
     CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
     if (rf_ptr != rf.get()) {
@@ -219,7 +226,14 @@ __host__ Rcpp::NumericVector rf_regressor_predict(
         raft::handle_t const& handle, double* const d_input,
         double* const d_preds) {
         ML::predict(handle, /*forest=*/rf, d_input, n_samples, n_features,
-                    /*predictions=*/d_preds, verbosity);
+                    /*predictions=*/d_preds,
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+                    static_cast<rapids_logger::level_enum>(verbosity)
+#else
+                    verbosity
+#endif
+        );
       });
   } else {
     return rf_regressor_predict<float, float>(

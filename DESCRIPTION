@@ -47,5 +47,7 @@ LinkingTo: Rcpp
 Encoding: UTF-8
 RoxygenNote: 7.3.3
 OS_type: unix
-SystemRequirements: RAPIDS cuML (see https://rapids.ai/start.html)
+SystemRequirements: NVIDIA GPU and driver, CUDA Toolkit with nvcc, and uv or
+    Python/pip for automatic RAPIDS cuML bootstrap. Alternatively, an existing
+    RAPIDS cuML installation can be provided with CUML_PREFIX.
 NeedsCompilation: yes

@@ -1,5 +1,7 @@
 #pragma once
 
+#ifndef CUML4R_TREELITE_C_API_MISSING
+
 #include <cuml/fil/fil.h>
 
 #include <functional>
@@ -26,3 +28,5 @@ forest_uptr make_forest(raft::handle_t const& handle,
 
 }  // namespace fil
 }  // namespace cuml4r
+
+#endif

@@ -176,113 +176,115 @@ about the MNIST dataset:
 
 ## Installation
 
-In order for {cuda.ml} to work as expected, the C++/CUDA source code of
-{cuda.ml} must be linked with CUDA runtime and a valid copy of the RAPIDS cuML
-library.
+For a fully functional installation, {cuda.ml} needs:
 
-Before installing {cuda.ml} itself, it may be worthwhile to take a quick look
-through the sub-sections below on how to properly setup all of {cuda.ml}'s
-required runtime dependencies.
+- an NVIDIA GPU with a working NVIDIA driver;
+- a CUDA Toolkit installation that provides `nvcc`;
+- normal R package build tools; and
+- either `uv` or Python with `pip`.
 
-### Quick note on installing the RAPIDS cuML library:
+When those prerequisites are present, {cuda.ml} can bootstrap RAPIDS cuML from
+pip wheels during installation. You do not need conda, and you usually do not
+need to set `CUML_PREFIX` manually.
 
-Although Conda is the only officially supported distribution channel at the
-moment for RAPIDS cuML (i.e., see https://rapids.ai/start.html#get-rapids),
-you can still build and install this library from source without relying on
-Conda.
-See https://github.com/yitao-li/cuml-installation-notes for build-from-source
-instructions.
-
-### Quick install instructions for Ubuntu 20-04:
-
-#### Install deps:
-```
-sudo apt install -y cmake ccache libblas3 liblapack3
-```
-
-
-### Install CUDA
-(consult https://developer.nvidia.com/cuda-downloads for other platforms)
-```bash
-wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
-sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
-wget https://developer.download.nvidia.com/compute/cuda/11.4.2/local_installers/cuda-repo-ubuntu2004-11-4-local_11.4.2-470.57.02-1_amd64.deb
-sudo dpkg -i cuda-repo-ubuntu2004-11-4-local_11.4.2-470.57.02-1_amd64.deb
-sudo apt-key add /var/cuda-repo-ubuntu2004-11-4-local/7fa2af80.pub
-sudo apt-get update
-sudo apt-get -y install cuda
-```
-### Add CUDA executables to path
-(nvcc is needed for building the C++/CUDA source code of {cuda.ml})
-```bash
-echo "export PATH=$PATH:/usr/local/cuda/bin" >> ~/.bashrc
-source ~/.bashrc
-```
-
-### Install Miniconda:
-```bash
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-chmod +x Miniconda3-latest-Linux-x86_64.sh
-./Miniconda3-latest-Linux-x86_64.sh -b
-# consult https://rapids.ai/start.html for alternatives
-```
-
-### Create and configure the conda env
-```
-# This is a relatively big download, may take a while
-~/miniconda3/bin/conda create -n rapids-21.08 -c rapidsai -c nvidia -c conda-forge \
-    rapids-blazing=21.08 python=3.8 cudatoolkit=11.2
-```
-
-### Install cmake
-CUDA dependencies require a relatively recent version of CMake, so you need to install it manually
-```bash
-wget https://github.com/Kitware/CMake/releases/download/v3.22.0/cmake-3.22.0.tar.gz
-cd cmake-3.22.0
-./bootstrap && make -j8 && sudo make install
-cd ..
-```
-
-### Activate the conda env:
-```bash
-. ~/miniconda3/bin/activate
-conda activate rapids-21.08
-```
-
-### Consider adjusting `LD_LIBRARY_PATH`
-
-The subsequent steps may (or may not) fail without the following:
+On a new Ubuntu installation, install R/build/Python prerequisites:
 
 ```bash
-export LD_LIBRARY_PATH=~/miniconda3/envs/rapids-21.08/lib
+sudo apt update
+sudo apt install -y r-base-dev build-essential git cmake \
+  python3 python3-pip python3-venv ubuntu-drivers-common
 ```
 
-If you get some error indicating a GLIBC version mismatch in the subsequent
-steps, then please try adjusting `LD_LIBRARY_PATH` as a workaround.
+Install the NVIDIA driver, reboot, and verify that the driver can see your GPU:
 
-
-### Consider enabling ccache
-
-To speed up recompilation times during development, set this env var:
 ```bash
-echo "export CUML4R_ENABLE_CCACHE=1" >> ~/.bashrc
-. ~/.bashrc
+sudo ubuntu-drivers install
+sudo reboot
+
+nvidia-smi
 ```
 
-### Install {cuda.ml} the R package:
+Install a CUDA Toolkit that includes `nvcc`. Use NVIDIA's CUDA Linux
+installation guide for your Ubuntu release to add the CUDA apt repository, then:
 
-You can install the released version of {cuda.ml} from
-[CRAN](https://CRAN.R-project.org) with:
+```bash
+sudo apt update
+sudo apt install -y cuda-toolkit
+
+nvcc --version
+```
+
+If the toolkit is installed but `nvcc` is not on `PATH`, set `CUDA_HOME` to the
+toolkit prefix before installing {cuda.ml}, for example:
+
+```bash
+export CUDA_HOME=/usr/local/cuda
+```
+
+Then install {cuda.ml}:
 
 ``` r
 install.packages("cuda.ml")
 ```
 
-And the development version from [GitHub](https://github.com/) with:
+And verify that the installed package was linked with real cuML:
+
+``` r
+library(cuda.ml)
+has_cuML()
+```
+
+If this returns `TRUE`, {cuda.ml} is using RAPIDS cuML. If it returns `FALSE`,
+the package installed in stub-only mode; check the install output for the first
+missing prerequisite.
+
+### What happens during installation
+
+The configure script first looks for an existing RAPIDS installation through
+`CUML_PREFIX` or `CUDA_PATH`. If no existing installation is found, and a
+working NVIDIA driver/GPU plus `nvcc` are available, it bootstraps RAPIDS cuML
+from pip wheels into a cache directory and links {cuda.ml} against that prefix.
+
+The bootstrap prefers `uv` when available, then reticulate's managed `uv`, then
+`python -m pip`, `python3 -m pip`, `pip`, and `pip3`.
+
+Useful environment variables:
+
+- `CUDA_HOME`: CUDA Toolkit prefix containing `bin/nvcc`.
+- `CUML_PREFIX`: existing RAPIDS prefix containing `include/cuml` and
+  `lib/libcuml++.so`.
+- `CUML_BOOTSTRAP=0`: disable automatic RAPIDS pip bootstrap.
+- `CUML_BOOTSTRAP_CACHE`: cache directory for bootstrapped RAPIDS headers and
+  libraries.
+- `CUML_PIP_VERSION`: RAPIDS pip wheel version to install.
+
+### CRAN and machines without GPUs
+
+On CRAN, or on machines without a usable NVIDIA GPU/driver and `nvcc`, {cuda.ml}
+can still install in stub-only mode. In that mode `has_cuML()` returns `FALSE`
+and cuML-backed algorithms are not usable until the system prerequisites are
+installed and {cuda.ml} is reinstalled.
+
+### Manual RAPIDS installations
+
+If you already have RAPIDS cuML from pip, conda, or a source build, set
+`CUML_PREFIX` to a prefix containing `include/cuml` and `lib/libcuml++.so`
+before installing {cuda.ml}. In this case the automatic bootstrap is skipped.
+
+### Development version
+
+Install the development version from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
 devtools::install_github("mlverse/cuda.ml")
+```
+
+To speed up recompilation times during development, set this env var:
+
+```bash
+echo "export CUML4R_ENABLE_CCACHE=1" >> ~/.bashrc
+. ~/.bashrc
 ```
 
 
