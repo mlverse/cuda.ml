@@ -92,7 +92,7 @@ run_cmake <- function() {
 
   cmake_args <- c(
     ".",
-    "-DCMAKE_CUDA_ARCHITECTURES=NATIVE",
+    paste0("-DCMAKE_CUDA_ARCHITECTURES=", Sys.getenv("CMAKE_CUDA_ARCHITECTURES", unset = "NATIVE")),
     paste0("-DCUML_INCLUDE_DIR=", file.path(cuml_prefix, "include")),
     paste0("-DCUML_LIB_DIR=", file.path(cuml_prefix, "lib")),
     paste0(

@@ -7,96 +7,64 @@ on:
 name: R-CMD-check
 
 jobs:
-  R-CMD-check:
-
-    strategy:
-      fail-fast: false
-      matrix:
-        cuda: ['11.2.2']
-        cuml: ['21.12']
-        r: ['release']
-
-    # Only one GPU job at a time — runs-on quota allows limited GPU instances.
-    concurrency:
-      group: gpu-tests-${{ github.ref }}-cuda${{ matrix.cuda }}-cuml${{ matrix.cuml }}-r${{ matrix.r }}
-      cancel-in-progress: true
-
-    runs-on:
-      - "runs-on=${{ github.run_id }}/family=g4dn.xlarge/image=ubuntu24-gpu-x64/spot=true"
-
-    container:
-      image: nvidia/cuda:${{ matrix.cuda }}-devel-ubuntu20.04
-      options: --gpus all --runtime=nvidia
-
-    name: 'R: ${{ matrix.r }}, CUDA: ${{ matrix.cuda }}, CUML: ${{ matrix.cuml }}'
-
-    env:
-      NOT_CRAN: true
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-      R_KEEP_PKG_SOURCE: yes
-      CUML_VERSION: ${{ matrix.cuml }}
-      DEBIAN_FRONTEND: 'noninteractive'
-
+  build-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    timeout-minutes: 120
+    outputs:
+      image: ghcr.io/${{ github.repository }}-ci:${{ github.sha }}
     steps:
-      - run: |
-          apt-get update -y
-          apt-get install -y sudo software-properties-common dialog apt-utils tzdata
-        shell: bash
-
       - uses: actions/checkout@v4
 
-      - uses: r-lib/actions/setup-pandoc@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - uses: actions/setup-python@v5
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          python-version: '3.x'
-          architecture: 'x64'
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: r-lib/actions/setup-r@v2
+      - name: Build and push
+        uses: docker/build-push-action@v6
         with:
-          r-version: ${{ matrix.r }}
-          use-public-rspm: true
+          context: .
+          file: .github/docker/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository }}-ci:${{ github.sha }}
+          build-args: |
+            CUML_VERSION=21.12
+            CMAKE_CUDA_ARCHITECTURES=75
 
-      - uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          extra-packages: rcmdcheck
+  test-gpu:
+    needs: build-image
+    if: ${{ always() && needs.build-image.result == 'success' }}
+    concurrency:
+      group: gpu-tests
+    runs-on:
+      - "runs-on=${{ github.run_id }}/family=g4dn.xlarge/image=ubuntu24-gpu-x64/spot=true"
+    container:
+      image: ${{ needs.build-image.outputs.image }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+      options: --gpus all --runtime=nvidia
+    timeout-minutes: 60
+    env:
+      NOT_CRAN: true
 
-      - name: Build {cuda.ml}
-        id: build-pkg
+    steps:
+      - name: Verify GPU access
+        run: nvidia-smi
+
+      - name: Session info
         run: |
-          cd ..
-          rm -f cuda.ml_*.tar.gz
-          R CMD build cuda.ml
-          echo "pkg-dir=$(pwd)" >> "$GITHUB_OUTPUT"
+          Rscript -e "sessionInfo()"
+          Rscript -e "library(cuda.ml)"
 
-      - run: cp cuda.ml/.lsan-suppressions.txt /tmp
-        working-directory: ${{ steps.build-pkg.outputs.pkg-dir }}
-
-      - name: Install Miniconda
-        run: reticulate::install_miniconda(force = TRUE)
-        shell: Rscript {0}
-
-      - name: Check {cuda.ml} package
+      - name: Run tests
         run: |
-          pkg <- list.files(".", pattern = "cuda\\.ml_.*\\.tar\\.gz")
-          stopifnot(length(pkg) == 1)
-          rcmdcheck::rcmdcheck(
-            path = pkg[[1]],
-            args = c("--no-manual", "--as-cran"),
-            check_dir = "check"
-          )
-        shell: Rscript {0}
-        working-directory: ${{ steps.build-pkg.outputs.pkg-dir }}
-
-      - name: Show testthat output
-        if: always()
-        run: find check -name 'testthat.Rout*' -type f -exec cat '{}' \; || true
-        shell: bash
-        working-directory: ${{ steps.build-pkg.outputs.pkg-dir }}
-
-      - name: Upload check results
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ runner.os }}-cuda${{ matrix.cuda }}-cuml${{ matrix.cuml }}-r${{ matrix.r }}-results
-          path: ${{ steps.build-pkg.outputs.pkg-dir }}/check
+          Rscript -e "testthat::test_package('cuda.ml', reporter = 'progress')"
