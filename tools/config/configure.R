@@ -68,12 +68,12 @@ run_cmake <- function() {
   setwd(pkg_root())
 
   cuml_version <- Sys.getenv("CUML_VERSION", unset = "21.08")
-  rapids_cmake_tag <- if (grepl("^2[6-9]\\.|^[3-9]", cuml_version)) {
-    # cuML 26.04+ uses tagged rapids-cmake releases (e.g. v26.04.00)
+  # rapids-cmake tags: v21.x had only alpha tags (v21.08.00a),
+  # v23.02+ has stable tags (v23.02.00)
+  rapids_cmake_tag <- if (package_version(cuml_version) >= "23.02") {
     paste0("v", cuml_version, ".00")
   } else {
-    # cuML 21.x uses the 21.10 branch of rapids-cmake
-    "origin/branch-21.10"
+    paste0("v", cuml_version, ".00a")
   }
 
   cxx_standard <- if (grepl("^2[6-9]\\.|^[3-9]", cuml_version)) "17" else "14"
