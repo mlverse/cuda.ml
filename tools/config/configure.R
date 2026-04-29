@@ -77,9 +77,13 @@ run_cmake <- function() {
     download_libcuml()
     cuml_prefix <- normalizePath(file.path(pkg_root(), "libcuml"))
     dir.create("inst")
-    file.rename(file.path("libcuml", "lib"), file.path("inst", "libs"))
+    # lib/ may be a symlink to lib64/ (pip wheel) or the actual directory (legacy zip)
+    lib_dir <- if (dir.exists(file.path("libcuml", "lib64"))) "lib64" else "lib"
+    file.rename(file.path("libcuml", lib_dir), file.path("inst", "libs"))
     file.symlink(file.path("..", "inst", "libs"), file.path("libcuml", "lib"))
-    libs <- c("libtreelite", "libtreelite_runtime", "libcuml++")
+    if (lib_dir == "lib64") {
+      file.symlink(file.path("..", "inst", "libs"), file.path("libcuml", "lib64"))
+    }
     bundle_libcuml <- TRUE
   }
   cmake_prefix_path <- paste0(

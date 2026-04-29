@@ -71,7 +71,7 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository }}-ci:${{ github.sha }}
           build-args: |
-            CUML_VERSION=21.12
+            CUML_VERSION=26.04
             CMAKE_CUDA_ARCHITECTURES=75
 
   test-gpu:

@@ -1,10 +1,15 @@
+#include "preprocessor.h"
+
+#include <cuml/version_config.hpp>
+
+#if CUML_VERSION_MAJOR < 26
+
 #include "async_utils.cuh"
 #include "cuda_utils.h"
 #include "fil_utils.h"
 #include "handle_utils.h"
 #include "matrix_utils.h"
 #include "pinned_host_vector.h"
-#include "preprocessor.h"
 #include "stream_allocator.h"
 #include "treelite_utils.cuh"
 
@@ -172,3 +177,36 @@ __host__ Rcpp::NumericMatrix fil_predict(
 }
 
 }  // namespace cuml4r
+
+#else  // CUML_VERSION_MAJOR >= 26
+
+#include <Rcpp.h>
+
+#include <string>
+
+namespace cuml4r {
+
+__host__ SEXP fil_load_model(int const model_type, std::string const& filename,
+                             int const algo, bool const classification,
+                             float const threshold, int const storage_type,
+                             int const blocks_per_sm,
+                             int const threads_per_tree, int const n_items) {
+  Rcpp::stop("FIL (Forest Inference Library) is not yet supported with cuML 26.04.");
+  return R_NilValue;
+}
+
+__host__ int fil_get_num_classes(SEXP const& model) {
+  Rcpp::stop("FIL (Forest Inference Library) is not yet supported with cuML 26.04.");
+  return 0;
+}
+
+__host__ Rcpp::NumericMatrix fil_predict(
+  SEXP const& model, Rcpp::NumericMatrix const& x,
+  bool const output_class_probabilities) {
+  Rcpp::stop("FIL (Forest Inference Library) is not yet supported with cuML 26.04.");
+  return Rcpp::NumericMatrix();
+}
+
+}  // namespace cuml4r
+
+#endif  // CUML_VERSION_MAJOR < 26

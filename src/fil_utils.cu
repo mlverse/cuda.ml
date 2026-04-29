@@ -1,3 +1,9 @@
+#include "preprocessor.h"
+
+#include <cuml/version_config.hpp>
+
+#if CUML_VERSION_MAJOR < 26
+
 #include "fil_utils.h"
 
 namespace cuml4r {
@@ -19,3 +25,5 @@ __host__ forest_uptr make_forest(raft::handle_t const& handle,
 
 }  // namespace fil
 }  // namespace cuml4r
+
+#endif  // CUML_VERSION_MAJOR < 26

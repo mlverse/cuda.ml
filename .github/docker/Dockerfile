@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.2.2-devel-ubuntu20.04
+FROM nvidia/cuda:12.8.1-devel-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -31,7 +31,7 @@ RUN echo "MAKEFLAGS=-j$(nproc)" >> "$(R RHOME)/etc/Renviron.site"
 # Copy source
 COPY . /build
 
-ARG CUML_VERSION=21.12
+ARG CUML_VERSION=26.04
 ENV CUML_VERSION=${CUML_VERSION}
 
 # Cross-compile for T4 GPU (compute capability 7.5) since build runner has no GPU
