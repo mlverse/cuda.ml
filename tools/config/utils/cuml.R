@@ -80,24 +80,35 @@ download_libcuml <- function(cuml_version = Sys.getenv("CUML_VERSION", unset = "
 
   cuda_version <- as.character(find_nvcc()$version$major)
 
-  url_or_urls <- Sys.getenv("CUML_URL")
-  if (!nzchar(url_or_urls)) {
-    url_or_urls <- libcuml_versions[[cuml_version]][[cuda_version]]
+  url_entry <- Sys.getenv("CUML_URL")
+  if (!nzchar(url_entry)) {
+    url_entry <- libcuml_versions[[cuml_version]][[cuda_version]]
   }
 
-  if (is.list(url_or_urls)) {
-    # New format: list of pip wheels (cuml + raft + rmm dependencies).
-    # Download and extract all, then merge headers into libcuml/include/.
-    for (name in names(url_or_urls)) {
-      url <- url_or_urls[[name]]
+  is_pypi_package <- !grepl("^https?://", url_entry)
+
+  if (is_pypi_package) {
+    # Resolve and download the full dependency tree from PyPI.
+    # This downloads libcuml-cu12 and all its native header dependencies
+    # (libraft, librmm, rapids-logger, nvidia-cccl, etc.) as wheels, extracts
+    # them, and merges all headers into libcuml/include/.
+    message("Resolving PyPI dependencies for ", url_entry, "...")
+    urls <- resolve_native_deps(url_entry)
+    message("Downloading ", length(urls), " packages: ", paste(names(urls), collapse = ", "))
+
+    for (pkg_name in names(urls)) {
+      url <- urls[[pkg_name]]
       tmp <- tempfile(fileext = ".whl")
-      download.file(url, tmp)
-      unzip(tmp, exdir = ".")
+      message("  Downloading ", pkg_name, "...")
+      download.file(url, tmp, quiet = TRUE)
+      unzip(tmp, exdir = ".", overwrite = TRUE)
     }
-    # Copy raft and rmm headers into libcuml/include/ so cmake finds them
-    for (dep in c("libraft", "librmm")) {
-      dep_include <- file.path(dep, "include")
-      if (dir.exists(dep_include)) {
+
+    # Merge all include/ directories into libcuml/include/
+    # Each wheel extracts to a directory like libraft/, librmm/, etc.
+    for (d in list.dirs(".", full.names = TRUE, recursive = FALSE)) {
+      dep_include <- file.path(d, "include")
+      if (d != "./libcuml" && dir.exists(dep_include)) {
         file.copy(
           list.dirs(dep_include, full.names = TRUE, recursive = FALSE),
           file.path("libcuml", "include"),
@@ -106,14 +117,14 @@ download_libcuml <- function(cuml_version = Sys.getenv("CUML_VERSION", unset = "
       }
     }
   } else {
-    # Single URL: either a pip wheel (.whl) or legacy zip archive
+    # Direct URL: either a pip wheel (.whl) or legacy zip archive
     tmp <- tempfile(fileext = ".zip")
-    download.file(url_or_urls, tmp)
+    download.file(url_entry, tmp)
     unzip(tmp, exdir = ".")
 
-    if (!grepl("\\.whl$", url_or_urls)) {
+    if (!grepl("\\.whl$", url_entry)) {
       # Legacy zip archives: extract to a versioned directory name, rename to libcuml/
-      zip_file_name <- basename(url_or_urls)
+      zip_file_name <- basename(url_entry)
       dir_name <- gsub("\\.zip$", "", zip_file_name)
       file.rename(file.path(".", dir_name), file.path(".", "libcuml"))
     }

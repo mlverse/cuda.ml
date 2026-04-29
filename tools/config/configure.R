@@ -54,7 +54,7 @@ load_libcuml_versions <- function() {
 load_util_fns <- function() {
   wd <- file.path(pkg_root(), "tools", "config", "utils")
 
-  for (f in c("cuml.R", "cmake.R", "logging.R", "nvcc.R", "platform.R")) {
+  for (f in c("cuml.R", "cmake.R", "logging.R", "nvcc.R", "platform.R", "pypi.R")) {
     source(file.path(wd, f))
   }
 }
