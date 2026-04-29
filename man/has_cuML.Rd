@@ -22,7 +22,7 @@ library(cuda.ml)
 if (!has_cuML()) {
   warning(
     "Please install the RAPIDS cuML shared library first, and then re-",
-    "install \{cuda.ml\}."
+    "install {cuda.ml}."
   )
 }
 }

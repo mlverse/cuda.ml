@@ -24,8 +24,8 @@ if (cuda_ml_fil_enabled()) {
 } else {
   message(
     "FIL functionalities are disabled in the current installation of ",
-    "\{cuda.ml\}. Please reinstall Treelite C library first, and then re-install",
-    " \{cuda.ml\} to enable FIL."
+    "{cuda.ml}. Please reinstall Treelite C library first, and then re-install",
+    " {cuda.ml} to enable FIL."
   )
 }
 }
