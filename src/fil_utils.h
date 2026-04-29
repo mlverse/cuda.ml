@@ -2,29 +2,33 @@
 
 #ifndef CUML4R_TREELITE_C_API_MISSING
 
-#include <cuml/fil/fil.h>
+#include "treelite_utils.cuh"
 
-#include <functional>
+#include <cuml/fil/detail/raft_proto/device_type.hpp>
+#include <cuml/fil/forest_model.hpp>
+#include <cuml/fil/infer_kind.hpp>
+#include <cuml/fil/tree_layout.hpp>
+
+#include <cstddef>
 #include <memory>
+#include <optional>
 
 namespace cuml4r {
 namespace fil {
 
-using forest_uptr =
-  std::unique_ptr<ML::fil::forest, std::function<void(ML::fil::forest* const)>>;
+using forest_uptr = std::unique_ptr<ML::fil::forest_model>;
 
-/*
- * RAII wrapper for a `ML::fil::forest` pointer (a.k.a `ML::fil::forest_t`)
- *
- * NOTE: the resulting RAII wrapper does *not* take ownship of `handle`, and
- * assumes `handle` will be destroyed *after* the FIL forest object itself is
- * destroyed.
- */
-forest_uptr make_forest(raft::handle_t const& handle,
-                        ML::fil::forest* const forest);
+ML::fil::tree_layout tree_layout_from_storage_type(int storage_type);
 
-forest_uptr make_forest(raft::handle_t const& handle,
-                        std::function<ML::fil::forest*()> src);
+forest_uptr import_from_treelite(
+  raft::handle_t const& handle, TreeliteHandle const& tl_handle,
+  ML::fil::tree_layout layout = ML::fil::tree_layout::depth_first);
+
+void predict(raft::handle_t const& handle, ML::fil::forest_model& forest,
+             float* output, float* input, std::size_t num_rows,
+             ML::fil::infer_kind infer_kind = ML::fil::infer_kind::default_kind,
+             std::optional<ML::fil::index_type> chunk_size =
+               std::optional<ML::fil::index_type>{4});
 
 }  // namespace fil
 }  // namespace cuml4r

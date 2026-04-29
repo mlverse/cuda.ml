@@ -9,15 +9,16 @@
 #include "random_forest_serde.cuh"
 #include "stream_allocator.h"
 
-#ifndef CUML4R_TREELITE_C_API_MISSING
-#include <cuml/fil/fil.h>
-#endif
 #include <thrust/device_vector.h>
 #include <cuml/tree/decisiontree.hpp>
+#ifndef CUML4R_TREELITE_C_API_MISSING
+#include <cuml/fil/postproc_ops.hpp>
+#endif
 #include <cuml/version_config.hpp>
 
 #include <Rcpp.h>
 
+#include <algorithm>
 #include <functional>
 #include <memory>
 #include <unordered_map>
@@ -72,7 +73,7 @@ class RandomForestClassifier {
       auto const& treelite_handle = getTreeliteHandle();
 
       state[kRfClassifierForest] = detail::getState(
-        *reinterpret_cast<treelite::Model const*>(*treelite_handle.get()));
+        *static_cast<treelite::Model const*>(treelite_handle.handle()));
     }
     {
       Rcpp::List inv_labels_map;
@@ -199,17 +200,6 @@ __host__ Rcpp::IntegerVector rf_classifier_predict(
   return Rcpp::IntegerVector(h_predictions.begin(), h_predictions.end());
 }
 
-/*
- * The 'ML::fil::treelite_params_t::threads_per_tree' and
- * 'ML::fil::treelite_params_t::n_items' parameters are only supported in
- * RAPIDS cuML 21.08 or above.
- */
-CUML4R_ASSIGN_IF_PRESENT(threads_per_tree)
-CUML4R_NOOP_IF_ABSENT(threads_per_tree)
-
-CUML4R_ASSIGN_IF_PRESENT(n_items)
-CUML4R_NOOP_IF_ABSENT(n_items)
-
 }  // namespace
 
 __host__ SEXP rf_classifier_fit(
@@ -317,45 +307,52 @@ __host__ Rcpp::IntegerVector rf_classifier_predict(
 #endif
         );
       });
-  } else {
-    return rf_classifier_predict<float, float>(
-      model, input,
-      /*predict_impl=*/
-      [&model, n_samples, n_features](raft::handle_t const& handle,
-                                      float* const d_input,
-                                      float* const d_preds) {
+  }
+
 #ifndef CUML4R_TREELITE_C_API_MISSING
-        auto const& tl_handle = model->getTreeliteHandle();
+  auto const input_m = Matrix<float>(input, /*transpose=*/false);
+  auto stream_view = stream_allocator::getOrCreateStream();
+  raft::handle_t handle;
+  handle_utils::initializeHandle(handle, stream_view.value());
 
-        ML::fil::treelite_params_t params;
-        params.algo = ML::fil::algo_t::ALGO_AUTO;
-        params.output_class = true;
-        params.storage_type = ML::fil::storage_type_t::AUTO;
-        params.blocks_per_sm = 0;
-        set_threads_per_tree(params, 1);
-        set_n_items(params, 0);
-        params.pforest_shape_str = nullptr;
-        auto forest =
-          fil::make_forest(handle,
-                           /*src=*/[&] {
-                             ML::fil::forest* f;
-                             ML::fil::from_treelite(handle, /*pforest=*/&f,
-                                                    /*model=*/*tl_handle.get(),
-                                                    /*tl_params=*/&params);
-                             return f;
-                           });
-        ML::fil::predict(/*h=*/handle, /*f=*/forest.get(), /*preds=*/d_preds,
-                         /*data=*/d_input, /*num_rows=*/n_samples,
-                         /*predict_proba=*/false);
+  auto const& h_input = input_m.values;
+  thrust::device_vector<float> d_input(h_input.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(input_h2d) = async_copy(
+    stream_view.value(), h_input.cbegin(), h_input.cend(), d_input.begin());
 
+  auto forest = fil::import_from_treelite(handle, model->getTreeliteHandle());
+  auto const n_outputs = static_cast<size_t>(forest->num_outputs());
+  thrust::device_vector<float> d_raw_predictions(n_samples * n_outputs);
+  fil::predict(handle, *forest, d_raw_predictions.data().get(),
+               d_input.data().get(), n_samples);
+
+  pinned_host_vector<float> h_raw_predictions(d_raw_predictions.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(preds_d2h) =
+    async_copy(stream_view.value(), d_raw_predictions.cbegin(),
+               d_raw_predictions.cend(), h_raw_predictions.begin());
+
+  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
+
+  pinned_host_vector<float> h_predictions(n_samples);
+  for (int i = 0; i < n_samples; ++i) {
+    auto const row_begin = h_raw_predictions.begin() + i * n_outputs;
+    h_predictions[i] =
+      forest->row_postprocessing() == ML::fil::row_op::max_index || n_outputs == 1
+        ? row_begin[0]
+        : static_cast<float>(
+            std::distance(row_begin,
+                          std::max_element(row_begin, row_begin + n_outputs)));
+  }
+
+  postprocess_labels(h_predictions, model->invLabelsMap_);
+
+  return Rcpp::IntegerVector(h_predictions.begin(), h_predictions.end());
 #else
-        Rcpp::stop(
-          "Treelite C API is required for predictions using unserialized "
-          "rand_forest model!");
+  Rcpp::stop(
+    "Treelite C API is required for predictions using unserialized "
+    "rand_forest model!");
 
 #endif
-      });
-  }
 }
 
 __host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
@@ -374,23 +371,9 @@ __host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
   raft::handle_t handle;
   handle_utils::initializeHandle(handle, stream_view.value());
 
-  ML::fil::treelite_params_t params;
-  params.algo = ML::fil::algo_t::ALGO_AUTO;
-  // output class probabilities instead of classes
-  params.output_class = false;
-  params.storage_type = ML::fil::storage_type_t::AUTO;
-  params.blocks_per_sm = 0;
-  set_threads_per_tree(params, 1);
-  set_n_items(params, 0);
-  params.pforest_shape_str = nullptr;
-  auto forest = fil::make_forest(
-    handle,
-    /*src=*/[&] {
-      ML::fil::forest* f;
-      ML::fil::from_treelite(handle, /*pforest=*/&f,
-                             /*model=*/*tl_handle.get(), /*tl_params=*/&params);
-      return f;
-    });
+  auto forest = fil::import_from_treelite(handle, tl_handle);
+  forest->set_row_postprocessing(ML::fil::row_op::disable);
+  auto const n_outputs = static_cast<size_t>(forest->num_outputs());
 
   // FIL input
   auto const& h_x = input_m.values;
@@ -399,12 +382,10 @@ __host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
     async_copy(handle.get_stream(), h_x.cbegin(), h_x.cend(), d_x.begin());
 
   // FIL output
-  thrust::device_vector<float> d_preds(n_classes * n_samples);
+  thrust::device_vector<float> d_preds(n_outputs * n_samples);
 
-  ML::fil::predict(/*h=*/handle, /*f=*/forest.get(),
-                   /*preds=*/d_preds.data().get(),
-                   /*data=*/d_x.data().get(), /*num_rows=*/n_samples,
-                   /*predict_proba=*/true);
+  fil::predict(handle, *forest, d_preds.data().get(), d_x.data().get(),
+               n_samples);
 
   CUDA_RT_CALL(cudaStreamSynchronize(handle.get_stream()));
 
@@ -414,8 +395,20 @@ __host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
 
   CUDA_RT_CALL(cudaStreamSynchronize(handle.get_stream()));
 
-  return Rcpp::transpose(
-    Rcpp::NumericMatrix(n_classes, n_samples, h_preds.begin()));
+  if (n_outputs == static_cast<size_t>(n_classes)) {
+    return Rcpp::transpose(
+      Rcpp::NumericMatrix(n_outputs, n_samples, h_preds.begin()));
+  }
+  if (n_outputs == 1 && n_classes == 2) {
+    Rcpp::NumericMatrix out(n_samples, 2);
+    for (int i = 0; i < n_samples; ++i) {
+      out(i, 1) = h_preds[i];
+      out(i, 0) = 1.0 - out(i, 1);
+    }
+    return out;
+  }
+  Rcpp::stop("FIL model returned %d outputs, but %d classes were expected.",
+             static_cast<int>(n_outputs), n_classes);
 #else
 
   return {};

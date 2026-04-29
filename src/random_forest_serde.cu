@@ -32,7 +32,8 @@ __host__ Rcpp::List getState(treelite::PyBufferFrame const& buf) {
 __host__ Rcpp::List getState(treelite::Model const& model) {
   Rcpp::List state;
 
-  auto const buffers = const_cast<treelite::Model&>(model).GetPyBuffer();
+  auto const buffers =
+    const_cast<treelite::Model&>(model).SerializeToPyBuffer();
   for (auto const& buffer : buffers) {
     state.push_back(getState(buffer));
   }
@@ -65,7 +66,7 @@ void setState(std::unique_ptr<treelite::Model>& model,
     setState(/*buf=*/frames[i], frames_content, /*state=*/state[i]);
   }
 
-  model = treelite::Model::CreateFromPyBuffer(frames);
+  model = treelite::Model::DeserializeFromPyBuffer(frames);
 }
 
 }  // namespace detail

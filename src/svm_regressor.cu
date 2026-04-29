@@ -98,9 +98,11 @@ __host__ SEXP svr_fit(Rcpp::NumericMatrix const& X,
                  h_sample_weights.cend(), d_sample_weights.begin());
   }
 
-  ML::SVM::svmParameter param;
+  ML::SVM::svmParameter param{};
   param.C = cost;
-  param.cache_size = cache_size, param.max_iter = max_iter;
+  param.cache_size = cache_size;
+  param.max_outer_iter = max_iter;
+  param.max_iter = -1;
   param.nochange_steps = nochange_steps;
   param.tol = tol;
 #if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \

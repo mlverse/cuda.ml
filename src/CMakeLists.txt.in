@@ -36,6 +36,12 @@ if(DEFINED CUML_INCLUDE_DIR)
     # CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES is needed so that cuda_runtime.h is found
     # CUML_INCLUDE_DIR is needed so that kmeans/kmeans_c.h is found
     set(CUML4R_INCLUDE_DIRS ${CUML_INCLUDE_DIR} ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
+    if(EXISTS "${CUML_INCLUDE_DIR}/rapids")
+      # RAPIDS pip wheels may ship a CCCL copy that matches the RAPIDS shared
+      # libraries under include/rapids, plus a newer top-level CCCL copy.
+      # Prefer the ABI-compatible copy for cuda/cub/thrust/nv headers.
+      include_directories(BEFORE ${CUML_INCLUDE_DIR}/rapids)
+    endif()
 else()
     message(FATAL_ERROR "CUML_INCLUDE_DIR not specified.")
 endif(DEFINED CUML_INCLUDE_DIR)
@@ -147,7 +153,17 @@ set(CUML4R_LIBS cuda.ml PRIVATE cuml++ cublas cusolver cudart cusparse)
 
 find_package(Treelite QUIET)
 if(Treelite_FOUND)
-  set(CUML4R_LIBS ${CUML4R_LIBS} treelite::treelite treelite::treelite_runtime)
+  target_compile_definitions(cuda.ml PRIVATE CUML_ENABLE_GPU)
+  if(TARGET treelite::treelite_static)
+    set(CUML4R_LIBS ${CUML4R_LIBS} treelite::treelite_static)
+  elseif(TARGET treelite::treelite)
+    set(CUML4R_LIBS ${CUML4R_LIBS} treelite::treelite)
+  else()
+    message(FATAL_ERROR "Treelite was found but no supported Treelite CMake target was exported.")
+  endif()
+  if(TARGET treelite::treelite_runtime)
+    set(CUML4R_LIBS ${CUML4R_LIBS} treelite::treelite_runtime)
+  endif()
   set(CUML4R_INCLUDE_DIRS ${CUML4R_INCLUDE_DIRS} ${Treelite_INCLUDE_DIRS})
 else()
   message(
