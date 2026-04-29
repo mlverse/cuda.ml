@@ -2,6 +2,10 @@
 
 #ifdef HAS_CUML
 
+#include <cuml/version_config.hpp>
+
+#if CUML_VERSION_MAJOR < 26
+
 #include <memory>
 
 namespace raft {
@@ -19,6 +23,8 @@ namespace cuml4r {
 std::shared_ptr<raft::mr::device::allocator> getDeviceAllocator();
 
 }  // namespace cuml4r
+
+#endif  // CUML_VERSION_MAJOR < 26
 
 #else
 

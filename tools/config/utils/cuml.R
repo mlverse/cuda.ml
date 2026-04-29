@@ -78,26 +78,44 @@ download_libcuml <- function(cuml_version = Sys.getenv("CUML_VERSION", unset = "
   options(timeout = 1000)
   on.exit(options(timeout = old_timeout), add = TRUE)
 
-  tmp <- tempfile(fileext = ".zip")
   cuda_version <- as.character(find_nvcc()$version$major)
 
-  url <- Sys.getenv("CUML_URL")
-  if (!nzchar(url)) {
-    url <- libcuml_versions[[cuml_version]][[cuda_version]]
+  url_or_urls <- Sys.getenv("CUML_URL")
+  if (!nzchar(url_or_urls)) {
+    url_or_urls <- libcuml_versions[[cuml_version]][[cuda_version]]
   }
 
-  is_pip_wheel <- grepl("\\.whl$", url)
-
-  download.file(url, tmp)
-  unzip(tmp, exdir = ".")
-
-  if (is_pip_wheel) {
-    # pip wheels extract to libcuml/ with include/ and lib64/ subdirs.
-    # configure.R handles moving libs to inst/libs and creating symlinks.
+  if (is.list(url_or_urls)) {
+    # New format: list of pip wheels (cuml + raft + rmm dependencies).
+    # Download and extract all, then merge headers into libcuml/include/.
+    for (name in names(url_or_urls)) {
+      url <- url_or_urls[[name]]
+      tmp <- tempfile(fileext = ".whl")
+      download.file(url, tmp)
+      unzip(tmp, exdir = ".")
+    }
+    # Copy raft and rmm headers into libcuml/include/ so cmake finds them
+    for (dep in c("libraft", "librmm")) {
+      dep_include <- file.path(dep, "include")
+      if (dir.exists(dep_include)) {
+        file.copy(
+          list.dirs(dep_include, full.names = TRUE, recursive = FALSE),
+          file.path("libcuml", "include"),
+          recursive = TRUE
+        )
+      }
+    }
   } else {
-    # Legacy zip archives: extract to a versioned directory name, rename to libcuml/
-    zip_file_name <- basename(url)
-    dir_name <- gsub("\\.zip$", "", zip_file_name)
-    file.rename(file.path(".", dir_name), file.path(".", "libcuml"))
+    # Single URL: either a pip wheel (.whl) or legacy zip archive
+    tmp <- tempfile(fileext = ".zip")
+    download.file(url_or_urls, tmp)
+    unzip(tmp, exdir = ".")
+
+    if (!grepl("\\.whl$", url_or_urls)) {
+      # Legacy zip archives: extract to a versioned directory name, rename to libcuml/
+      zip_file_name <- basename(url_or_urls)
+      dir_name <- gsub("\\.zip$", "", zip_file_name)
+      file.rename(file.path(".", dir_name), file.path(".", "libcuml"))
+    }
   }
 }
