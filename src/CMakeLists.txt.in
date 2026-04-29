@@ -26,9 +26,10 @@ if(DEFINED ENV{CUML4R_ENABLE_CCACHE})
 endif(DEFINED ENV{CUML4R_ENABLE_CCACHE})
 
 if(DEFINED CUML_INCLUDE_DIR)
-    # CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES is needed so that cuda_runtime.h is found
-    # CUML_INCLUDE_DIR is needed so that kmeans/kmeans_c.h is found
-    set(CUML4R_INCLUDE_DIRS ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES} ${CUML_INCLUDE_DIR})
+    # CUML_INCLUDE_DIR first so cuML's bundled headers (CCCL 3.3, raft, rmm)
+    # take precedence over the CUDA toolkit's older versions.
+    # CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES is still needed for cuda_runtime.h.
+    set(CUML4R_INCLUDE_DIRS ${CUML_INCLUDE_DIR} ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
 else()
     message(FATAL_ERROR "CUML_INCLUDE_DIR not specified.")
 endif(DEFINED CUML_INCLUDE_DIR)
