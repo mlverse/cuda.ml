@@ -104,16 +104,38 @@ download_libcuml <- function(cuml_version = Sys.getenv("CUML_VERSION", unset = "
       unzip(tmp, exdir = ".", overwrite = TRUE)
     }
 
-    # Merge all include/ directories into libcuml/include/
-    # Each wheel extracts to a directory like libraft/, librmm/, etc.
-    for (d in list.dirs(".", full.names = TRUE, recursive = FALSE)) {
-      dep_include <- file.path(d, "include")
-      if (d != "./libcuml" && dir.exists(dep_include)) {
+    # Download CCCL headers from GitHub (required by rmm/raft at compile time,
+    # but not a pip dependency). CCCL is header-only.
+    cccl_version <- "3.3.0"
+    cccl_url <- sprintf(
+      "https://github.com/NVIDIA/cccl/releases/download/v%s/cccl-v%s.zip",
+      cccl_version, cccl_version
+    )
+    cccl_tmp <- tempfile(fileext = ".zip")
+    message("  Downloading CCCL v", cccl_version, " headers...")
+    download.file(cccl_url, cccl_tmp, quiet = TRUE)
+    unzip(cccl_tmp, exdir = ".", overwrite = TRUE)
+
+    # Merge all include/ directories into libcuml/include/.
+    # Sources: pip wheels (libraft/, librmm/, nvidia/, rapids_logger/, etc.)
+    # and CCCL (cccl-v3.3.0/).
+    # Pip wheels may extract to nested dirs like nvidia/cuda_cccl/include/.
+    merge_include_dirs <- function(src_dir) {
+      dep_include <- file.path(src_dir, "include")
+      if (dir.exists(dep_include)) {
         file.copy(
           list.dirs(dep_include, full.names = TRUE, recursive = FALSE),
           file.path("libcuml", "include"),
           recursive = TRUE
         )
+      }
+    }
+    for (d in list.dirs(".", full.names = TRUE, recursive = FALSE)) {
+      if (d == "./libcuml") next
+      merge_include_dirs(d)
+      # Some pip wheels nest under nvidia/<subpackage>/include/
+      for (sub in list.dirs(d, full.names = TRUE, recursive = FALSE)) {
+        merge_include_dirs(sub)
       }
     }
   } else {
