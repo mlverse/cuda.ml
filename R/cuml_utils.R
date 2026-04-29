@@ -1,7 +1,7 @@
-#' Determine whether {cuda.ml} was linked to a valid version of the RAPIDS cuML
+#' Determine whether \{cuda.ml\} was linked to a valid version of the RAPIDS cuML
 #' shared library.
 #'
-#' @return A logical value indicating whether the current installation {cuda.ml}
+#' @return A logical value indicating whether the current installation \{cuda.ml\}
 #'   was linked to a valid version of the RAPIDS cuML shared library.
 #'
 #' @examples
@@ -17,11 +17,11 @@
 #' @export
 has_cuML <- .has_cuML
 
-#' Get the major version of the RAPIDS cuML shared library {cuda.ml} was linked
+#' Get the major version of the RAPIDS cuML shared library \{cuda.ml\} was linked
 #' to.
 #'
-#' @return The major version of the RAPIDS cuML shared library {cuda.ml} was
-#' linked to in a character vector, or \code{NA_character_} if {cuda.ml} was not
+#' @return The major version of the RAPIDS cuML shared library \{cuda.ml\} was
+#' linked to in a character vector, or \code{NA_character_} if \{cuda.ml\} was not
 #' linked to any version of RAPIDS cuML.
 #'
 #' @examples
@@ -32,11 +32,11 @@ has_cuML <- .has_cuML
 #' @export
 cuML_major_version <- .cuML_major_version
 
-#' Get the minor version of the RAPIDS cuML shared library {cuda.ml} was linked
+#' Get the minor version of the RAPIDS cuML shared library \{cuda.ml\} was linked
 #' to.
 #'
-#' @return The minor version of the RAPIDS cuML shared library {cuda.ml} was
-#' linked to in a character vector, or \code{NA_character_} if {cuda.ml} was not
+#' @return The minor version of the RAPIDS cuML shared library \{cuda.ml\} was
+#' linked to in a character vector, or \code{NA_character_} if \{cuda.ml\} was not
 #' linked to any version of RAPIDS cuML.
 #'
 #' @examples

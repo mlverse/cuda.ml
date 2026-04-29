@@ -18,10 +18,10 @@ agglomerative_clustering_match_metric <- function(metric = c("euclidean", "l1", 
 #' @template model-with-numeric-input
 #' @param n_clusters The number of clusters to find. Default: 2L.
 #' @param metric Metric used for linkage computation. Must be one of
-#'   {"euclidean", "l1", "l2", "manhattan", "cosine"}. If connectivity is
+#'   \{"euclidean", "l1", "l2", "manhattan", "cosine"\}. If connectivity is
 #'   "knn" then only "euclidean" is accepted. Default: "euclidean".
 #' @param connectivity The type of connectivity matrix to compute. Must be one
-#'   of {"pairwise", "knn"}. Default: "pairwise".
+#'   of \{"pairwise", "knn"\}. Default: "pairwise".
 #'     - 'pairwise' will compute the entire fully-connected graph of pairwise
 #'        distances between each set of points. This is the fastest to compute
 #'        and can be very fast for smaller datasets but requires O(n^2) space.

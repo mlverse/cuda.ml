@@ -74,8 +74,8 @@ run_cmake <- function() {
   cuml_prefix <- get_cuml_prefix()
   bundle_libcuml <- FALSE
   if (is.na(cuml_prefix)) {
-    cuml_prefix <- normalizePath(file.path(pkg_root(), "libcuml"))
     download_libcuml()
+    cuml_prefix <- normalizePath(file.path(pkg_root(), "libcuml"))
     dir.create("inst")
     file.rename(file.path("libcuml", "lib"), file.path("inst", "libs"))
     file.symlink(file.path("..", "inst", "libs"), file.path("libcuml", "lib"))
@@ -92,7 +92,7 @@ run_cmake <- function() {
 
   cmake_args <- c(
     ".",
-    "-DCMAKE_CUDA_ARCHITECTURES=NATIVE",
+    paste0("-DCMAKE_CUDA_ARCHITECTURES=", Sys.getenv("CMAKE_CUDA_ARCHITECTURES", unset = "NATIVE")),
     paste0("-DCUML_INCLUDE_DIR=", file.path(cuml_prefix, "include")),
     paste0("-DCUML_LIB_DIR=", file.path(cuml_prefix, "lib")),
     paste0(

@@ -107,10 +107,10 @@ desired responses.}
 mean of the response variable. If FALSE, then the model expects data to be
 centered. Default: TRUE.}
 
-\item{loss}{Loss function, must be one of {"squared_loss", "log", "hinge"}.}
+\item{loss}{Loss function, must be one of \{"squared_loss", "log", "hinge"\}.}
 
 \item{penalty}{Type of regularization to perform, must be one of
-  {"none", "l1", "l2", "elasticnet"}.
+  \{"none", "l1", "l2", "elasticnet"\}.
 
   - "none": no regularization.
   - "l1": perform regularization based on the L1-norm (LASSO) which tries to
@@ -143,7 +143,7 @@ Default: 1e-3.}
 \item{shuffle}{Whether to shuffles the training data after each epoch.
 Default: True.}
 
-\item{learning_rate}{Must be one of {"constant", "invscaling", "adaptive"}.
+\item{learning_rate}{Must be one of \{"constant", "invscaling", "adaptive"\}.
 
   - "constant": the learning rate will be kept constant.
   - "invscaling": (learning rate) = (initial learning rate) / pow(t, power_t)

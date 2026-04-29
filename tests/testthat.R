@@ -1,6 +1,7 @@
 library(testthat)
+library(cuda.ml)
 
-if (identical(Sys.getenv("NOT_CRAN"), "true")) {
+if (identical(Sys.getenv("NOT_CRAN"), "true") && has_cuML()) {
   filter <- Sys.getenv("TESTTHAT_FILTER", unset = "")
   if (identical(filter, "")) filter <- NULL
 

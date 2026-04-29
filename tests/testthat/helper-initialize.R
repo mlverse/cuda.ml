@@ -15,12 +15,8 @@ expect_libcuml <- function() {
 
 expect_libcuml()
 
-sklearn <- tryCatch(reticulate::import("sklearn"),
-  error = function(e) {
-    reticulate::py_install("sklearn", pip = TRUE)
-    reticulate::import("sklearn")
-  }
-)
+reticulate::py_require("scikit-learn")
+sklearn <- reticulate::import("sklearn")
 sklearn_iris_dataset <- list(
   data = iris[, names(iris) != "Species"] %>%
     unname() %>%

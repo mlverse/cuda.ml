@@ -38,9 +38,9 @@ sgd_match_learning_rate <- function(learning_rate = c("constant", "invscaling", 
 #' @template ellipsis-unused
 #' @template fit-intercept
 #' @template l1_ratio
-#' @param loss Loss function, must be one of {"squared_loss", "log", "hinge"}.
+#' @param loss Loss function, must be one of \{"squared_loss", "log", "hinge"\}.
 #' @param penalty Type of regularization to perform, must be one of
-#'   {"none", "l1", "l2", "elasticnet"}.
+#'   \{"none", "l1", "l2", "elasticnet"\}.
 #'
 #'   - "none": no regularization.
 #'   - "l1": perform regularization based on the L1-norm (LASSO) which tries to
@@ -63,7 +63,7 @@ sgd_match_learning_rate <- function(learning_rate = c("constant", "invscaling", 
 #' @param eta0 The initial learning rate. Default: 1e-3.
 #' @param power_t The exponent used for calculating the invscaling learning
 #'   rate. Default: 0.5.
-#' @param learning_rate Must be one of {"constant", "invscaling", "adaptive"}.
+#' @param learning_rate Must be one of \{"constant", "invscaling", "adaptive"\}.
 #'
 #'   - "constant": the learning rate will be kept constant.
 #'   - "invscaling": (learning rate) = (initial learning rate) / pow(t, power_t)

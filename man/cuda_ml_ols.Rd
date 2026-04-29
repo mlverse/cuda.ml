@@ -63,7 +63,7 @@ cuda_ml_ols(x, ...)
 \item{y}{A numeric vector (for regression) or factor (for classification) of
 desired responses.}
 
-\item{method}{Must be one of {"svd", "eig", "qr"}.
+\item{method}{Must be one of \{"svd", "eig", "qr"\}.
 
   - "svd": compute SVD decomposition using Jacobi iterations.
   - "eig": use an eigendecomposition of the covariance matrix.

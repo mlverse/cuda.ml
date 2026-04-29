@@ -313,6 +313,7 @@ cuda_ml_svm_classification_multiclass_impl <- function(processed, cost, kernel,
   )
 }
 
+#' @export
 cuda_ml_get_state.cuda_ml_svc_ovr <- function(model) {
   model_state <- list(
     ovr_model_states = lapply(model$xptr, function(x) cuda_ml_get_state(x)),
@@ -322,6 +323,7 @@ cuda_ml_get_state.cuda_ml_svc_ovr <- function(model) {
   new_model_state(model_state, "cuda_ml_svc_ovr_model_state")
 }
 
+#' @export
 cuda_ml_set_state.cuda_ml_svc_ovr_model_state <- function(model_state) {
   new_model(
     cls = c("cuda_ml_svc_ovr", "cuda_ml_svm"),
@@ -365,6 +367,7 @@ cuda_ml_svm_classification_binary_impl <- function(processed, cost, kernel, gamm
   )
 }
 
+#' @export
 cuda_ml_get_state.cuda_ml_svc <- function(model) {
   model_state <- list(
     model_state = .svc_get_state(model$xptr),
@@ -374,6 +377,7 @@ cuda_ml_get_state.cuda_ml_svc <- function(model) {
   new_model_state(model_state, "cuda_ml_svc_model_state")
 }
 
+#' @export
 cuda_ml_set_state.cuda_ml_svc_model_state <- function(model_state) {
   new_model(
     cls = c("cuda_ml_svc", "cuda_ml_svm"),
@@ -416,6 +420,7 @@ cuda_ml_svm_regression_impl <- function(processed, cost, kernel, gamma, coef0,
   )
 }
 
+#' @export
 cuda_ml_get_state.cuda_ml_svr <- function(model) {
   model_state <- list(
     model_state = .svr_get_state(model$xptr),
@@ -425,6 +430,7 @@ cuda_ml_get_state.cuda_ml_svr <- function(model) {
   new_model_state(model_state, "cuda_ml_svr_model_state")
 }
 
+#' @export
 cuda_ml_set_state.cuda_ml_svr_model_state <- function(model_state) {
   new_model(
     cls = c("cuda_ml_svr", "cuda_ml_svm"),

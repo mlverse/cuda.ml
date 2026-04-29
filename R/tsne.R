@@ -24,7 +24,7 @@ new_tsne_model <- function(embedding) {
 #' @param n_components Dimension of the embedded space.
 #' @param n_neighbors The number of datapoints to use in the attractive forces.
 #'   Default: ceiling(3 * perplexity).
-#' @param method T-SNE method, must be one of {"barnes_hut", "fft", "exact"}.
+#' @param method T-SNE method, must be one of \{"barnes_hut", "fft", "exact"\}.
 #'   The "exact" method will be more accurate but slower. Both "barnes_hut" and
 #'   "fft" methods are fast approximations.
 #' @param angle Valid values are between 0.0 and 1.0, which trade off speed and
@@ -35,7 +35,7 @@ new_tsne_model <- function(embedding) {
 #' @param learning_rate Learning rate of the t-SNE algorithm, usually between
 #'   (10, 1000). If the learning rate is too high, then t-SNE result could look
 #'   like a cloud / ball of points.
-#' @param learning_rate_method Must be one of {"adaptive", "none"}. If
+#' @param learning_rate_method Must be one of \{"adaptive", "none"\}. If
 #'   "adaptive", then learning rate, early exaggeration, and perplexity are
 #'   automatically tuned based on input size. Default: "adaptive".
 #' @param perplexity The target value of the conditional distribution's

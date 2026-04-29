@@ -31,3 +31,6 @@
 ^libcuml/*
 ^\.github$
 ^\.lsan-suppressions\.txt$
+^\.positai$
+^\.claude$
+^\.codex$

@@ -329,6 +329,7 @@ cuda_ml_rand_forest_impl_regression <- function(processed, mtry, trees, min_n,
   )
 }
 
+#' @export
 cuda_ml_get_state.cuda_ml_rand_forest <- function(model) {
   get_state_impl <- switch(model$mode,
     classification = .rf_classifier_get_state,
@@ -344,6 +345,7 @@ cuda_ml_get_state.cuda_ml_rand_forest <- function(model) {
   new_model_state(model_state, "cuda_ml_rand_forest_model_state")
 }
 
+#' @export
 cuda_ml_set_state.cuda_ml_rand_forest_model_state <- function(model_state) {
   set_state_impl <- switch(model_state$mode,
     classification = .rf_classifier_set_state,

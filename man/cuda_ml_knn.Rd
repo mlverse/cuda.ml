@@ -17,9 +17,8 @@ cuda_ml_knn(x, ...)
   x,
   y,
   algo = c("brute", "ivfflat", "ivfpq", "ivfsq"),
-  metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan",
-    "braycurtis", "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine",
-    "correlation"),
+  metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis",
+    "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine", "correlation"),
   p = 2,
   neighbors = 5L,
   ...
@@ -29,9 +28,8 @@ cuda_ml_knn(x, ...)
   x,
   y,
   algo = c("brute", "ivfflat", "ivfpq", "ivfsq"),
-  metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan",
-    "braycurtis", "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine",
-    "correlation"),
+  metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis",
+    "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine", "correlation"),
   p = 2,
   neighbors = 5L,
   ...
@@ -41,9 +39,8 @@ cuda_ml_knn(x, ...)
   formula,
   data,
   algo = c("brute", "ivfflat", "ivfpq", "ivfsq"),
-  metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan",
-    "braycurtis", "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine",
-    "correlation"),
+  metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis",
+    "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine", "correlation"),
   p = 2,
   neighbors = 5L,
   ...
@@ -53,9 +50,8 @@ cuda_ml_knn(x, ...)
   x,
   data,
   algo = c("brute", "ivfflat", "ivfpq", "ivfsq"),
-  metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan",
-    "braycurtis", "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine",
-    "correlation"),
+  metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis",
+    "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine", "correlation"),
   p = 2,
   neighbors = 5L,
   ...
@@ -76,7 +72,7 @@ cuda_ml_knn(x, ...)
 desired responses.}
 
 \item{algo}{The query algorithm to use. Must be one of
-  {"brute", "ivfflat", "ivfpq", "ivfsq"} or a KNN algorithm specification
+  \{"brute", "ivfflat", "ivfpq", "ivfsq"\} or a KNN algorithm specification
   constructed using the \code{cuda_ml_knn_algo_*} family of functions.
   If the algorithm is specified by one of the \code{cuda_ml_knn_algo_*}
   functions, then values of all required parameters of the algorithm will
@@ -98,10 +94,10 @@ desired responses.}
 
   Default: "brute".}
 
-\item{metric}{Distance metric to use. Must be one of {"euclidean", "l2",
+\item{metric}{Distance metric to use. Must be one of \{"euclidean", "l2",
 "l1", "cityblock", "taxicab", "manhattan", "braycurtis", "canberra",
 "minkowski", "lp", "chebyshev", "linf", "jensenshannon", "cosine",
-"correlation"}.
+"correlation"\}.
 Default: "euclidean".}
 
 \item{p}{Parameter for the Minkowski metric. If p = 1, then the metric is

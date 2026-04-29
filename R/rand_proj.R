@@ -79,12 +79,14 @@ cuda_ml_transform.cuda_ml_rand_proj_model <- function(model, x, ...) {
   .rproj_transform(model$rproj_ctx, as.matrix(x))
 }
 
+#' @export
 cuda_ml_get_state.cuda_ml_rand_proj_model <- function(model) {
   model_state <- .rproj_get_state(model$rproj_ctx)
 
   new_model_state(model_state, "cuda_ml_rand_proj_model_state")
 }
 
+#' @export
 cuda_ml_set_state.cuda_ml_rand_proj_model_state <- function(model_state) {
   model_obj <- .rproj_set_state(model_state)
 
