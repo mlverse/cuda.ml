@@ -93,11 +93,7 @@ download_libcuml <- function(cuml_version = Sys.getenv("CUML_VERSION", unset = "
 
   if (is_pip_wheel) {
     # pip wheels extract to libcuml/ with include/ and lib64/ subdirs.
-    # Normalize: create a lib/ symlink pointing to lib64/ so the rest of the
-    # build system can find libs at libcuml/lib/libcuml++.so.
-    if (dir.exists(file.path("libcuml", "lib64")) && !dir.exists(file.path("libcuml", "lib"))) {
-      file.symlink("lib64", file.path("libcuml", "lib"))
-    }
+    # configure.R handles moving libs to inst/libs and creating symlinks.
   } else {
     # Legacy zip archives: extract to a versioned directory name, rename to libcuml/
     zip_file_name <- basename(url)
