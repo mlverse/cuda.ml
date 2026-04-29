@@ -34,3 +34,4 @@
 ^\.positai$
 ^\.claude$
 ^\.codex$
+^CRAN-SUBMISSION$
