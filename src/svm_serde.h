@@ -4,7 +4,7 @@
 
 #include <cuml/version_config.hpp>
 
-#if CUML_VERSION_MAJOR >= 26
+#if CUML_VERSION_MAJOR >= 25
 #include <cuml/matrix/kernel_params.hpp>
 #else
 #include <cuml/matrix/kernelparams.h>
@@ -18,7 +18,7 @@
 // In cuML 26.04+, KernelParams moved from MLCommon::Matrix to ML::matrix
 // and the type names svmParameter/svmModel were already renamed to SvmParameter/SvmModel
 // in 21.10. For 26.04 we also need the namespace alias.
-#if CUML_VERSION_MAJOR >= 26
+#if CUML_VERSION_MAJOR >= 25
 
 namespace MLCommon {
 namespace Matrix {

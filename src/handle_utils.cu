@@ -13,7 +13,7 @@ __host__ void initializeHandle(raft::handle_t& handle,
   if (stream_view.value() == 0) {
     stream_view = stream_allocator::getOrCreateStream();
   }
-#if CUML_VERSION_MAJOR >= 26
+#if CUML_VERSION_MAJOR >= 25
   // In raft 26.x, handle_t takes stream_view in the constructor.
   // Reconstruct the handle with the desired stream via placement new.
   handle.~handle_t();

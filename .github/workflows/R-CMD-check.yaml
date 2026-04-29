@@ -49,7 +49,7 @@ jobs:
         include:
           - cuml: '21.12'
             cuda_image: 'nvidia/cuda:11.2.2-devel-ubuntu20.04'
-          - cuml: '26.04'
+          - cuml: '25.12'
             cuda_image: 'nvidia/cuda:12.8.1-devel-ubuntu22.04'
 
     runs-on: ubuntu-latest
@@ -105,8 +105,8 @@ jobs:
         include:
           - cuml: '21.12'
             image: ghcr.io/${{ github.repository }}-ci:cuml21.12-${{ github.sha }}
-          - cuml: '26.04'
-            image: ghcr.io/${{ github.repository }}-ci:cuml26.04-${{ github.sha }}
+          - cuml: '25.12'
+            image: ghcr.io/${{ github.repository }}-ci:cuml25.12-${{ github.sha }}
 
     concurrency:
       group: gpu-tests-cuml${{ matrix.cuml }}

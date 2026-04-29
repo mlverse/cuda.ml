@@ -2,7 +2,7 @@
 
 #include <cuml/version_config.hpp>
 
-#if CUML_VERSION_MAJOR < 26
+#if CUML_VERSION_MAJOR < 25
 
 #include "async_utils.cuh"
 #include "cuda_utils.h"
@@ -250,7 +250,7 @@ __host__ SEXP rproj_set_state(Rcpp::List const& model_state) {
 
 }  // namespace cuml4r
 
-#else  // CUML_VERSION_MAJOR >= 26
+#else  // CUML_VERSION_MAJOR >= 25
 
 #include <Rcpp.h>
 
@@ -288,4 +288,4 @@ __host__ SEXP rproj_set_state(Rcpp::List const& model_state) {
 
 }  // namespace cuml4r
 
-#endif  // CUML_VERSION_MAJOR < 26
+#endif  // CUML_VERSION_MAJOR < 25

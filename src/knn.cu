@@ -1,9 +1,5 @@
 #include "preprocessor.h"
 
-#include <cuml/version_config.hpp>
-
-#if CUML_VERSION_MAJOR < 26
-
 #include "async_utils.cuh"
 #include "cuda_utils.h"
 #include "handle_utils.h"
@@ -25,9 +21,9 @@
 #include <unordered_map>
 #include <vector>
 
-#if CUML_VERSION_MAJOR == 21
-#if CUML4R_CONCAT(0x, CUML_VERSION_MINOR) >= 0x08
+#include <cuml/version_config.hpp>
 
+// In cuML 21.08+ / 25.x, the KNN index types live in raft::spatial::knn
 #include <raft/spatial/knn/ann_common.h>
 
 using knnIndex = raft::spatial::knn::knnIndex;
@@ -36,18 +32,6 @@ using QuantizerType = raft::spatial::knn::QuantizerType;
 using IVFFlatParam = raft::spatial::knn::IVFFlatParam;
 using IVFPQParam = raft::spatial::knn::IVFPQParam;
 using IVFSQParam = raft::spatial::knn::IVFSQParam;
-
-#else
-
-using knnIndex = ML::knnIndex;
-using knnIndexParam = ML::knnIndexParam;
-using QuantizerType = ML::QuantizerType;
-using IVFFlatParam = ML::IVFFlatParam;
-using IVFPQParam = ML::IVFPQParam;
-using IVFSQParam = ML::IVFSQParam;
-
-#endif
-#endif
 
 namespace cuml4r {
 namespace knn {
@@ -482,41 +466,3 @@ Rcpp::NumericVector knn_regressor_predict(Rcpp::List const& model,
 }
 
 }  // namespace cuml4r
-
-#else  // CUML_VERSION_MAJOR >= 26
-
-#include <Rcpp.h>
-
-namespace cuml4r {
-
-__host__ Rcpp::List knn_fit(Rcpp::NumericMatrix const& x, int const algo,
-                            int const metric, float const p,
-                            Rcpp::List const& algo_params) {
-  Rcpp::stop("KNN is not yet supported with cuML 26.04.");
-  return Rcpp::List();
-}
-
-__host__ Rcpp::IntegerVector knn_classifier_predict(
-  Rcpp::List const& model, Rcpp::NumericMatrix const& x,
-  int const n_neighbors) {
-  Rcpp::stop("KNN is not yet supported with cuML 26.04.");
-  return Rcpp::IntegerVector();
-}
-
-__host__ Rcpp::NumericMatrix knn_classifier_predict_probabilities(
-  Rcpp::List const& model, Rcpp::NumericMatrix const& x,
-  int const n_neighbors) {
-  Rcpp::stop("KNN is not yet supported with cuML 26.04.");
-  return Rcpp::NumericMatrix();
-}
-
-Rcpp::NumericVector knn_regressor_predict(Rcpp::List const& model,
-                                          Rcpp::NumericMatrix const& x,
-                                          int const n_neighbors) {
-  Rcpp::stop("KNN is not yet supported with cuML 26.04.");
-  return Rcpp::NumericVector();
-}
-
-}  // namespace cuml4r
-
-#endif  // CUML_VERSION_MAJOR < 26

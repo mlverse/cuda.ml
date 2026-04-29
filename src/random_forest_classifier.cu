@@ -13,7 +13,7 @@
 #include <cuml/tree/decisiontree.hpp>
 #include <cuml/version_config.hpp>
 
-#if CUML_VERSION_MAJOR < 26
+#if CUML_VERSION_MAJOR < 25
 #include "fil_utils.h"
 #include <cuml/fil/fil.h>
 #endif
@@ -201,7 +201,7 @@ __host__ Rcpp::IntegerVector rf_classifier_predict(
   return Rcpp::IntegerVector(h_predictions.begin(), h_predictions.end());
 }
 
-#if CUML_VERSION_MAJOR < 26
+#if CUML_VERSION_MAJOR < 25
 /*
  * The 'ML::fil::treelite_params_t::threads_per_tree' and
  * 'ML::fil::treelite_params_t::n_items' parameters are only supported in
@@ -212,7 +212,7 @@ CUML4R_NOOP_IF_ABSENT(threads_per_tree)
 
 CUML4R_ASSIGN_IF_PRESENT(n_items)
 CUML4R_NOOP_IF_ABSENT(n_items)
-#endif  // CUML_VERSION_MAJOR < 26
+#endif  // CUML_VERSION_MAJOR < 25
 
 }  // namespace
 
@@ -307,7 +307,7 @@ __host__ Rcpp::IntegerVector rf_classifier_predict(
                     /*predictions=*/d_preds, verbosity);
       });
   } else {
-#if CUML_VERSION_MAJOR >= 26
+#if CUML_VERSION_MAJOR >= 25
     Rcpp::stop(
       "FIL-based prediction from unserialized random forest models is not yet "
       "supported with cuML 26.04.");
@@ -350,13 +350,13 @@ __host__ Rcpp::IntegerVector rf_classifier_predict(
 
 #endif
       });
-#endif  // CUML_VERSION_MAJOR >= 26
+#endif  // CUML_VERSION_MAJOR >= 25
   }
 }
 
 __host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
   SEXP model_xptr, Rcpp::NumericMatrix const& input) {
-#if CUML_VERSION_MAJOR >= 26
+#if CUML_VERSION_MAJOR >= 25
 
   Rcpp::stop(
     "FIL-based class probability prediction for random forests is not yet "

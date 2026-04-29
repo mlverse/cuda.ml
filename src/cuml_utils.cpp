@@ -4,8 +4,8 @@
 
 #include <cuml/version_config.hpp>
 
-static_assert(CUML_VERSION_MAJOR == 21 || CUML_VERSION_MAJOR >= 26,
-              "{cuda.ml} supports linking to RAPIDS cuML 21.x or 26.x+");
+static_assert(CUML_VERSION_MAJOR == 21 || CUML_VERSION_MAJOR >= 25,
+              "{cuda.ml} supports linking to RAPIDS cuML 21.x or 25.x+");
 
 #endif
 

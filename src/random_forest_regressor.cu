@@ -12,7 +12,7 @@
 #include <thrust/device_vector.h>
 #include <cuml/version_config.hpp>
 
-#if CUML_VERSION_MAJOR < 26
+#if CUML_VERSION_MAJOR < 25
 #include "fil_utils.h"
 #endif
 
@@ -126,7 +126,7 @@ __host__ Rcpp::NumericVector rf_regressor_predict(
   return Rcpp::NumericVector(h_preds.begin(), h_preds.end());
 }
 
-#if CUML_VERSION_MAJOR < 26
+#if CUML_VERSION_MAJOR < 25
 /*
  * The 'ML::fil::treelite_params_t::threads_per_tree' and
  * 'ML::fil::treelite_params_t::n_items' parameters are only supported in
@@ -137,7 +137,7 @@ CUML4R_NOOP_IF_ABSENT(threads_per_tree)
 
 CUML4R_ASSIGN_IF_PRESENT(n_items)
 CUML4R_NOOP_IF_ABSENT(n_items)
-#endif  // CUML_VERSION_MAJOR < 26
+#endif  // CUML_VERSION_MAJOR < 25
 
 }  // namespace
 
@@ -227,7 +227,7 @@ __host__ Rcpp::NumericVector rf_regressor_predict(
                     /*predictions=*/d_preds, verbosity);
       });
   } else {
-#if CUML_VERSION_MAJOR >= 26
+#if CUML_VERSION_MAJOR >= 25
     Rcpp::stop(
       "FIL-based prediction from unserialized random forest models is not yet "
       "supported with cuML 26.04.");
@@ -270,7 +270,7 @@ __host__ Rcpp::NumericVector rf_regressor_predict(
 
 #endif
       });
-#endif  // CUML_VERSION_MAJOR >= 26
+#endif  // CUML_VERSION_MAJOR >= 25
   }
 }
 

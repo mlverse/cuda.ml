@@ -104,25 +104,9 @@ download_libcuml <- function(cuml_version = Sys.getenv("CUML_VERSION", unset = "
       unzip(tmp, exdir = ".", overwrite = TRUE)
     }
 
-    # Download CCCL headers from GitHub (required by rmm/raft at compile time,
-    # but not a pip dependency). CCCL is header-only.
-    # Uses the exact commit that RAPIDS 26.04 pins via rapids-cmake, which is
-    # CUDA 12 compatible (the release tag v3.3.0 includes CUDA 13-only code).
-    cccl_commit <- "09094af138841ef521de1adbbdd18ab8b3dad47b"
-    cccl_url <- sprintf(
-      "https://github.com/NVIDIA/cccl/archive/%s.tar.gz", cccl_commit
-    )
-    cccl_tmp <- tempfile(fileext = ".tar.gz")
-    message("  Downloading CCCL headers (RAPIDS 26.04 pin)...")
-    download.file(cccl_url, cccl_tmp, quiet = TRUE)
-    untar(cccl_tmp, exdir = ".")
-    # Rename extracted dir for predictability
-    cccl_dir <- file.path(".", paste0("cccl-", cccl_commit))
-    file.rename(cccl_dir, file.path(".", "cccl"))
-
     # Merge all include/ directories into libcuml/include/.
     # Sources: pip wheels (libraft/, librmm/, nvidia/, rapids_logger/, etc.)
-    # and CCCL (cccl/).
+    # librmm vendors its own CCCL headers under librmm/include/rapids/.
     # Pip wheels may extract to nested dirs like nvidia/<subpackage>/include/.
     merge_include_dirs <- function(src_dir) {
       dep_include <- file.path(src_dir, "include")
@@ -142,8 +126,6 @@ download_libcuml <- function(cuml_version = Sys.getenv("CUML_VERSION", unset = "
         merge_include_dirs(sub)
       }
     }
-    # CCCL has include/ with cub/, cuda/, nv/, thrust/
-    merge_include_dirs("./cccl")
   } else {
     # Direct URL: either a pip wheel (.whl) or legacy zip archive
     tmp <- tempfile(fileext = ".zip")
