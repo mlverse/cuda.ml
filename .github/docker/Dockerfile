@@ -1,4 +1,5 @@
-FROM nvidia/cuda:12.8.1-devel-ubuntu22.04
+ARG CUDA_IMAGE=nvidia/cuda:12.8.1-devel-ubuntu22.04
+FROM ${CUDA_IMAGE}
 
 ENV DEBIAN_FRONTEND=noninteractive
 
