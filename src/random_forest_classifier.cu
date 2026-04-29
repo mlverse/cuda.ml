@@ -1,5 +1,6 @@
 #include "async_utils.cuh"
 #include "cuda_utils.h"
+#include "fil_utils.h"
 #include "handle_utils.h"
 #include "matrix_utils.h"
 #include "pinned_host_vector.h"
@@ -8,15 +9,11 @@
 #include "random_forest_serde.cuh"
 #include "stream_allocator.h"
 
+#include <cuml/fil/fil.h>
 #include <thrust/async/copy.h>
 #include <thrust/device_vector.h>
 #include <cuml/tree/decisiontree.hpp>
 #include <cuml/version_config.hpp>
-
-#if CUML_VERSION_MAJOR < 25
-#include "fil_utils.h"
-#include <cuml/fil/fil.h>
-#endif
 
 #include <Rcpp.h>
 
@@ -201,7 +198,6 @@ __host__ Rcpp::IntegerVector rf_classifier_predict(
   return Rcpp::IntegerVector(h_predictions.begin(), h_predictions.end());
 }
 
-#if CUML_VERSION_MAJOR < 25
 /*
  * The 'ML::fil::treelite_params_t::threads_per_tree' and
  * 'ML::fil::treelite_params_t::n_items' parameters are only supported in
@@ -212,7 +208,6 @@ CUML4R_NOOP_IF_ABSENT(threads_per_tree)
 
 CUML4R_ASSIGN_IF_PRESENT(n_items)
 CUML4R_NOOP_IF_ABSENT(n_items)
-#endif  // CUML_VERSION_MAJOR < 25
 
 }  // namespace
 
@@ -307,12 +302,6 @@ __host__ Rcpp::IntegerVector rf_classifier_predict(
                     /*predictions=*/d_preds, verbosity);
       });
   } else {
-#if CUML_VERSION_MAJOR >= 25
-    Rcpp::stop(
-      "FIL-based prediction from unserialized random forest models is not yet "
-      "supported with cuML 26.04.");
-    return Rcpp::IntegerVector();
-#else
     return rf_classifier_predict<float, float>(
       model, input,
       /*predict_impl=*/
@@ -350,20 +339,12 @@ __host__ Rcpp::IntegerVector rf_classifier_predict(
 
 #endif
       });
-#endif  // CUML_VERSION_MAJOR >= 25
   }
 }
 
 __host__ Rcpp::NumericMatrix rf_classifier_predict_class_probabilities(
   SEXP model_xptr, Rcpp::NumericMatrix const& input) {
-#if CUML_VERSION_MAJOR >= 25
-
-  Rcpp::stop(
-    "FIL-based class probability prediction for random forests is not yet "
-    "supported with cuML 26.04.");
-  return Rcpp::NumericMatrix();
-
-#elif !defined(CUML4R_TREELITE_C_API_MISSING)
+#ifndef CUML4R_TREELITE_C_API_MISSING
 
   auto const input_m = Matrix<float>(input, /*transpose=*/false);
   int const n_samples = input_m.numRows;

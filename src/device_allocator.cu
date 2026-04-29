@@ -2,10 +2,6 @@
 
 #include "device_allocator.h"
 
-#include <cuml/version_config.hpp>
-
-#if CUML_VERSION_MAJOR < 25
-
 #include <raft/mr/device/allocator.hpp>
 
 namespace {
@@ -22,8 +18,6 @@ __host__ std::shared_ptr<raft::mr::device::allocator> getDeviceAllocator() {
 }
 
 }  // namespace cuml4r
-
-#endif  // CUML_VERSION_MAJOR < 25
 
 #else
 

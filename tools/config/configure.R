@@ -54,7 +54,7 @@ load_libcuml_versions <- function() {
 load_util_fns <- function() {
   wd <- file.path(pkg_root(), "tools", "config", "utils")
 
-  for (f in c("cuml.R", "cmake.R", "logging.R", "nvcc.R", "platform.R", "pypi.R")) {
+  for (f in c("cuml.R", "cmake.R", "logging.R", "nvcc.R", "platform.R")) {
     source(file.path(wd, f))
   }
 }
@@ -67,21 +67,8 @@ run_cmake <- function() {
   on.exit(setwd(wd))
   setwd(pkg_root())
 
-  cuml_version <- Sys.getenv("CUML_VERSION", unset = "21.08")
-  # rapids-cmake tags: v21.x had only alpha tags (v21.08.00a),
-  # v23.02+ has stable tags (v23.02.00)
-  rapids_cmake_tag <- if (package_version(cuml_version) >= "23.02") {
-    paste0("v", cuml_version, ".00")
-  } else {
-    paste0("v", cuml_version, ".00a")
-  }
-
-  cxx_standard <- if (grepl("^2[6-9]\\.|^[3-9]", cuml_version)) "17" else "14"
-
   define(R_INCLUDE_DIR = R.home("include"))
   define(RCPP_INCLUDE_DIR = system.file("include", package = "Rcpp"))
-  define(RAPIDS_CMAKE_TAG = rapids_cmake_tag)
-  define(CMAKE_CXX_STANDARD = cxx_standard)
   configure_file(file.path("src", "CMakeLists.txt.in"))
 
   cuml_prefix <- get_cuml_prefix()
@@ -90,15 +77,9 @@ run_cmake <- function() {
     download_libcuml()
     cuml_prefix <- normalizePath(file.path(pkg_root(), "libcuml"))
     dir.create("inst")
-    # pip wheels have lib64/, legacy zips have lib/
-    has_lib64 <- dir.exists(file.path("libcuml", "lib64"))
-    lib_dir <- if (has_lib64) "lib64" else "lib"
-    file.rename(file.path("libcuml", lib_dir), file.path("inst", "libs"))
-    # Create symlinks so cmake can find libs at both libcuml/lib/ and libcuml/lib64/
+    file.rename(file.path("libcuml", "lib"), file.path("inst", "libs"))
     file.symlink(file.path("..", "inst", "libs"), file.path("libcuml", "lib"))
-    if (has_lib64) {
-      file.symlink(file.path("..", "inst", "libs"), file.path("libcuml", "lib64"))
-    }
+    libs <- c("libtreelite", "libtreelite_runtime", "libcuml++")
     bundle_libcuml <- TRUE
   }
   cmake_prefix_path <- paste0(

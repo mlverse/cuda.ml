@@ -2,12 +2,7 @@
 
 #ifdef HAS_CUML
 
-#include <cuml/version_config.hpp>
-#if CUML_VERSION_MAJOR >= 25
-#include <raft/core/handle.hpp>
-#else
 #include <raft/handle.hpp>
-#endif
 #include <rmm/cuda_stream_view.hpp>
 
 namespace cuml4r {

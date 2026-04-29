@@ -2,29 +2,16 @@
 
 #ifdef HAS_CUML
 
-#include <cuml/version_config.hpp>
 #include <thrust/host_vector.h>
-#if CUML_VERSION_MAJOR >= 25
-#include <cuda/memory_resource>
-#include <thrust/mr/allocator.h>
-#include <thrust/system/cuda/memory_resource.h>
-#else
 #include <thrust/system/cuda/experimental/pinned_allocator.h>
-#endif
 
 #include <Rcpp.h>
 
 namespace cuml4r {
 
-#if CUML_VERSION_MAJOR >= 25
-// CCCL 3.x removed pinned_allocator; use the new memory resource API
-template <typename T>
-using pinned_host_vector = thrust::host_vector<T>;
-#else
 template <typename T>
 using pinned_host_vector =
   thrust::host_vector<T, thrust::cuda::experimental::pinned_allocator<T>>;
-#endif
 
 }  // namespace cuml4r
 

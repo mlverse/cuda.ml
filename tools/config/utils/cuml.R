@@ -78,65 +78,18 @@ download_libcuml <- function(cuml_version = Sys.getenv("CUML_VERSION", unset = "
   options(timeout = 1000)
   on.exit(options(timeout = old_timeout), add = TRUE)
 
+  tmp <- tempfile(fileext = ".zip")
   cuda_version <- as.character(find_nvcc()$version$major)
 
-  url_entry <- Sys.getenv("CUML_URL")
-  if (!nzchar(url_entry)) {
-    url_entry <- libcuml_versions[[cuml_version]][[cuda_version]]
+  url <- Sys.getenv("CUML_URL")
+  if (!nzchar(url)) {
+    url <- libcuml_versions[[cuml_version]][[cuda_version]]
   }
 
-  is_pypi_package <- !grepl("^https?://", url_entry)
+  download.file(url, tmp)
+  unzip(tmp, exdir = ".")
 
-  if (is_pypi_package) {
-    # Resolve and download the full dependency tree from PyPI.
-    # This downloads libcuml-cu12 and all its native header dependencies
-    # (libraft, librmm, rapids-logger, nvidia-cccl, etc.) as wheels, extracts
-    # them, and merges all headers into libcuml/include/.
-    message("Resolving PyPI dependencies for ", url_entry, "...")
-    urls <- resolve_native_deps(url_entry)
-    message("Downloading ", length(urls), " packages: ", paste(names(urls), collapse = ", "))
-
-    for (pkg_name in names(urls)) {
-      url <- urls[[pkg_name]]
-      tmp <- tempfile(fileext = ".whl")
-      message("  Downloading ", pkg_name, "...")
-      download.file(url, tmp, quiet = TRUE)
-      unzip(tmp, exdir = ".", overwrite = TRUE)
-    }
-
-    # Merge all include/ directories into libcuml/include/.
-    # Sources: pip wheels (libraft/, librmm/, nvidia/, rapids_logger/, etc.)
-    # librmm vendors its own CCCL headers under librmm/include/rapids/.
-    # Pip wheels may extract to nested dirs like nvidia/<subpackage>/include/.
-    merge_include_dirs <- function(src_dir) {
-      dep_include <- file.path(src_dir, "include")
-      if (dir.exists(dep_include)) {
-        file.copy(
-          list.dirs(dep_include, full.names = TRUE, recursive = FALSE),
-          file.path("libcuml", "include"),
-          recursive = TRUE
-        )
-      }
-    }
-    for (d in list.dirs(".", full.names = TRUE, recursive = FALSE)) {
-      if (d == "./libcuml") next
-      merge_include_dirs(d)
-      # Some pip wheels nest under nvidia/<subpackage>/include/
-      for (sub in list.dirs(d, full.names = TRUE, recursive = FALSE)) {
-        merge_include_dirs(sub)
-      }
-    }
-  } else {
-    # Direct URL: either a pip wheel (.whl) or legacy zip archive
-    tmp <- tempfile(fileext = ".zip")
-    download.file(url_entry, tmp)
-    unzip(tmp, exdir = ".")
-
-    if (!grepl("\\.whl$", url_entry)) {
-      # Legacy zip archives: extract to a versioned directory name, rename to libcuml/
-      zip_file_name <- basename(url_entry)
-      dir_name <- gsub("\\.zip$", "", zip_file_name)
-      file.rename(file.path(".", dir_name), file.path(".", "libcuml"))
-    }
-  }
+  zip_file_name <- basename(url)
+  dir_name <- gsub("\\.zip$", "", zip_file_name)
+  file.rename(file.path(".", dir_name), file.path(".", "libcuml"))
 }

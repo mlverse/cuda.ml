@@ -6,13 +6,7 @@
 #        and
 #        https://github.com/mlverse/cuda.ml/blob/7bad914c729011bcf05edc1c873609c518d9a77d/src/CMakeLists.txt.in#L13
 #        where cuda.ml specifies which branch of the rapids-cmake repo to use)
-cuda_ml_min_cmake_version <- if (
-  package_version(Sys.getenv("CUML_VERSION", unset = "21.08")) >= "23.02"
-) {
-  numeric_version("3.30.4")
-} else {
-  numeric_version("3.21.1")
-}
+cuda_ml_min_cmake_version <- numeric_version("3.21.1")
 
 has_cmake <- function() {
   rc <- system2("which", "cmake", stdout = NULL, stderr = NULL)

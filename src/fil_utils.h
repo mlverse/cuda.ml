@@ -1,11 +1,5 @@
 #pragma once
 
-#include "preprocessor.h"
-
-#include <cuml/version_config.hpp>
-
-#if CUML_VERSION_MAJOR < 25
-
 #include <cuml/fil/fil.h>
 
 #include <functional>
@@ -32,5 +26,3 @@ forest_uptr make_forest(raft::handle_t const& handle,
 
 }  // namespace fil
 }  // namespace cuml4r
-
-#endif  // CUML_VERSION_MAJOR < 25

@@ -43,24 +43,13 @@ jobs:
           _R_CHECK_CRAN_INCOMING_: false
 
   build-image:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - cuml: '21.12'
-            cuda_image: 'nvidia/cuda:11.2.2-devel-ubuntu20.04'
-          - cuml: '25.12'
-            cuda_image: 'nvidia/cuda:12.8.1-devel-ubuntu22.04'
-
     runs-on: ubuntu-latest
-    name: 'Build (cuML ${{ matrix.cuml }})'
     permissions:
       contents: read
       packages: write
     timeout-minutes: 120
     outputs:
-      image-21: ${{ steps.meta.outputs.image-21 }}
-      image-26: ${{ steps.meta.outputs.image-26 }}
+      image: ghcr.io/${{ github.repository }}-ci:${{ github.sha }}
     steps:
       - uses: actions/checkout@v4
 
@@ -80,41 +69,20 @@ jobs:
           context: .
           file: .github/docker/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository }}-ci:cuml${{ matrix.cuml }}-${{ github.sha }}
+          tags: ghcr.io/${{ github.repository }}-ci:${{ github.sha }}
           build-args: |
-            CUDA_IMAGE=${{ matrix.cuda_image }}
-            CUML_VERSION=${{ matrix.cuml }}
+            CUML_VERSION=21.12
             CMAKE_CUDA_ARCHITECTURES=75
-
-      - name: Export image tag
-        id: meta
-        run: |
-          TAG="ghcr.io/${{ github.repository }}-ci:cuml${{ matrix.cuml }}-${{ github.sha }}"
-          if [[ "${{ matrix.cuml }}" == "21.12" ]]; then
-            echo "image-21=${TAG}" >> "$GITHUB_OUTPUT"
-          else
-            echo "image-26=${TAG}" >> "$GITHUB_OUTPUT"
-          fi
 
   test-gpu:
     needs: build-image
     if: ${{ always() && needs.build-image.result == 'success' }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - cuml: '21.12'
-            image: ghcr.io/${{ github.repository }}-ci:cuml21.12-${{ github.sha }}
-          - cuml: '25.12'
-            image: ghcr.io/${{ github.repository }}-ci:cuml25.12-${{ github.sha }}
-
     concurrency:
-      group: gpu-tests-cuml${{ matrix.cuml }}
+      group: gpu-tests
     runs-on:
       - "runs-on=${{ github.run_id }}/family=g4dn.xlarge/image=ubuntu24-gpu-x64/spot=true"
-    name: 'Test GPU (cuML ${{ matrix.cuml }})'
     container:
-      image: ${{ matrix.image }}
+      image: ${{ needs.build-image.outputs.image }}
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}

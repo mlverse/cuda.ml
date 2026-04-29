@@ -1,19 +1,15 @@
-#include "preprocessor.h"
-
-#include <cuml/version_config.hpp>
-
-#if CUML_VERSION_MAJOR < 25
-
 #include "async_utils.cuh"
 #include "cuda_utils.h"
 #include "handle_utils.h"
 #include "matrix_utils.h"
 #include "pinned_host_vector.h"
+#include "preprocessor.h"
 #include "stream_allocator.h"
 
 #include <cuml/random_projection/rproj_c.h>
 #include <thrust/async/copy.h>
 #include <thrust/device_vector.h>
+#include <cuml/version_config.hpp>
 
 #include <Rcpp.h>
 
@@ -249,43 +245,3 @@ __host__ SEXP rproj_set_state(Rcpp::List const& model_state) {
 }
 
 }  // namespace cuml4r
-
-#else  // CUML_VERSION_MAJOR >= 25
-
-#include <Rcpp.h>
-
-namespace cuml4r {
-
-__host__ size_t rproj_johnson_lindenstrauss_min_dim(size_t const n_samples,
-                                                    double const eps) {
-  Rcpp::stop("Random projection is not yet supported with cuML 26.04.");
-  return 0;
-}
-
-__host__ SEXP rproj_fit(int const n_samples, int const n_features,
-                        int const n_components, double const eps,
-                        bool const gaussian_method, double const density,
-                        int const random_state) {
-  Rcpp::stop("Random projection is not yet supported with cuML 26.04.");
-  return R_NilValue;
-}
-
-__host__ Rcpp::NumericMatrix rproj_transform(SEXP rproj_ctx_xptr,
-                                             Rcpp::NumericMatrix const& input) {
-  Rcpp::stop("Random projection is not yet supported with cuML 26.04.");
-  return Rcpp::NumericMatrix();
-}
-
-__host__ Rcpp::List rproj_get_state(SEXP model) {
-  Rcpp::stop("Random projection is not yet supported with cuML 26.04.");
-  return Rcpp::List();
-}
-
-__host__ SEXP rproj_set_state(Rcpp::List const& model_state) {
-  Rcpp::stop("Random projection is not yet supported with cuML 26.04.");
-  return R_NilValue;
-}
-
-}  // namespace cuml4r
-
-#endif  // CUML_VERSION_MAJOR < 25

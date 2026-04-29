@@ -1,17 +1,17 @@
-#include "preprocessor.h"
-
 #include "async_utils.cuh"
 #include "cuda_utils.h"
 #include "handle_utils.h"
 #include "knn_detail.h"
 #include "matrix_utils.h"
 #include "pinned_host_vector.h"
+#include "preprocessor.h"
 #include "random_forest.cuh"
 #include "stream_allocator.h"
 
 #include <thrust/async/copy.h>
 #include <thrust/device_vector.h>
 #include <cuml/neighbors/knn.hpp>
+#include <cuml/version_config.hpp>
 
 #include <Rcpp.h>
 
@@ -21,9 +21,9 @@
 #include <unordered_map>
 #include <vector>
 
-#include <cuml/version_config.hpp>
+#if CUML_VERSION_MAJOR == 21
+#if CUML4R_CONCAT(0x, CUML_VERSION_MINOR) >= 0x08
 
-// In cuML 21.08+ / 25.x, the KNN index types live in raft::spatial::knn
 #include <raft/spatial/knn/ann_common.h>
 
 using knnIndex = raft::spatial::knn::knnIndex;
@@ -32,6 +32,18 @@ using QuantizerType = raft::spatial::knn::QuantizerType;
 using IVFFlatParam = raft::spatial::knn::IVFFlatParam;
 using IVFPQParam = raft::spatial::knn::IVFPQParam;
 using IVFSQParam = raft::spatial::knn::IVFSQParam;
+
+#else
+
+using knnIndex = ML::knnIndex;
+using knnIndexParam = ML::knnIndexParam;
+using QuantizerType = ML::QuantizerType;
+using IVFFlatParam = ML::IVFFlatParam;
+using IVFPQParam = ML::IVFPQParam;
+using IVFSQParam = ML::IVFSQParam;
+
+#endif
+#endif
 
 namespace cuml4r {
 namespace knn {
