@@ -49,10 +49,19 @@ sort_mat <- function(m, cols = seq(ncol(m))) {
 predict_in_sub_proc <- function(model_state, data, expected_mode,
                                 expected_model_cls = NULL,
                                 additional_predict_args = list()) {
-  impl <- function(expect_libcuda_ml_impl, model_state, data, expected_mode,
+  pkg_dir <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
+
+  impl <- function(pkg_dir, model_state, data, expected_mode,
                    expected_model_cls, additional_predict_args) {
-    library(cuda.ml)
-    expect_libcuda_ml_impl()
+    pkgload::load_all(pkg_dir, quiet = TRUE)
+    if (!has_cuML()) {
+      stop(
+        "The current installation of {cuda.ml} is not linked with a valid copy of",
+        " the RAPIDS cuML shared library!\n",
+        ".libPaths:\n",
+        paste(.libPaths(), collapse = "\n")
+      )
+    }
 
     model <- cuda_ml_unserialize(model_state)
     for (cls in expected_model_cls) {
@@ -66,7 +75,7 @@ predict_in_sub_proc <- function(model_state, data, expected_mode,
   callr::r(
     impl,
     args = list(
-      expect_libcuda_ml_impl = expect_libcuml,
+      pkg_dir = pkg_dir,
       model_state = model_state,
       data = data,
       expected_mode = expected_mode,

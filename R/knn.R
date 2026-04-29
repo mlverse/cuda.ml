@@ -72,6 +72,7 @@ cuda_ml_knn_algo_ivfpq <- function(nlist, nprobe, m, n_bits,
       nlist = as.integer(nlist),
       nprobe = as.integer(nprobe),
       M = as.integer(m),
+      n_bits = as.integer(n_bits),
       usePrecomputedTables = as.logical(use_precomputed_tables)
     )
   )

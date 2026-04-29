@@ -48,7 +48,21 @@ cuda_ml_tsvd <- function(x,
     transform_input = transform_input,
     verbosity = cuML_log_level
   )
+  model <- tsvd_flip_signs(model)
   class(model) <- c("cuda_ml_tsvd", class(model))
+
+  model
+}
+
+tsvd_flip_signs <- function(model) {
+  signs <- apply(model$components, 1L, function(x) {
+    if (x[[which.max(abs(x))]] < 0) -1 else 1
+  })
+
+  model$components <- sweep(model$components, 1L, signs, `*`)
+  if (!is.null(model$transformed_data)) {
+    model$transformed_data <- sweep(model$transformed_data, 2L, signs, `*`)
+  }
 
   model
 }

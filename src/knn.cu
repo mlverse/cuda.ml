@@ -247,6 +247,18 @@ __host__ std::unique_ptr<knnIndexParam> build_ivfpq_algo_params(
     params[kNumLists] = 8;
     params[kNumProbes] = 3;
 
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+    for (auto iter = kAllowedSubDimSize.crbegin();
+         iter != kAllowedSubDimSize.crend(); ++iter) {
+      auto const pq_dim = *iter;
+      if (pq_dim <= d && d % pq_dim == 0) {
+        params[kUseComputedTables] = false;
+        params[kM] = pq_dim;
+        break;
+      }
+    }
+#else
     for (auto const n_subq : kAllowedSubquantizers) {
       if (d % n_subq == 0 &&
           std::find(kAllowedSubDimSize.cbegin(), kAllowedSubDimSize.cend(),
@@ -256,6 +268,7 @@ __host__ std::unique_ptr<knnIndexParam> build_ivfpq_algo_params(
         break;
       }
     }
+#endif
 
     if (!params.containsElementNamed(kM)) {
       for (auto const n_subq : kAllowedSubquantizers) {
@@ -268,9 +281,10 @@ __host__ std::unique_ptr<knnIndexParam> build_ivfpq_algo_params(
     }
 
     params[kNumBits] = 4;
-    for (auto const n_bits : {8, 6, 5}) {
+    for (auto const n_bits : {8, 6, 5, 4}) {
       auto const min_train_points = (1 << n_bits) * 39;
-      if (n >= min_train_points) {
+      if (n >= min_train_points &&
+          ((n_bits * Rcpp::as<int>(params[kM])) % 8) == 0) {
         params[kNumBits] = n_bits;
         break;
       }

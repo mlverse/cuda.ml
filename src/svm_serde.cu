@@ -165,7 +165,7 @@ __host__ void setState(ML::SVM::svmModel<double>& svm_model,
     cudaMalloc(&svmSupportData(svm_model), n_support * n_cols * sizeof(double)));
 #if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
      CUML4R_LIBCUML_VERSION(24, 0))
-  svm_model.support_matrix.nnz = n_support * n_cols;
+  svm_model.support_matrix.nnz = -1;
   svm_model.support_matrix.indptr = nullptr;
   svm_model.support_matrix.indices = nullptr;
 #endif

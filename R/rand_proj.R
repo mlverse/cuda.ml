@@ -5,6 +5,22 @@ new_rproj_model <- function(rproj_ctx) {
   model
 }
 
+cuda_ml_rand_proj_available <- function() {
+  tryCatch(
+    {
+      .rproj_johnson_lindenstrauss_min_dim(2L, 0.5)
+      TRUE
+    },
+    error = function(e) {
+      if (grepl("random projection support is not available", e$message)) {
+        FALSE
+      } else {
+        stop(e)
+      }
+    }
+  )
+}
+
 #' Random projection for dimensionality reduction.
 #'
 #' Generate a random projection matrix for dimensionality reduction, and

@@ -32,7 +32,7 @@ test_that("LASSO regressor works as expected", {
 
       sklearn_lasso_regressor <- sklearn$linear_model$Lasso(
         alpha = 1e-3,
-        max_iter = 10000,
+        max_iter = 10000L,
         tol = 1e-4,
         fit_intercept = fit_intercept
       )

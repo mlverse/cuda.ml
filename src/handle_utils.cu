@@ -5,6 +5,10 @@
 
 #include <cuml/version_config.hpp>
 #include <raft/core/resource/cuda_stream.hpp>
+#include <raft/core/resource/cuda_stream_pool.hpp>
+#include <rmm/cuda_stream_pool.hpp>
+
+#include <memory>
 
 namespace cuml4r {
 namespace handle_utils {
@@ -16,6 +20,8 @@ __host__ void initializeHandle(raft::handle_t& handle,
   }
 #if CUML_VERSION_MAJOR >= 24
   raft::resource::set_cuda_stream(handle, stream_view);
+  raft::resource::set_cuda_stream_pool(
+    handle, std::make_shared<rmm::cuda_stream_pool>(8));
 #else
   handle.set_stream(stream_view.value());
 #endif

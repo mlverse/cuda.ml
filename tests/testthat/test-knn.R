@@ -17,7 +17,17 @@ test_blob_sz <- 10
 test_that("KNN classifier works as expected", {
   test_blobs_df <- gen_blobs(test_blob_sz, centers) %>%
     as.data.frame()
-  for (algo in c("brute", "ivfflat", "ivfpq", "ivfsq")) {
+  algos <- c("brute", "ivfflat", "ivfpq")
+  if (as.integer(cuML_major_version()) < 24) {
+    algos <- c(algos, "ivfsq")
+  } else {
+    expect_error(
+      cuda_ml_knn(label ~ ., blobs_df, algo = "ivfsq", metric = "euclidean"),
+      "IVFSQ KNN is unsupported by this cuML version"
+    )
+  }
+
+  for (algo in algos) {
     model <- cuda_ml_knn(
       label ~ ., blobs_df,
       algo = algo, metric = "euclidean"

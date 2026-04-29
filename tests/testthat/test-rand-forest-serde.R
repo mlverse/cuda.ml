@@ -2,6 +2,15 @@ context("(de)serialization of Random Forest models")
 
 test_that("random forest classifier can be serialized and unserialized correctly", {
   model <- cuda_ml_rand_forest(formula = Species ~ ., data = iris, trees = 200)
+
+  if (!cuda_ml_fil_enabled()) {
+    expect_error(
+      cuda_ml_serialize(model),
+      "Random forest serialization requires Treelite/FIL support"
+    )
+    return()
+  }
+
   model_state <- cuda_ml_serialize(model)
 
   data <- iris[-which(names(iris) == "Species")]
@@ -36,6 +45,15 @@ test_that("random forest classifier can be serialized and unserialized correctly
 
 test_that("random forest regressor can be serialized and unserialized correctly", {
   model <- cuda_ml_rand_forest(formula = mpg ~ ., data = mtcars, trees = 200)
+
+  if (!cuda_ml_fil_enabled()) {
+    expect_error(
+      cuda_ml_serialize(model),
+      "Random forest serialization requires Treelite/FIL support"
+    )
+    return()
+  }
+
   model_state <- cuda_ml_serialize(model)
 
   data <- mtcars[-which(names(mtcars) == "mpg")]
