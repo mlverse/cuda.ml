@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 
@@ -17,6 +17,7 @@ FetchContent_Declare(
   rapids-cmake
   GIT_REPOSITORY https://github.com/rapidsai/rapids-cmake.git
   GIT_TAG        origin/branch-21.10
+  UPDATE_DISCONNECTED TRUE
   )
 FetchContent_MakeAvailable(rapids-cmake)
 include(rapids-cuda)
@@ -34,7 +35,13 @@ endif(DEFINED ENV{CUML4R_ENABLE_CCACHE})
 if(DEFINED CUML_INCLUDE_DIR)
     # CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES is needed so that cuda_runtime.h is found
     # CUML_INCLUDE_DIR is needed so that kmeans/kmeans_c.h is found
-    set(CUML4R_INCLUDE_DIRS ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES} ${CUML_INCLUDE_DIR})
+    set(CUML4R_INCLUDE_DIRS ${CUML_INCLUDE_DIR} ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
+    if(EXISTS "${CUML_INCLUDE_DIR}/rapids")
+      # RAPIDS pip wheels may ship a CCCL copy that matches the RAPIDS shared
+      # libraries under include/rapids, plus a newer top-level CCCL copy.
+      # Prefer the ABI-compatible copy for cuda/cub/thrust/nv headers.
+      include_directories(BEFORE ${CUML_INCLUDE_DIR}/rapids)
+    endif()
 else()
     message(FATAL_ERROR "CUML_INCLUDE_DIR not specified.")
 endif(DEFINED CUML_INCLUDE_DIR)
@@ -49,6 +56,20 @@ include_directories(@R_INCLUDE_DIR@)
 include_directories(@RCPP_INCLUDE_DIR@)
 
 include_directories(${TREELITE_C_API_INCLUDE_DIR})
+
+set(CUML4R_RPROJ_C_API_FOUND FALSE)
+foreach(CUML4R_INC_DIR IN LISTS CUML4R_INCLUDE_DIRS)
+  if(EXISTS "${CUML4R_INC_DIR}/cuml/random_projection/rproj_c.h")
+    set(CUML4R_RPROJ_C_API_FOUND TRUE)
+  endif()
+endforeach()
+if(NOT CUML4R_RPROJ_C_API_FOUND)
+  message(
+    STATUS
+    "cuML random projection C API headers were not found; random projection support will be disabled."
+  )
+  add_definitions(-DCUML4R_RPROJ_C_API_MISSING)
+endif(NOT CUML4R_RPROJ_C_API_FOUND)
 
 if(DEFINED ENV{CUML4R_ENABLE_ASAN})
     if($ENV{CUML4R_ENABLE_ASAN} MATCHES "true")
@@ -121,25 +142,36 @@ add_library(
 # Need to set linker language to CUDA to link the CUDA Runtime
 set_target_properties(cuda.ml PROPERTIES LINKER_LANGUAGE "CUDA")
 set_target_properties(cuda.ml PROPERTIES PREFIX "")
+target_compile_options(
+  cuda.ml
+  PRIVATE
+  $<$<COMPILE_LANGUAGE:CXX>:-Wno-deprecated-declarations>
+  $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=-Wno-deprecated-declarations>
+)
 
 set(CUML4R_LIBS cuda.ml PRIVATE cuml++ cublas cusolver cudart cusparse)
 
-find_package(Treelite)
+find_package(Treelite QUIET)
 if(Treelite_FOUND)
-  set(CUML4R_LIBS ${CUML4R_LIBS} treelite::treelite treelite::treelite_runtime)
+  target_compile_definitions(cuda.ml PRIVATE CUML_ENABLE_GPU)
+  if(TARGET treelite::treelite_static)
+    set(CUML4R_LIBS ${CUML4R_LIBS} treelite::treelite_static)
+  elseif(TARGET treelite::treelite)
+    set(CUML4R_LIBS ${CUML4R_LIBS} treelite::treelite)
+  else()
+    message(FATAL_ERROR "Treelite was found but no supported Treelite CMake target was exported.")
+  endif()
+  if(TARGET treelite::treelite_runtime)
+    set(CUML4R_LIBS ${CUML4R_LIBS} treelite::treelite_runtime)
+  endif()
   set(CUML4R_INCLUDE_DIRS ${CUML4R_INCLUDE_DIRS} ${Treelite_INCLUDE_DIRS})
   message(STATUS "Treelite found, ignoring stub headers: ${CUML_STUB_HEADERS_DIR}")
 else()
   message(
-    WARNING
-    "
-    Unable to locate 'TreeLite' using CMake. Forest Inference Library (FIL)
-    functionalities from {cuda.ml} will be disabled!
-
-    Please install the treelite C API and re-install {cuda.ml} if you want to
-    enable FIL functionalities.
-    "
+    STATUS
+    "Treelite was not found; Forest Inference Library (FIL) support will be disabled."
   )
+  add_definitions(-DCUML4R_TREELITE_C_API_MISSING)
   set(
     CUML4R_INCLUDE_DIRS ${CUML4R_INCLUDE_DIRS} ${CUML_STUB_HEADERS_DIR}
   )

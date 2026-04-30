@@ -8,7 +8,6 @@
 #include "svm_serde.h"
 
 #include <cuml/svm/svm_parameter.h>
-#include <thrust/async/copy.h>
 #include <thrust/device_vector.h>
 #include <cuml/svm/svc.hpp>
 #include <cuml/svm/svr.hpp>
@@ -89,7 +88,7 @@ __host__ SEXP svr_fit(Rcpp::NumericMatrix const& X,
     async_copy(stream_view.value(), h_y.cbegin(), h_y.cend(), d_y.begin());
 
   thrust::device_vector<double> d_sample_weights;
-  AsyncCopyCtx sample_weights_h2d;
+  CUML4R_MAYBE_UNUSED AsyncCopyCtx sample_weights_h2d;
   if (sample_weights.size() > 0) {
     auto const h_sample_weights(
       Rcpp::as<pinned_host_vector<double>>(sample_weights));
@@ -99,12 +98,19 @@ __host__ SEXP svr_fit(Rcpp::NumericMatrix const& X,
                  h_sample_weights.cend(), d_sample_weights.begin());
   }
 
-  ML::SVM::svmParameter param;
+  ML::SVM::svmParameter param{};
   param.C = cost;
-  param.cache_size = cache_size, param.max_iter = max_iter;
+  param.cache_size = cache_size;
+  param.max_outer_iter = max_iter;
+  param.max_iter = -1;
   param.nochange_steps = nochange_steps;
   param.tol = tol;
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+  param.verbosity = static_cast<rapids_logger::level_enum>(verbosity);
+#else
   param.verbosity = verbosity;
+#endif
   param.epsilon = epsilon;
   param.svmType = ML::SVM::SvmType::EPSILON_SVR;
   MLCommon::Matrix::KernelParams kernel_params{

@@ -2,10 +2,9 @@
 
 /*
 #pragma message(                                                         \
-  "`cuml4r` requires a valid RAPIDS installation. "                      \
-  "Please follow https://rapids.ai/start.html to install RAPIDS first. " \
-  "`cuml4r` must be installed and run from an environment containing "   \
-  "a valid CUML_PREFIX env variable (e.g., "                             \
-  "'/home/user/anaconda3/envs/rapids-21.06' or similar)."                \
+  "`cuda.ml` was built without a usable RAPIDS cuML shared library. "    \
+  "Verify that nvidia-smi and nvcc work, then reinstall `cuda.ml`. "     \
+  "If RAPIDS is already installed, set CUML_PREFIX to a prefix "         \
+  "containing include/cuml and lib/libcuml++.so before reinstalling."    \
 )
 */

@@ -6,8 +6,9 @@
 #include "preprocessor.h"
 #include "stream_allocator.h"
 
+#ifndef CUML4R_RPROJ_C_API_MISSING
+
 #include <cuml/random_projection/rproj_c.h>
-#include <thrust/async/copy.h>
 #include <thrust/device_vector.h>
 #include <cuml/version_config.hpp>
 
@@ -245,3 +246,5 @@ __host__ SEXP rproj_set_state(Rcpp::List const& model_state) {
 }
 
 }  // namespace cuml4r
+
+#endif

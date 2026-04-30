@@ -1,0 +1,8 @@
+all: cuda.ml.so
+
+cuda.ml.so:
+	@CMAKE_BIN@ --build @CMAKE_BUILD_DIR@ --target cuda.ml @CMAKE_BUILD_PARALLEL_ARGS@
+	cp @CMAKE_BUILD_OUTPUT@ cuda.ml.so
+
+clean:
+	rm -rf @CMAKE_BUILD_DIR@ cuda.ml.so

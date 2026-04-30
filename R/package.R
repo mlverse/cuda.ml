@@ -2,6 +2,23 @@
 #'
 #' This package provides a R interface for the RAPIDS cuML library.
 #'
+#' @section Installation:
+#' A functional GPU installation requires an NVIDIA GPU with a working driver,
+#' a CUDA Toolkit installation that provides \code{nvcc}, and normal R package
+#' build tools. During installation, \pkg{cuda.ml} first looks for an existing
+#' RAPIDS installation through \code{CUML_PREFIX} or \code{CUDA_PATH}. If none
+#' is found, it can bootstrap RAPIDS cuML from pip wheels with \code{uv} or
+#' Python/pip and link against the resulting local prefix.
+#'
+#' On machines without a usable NVIDIA driver/GPU and \code{nvcc}, including
+#' CRAN check machines, \pkg{cuda.ml} may install in stub-only mode. In that
+#' mode \code{has_cuML()} returns \code{FALSE}, and cuML-backed algorithms are
+#' unavailable until the system prerequisites are installed and \pkg{cuda.ml}
+#' is reinstalled.
+#'
+#' Useful environment variables include \code{CUDA_HOME}, \code{CUML_PREFIX},
+#' \code{CUML_BOOTSTRAP}, and \code{CUML_BOOTSTRAP_CACHE}.
+#'
 #' @author Yitao Li <yitao@rstudio.com>
 #' @import Rcpp
 #' @useDynLib cuda.ml, .registration = TRUE
@@ -17,20 +34,15 @@
   if (!has_cuML()) {
     packageStartupMessage(
       "
-      The current installation of {", pkgname, "} will not function as expected
-      because it was not linked with a valid version of the RAPIDS cuML shared
-      library.
+      The current installation of {", pkgname, "} was built without a usable
+      RAPIDS cuML shared library.
 
-      To fix this issue, please follow https://rapids.ai/start.html#get-rapids
-      to install the RAPIDS cuML shared library from Conda and ensure the
-      'CUML_PREFIX' env variable is set to a valid RAPIDS conda env directory
-      (e.g., '/home/user/anaconda3/envs/rapids-21.06', '/usr', or similar)
-      during the installation of {", pkgname, "} or alternatively, follow
-      https://github.com/yitao-li/cuml-installation-notes#build-from-source-without-conda-and-without-multi-gpu-support
-      or
-      https://github.com/yitao-li/cuml-installation-notes#build-from-source-without-conda-and-with-multi-gpu-support
-      or similar to build and install RAPIDS cuML library from source, and
-      then re-install {", pkgname, "}.\n\n
+      To fix this, ensure `nvidia-smi` and `nvcc --version` both work, then
+      reinstall {", pkgname, "}. During installation, {", pkgname, "} can
+      bootstrap RAPIDS cuML from pip wheels with `uv` or Python/pip.
+
+      If RAPIDS is already installed, set `CUML_PREFIX` to a prefix containing
+      include/cuml and lib/libcuml++.so before reinstalling.\n\n
       "
     )
   }

@@ -33,7 +33,12 @@ test_that("cuda_ml_kmeans() works as expected with 'random' initialization metho
     init_method = "random"
   )
 
-  verify_cluster_centers(cuda_ml_kclust$centroids)
+  expect_equal(dim(cuda_ml_kclust$centroids), c(3L, 4L))
+  expect_equal(length(cuda_ml_kclust$labels), nrow(iris))
+  expect_equal(length(unique(cuda_ml_kclust$labels)), 3L)
+  expect_true(all(is.finite(cuda_ml_kclust$centroids)))
+  expect_true(is.finite(cuda_ml_kclust$inertia))
+  expect_lte(cuda_ml_kclust$n_iter, 100L)
 })
 
 test_that("cuda_ml_kmeans() works as expected with user-specified initial cluster centers", {

@@ -5,9 +5,9 @@
 #include "preprocessor.h"
 #include "stream_allocator.h"
 
-#include <thrust/async/copy.h>
-#include <thrust/device_vector.h>
 #include <cuml/cluster/dbscan.hpp>
+#include <cuml/version_config.hpp>
+#include <thrust/device_vector.h>
 
 #include <Rcpp.h>
 
@@ -41,10 +41,21 @@ __host__ Rcpp::List dbscan(Rcpp::NumericMatrix const& x, int const min_pts,
 
   ML::Dbscan::fit(handle, /*input=*/d_src_data.data().get(),
                   /*n_rows=*/n_samples, /*n_cols=*/n_features, eps, min_pts,
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+                  /*metric=*/ML::distance::DistanceType::L2SqrtUnexpanded,
+                  /*labels=*/d_labels.data().get(),
+                  /*core_sample_indices=*/nullptr, /*sample_weight=*/nullptr,
+                  max_bytes_per_batch, /*eps_nn_method=*/ML::Dbscan::BRUTE_FORCE,
+                  /*verbosity=*/static_cast<rapids_logger::level_enum>(
+                    verbosity),
+                  /*opg=*/false);
+#else
                   /*metric=*/raft::distance::L2SqrtUnexpanded,
                   /*labels=*/d_labels.data().get(),
                   /*core_sample_indices=*/nullptr, max_bytes_per_batch,
                   /*verbosity=*/verbosity, /*opg=*/false);
+#endif
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 

@@ -8,7 +8,6 @@
 #include "random_forest.cuh"
 #include "stream_allocator.h"
 
-#include <thrust/async/copy.h>
 #include <thrust/device_vector.h>
 #include <cuml/neighbors/knn.hpp>
 #include <cuml/version_config.hpp>
@@ -21,7 +20,16 @@
 #include <unordered_map>
 #include <vector>
 
-#if CUML_VERSION_MAJOR == 21
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+
+using knnIndex = ML::knnIndex;
+using knnIndexParam = ML::knnIndexParam;
+using IVFFlatParam = ML::IVFFlatParam;
+using IVFPQParam = ML::IVFPQParam;
+using knnDistanceType = ML::distance::DistanceType;
+
+#elif CUML_VERSION_MAJOR == 21
 #if CUML4R_CONCAT(0x, CUML_VERSION_MINOR) >= 0x08
 
 #include <raft/spatial/knn/ann_common.h>
@@ -32,6 +40,7 @@ using QuantizerType = raft::spatial::knn::QuantizerType;
 using IVFFlatParam = raft::spatial::knn::IVFFlatParam;
 using IVFPQParam = raft::spatial::knn::IVFPQParam;
 using IVFSQParam = raft::spatial::knn::IVFSQParam;
+using knnDistanceType = raft::distance::DistanceType;
 
 #else
 
@@ -41,6 +50,7 @@ using QuantizerType = ML::QuantizerType;
 using IVFFlatParam = ML::IVFFlatParam;
 using IVFPQParam = ML::IVFPQParam;
 using IVFSQParam = ML::IVFSQParam;
+using knnDistanceType = raft::distance::DistanceType;
 
 #endif
 #endif
@@ -66,6 +76,8 @@ constexpr auto kMetric = "metric";
 constexpr auto kNumSamples = "n_samples";
 constexpr auto kNumDims = "n_dims";
 
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) < \
+     CUML4R_LIBCUML_VERSION(24, 0))
 std::unordered_map<std::string, QuantizerType> const kQuantizerTypes{
   {"QT_8bit", QuantizerType::QT_8bit},
   {"QT_4bit", QuantizerType::QT_4bit},
@@ -74,6 +86,7 @@ std::unordered_map<std::string, QuantizerType> const kQuantizerTypes{
   {"QT_fp16", QuantizerType::QT_fp16},
   {"QT_8bit_direct", QuantizerType::QT_8bit_direct},
   {"QT_6bit", QuantizerType::QT_6bit}};
+#endif
 
 // Additional info for setting KNN params
 struct ParamsDetails {
@@ -105,8 +118,7 @@ class PredictionCtx {
       nFeatures_(x.ncol()),
       modelKnnIndex_(Rcpp::XPtr<knnIndex>(static_cast<SEXP>(model[kIndex]))),
       modelAlgoType_(static_cast<knn::Algo>(Rcpp::as<int>(model[kAlgo]))),
-      modelDistType_(static_cast<raft::distance::DistanceType>(
-        Rcpp::as<int>(model[kMetric]))),
+      modelDistType_(static_cast<knnDistanceType>(Rcpp::as<int>(model[kMetric]))),
       modelP_(Rcpp::as<float>(model[kP])),
       modelNSamples_(Rcpp::as<int>(model[kNumSamples])),
       modelNDims_(Rcpp::as<int>(model[kNumDims])),
@@ -167,7 +179,7 @@ class PredictionCtx {
   // attributes from the KNN model object
   Rcpp::XPtr<knnIndex> const modelKnnIndex_;
   Algo const modelAlgoType_;
-  raft::distance::DistanceType const modelDistType_;
+  knnDistanceType const modelDistType_;
   float const modelP_;
   int const modelNSamples_;
   int const modelNDims_;
@@ -235,6 +247,18 @@ __host__ std::unique_ptr<knnIndexParam> build_ivfpq_algo_params(
     params[kNumLists] = 8;
     params[kNumProbes] = 3;
 
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+    for (auto iter = kAllowedSubDimSize.crbegin();
+         iter != kAllowedSubDimSize.crend(); ++iter) {
+      auto const pq_dim = *iter;
+      if (pq_dim <= d && d % pq_dim == 0) {
+        params[kUseComputedTables] = false;
+        params[kM] = pq_dim;
+        break;
+      }
+    }
+#else
     for (auto const n_subq : kAllowedSubquantizers) {
       if (d % n_subq == 0 &&
           std::find(kAllowedSubDimSize.cbegin(), kAllowedSubDimSize.cend(),
@@ -244,6 +268,7 @@ __host__ std::unique_ptr<knnIndexParam> build_ivfpq_algo_params(
         break;
       }
     }
+#endif
 
     if (!params.containsElementNamed(kM)) {
       for (auto const n_subq : kAllowedSubquantizers) {
@@ -256,9 +281,10 @@ __host__ std::unique_ptr<knnIndexParam> build_ivfpq_algo_params(
     }
 
     params[kNumBits] = 4;
-    for (auto const n_bits : {8, 6, 5}) {
+    for (auto const n_bits : {8, 6, 5, 4}) {
       auto const min_train_points = (1 << n_bits) * 39;
-      if (n >= min_train_points) {
+      if (n >= min_train_points &&
+          ((n_bits * Rcpp::as<int>(params[kM])) % 8) == 0) {
         params[kNumBits] = n_bits;
         break;
       }
@@ -278,6 +304,11 @@ __host__ std::unique_ptr<knnIndexParam> build_ivfpq_algo_params(
 
 __host__ std::unique_ptr<knnIndexParam> build_ivfsq_algo_params(
   Rcpp::List params, bool const automated) {
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+  Rcpp::stop("IVFSQ KNN is unsupported by this cuML version");
+  return nullptr;
+#else
   if (automated) {
     params[kNumLists] = 8;
     params[kNumProbes] = 2;
@@ -299,6 +330,7 @@ __host__ std::unique_ptr<knnIndexParam> build_ivfsq_algo_params(
   algo_params->encodeResidual = Rcpp::as<bool>(params[kEncodeResidual]);
 
   return algo_params;
+#endif
 }
 
 __host__ std::unique_ptr<knnIndexParam> build_algo_params(
@@ -324,7 +356,7 @@ __host__ std::unique_ptr<knnIndexParam> build_algo_params(
 __host__ std::unique_ptr<knnIndex> build_knn_index(
   raft::handle_t& handle, float* const d_input, int const n_samples,
   int const n_features, Algo const algo_type,
-  raft::distance::DistanceType const dist_type, float const p,
+  knnDistanceType const dist_type, float const p,
   Rcpp::List const& algo_params) {
   std::unique_ptr<knnIndex> knn_index(nullptr);
 
@@ -360,7 +392,7 @@ __host__ Rcpp::List knn_fit(Rcpp::NumericMatrix const& x, int const algo,
                             int const metric, float const p,
                             Rcpp::List const& algo_params) {
   auto const algo_type = static_cast<knn::Algo>(algo);
-  auto const dist_type = static_cast<raft::distance::DistanceType>(metric);
+  auto const dist_type = static_cast<knnDistanceType>(metric);
   auto const input_m = Matrix<float>(x, /*transpose=*/false);
   int const n_samples = input_m.numRows;
   int const n_features = input_m.numCols;

@@ -3,12 +3,15 @@
 // [[Rcpp::export(".rproj_johnson_lindenstrauss_min_dim")]]
 size_t rproj_johnson_lindenstrauss_min_dim(size_t const n_samples,
                                            double const eps) {
-#ifdef HAS_CUML
+#if defined(HAS_CUML) && !defined(CUML4R_RPROJ_C_API_MISSING)
 
   return cuml4r::rproj_johnson_lindenstrauss_min_dim(n_samples, eps);
 
 #else
 
+#ifdef CUML4R_RPROJ_C_API_MISSING
+  Rcpp::stop("cuML random projection support is not available in this build.");
+#endif
 #include "warn_cuml_missing.h"
 
   // return a dummy value
@@ -22,13 +25,16 @@ SEXP rproj_fit(int const n_samples, int const n_features,
                int const n_components, double const eps,
                bool const gaussian_method, double const density,
                int const random_state) {
-#ifdef HAS_CUML
+#if defined(HAS_CUML) && !defined(CUML4R_RPROJ_C_API_MISSING)
 
   return cuml4r::rproj_fit(n_samples, n_features, n_components, eps,
                            gaussian_method, density, random_state);
 
 #else
 
+#ifdef CUML4R_RPROJ_C_API_MISSING
+  Rcpp::stop("cuML random projection support is not available in this build.");
+#endif
 #include "warn_cuml_missing.h"
 
   return Rcpp::List();
@@ -39,12 +45,15 @@ SEXP rproj_fit(int const n_samples, int const n_features,
 // [[Rcpp::export(".rproj_transform")]]
 Rcpp::NumericMatrix rproj_transform(SEXP rproj_ctx_xptr,
                                     Rcpp::NumericMatrix const& input) {
-#ifdef HAS_CUML
+#if defined(HAS_CUML) && !defined(CUML4R_RPROJ_C_API_MISSING)
 
   return cuml4r::rproj_transform(rproj_ctx_xptr, input);
 
 #else
 
+#ifdef CUML4R_RPROJ_C_API_MISSING
+  Rcpp::stop("cuML random projection support is not available in this build.");
+#endif
 #include "warn_cuml_missing.h"
 
   // dummy values with distinct data points
@@ -55,12 +64,15 @@ Rcpp::NumericMatrix rproj_transform(SEXP rproj_ctx_xptr,
 
 // [[Rcpp::export(".rproj_get_state")]]
 Rcpp::List rproj_get_state(SEXP model) {
-#ifdef HAS_CUML
+#if defined(HAS_CUML) && !defined(CUML4R_RPROJ_C_API_MISSING)
 
   return cuml4r::rproj_get_state(model);
 
 #else
 
+#ifdef CUML4R_RPROJ_C_API_MISSING
+  Rcpp::stop("cuML random projection support is not available in this build.");
+#endif
 #include "warn_cuml_missing.h"
 
   return {};
@@ -70,12 +82,15 @@ Rcpp::List rproj_get_state(SEXP model) {
 
 // [[Rcpp::export(".rproj_set_state")]]
 SEXP rproj_set_state(Rcpp::List const& model_state) {
-#ifdef HAS_CUML
+#if defined(HAS_CUML) && !defined(CUML4R_RPROJ_C_API_MISSING)
 
   return cuml4r::rproj_set_state(model_state);
 
 #else
 
+#ifdef CUML4R_RPROJ_C_API_MISSING
+  Rcpp::stop("cuML random projection support is not available in this build.");
+#endif
 #include "warn_cuml_missing.h"
 
   return R_NilValue;

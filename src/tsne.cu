@@ -7,7 +7,7 @@
 #include "stream_allocator.h"
 
 #include <cuml/manifold/tsne.h>
-#include <thrust/async/copy.h>
+#include <cuml/version_config.hpp>
 #include <thrust/device_vector.h>
 #include <cuml/manifold/umap.hpp>
 
@@ -49,8 +49,15 @@ __host__ Rcpp::NumericMatrix tsne_fit(
   params.pre_momentum = pre_momentum;
   params.post_momentum = post_momentum;
   params.random_state = random_state;
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+  params.verbosity = static_cast<rapids_logger::level_enum>(verbosity);
+  params.init =
+    initialize_embeddings ? ML::TSNE_INIT::RANDOM : ML::TSNE_INIT::PCA;
+#else
   params.verbosity = verbosity;
   params.initialize_embeddings = initialize_embeddings;
+#endif
   params.square_distances = square_distances;
   params.algorithm = static_cast<ML::TSNE_ALGORITHM>(algo);
 

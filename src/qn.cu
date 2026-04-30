@@ -7,9 +7,9 @@
 #include "qn_constants.h"
 #include "stream_allocator.h"
 
-#include <thrust/async/copy.h>
 #include <thrust/device_vector.h>
 #include <cuml/linear_model/glm.hpp>
+#include <cuml/version_config.hpp>
 
 #include <Rcpp.h>
 
@@ -45,7 +45,7 @@ __host__ Rcpp::List qn_fit(Rcpp::NumericMatrix const& X,
     async_copy(stream_view.value(), h_y.cbegin(), h_y.cend(), d_y.begin());
 
   thrust::device_vector<double> d_sample_weight;
-  AsyncCopyCtx sample_weight_h2d;
+  CUML4R_MAYBE_UNUSED AsyncCopyCtx sample_weight_h2d;
   if (sample_weight.size() > 0) {
     d_sample_weight.resize(sample_weight.size());
     auto h_sample_weight(Rcpp::as<pinned_host_vector<double>>(sample_weight));
@@ -60,6 +60,30 @@ __host__ Rcpp::List qn_fit(Rcpp::NumericMatrix const& X,
   double objective = std::numeric_limits<double>::infinity();
   int n_iters = 0;
 
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+  ML::GLM::qn_params params;
+  params.loss = static_cast<ML::GLM::qn_loss_type>(loss_type);
+  params.penalty_l1 = l1;
+  params.penalty_l2 = l2;
+  params.grad_tol = tol;
+  params.change_tol = delta;
+  params.max_iter = max_iters;
+  params.linesearch_max_iter = linesearch_max_iters;
+  params.lbfgs_memory = lbfgs_memory;
+  params.verbose = 0;
+  params.fit_intercept = fit_intercept;
+
+  ML::GLM::qnFit(
+    /*cuml_handle=*/*handle, params, /*X=*/d_X.data().get(),
+    /*X_col_major=*/true,
+    /*y=*/d_y.data().get(), /*N=*/static_cast<int>(n_samples),
+    /*D=*/static_cast<int>(n_features), /*C=*/n_classes,
+    /*w0=*/d_coefs.data().get(),
+    /*f=*/&objective, /*num_iters=*/&n_iters,
+    /*sample_weight=*/d_sample_weight.empty() ? nullptr
+                                              : d_sample_weight.data().get());
+#else
   ML::GLM::qnFit(
     /*handle=*/*handle, /*X=*/d_X.data().get(), /*X_col_major=*/true,
     /*y=*/d_y.data().get(), /*N=*/n_samples,
@@ -70,6 +94,7 @@ __host__ Rcpp::List qn_fit(Rcpp::NumericMatrix const& X,
     /*f=*/&objective, /*num_iters=*/&n_iters, loss_type,
     /*sample_weight=*/d_sample_weight.empty() ? nullptr
                                               : d_sample_weight.data().get());
+#endif
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
@@ -118,6 +143,22 @@ Rcpp::NumericVector qn_predict(Rcpp::NumericMatrix const& X,
   // QN output
   thrust::device_vector<double> d_preds(n_samples);
 
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+  ML::GLM::qn_params params;
+  params.loss = static_cast<ML::GLM::qn_loss_type>(loss_type);
+  params.fit_intercept = fit_intercept;
+
+  ML::GLM::qnPredict(
+    /*cuml_handle=*/*handle, params,
+    /*X=*/d_X.data().get(),
+    /*X_col_major=*/true,
+    /*N=*/static_cast<int>(n_samples),
+    /*D=*/static_cast<int>(n_features),
+    /*C=*/n_classes,
+    /*coefs=*/d_coefs.data().get(),
+    /*preds=*/d_preds.data().get());
+#else
   ML::GLM::qnPredict(
     /*cuml_handle=*/*handle,
     /*X=*/d_X.data().get(),
@@ -127,6 +168,7 @@ Rcpp::NumericVector qn_predict(Rcpp::NumericMatrix const& X,
     /*C=*/n_classes, fit_intercept,
     /*params=*/d_coefs.data().get(), loss_type,
     /*preds=*/d_preds.data().get());
+#endif
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 

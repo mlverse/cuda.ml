@@ -6,9 +6,9 @@
 #include "preprocessor.h"
 #include "stream_allocator.h"
 
-#include <thrust/async/copy.h>
 #include <thrust/device_vector.h>
 #include <cuml/decomposition/pca.hpp>
+#include <cuml/version_config.hpp>
 
 #include <Rcpp.h>
 
@@ -123,7 +123,13 @@ __host__ Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x,
       /*singular_vals=*/d_singular_vals.data().get(),
       /*mu=*/d_mu.data().get(),
       /*noise_vars=*/d_noise_vars.data().get(),
-      /*prms=*/*params);
+      /*prms=*/*params
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+      ,
+      /*flip_signs_based_on_U=*/true
+#endif
+    );
   } else {
     ML::pcaFit(handle,
                /*input=*/d_input.data().get(),
@@ -133,7 +139,13 @@ __host__ Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x,
                /*singular_vals=*/d_singular_vals.data().get(),
                /*mu=*/d_mu.data().get(),
                /*noise_vars=*/d_noise_vars.data().get(),
-               /*prms=*/*params);
+               /*prms=*/*params
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+               ,
+               /*flip_signs_based_on_U=*/true
+#endif
+    );
   }
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
@@ -149,7 +161,7 @@ __host__ Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x,
   pinned_host_vector<double> h_mu(n_cols);
   pinned_host_vector<double> h_noise_vars(1);
 
-  AsyncCopyCtx transformed_data_d2h;
+  CUML4R_MAYBE_UNUSED AsyncCopyCtx transformed_data_d2h;
   if (transform_input) {
     transformed_data_d2h =
       async_copy(stream_view.value(), d_transformed_data.cbegin(),

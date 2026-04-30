@@ -6,9 +6,9 @@
 #include "preprocessor.h"
 #include "stream_allocator.h"
 
-#include <thrust/async/copy.h>
 #include <thrust/device_vector.h>
 #include <cuml/decomposition/tsvd.hpp>
+#include <cuml/version_config.hpp>
 
 #include <Rcpp.h>
 
@@ -72,13 +72,25 @@ __host__ Rcpp::List tsvd_fit_transform(Rcpp::NumericMatrix const& x,
       /*explained_var=*/d_explained_var.data().get(),
       /*explained_var_ratio=*/d_explained_var_ratio.data().get(),
       /*singular_vals=*/d_singular_vals.data().get(),
-      /*prms=*/*params);
+      /*prms=*/*params
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+      ,
+      /*flip_signs_based_on_U=*/true
+#endif
+    );
   } else {
     ML::tsvdFit(handle,
                 /*input=*/d_input.data().get(),
                 /*components=*/d_components.data().get(),
                 /*singular_vals=*/d_singular_vals.data().get(),
-                /*prms=*/*params);
+                /*prms=*/*params
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+                ,
+                /*flip_signs_based_on_U=*/true
+#endif
+    );
   }
 
   pinned_host_vector<double> h_transformed_data;
@@ -96,7 +108,7 @@ __host__ Rcpp::List tsvd_fit_transform(Rcpp::NumericMatrix const& x,
   }
   pinned_host_vector<double> h_singular_vals(n_components);
 
-  AsyncCopyCtx transformed_data_d2h;
+  CUML4R_MAYBE_UNUSED AsyncCopyCtx transformed_data_d2h;
   if (transform_input) {
     transformed_data_d2h =
       async_copy(stream_view.value(), d_transformed_data.cbegin(),
@@ -105,13 +117,13 @@ __host__ Rcpp::List tsvd_fit_transform(Rcpp::NumericMatrix const& x,
   auto CUML4R_ANONYMOUS_VARIABLE(components_d2h) =
     async_copy(stream_view.value(), d_components.cbegin(), d_components.cend(),
                h_components.begin());
-  AsyncCopyCtx explained_var_d2h;
+  CUML4R_MAYBE_UNUSED AsyncCopyCtx explained_var_d2h;
   if (transform_input) {
     explained_var_d2h =
       async_copy(stream_view.value(), d_explained_var.cbegin(),
                  d_explained_var.cend(), h_explained_var.begin());
   }
-  AsyncCopyCtx explained_var_ratio_d2h;
+  CUML4R_MAYBE_UNUSED AsyncCopyCtx explained_var_ratio_d2h;
   if (transform_input) {
     explained_var_ratio_d2h =
       async_copy(stream_view.value(), d_explained_var_ratio.cbegin(),

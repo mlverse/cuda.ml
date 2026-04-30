@@ -331,6 +331,14 @@ cuda_ml_rand_forest_impl_regression <- function(processed, mtry, trees, min_n,
 
 #' @export
 cuda_ml_get_state.cuda_ml_rand_forest <- function(model) {
+  if (!cuda_ml_fil_enabled()) {
+    stop(
+      "Random forest serialization requires Treelite/FIL support, but FIL is ",
+      "disabled in this cuda.ml build.",
+      call. = FALSE
+    )
+  }
+
   get_state_impl <- switch(model$mode,
     classification = .rf_classifier_get_state,
     regression = .rf_regressor_get_state

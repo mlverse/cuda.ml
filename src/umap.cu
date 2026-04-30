@@ -7,9 +7,9 @@
 #include "stream_allocator.h"
 
 #include <cuml/manifold/umapparams.h>
-#include <thrust/async/copy.h>
 #include <thrust/device_vector.h>
 #include <cuml/manifold/umap.hpp>
+#include <cuml/version_config.hpp>
 
 #include <Rcpp.h>
 
@@ -79,7 +79,12 @@ __host__ Rcpp::List umap_fit(
   params->repulsion_strength = repulsion_strength;
   params->negative_sample_rate = negative_sample_rate;
   params->transform_queue_size = transform_queue_size;
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+  params->verbosity = static_cast<rapids_logger::level_enum>(verbosity);
+#else
   params->verbosity = verbosity;
+#endif
   if (std::isnan(a) || std::isnan(b)) {
     ML::UMAP::find_ab(handle, params.get());
   } else {
@@ -100,7 +105,7 @@ __host__ Rcpp::List umap_fit(
   auto CUML4R_ANONYMOUS_VARIABLE(x_h2d) =
     async_copy(stream_view.value(), h_x.cbegin(), h_x.cend(), d_x.begin());
   thrust::device_vector<float> d_y;
-  AsyncCopyCtx y_h2d;
+  CUML4R_MAYBE_UNUSED AsyncCopyCtx y_h2d;
   if (y.size() > 0) {
     auto const h_y = Rcpp::as<pinned_host_vector<float>>(y);
     d_y.resize(y.size());
@@ -108,7 +113,26 @@ __host__ Rcpp::List umap_fit(
       async_copy(stream_view.value(), h_y.cbegin(), h_y.cend(), d_y.begin());
   }
 
-  // UMAP output
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+  std::unique_ptr<rmm::device_buffer> d_embedding;
+  auto graph =
+    raft::make_host_coo_matrix<float, int, int, uint64_t>(handle, n_samples,
+                                                          n_samples);
+
+  ML::UMAP::fit(handle, /*X=*/d_x.data().get(),
+                /*y=*/(y.size() > 0 ? d_y.data().get() : nullptr),
+                /*n=*/n_samples,
+                /*d=*/n_features,
+                /*knn_indices=*/nullptr,
+                /*knn_dists=*/nullptr,
+                /*params=*/params.get(),
+                /*embeddings=*/d_embedding,
+                /*graph=*/graph);
+
+  auto const d_embedding_data =
+    thrust::device_pointer_cast(static_cast<float*>(d_embedding->data()));
+#else
   thrust::device_vector<float> d_embedding(n_samples * n_components);
 
   ML::UMAP::fit(handle, /*X=*/d_x.data().get(),
@@ -120,12 +144,15 @@ __host__ Rcpp::List umap_fit(
                 /*params=*/params.get(),
                 /*embeddings=*/d_embedding.data().get());
 
+  auto const d_embedding_data = d_embedding.data();
+#endif
+
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
-  pinned_host_vector<float> h_embedding(d_embedding.size());
+  pinned_host_vector<float> h_embedding(n_samples * n_components);
   auto CUML4R_ANONYMOUS_VARIABLE(embedding_d2h) =
-    async_copy(stream_view.value(), d_embedding.cbegin(), d_embedding.cend(),
-               h_embedding.begin());
+    async_copy(stream_view.value(), d_embedding_data,
+               d_embedding_data + h_embedding.size(), h_embedding.begin());
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
@@ -172,10 +199,12 @@ __host__ Rcpp::NumericMatrix umap_transform(Rcpp::List const& model,
 
   ML::UMAP::transform(
     handle, /*X=*/d_x.data().get(), /*n=*/n_samples, /*d=*/n_features,
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) < \
+     CUML4R_LIBCUML_VERSION(24, 0))
     /*knn_indices=*/nullptr, /*knn_dists=*/nullptr,
-    /*orig_x=*/d_orig_x.data().get(),
-    /*orig_n=*/m_orig.numRows, /*embedding=*/d_embedding.data().get(),
-    /*embedding_n=*/m_embedding.numRows,
+#endif
+    /*orig_x=*/d_orig_x.data().get(), /*orig_n=*/m_orig.numRows,
+    /*embedding=*/d_embedding.data().get(), /*embedding_n=*/m_embedding.numRows,
     /*params=*/params.get(), /*transformed=*/d_transformed.data().get());
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
@@ -211,15 +240,14 @@ __host__ Rcpp::List umap_get_state(Rcpp::List const& model) {
       umap_params->negative_sample_rate;
     umap_params_list["transform_queue_size"] =
       umap_params->transform_queue_size;
-    umap_params_list["verbosity"] = umap_params->verbosity;
+    umap_params_list["verbosity"] = static_cast<int>(umap_params->verbosity);
     umap_params_list["a"] = umap_params->a;
     umap_params_list["b"] = umap_params->b;
     umap_params_list["init"] = umap_params->init;
     umap_params_list["target_n_neighbors"] = umap_params->target_n_neighbors;
     umap_params_list["target_metric"] =
       static_cast<int>(umap_params->target_metric);
-    umap_params_list["target_weight"] =
-      static_cast<int>(umap_params->target_weight);
+    umap_params_list["target_weight"] = umap_params->target_weight;
     umap_params_list["random_state"] = umap_params->random_state;
     umap_params_list["deterministic"] = umap_params->deterministic;
     state["umap_params"] = std::move(umap_params_list);
@@ -251,7 +279,13 @@ __host__ Rcpp::List umap_set_state(Rcpp::List const& state) {
       umap_params_list["negative_sample_rate"];
     umap_params->transform_queue_size =
       umap_params_list["transform_queue_size"];
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+    umap_params->verbosity = static_cast<rapids_logger::level_enum>(
+      Rcpp::as<int>(umap_params_list["verbosity"]));
+#else
     umap_params->verbosity = umap_params_list["verbosity"];
+#endif
     umap_params->a = umap_params_list["a"];
     umap_params->b = umap_params_list["b"];
     umap_params->init = umap_params_list["init"];

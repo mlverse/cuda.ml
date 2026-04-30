@@ -8,7 +8,6 @@
 #include "svm_serde.h"
 
 #include <cuml/svm/svm_parameter.h>
-#include <thrust/async/copy.h>
 #include <thrust/device_vector.h>
 #include <cuml/svm/svc.hpp>
 
@@ -86,7 +85,7 @@ __host__ SEXP svc_fit(Rcpp::NumericMatrix const& input,
     stream_view.value(), h_labels.cbegin(), h_labels.cend(), d_labels.begin());
 
   thrust::device_vector<double> d_sample_weights;
-  AsyncCopyCtx sample_weights_h2d;
+  CUML4R_MAYBE_UNUSED AsyncCopyCtx sample_weights_h2d;
   if (sample_weights.size() > 0) {
     auto const h_sample_weights(
       Rcpp::as<pinned_host_vector<double>>(sample_weights));
@@ -100,10 +99,18 @@ __host__ SEXP svc_fit(Rcpp::NumericMatrix const& input,
     /*kernel=*/static_cast<MLCommon::Matrix::KernelType>(kernel), degree, gamma,
     coef0};
 
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+  auto const verbosity_level =
+    static_cast<rapids_logger::level_enum>(verbosity);
+#else
+  auto const verbosity_level = verbosity;
+#endif
+
   // SVM output
   auto svc = std::make_unique<ML::SVM::SVC<double>>(
     *handle, /*C=*/cost, tol, kernel_params, cache_size, max_iter,
-    nochange_steps, verbosity);
+    nochange_steps, verbosity_level);
 
   svc->fit(d_input.data().get(), /*nrows=*/n_samples, /*ncols=*/n_features,
            d_labels.data().get(),
@@ -122,7 +129,7 @@ __host__ SEXP svc_predict(SEXP model_xptr, Rcpp::NumericMatrix const& input,
 
   auto ctx = Rcpp::XPtr<ModelCtx>(model_xptr);
   auto const& svc = ctx->model_;
-  auto* stream = ctx->handle_->get_stream();
+  cudaStream_t const stream = ctx->handle_->get_stream();
 
   // input
   auto const& h_input = m.values;

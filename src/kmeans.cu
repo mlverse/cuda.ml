@@ -6,9 +6,9 @@
 #include "preprocessor.h"
 #include "stream_allocator.h"
 
-#include <thrust/async/copy.h>
-#include <thrust/device_vector.h>
 #include <cuml/cluster/kmeans.hpp>
+#include <cuml/version_config.hpp>
+#include <thrust/device_vector.h>
 
 #include <Rcpp.h>
 
@@ -35,8 +35,15 @@ __host__ Rcpp::List kmeans(Rcpp::NumericMatrix const& x, int const k,
     params.inertia_check = true;
   }
   params.init = static_cast<ML::kmeans::KMeansParams::InitMethod>(init_method);
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+  params.rng_state = raft::random::RngState(
+    seed, raft::random::GeneratorType::GenPhilox);
+  params.verbosity = static_cast<rapids_logger::level_enum>(verbosity);
+#else
   params.seed = seed;
   params.verbosity = verbosity;
+#endif
 
   auto stream_view = stream_allocator::getOrCreateStream();
   raft::handle_t handle;
@@ -53,7 +60,7 @@ __host__ Rcpp::List kmeans(Rcpp::NumericMatrix const& x, int const k,
 
   // kmeans outputs
   thrust::device_vector<double> d_pred_centroids(n_centroid_values);
-  AsyncCopyCtx centroids_h2d;
+  CUML4R_MAYBE_UNUSED AsyncCopyCtx centroids_h2d;
   if (params.init == ML::kmeans::KMeansParams::InitMethod::Array) {
     auto const m_centroids = Matrix<>(centroids, /*transpose=*/false);
     auto const& h_centroids = m_centroids.values;
@@ -64,9 +71,20 @@ __host__ Rcpp::List kmeans(Rcpp::NumericMatrix const& x, int const k,
 
   double inertia = 0;
   int n_iter = 0;
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
+  ML::kmeans::fit(handle, params, d_src_data.data().get(), n_samples,
+                  n_features, /*sample_weight=*/nullptr,
+                  d_pred_centroids.data().get(), inertia, n_iter);
+  ML::kmeans::predict(handle, params, d_pred_centroids.data().get(),
+                      d_src_data.data().get(), n_samples, n_features,
+                      /*sample_weight=*/nullptr, /*normalize_weights=*/false,
+                      d_pred_labels.data().get(), inertia);
+#else
   ML::kmeans::fit_predict(handle, params, d_src_data.data().get(), n_samples,
                           n_features, 0, d_pred_centroids.data().get(),
                           d_pred_labels.data().get(), inertia, n_iter);
+#endif
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 

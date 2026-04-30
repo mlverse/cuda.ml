@@ -11,7 +11,7 @@ namespace cuml4r {
  */
 class TreeliteHandle {
  public:
-  __host__ explicit TreeliteHandle(ModelHandle const handle = nullptr) noexcept
+  __host__ explicit TreeliteHandle(TreeliteModelHandle const handle = nullptr) noexcept
     : handle_(handle) {}
 
   __host__ TreeliteHandle(TreeliteHandle const& o) = delete;
@@ -36,7 +36,7 @@ class TreeliteHandle {
     return *this;
   }
 
-  __host__ TreeliteHandle& operator=(ModelHandle const handle) noexcept {
+  __host__ TreeliteHandle& operator=(TreeliteModelHandle const handle) noexcept {
     if (handle_ != nullptr) {
       TreeliteFreeModel(handle_);
     }
@@ -46,12 +46,14 @@ class TreeliteHandle {
 
   __host__ bool empty() const noexcept { return handle_ == nullptr; }
 
-  __host__ ModelHandle const* get() const noexcept { return &handle_; }
+  __host__ TreeliteModelHandle const* get() const noexcept { return &handle_; }
 
-  __host__ ModelHandle* get() noexcept { return &handle_; }
+  __host__ TreeliteModelHandle* get() noexcept { return &handle_; }
+
+  __host__ TreeliteModelHandle handle() const noexcept { return handle_; }
 
  private:
-  ModelHandle handle_;
+  TreeliteModelHandle handle_;
 };
 
 }  // namespace cuml4r
