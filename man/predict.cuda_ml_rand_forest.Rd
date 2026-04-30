@@ -27,7 +27,7 @@ is set to \code{TRUE} or \code{FALSE} but the model being applied does
 not support class probabilities output.}
 
 \item{cuML_log_level}{Log level within cuML library functions. Must be one of
-{"off", "critical", "error", "warn", "info", "debug", "trace"}.
+\{"off", "critical", "error", "warn", "info", "debug", "trace"\}.
 Default: off.}
 
 \item{...}{Additional arguments to \code{predict()}. Currently unused.}

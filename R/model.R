@@ -138,11 +138,20 @@ cuda_ml_can_predict_class_probabilities.cuda_ml_model <- function(model) {
   FALSE
 }
 
-cuda_ml_can_predict_class_probabilities.cuda_ml_fil <- cuda_ml_is_classifier
+#' @export
+cuda_ml_can_predict_class_probabilities.cuda_ml_fil <- function(model) {
+  cuda_ml_is_classifier(model)
+}
 
-cuda_ml_can_predict_class_probabilities.cuda_ml_knn <- cuda_ml_is_classifier
+#' @export
+cuda_ml_can_predict_class_probabilities.cuda_ml_knn <- function(model) {
+  cuda_ml_is_classifier(model)
+}
 
-cuda_ml_can_predict_class_probabilities.cuda_ml_rand_forest <- cuda_ml_is_classifier
+#' @export
+cuda_ml_can_predict_class_probabilities.cuda_ml_rand_forest <- function(model) {
+  cuda_ml_is_classifier(model)
+}
 
 #' Serialize a CuML model
 #'

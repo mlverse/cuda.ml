@@ -1,5 +1,3 @@
-# Workflow derived from https://github.com/r-lib/actions/tree/master/examples
-# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
   push:
     branches: [main]
@@ -9,117 +7,99 @@ on:
 name: R-CMD-check
 
 jobs:
-  R-CMD-check:
-
+  check-cran:
     strategy:
       fail-fast: false
       matrix:
-        cuda: ['11.2.1']
-        cuml: ['21.08', '21.10', '21.12']
         r: ['release', 'devel']
-        asan: ['false', 'true']
 
-    runs-on: ['self-hosted', 'gpu']
-    container:
-      image: nvidia/cuda:${{ matrix.cuda }}-devel-ubuntu18.04
-      options: --gpus all
-
-    name: 'R: ${{ matrix.r }}, CUDA: ${{ matrix.cuda }}, CUML: ${{ matrix.cuml }}, ASAN: ${{ matrix.asan }}'
+    runs-on: ubuntu-latest
+    name: 'CRAN (R: ${{ matrix.r }})'
 
     env:
-      NOT_CRAN: true
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
-      CUML_VERSION: ${{ matrix.cuml }}
-      CUML4R_ENABLE_ASAN: ${{ matrix.asan }}
-      DEBIAN_FRONTEND: 'noninteractive'
 
     steps:
-      - run: |
-          apt-get update -y
-          apt-get install -y sudo software-properties-common dialog apt-utils tzdata
-          if [[ $CUML4R_ENABLE_ASAN == 'true' ]]; then
-            apt-get install -y libasan5
-          fi
-        shell: bash
+      - uses: actions/checkout@v4
 
-      - uses: actions/checkout@v2
+      - uses: r-lib/actions/setup-pandoc@v2
 
-      - uses: r-lib/actions/setup-pandoc@v1
-
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
-          architecture: 'x64'
-
-      - uses: r-lib/actions/setup-r@master
+      - uses: r-lib/actions/setup-r@v2
         with:
           r-version: ${{ matrix.r }}
-          http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
-      - uses: r-lib/actions/setup-r-dependencies@v1
+      - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: rcmdcheck
+          needs: check
 
-      - name: Build {cuda.ml}
-        id: build-pkg
-        run: |
-          cd ..
-          ls -a
-          rm -v cuda.ml_*.tar.gz
-          R CMD build cuda.ml
-          ls -a
-          echo "::set-output name=pkg-dir::$(pwd)"
+      - name: Build
+        run: R CMD build .
 
-      - run: cp -v cuda.ml/.lsan-suppressions.txt /tmp
-        working-directory: ${{ steps.build-pkg.outputs.pkg-dir }}
+      - name: Check
+        run: R CMD check --no-manual --as-cran cuda.ml_*.tar.gz
+        env:
+          _R_CHECK_CRAN_INCOMING_: false
 
-      - name: Check {cuda.ml} package
-        run: |
-          print(list.files("."))
-          pkg <- list.files(".", pattern = "cuda\\.ml_.*\\.tar\\.gz")
-          stopifnot(length(pkg) == 1)
+  build-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    timeout-minutes: 120
+    outputs:
+      image: ghcr.io/${{ github.repository }}-ci:${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
 
-          reticulate::install_miniconda(force = TRUE)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-          rcmdcheck_env <- (
-            if (identical(Sys.getenv("CUML4R_ENABLE_ASAN"), "true")) {
-              c(
-                LD_PRELOAD = "/usr/lib/x86_64-linux-gnu/libasan.so.5",
-                ASAN_OPTIONS = "halt_on_error=0,new_delete_type_mismatch=0,alloc_dealloc_mismatch=0,protect_shadow_gap=0",
-                LSAN_OPTIONS = "suppressions=/tmp/.lsan-suppressions.txt"
-              )
-            } else {
-              character()
-            }
-          )
-          rcmdcheck::rcmdcheck(
-            path = pkg[[1]],
-            args = c("--no-manual", "--as-cran"),
-            check_dir="check",
-            env = rcmdcheck_env
-          )
-        shell: Rscript {0}
-        working-directory: ${{ steps.build-pkg.outputs.pkg-dir }}
-
-      - name: Show testthat output
-        if: ${{ always() }}
-        run: |
-          find check -name 'testthat.Rout*' -type f -exec cat '{}' \; || :
-        shell: bash
-        working-directory: ${{ steps.build-pkg.outputs.pkg-dir }}
-
-      - name: Check for sanitizer error(s)
-        if: ${{ always() }}
-        run: |
-          ! find check -name 'testthat.Rout*' -type f -exec egrep -C 50 'ERROR: .*Sanitizer:' '{}' +
-        shell: bash
-        working-directory: ${{ steps.build-pkg.outputs.pkg-dir }}
-
-      - name: Upload check results
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@main
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          name: ${{ runner.os }}-r${{ matrix.r }}-results
-          path: ${{ steps.build-pkg.outputs.pkg-dir }}/check
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: .github/docker/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository }}-ci:${{ github.sha }}
+          build-args: |
+            CUML_VERSION=21.12
+            CMAKE_CUDA_ARCHITECTURES=75
+
+  test-gpu:
+    needs: build-image
+    if: ${{ always() && needs.build-image.result == 'success' }}
+    concurrency:
+      group: gpu-tests
+    runs-on:
+      - "runs-on=${{ github.run_id }}/family=g4dn.xlarge/image=ubuntu24-gpu-x64/spot=true"
+    container:
+      image: ${{ needs.build-image.outputs.image }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+      options: --gpus all --runtime=nvidia
+    timeout-minutes: 60
+    env:
+      NOT_CRAN: true
+
+    steps:
+      - name: Verify GPU access
+        run: nvidia-smi
+
+      - name: Session info
+        run: |
+          Rscript -e "sessionInfo()"
+          Rscript -e "library(cuda.ml)"
+
+      - name: Run tests
+        run: |
+          Rscript -e "testthat::test_package('cuda.ml', reporter = 'progress')"

@@ -17,7 +17,7 @@ ols_match_method <- function(method = c("svd", "eig", "qr")) {
 #' @template ellipsis-unused
 #' @template fit-intercept
 #' @template normalize-input
-#' @param method Must be one of {"svd", "eig", "qr"}.
+#' @param method Must be one of \{"svd", "eig", "qr"\}.
 #'
 #'   - "svd": compute SVD decomposition using Jacobi iterations.
 #'   - "eig": use an eigendecomposition of the covariance matrix.

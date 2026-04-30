@@ -20,10 +20,10 @@ cuda_ml_fil_load_model(
 \item{filename}{Path to the saved model file.}
 
 \item{mode}{Type of task to be performed by the model. Must be one of
-{"classification", "regression"}.}
+\{"classification", "regression"\}.}
 
 \item{model_type}{Format of the saved model file. Notice if \code{filename}
-ends with ".json" and \code{model_type} is "xgboost", then {cuda.ml} will
+ends with ".json" and \code{model_type} is "xgboost", then \{cuda.ml\} will
 assume the model file is in XGBoost JSON (instead of binary) format.
 Default: "xgboost".}
 

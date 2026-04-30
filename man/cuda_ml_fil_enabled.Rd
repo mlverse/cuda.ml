@@ -3,7 +3,7 @@
 \name{cuda_ml_fil_enabled}
 \alias{cuda_ml_fil_enabled}
 \title{Determine whether Forest Inference Library (FIL) functionalities are enabled
-in the current installation of {cuda.ml}.}
+in the current installation of \{cuda.ml\}.}
 \usage{
 cuda_ml_fil_enabled()
 }
@@ -16,7 +16,7 @@ CuML Forest Inference Library (FIL) functionalities (see
 https://github.com/rapidsai/cuml/tree/main/python/cuml/fil#readme) will
 require Treelite C API. If you need FIL to run tree-based model ensemble on
 GPU, and \code{fil_enabled()} returns FALSE, then please consider installing
-Treelite and then re-installing {cuda.ml}.
+Treelite and then re-installing \{cuda.ml\}.
 }
 \examples{
 if (cuda_ml_fil_enabled()) {

@@ -112,7 +112,7 @@ cuda_ml_knn_algo_ivfsq <- function(nlist, nprobe,
 #' @template supervised-model-output
 #' @template ellipsis-unused
 #' @param algo The query algorithm to use. Must be one of
-#'   {"brute", "ivfflat", "ivfpq", "ivfsq"} or a KNN algorithm specification
+#'   \{"brute", "ivfflat", "ivfpq", "ivfsq"\} or a KNN algorithm specification
 #'   constructed using the \code{cuda_ml_knn_algo_*} family of functions.
 #'   If the algorithm is specified by one of the \code{cuda_ml_knn_algo_*}
 #'   functions, then values of all required parameters of the algorithm will
@@ -133,10 +133,10 @@ cuda_ml_knn_algo_ivfsq <- function(nlist, nprobe,
 #'                faster distances calculations).
 #'
 #'   Default: "brute".
-#' @param metric Distance metric to use. Must be one of {"euclidean", "l2",
+#' @param metric Distance metric to use. Must be one of \{"euclidean", "l2",
 #'   "l1", "cityblock", "taxicab", "manhattan", "braycurtis", "canberra",
 #'   "minkowski", "lp", "chebyshev", "linf", "jensenshannon", "cosine",
-#'   "correlation"}.
+#'   "correlation"\}.
 #'   Default: "euclidean".
 #' @param p Parameter for the Minkowski metric. If p = 1, then the metric is
 #'   equivalent to manhattan distance (l1). If p = 2, the metric is equivalent
