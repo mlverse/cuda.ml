@@ -55,12 +55,16 @@ cuda_ml_tsvd <- function(x,
 }
 
 tsvd_flip_signs <- function(model) {
+  if (!is.matrix(model$components)) {
+    return(model)
+  }
+
   signs <- apply(model$components, 1L, function(x) {
     if (x[[which.max(abs(x))]] < 0) -1 else 1
   })
 
   model$components <- sweep(model$components, 1L, signs, `*`)
-  if (!is.null(model$transformed_data)) {
+  if (is.matrix(model$transformed_data)) {
     model$transformed_data <- sweep(model$transformed_data, 2L, signs, `*`)
   }
 

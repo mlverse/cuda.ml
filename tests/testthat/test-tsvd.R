@@ -19,6 +19,11 @@ align_svd_signs <- function(a, b) {
   a
 }
 
+test_that("TSVD sign normalization tolerates stub-only models", {
+  model <- list()
+  expect_identical(tsvd_flip_signs(model), model)
+})
+
 test_that("cuda_ml_tsvd() works as expected", {
   sklearn_components <- sklearn_tsvd_model$components_
   aligned_components <- align_svd_signs(cuda_ml_tsvd_model$components, sklearn_components)
