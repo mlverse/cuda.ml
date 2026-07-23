@@ -43,11 +43,9 @@ sort_mat <- function(m, cols = seq(ncol(m))) {
 predict_in_sub_proc <- function(model_state, data, expected_mode,
                                 expected_model_cls = NULL,
                                 additional_predict_args = list()) {
-  pkg_dir <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
-
-  impl <- function(pkg_dir, model_state, data, expected_mode,
-                   expected_model_cls, additional_predict_args) {
-    pkgload::load_all(pkg_dir, quiet = TRUE)
+  impl <- function(model_state, data, expected_mode, expected_model_cls,
+                   additional_predict_args) {
+    suppressPackageStartupMessages(library(cuda.ml))
     if (!has_cuML()) {
       stop(
         "The current installation of {cuda.ml} is not linked with a valid copy of",
@@ -69,7 +67,6 @@ predict_in_sub_proc <- function(model_state, data, expected_mode,
   callr::r(
     impl,
     args = list(
-      pkg_dir = pkg_dir,
       model_state = model_state,
       data = data,
       expected_mode = expected_mode,

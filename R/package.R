@@ -42,7 +42,7 @@
       bootstrap RAPIDS cuML from pip wheels with `uv` or Python/pip.
 
       If RAPIDS is already installed, set `CUML_PREFIX` to a prefix containing
-      include/cuml and lib/libcuml++.so before reinstalling.\n\n
+      include/cuml and lib/libcuml.so before reinstalling.\n\n
       "
     )
   }

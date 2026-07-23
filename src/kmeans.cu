@@ -32,7 +32,10 @@ __host__ Rcpp::List kmeans(Rcpp::NumericMatrix const& x, int const k,
   params.max_iter = max_iters;
   if (tol > 0) {
     params.tol = tol;
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) < \
+     CUML4R_LIBCUML_VERSION(26, 6))
     params.inertia_check = true;
+#endif
   }
   params.init = static_cast<ML::kmeans::KMeansParams::InitMethod>(init_method);
 #if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \

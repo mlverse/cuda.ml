@@ -1,7 +1,7 @@
 check_libcuml_path <- function(path) {
   cuml_headers_dir <- file.path(path, "include", "cuml")
-  cuml_lib <- file.path(path, "lib", "libcuml++.so")
-  dir.exists(cuml_headers_dir) && file.exists(cuml_lib)
+  cuml_libs <- file.path(path, "lib", c("libcuml.so", "libcuml++.so"))
+  dir.exists(cuml_headers_dir) && any(file.exists(cuml_libs))
 }
 
 get_cuml_prefix <- function() {
@@ -65,11 +65,20 @@ has_libcuml <- function(nvcc = find_nvcc()) {
     }
   } else {
     cuml_headers_dir <- file.path(cuml_prefix, "include", "cuml")
-    cuml_lib <- file.path(cuml_prefix, "lib", "libcuml++.so")
+    cuml_libs <- file.path(
+      cuml_prefix,
+      "lib",
+      c("libcuml.so", "libcuml++.so")
+    )
 
     if (!check_libcuml_path(cuml_prefix)) {
-      missing_paths <- c(cuml_headers_dir, cuml_lib)
-      missing_paths <- missing_paths[!file.exists(missing_paths)]
+      missing_paths <- cuml_headers_dir[!dir.exists(cuml_headers_dir)]
+      if (!any(file.exists(cuml_libs))) {
+        missing_paths <- c(
+          missing_paths,
+          paste(cuml_libs, collapse = " or ")
+        )
+      }
       warning2(
         paste0("Invalid CUML_PREFIX: ", cuml_prefix),
         paste0("Missing expected path(s): ", paste(missing_paths, collapse = ", ")),

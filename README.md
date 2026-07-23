@@ -328,10 +328,10 @@ The bootstrap prefers `uv` when available, then reticulate's managed `uv`, then 
 Useful environment variables:
 
 -   `CUDA_HOME`: CUDA Toolkit prefix containing `bin/nvcc`.
--   `CUML_PREFIX`: existing RAPIDS prefix containing `include/cuml` and `lib/libcuml++.so`.
+-   `CUML_PREFIX`: existing RAPIDS prefix containing `include/cuml` and `lib/libcuml.so`.
 -   `CUML_BOOTSTRAP=0`: disable automatic RAPIDS pip bootstrap.
 -   `CUML_BOOTSTRAP_CACHE`: cache directory for bootstrapped RAPIDS headers and libraries.
--   `CUML_PIP_VERSION`: RAPIDS pip wheel version to install.
+-   `CUML_PIP_VERSION`: RAPIDS pip wheel version to install. Defaults to 26.6.0.
 
 ### CRAN and machines without GPUs
 
@@ -339,7 +339,7 @@ On CRAN, or on machines without a usable NVIDIA GPU/driver and `nvcc`, {cuda.ml}
 
 ### Manual RAPIDS installations
 
-If you already have RAPIDS cuML from pip, conda, or a source build, set `CUML_PREFIX` to a prefix containing `include/cuml` and `lib/libcuml++.so` before installing {cuda.ml}. In this case the automatic bootstrap is skipped.
+If you already have RAPIDS cuML from pip, conda, or a source build, set `CUML_PREFIX` to a prefix containing `include/cuml` and `lib/libcuml.so` before installing {cuda.ml}. In this case the automatic bootstrap is skipped.
 
 ### Development version
 

@@ -70,9 +70,6 @@ jobs:
           file: .github/docker/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository }}-ci:${{ github.sha }}
-          build-args: |
-            CUML_VERSION=21.12
-            CMAKE_CUDA_ARCHITECTURES=75
 
   test-gpu:
     needs: build-image
@@ -94,6 +91,9 @@ jobs:
     steps:
       - name: Verify GPU access
         run: nvidia-smi
+
+      - name: Install package
+        run: R CMD INSTALL --preclean --install-tests /build
 
       - name: Session info
         run: |

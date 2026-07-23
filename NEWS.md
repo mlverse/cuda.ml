@@ -1,5 +1,8 @@
 # cuda.ml (development version)
 
+- Updated the automatic RAPIDS bootstrap and native linkage for CUDA 13.3 and
+  RAPIDS cuML 26.6.
+
 # cuml 0.3.2
 
 ### Linear Models

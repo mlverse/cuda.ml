@@ -10,8 +10,7 @@
 #' both work, then reinstall \pkg{cuda.ml}. During installation, \pkg{cuda.ml}
 #' can bootstrap RAPIDS cuML from pip wheels with \code{uv} or Python/pip. If
 #' RAPIDS cuML is already installed, set \code{CUML_PREFIX} to a prefix
-#' containing \code{include/cuml} and \code{lib/libcuml++.so} before
-#' reinstalling.
+#' containing \code{include/cuml} and \code{lib/libcuml.so} before reinstalling.
 #'
 #' @examples
 #'

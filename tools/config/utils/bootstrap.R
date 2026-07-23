@@ -1,5 +1,5 @@
 cuml_pip_version <- function() {
-  Sys.getenv("CUML_PIP_VERSION", unset = "26.4.0")
+  Sys.getenv("CUML_PIP_VERSION", unset = "26.6.0")
 }
 
 cuml_cuda_cccl_version <- function() {
@@ -261,7 +261,13 @@ extract_cuml_pip_prefix <- function(target, prefix) {
   dir.create(file.path(prefix, "include"), recursive = TRUE, showWarnings = FALSE)
   dir.create(file.path(prefix, "lib"), recursive = TRUE, showWarnings = FALSE)
 
-  for (pkg in c("libcuml", "libraft", "librmm", "rapids_logger")) {
+  for (pkg in c(
+    "libcuml",
+    "libnvforest",
+    "libraft",
+    "librmm",
+    "rapids_logger"
+  )) {
     copy_dir_contents(file.path(target, pkg, "include"), file.path(prefix, "include"))
 
     for (libdir in c("lib", "lib64", ".libs")) {

@@ -46,8 +46,15 @@ else()
     message(FATAL_ERROR "CUML_INCLUDE_DIR not specified.")
 endif(DEFINED CUML_INCLUDE_DIR)
 if(DEFINED CUML_LIB_DIR)
-    # CUML_LIB_DIR point to the director where libcuml++.so lives
-    link_directories(${CUML_LIB_DIR})
+    find_library(
+      CUML_LIBRARY
+      NAMES cuml cuml++
+      PATHS ${CUML_LIB_DIR}
+      NO_DEFAULT_PATH
+    )
+    if(NOT CUML_LIBRARY)
+      message(FATAL_ERROR "Neither libcuml.so nor libcuml++.so was found in ${CUML_LIB_DIR}.")
+    endif()
 else()
     message(FATAL_ERROR "CUML_LIB_DIR not specified.")
 endif(DEFINED CUML_LIB_DIR)
@@ -149,7 +156,7 @@ target_compile_options(
   $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=-Wno-deprecated-declarations>
 )
 
-set(CUML4R_LIBS cuda.ml PRIVATE cuml++ cublas cusolver cudart cusparse)
+set(CUML4R_LIBS cuda.ml PRIVATE ${CUML_LIBRARY} cublas cusolver cudart cusparse)
 
 find_package(Treelite QUIET)
 if(Treelite_FOUND)
