@@ -37,8 +37,14 @@ COPY . /build
 
 ENV NOT_CRAN=true
 
-# Install R dependencies. The package itself is installed on the GPU runner.
+# Install R dependencies
 RUN PKG_SYSREQS=false Rscript -e "\
     install.packages('pak', repos = 'https://r-lib.github.io/p/pak/devel/'); \
     pak::local_install_deps('/build', dependencies = TRUE)" \
     && rm -rf /tmp/* /root/.cache
+
+# Install cuda.ml with tests
+RUN R CMD INSTALL --install-tests /build
+
+# Clean up
+RUN rm -rf /tmp/* /build

@@ -92,9 +92,6 @@ jobs:
       - name: Verify GPU access
         run: nvidia-smi
 
-      - name: Install package
-        run: R CMD INSTALL --preclean --install-tests /build
-
       - name: Session info
         run: |
           Rscript -e "sessionInfo()"
