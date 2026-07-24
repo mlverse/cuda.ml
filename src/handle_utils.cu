@@ -4,11 +4,13 @@
 #ifdef HAS_CUML
 
 #include <cuml/version_config.hpp>
+#if CUML_VERSION_MAJOR >= 24
 #include <raft/core/resource/cuda_stream.hpp>
 #include <raft/core/resource/cuda_stream_pool.hpp>
 #include <rmm/cuda_stream_pool.hpp>
 
 #include <memory>
+#endif
 
 namespace cuml4r {
 namespace handle_utils {

@@ -11,6 +11,7 @@
 #include <thrust/device_vector.h>
 #include <cuml/svm/svc.hpp>
 #include <cuml/svm/svr.hpp>
+#include <cuml/version_config.hpp>
 
 #include <Rcpp.h>
 
@@ -101,8 +102,13 @@ __host__ SEXP svr_fit(Rcpp::NumericMatrix const& X,
   ML::SVM::svmParameter param{};
   param.C = cost;
   param.cache_size = cache_size;
+#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
+     CUML4R_LIBCUML_VERSION(24, 0))
   param.max_outer_iter = max_iter;
   param.max_iter = -1;
+#else
+  param.max_iter = max_iter;
+#endif
   param.nochange_steps = nochange_steps;
   param.tol = tol;
 #if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \

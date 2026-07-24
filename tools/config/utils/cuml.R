@@ -6,37 +6,37 @@ check_libcuml_path <- function(path) {
 
 get_cuml_prefix <- function() {
   cuml_prefix <- Sys.getenv("CUML_PREFIX", unset = NA_character_)
-  if (is.na(cuml_prefix)) {
-    # Try the 'CUDA_PATH' env variable if it is present.
-    cuml_prefix <- Sys.getenv("CUDA_PATH", unset = NA_character_)
-  }
-  if (is.na(cuml_prefix)) {
-    cuml_prefix <- "/usr"
-    if (check_libcuml_path(cuml_prefix)) {
-      warning2(
-        "'CUML_PREFIX' env variable is missing",
-        "will boldly assume it is '/usr' !"
-      )
-      return(cuml_prefix)
-    } else {
-
-      # devtools::load_all() might run the config script from the `src` directory.
-      cuml_prefix <- file.path(pkg_root(), "libcuml")
-      if (check_libcuml_path(cuml_prefix)) {
-        return(cuml_prefix)
-      }
-
-      cuml_prefix <- bootstrap_libcuml_from_pip()
-      if (!is.na(cuml_prefix)) {
-        return(cuml_prefix)
-      }
-
-      # We will download a pre-built copy of `libcuml`
-      return(NA_character_)
-    }
+  if (!is.na(cuml_prefix)) {
+    return(cuml_prefix)
   }
 
-  return(cuml_prefix)
+  cuda_path <- Sys.getenv("CUDA_PATH", unset = NA_character_)
+  if (!is.na(cuda_path) && check_libcuml_path(cuda_path)) {
+    return(cuda_path)
+  }
+
+  cuml_prefix <- "/usr"
+  if (check_libcuml_path(cuml_prefix)) {
+    warning2(
+      "'CUML_PREFIX' env variable is missing",
+      "will boldly assume it is '/usr' !"
+    )
+    return(cuml_prefix)
+  }
+
+  # devtools::load_all() might run the config script from the `src` directory.
+  cuml_prefix <- file.path(pkg_root(), "libcuml")
+  if (check_libcuml_path(cuml_prefix)) {
+    return(cuml_prefix)
+  }
+
+  cuml_prefix <- bootstrap_libcuml_from_pip()
+  if (!is.na(cuml_prefix)) {
+    return(cuml_prefix)
+  }
+
+  # We will download a pre-built copy of `libcuml`
+  NA_character_
 }
 
 has_libcuml <- function(nvcc = find_nvcc()) {

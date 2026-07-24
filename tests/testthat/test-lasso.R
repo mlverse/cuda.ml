@@ -65,3 +65,41 @@ test_that("LASSO regressor works as expected", {
     }
   }
 })
+
+test_that("LASSO normalization is applied before regularization", {
+  x <- cbind(
+    small = seq(-2, 2, length.out = 20),
+    large = rep(c(-1000, 1000), 10)
+  )
+  y <- 3 * x[, "small"] + 0.002 * x[, "large"] +
+    rep(c(-0.1, 0.1), 10)
+
+  x_center <- colMeans(x)
+  x_centered <- sweep(x, 2, x_center)
+  x_norm <- sqrt(colSums(x_centered^2))
+  x_normalized <- sweep(x_centered, 2, x_norm, "/")
+
+  normalized_fit <- cuda_ml_lasso(
+    x,
+    y,
+    alpha = 0.01,
+    max_iter = 10000L,
+    tol = 1e-8,
+    normalize_input = TRUE
+  )
+  reference_fit <- cuda_ml_lasso(
+    x_normalized,
+    y,
+    alpha = 0.01,
+    max_iter = 10000L,
+    tol = 1e-8,
+    normalize_input = FALSE
+  )
+
+  expect_equal(
+    predict(normalized_fit, x)$.pred,
+    predict(reference_fit, x_normalized)$.pred,
+    tolerance = 1e-6,
+    scale = 1
+  )
+})

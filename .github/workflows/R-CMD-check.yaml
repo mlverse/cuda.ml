@@ -92,6 +92,14 @@ jobs:
       - name: Verify GPU access
         run: nvidia-smi
 
+      - name: Install GPU-linked package
+        run: R CMD INSTALL --install-tests /build
+        env:
+          CUDA_PATH: /usr/local/cuda
+
+      - name: Verify cuML linkage
+        run: Rscript -e "library(cuda.ml); stopifnot(has_cuML())"
+
       - name: Session info
         run: |
           Rscript -e "sessionInfo()"

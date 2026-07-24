@@ -43,8 +43,4 @@ RUN PKG_SYSREQS=false Rscript -e "\
     pak::local_install_deps('/build', dependencies = TRUE)" \
     && rm -rf /tmp/* /root/.cache
 
-# Install cuda.ml with tests
-RUN R CMD INSTALL --install-tests /build
-
-# Clean up
-RUN rm -rf /tmp/* /build
+# The package is installed by the GPU job so configuration can bootstrap cuML.
