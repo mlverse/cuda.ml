@@ -4,6 +4,7 @@
 
 #include "treelite_utils.cuh"
 
+#include <cuml/fil/constants.hpp>
 #include <cuml/fil/detail/raft_proto/device_type.hpp>
 #include <cuml/fil/forest_model.hpp>
 #include <cuml/fil/infer_kind.hpp>
@@ -18,11 +19,9 @@ namespace fil {
 
 using forest_uptr = std::unique_ptr<ML::fil::forest_model>;
 
-ML::fil::tree_layout tree_layout_from_storage_type(int storage_type);
-
 forest_uptr import_from_treelite(
   raft::handle_t const& handle, TreeliteHandle const& tl_handle,
-  ML::fil::tree_layout layout = ML::fil::tree_layout::depth_first);
+  ML::fil::tree_layout layout = ML::fil::preferred_tree_layout);
 
 void predict(raft::handle_t const& handle, ML::fil::forest_model& forest,
              float* output, float* input, std::size_t num_rows,

@@ -1,3 +1,5 @@
+.PHONY: all cuda.ml.so clean
+
 all: cuda.ml.so
 
 cuda.ml.so:

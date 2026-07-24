@@ -44,9 +44,9 @@ Suggests:
     xgboost
 LinkingTo: Rcpp
 Encoding: UTF-8
-RoxygenNote: 7.3.3
 OS_type: unix
 SystemRequirements: NVIDIA GPU and driver, CUDA Toolkit with nvcc, and uv or
     Python/pip for automatic RAPIDS cuML bootstrap. Alternatively, an existing
     RAPIDS cuML installation can be provided with CUML_PREFIX.
 NeedsCompilation: yes
+Config/roxygen2/version: 8.0.0

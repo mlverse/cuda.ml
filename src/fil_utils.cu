@@ -63,18 +63,6 @@ __host__ int current_device() {
 
 }  // namespace
 
-__host__ ML::fil::tree_layout tree_layout_from_storage_type(
-  int const storage_type) {
-  switch (storage_type) {
-    case 1:
-      return ML::fil::tree_layout::breadth_first;
-    case 2:
-      return ML::fil::tree_layout::depth_first;
-    default:
-      return ML::fil::tree_layout::depth_first;
-  }
-}
-
 __host__ forest_uptr import_from_treelite(
   raft::handle_t const& handle, TreeliteHandle const& tl_handle,
   ML::fil::tree_layout const layout) {

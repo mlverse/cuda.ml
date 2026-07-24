@@ -97,6 +97,13 @@ __host__ SEXP fil_load_model(int const model_type, std::string const& filename,
                              int const threads_per_tree, int const n_items) {
   Rcpp::List model;
 
+  if (algo != 0 || storage_type != 0 || blocks_per_sm != 0 ||
+      threads_per_tree != 1 || n_items != 0) {
+    Rcpp::stop(
+      "Only the default FIL loading controls are supported with this cuML "
+      "version.");
+  }
+
   TreeliteHandle tl_handle;
   {
     auto const rc = treeliteLoadModel(
@@ -113,8 +120,7 @@ __host__ SEXP fil_load_model(int const model_type, std::string const& filename,
   auto handle = std::make_unique<raft::handle_t>();
   handle_utils::initializeHandle(*handle, stream_view.value());
 
-  auto forest = fil::import_from_treelite(
-    *handle, tl_handle, fil::tree_layout_from_storage_type(storage_type));
+  auto forest = fil::import_from_treelite(*handle, tl_handle);
   auto const num_classes = treelite_num_classes(tl_handle, classification);
 
   return Rcpp::XPtr<FILModel>(
@@ -152,8 +158,18 @@ __host__ Rcpp::NumericMatrix fil_predict(
     static_cast<size_t>(model_xptr->forest_->num_outputs());
   thrust::device_vector<float> d_preds(n_outputs * m.numRows);
 
+  auto const row_postprocessing = model_xptr->forest_->row_postprocessing();
+  auto const probability_from_max_index =
+    output_class_probabilities &&
+    row_postprocessing == ML::fil::row_op::max_index;
+  if (probability_from_max_index) {
+    model_xptr->forest_->set_row_postprocessing(ML::fil::row_op::softmax);
+  }
   fil::predict(handle, *model_xptr->forest_, d_preds.data().get(),
                d_x.data().get(), m.numRows);
+  if (probability_from_max_index) {
+    model_xptr->forest_->set_row_postprocessing(row_postprocessing);
+  }
 
   pinned_host_vector<float> h_preds(d_preds.size());
   auto CUML4R_ANONYMOUS_VARIABLE(preds_d2h) = async_copy(
@@ -192,7 +208,7 @@ __host__ Rcpp::NumericMatrix fil_predict(
                ? static_cast<double>(h_preds[i] >= model_xptr->threshold_)
                : static_cast<double>(h_preds[i]);
     }
-    if (model_xptr->forest_->row_postprocessing() == ML::fil::row_op::max_index) {
+    if (row_postprocessing == ML::fil::row_op::max_index) {
       return static_cast<double>(h_preds[i * n_outputs]);
     }
 

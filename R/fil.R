@@ -67,49 +67,27 @@ file_match_storage_type <- function(storage_type = c("auto", "dense", "sparse"))
 #'   ends with ".json" and \code{model_type} is "xgboost", then \{cuda.ml\} will
 #'   assume the model file is in XGBoost JSON (instead of binary) format.
 #'   Default: "xgboost".
-#' @param algo Type of the algorithm for inference, must be one of the
-#'   following.
-#'     - "auto":
-#'         Choose the algorithm automatically. Currently 'batch_tree_reorg' is
-#'         used for dense storage, and 'naive' for sparse storage.
-#'     - "naive":
-#'         Simple inference using shared memory.
-#'     - "tree_reorg":
-#'         Similar to naive but with trees rearranged to be more coalescing-
-#'         friendly.
-#'     - "batch_tree_reorg":
-#'         Similar to 'tree_reorg' but predicting multiple rows per thread
-#'         block.
-#'   Default: "auto".
+#' @param algo Inference algorithm. The current cuML FIL API supports only
+#'   \code{"auto"}.
 #' @param threshold Class probability threshold for classification. Ignored for
 #'   regression tasks. Default: 0.5.
-#' @param storage_type In-memory storage format of the FIL model. Must be one of
-#'   the following.
-#'   - "auto":
-#'       Choose the storage type automatically,
-#'   - "dense":
-#'       Create a dense forest,
-#'   - "sparse":
-#'       Create a sparse forest. Requires \code{algo} to be 'naive' or 'auto'.
-#' @param threads_per_tree If >1, then have multiple (neighboring) threads infer
-#'   on the same tree within a block, which will improve memory bandwith near
-#'   tree root (but consuming more shared memory). Default: 1L.
-#' @param n_items Number of input samples each thread processes. If 0, then
-#'   choose (up to 4) that fit into shared memory. Default: 0L.
-#' @param blocks_per_sm Indicates how CuML should determine the number of thread
-#'   blocks to lauch for the inference kernel.
-#'   - 0:
-#'     Launches the number of blocks proportional to the number of data points.
-#'   - >= 1:
-#'     Attempts to lauch \code{blocks_per_sm} blocks for each streaming
-#'     multiprocessor.
-#'     This will fail if \code{blocks_per_sm} blocks result in more threads than
-#'     the maximum supported number of threads per GPU. Even if successful, it
-#'     is not guaranteed that \code{blocks_per_sm} blocks will run on an SM
-#'     concurrently.
+#' @param storage_type In-memory storage format. The current cuML FIL API
+#'   supports only \code{"auto"}.
+#' @param threads_per_tree Number of threads per tree. The current cuML FIL API
+#'   supports only \code{1L}.
+#' @param n_items Number of input samples each thread processes. The current
+#'   cuML FIL API supports only \code{0L}.
+#' @param blocks_per_sm Number of thread blocks per streaming multiprocessor.
+#'   The current cuML FIL API supports only \code{0L}.
 #'
 #' @return A GPU-accelerated FIL model that can be used with the 'predict' S3
 #'   generic to make predictions on new data points.
+#'
+#' @details
+#' The current cuML FIL API supports only the default loading controls:
+#' \code{algo = "auto"}, \code{storage_type = "auto"},
+#' \code{threads_per_tree = 1L}, \code{n_items = 0L}, and
+#' \code{blocks_per_sm = 0L}. Other values produce an error.
 #'
 #' @examples
 #'
@@ -152,6 +130,15 @@ cuda_ml_fil_load_model <- function(filename,
   model_type <- fil_match_model_type(filename, model_type)
   algo <- fil_match_algo(algo)
   storage_type <- file_match_storage_type(storage_type)
+  threads_per_tree <- as.integer(threads_per_tree)
+  n_items <- as.integer(n_items)
+  blocks_per_sm <- as.integer(blocks_per_sm)
+
+  stopifnot(
+    "Only the default FIL loading controls are supported" =
+      algo == 0L && storage_type == 0L && threads_per_tree == 1L &&
+        n_items == 0L && blocks_per_sm == 0L
+  )
 
   xptr <- .fil_load_model(
     model_type = model_type,
@@ -160,9 +147,9 @@ cuda_ml_fil_load_model <- function(filename,
     classification = identical(mode, "classification"),
     threshold = as.numeric(threshold),
     storage_type = storage_type,
-    threads_per_tree = as.integer(threads_per_tree),
-    n_items = as.integer(n_items),
-    blocks_per_sm = as.integer(blocks_per_sm)
+    threads_per_tree = threads_per_tree,
+    n_items = n_items,
+    blocks_per_sm = blocks_per_sm
   )
   model <- list(mode = mode, xptr = xptr)
   class(model) <- c("cuda_ml_fil", "cuda_ml_model", class(model))

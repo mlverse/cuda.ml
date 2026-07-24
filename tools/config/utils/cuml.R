@@ -4,6 +4,11 @@ check_libcuml_path <- function(path) {
   dir.exists(cuml_headers_dir) && any(file.exists(cuml_libs))
 }
 
+has_cuml_url_override <- function() {
+  url <- Sys.getenv("CUML_URL", unset = NA_character_)
+  !is.na(url) && nzchar(url)
+}
+
 get_cuml_prefix <- function() {
   cuml_prefix <- Sys.getenv("CUML_PREFIX", unset = NA_character_)
   if (!is.na(cuml_prefix)) {
@@ -30,6 +35,10 @@ get_cuml_prefix <- function() {
     return(cuml_prefix)
   }
 
+  if (has_cuml_url_override()) {
+    return(NA_character_)
+  }
+
   cuml_prefix <- bootstrap_libcuml_from_pip()
   if (!is.na(cuml_prefix)) {
     return(cuml_prefix)
@@ -44,7 +53,9 @@ has_libcuml <- function(nvcc = find_nvcc()) {
   # find a compatible nvcc version.
   cuml_prefix <- get_cuml_prefix()
   if (is.na(cuml_prefix)) {
-    if (identical(Sys.getenv("CUML_BOOTSTRAP_FAILED", unset = "0"), "1")) {
+    if (has_cuml_url_override()) {
+      can_download_libcuml(cuda_version = nvcc$version$major)
+    } else if (identical(Sys.getenv("CUML_BOOTSTRAP_FAILED", unset = "0"), "1")) {
       FALSE
     } else if (can_download_libcuml(cuda_version = nvcc$version$major)) {
       # Skip subsequent checks if we are downloading a pre-built copy of `libcuml`
@@ -105,7 +116,7 @@ libcuml_download_url <- function(
   cuda_version = as.character(find_nvcc()$version$major)
 ) {
   url <- Sys.getenv("CUML_URL", unset = NA_character_)
-  if (!is.na(url) && nzchar(url)) {
+  if (has_cuml_url_override()) {
     return(url)
   }
 
