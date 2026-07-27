@@ -3,9 +3,10 @@
 #'
 #' CuML Forest Inference Library (FIL) functionalities (see
 #' https://github.com/rapidsai/cuml/tree/main/python/cuml/fil#readme) will
-#' require Treelite C API. If you need FIL to run tree-based model ensemble on
-#' GPU, and \code{fil_enabled()} returns FALSE, then please consider installing
-#' Treelite and then re-installing \{cuda.ml\}.
+#' require the Treelite C API and a compatible cuML FIL API. If you need FIL to
+#' run tree-based model ensembles on GPU, and \code{fil_enabled()} returns
+#' FALSE, install compatible Treelite and cuML versions, then re-install
+#' \{cuda.ml\}.
 #'
 #' @return A logical value indicating whether the Forest Inference Library (FIL)
 #'   functionalities are enabled.
@@ -16,8 +17,8 @@
 #' } else {
 #'   message(
 #'     "FIL functionalities are disabled in the current installation of ",
-#'     "{cuda.ml}. Please reinstall Treelite C library first, and then re-install",
-#'     " {cuda.ml} to enable FIL."
+#'     "{cuda.ml}. Install compatible Treelite and cuML versions, then ",
+#'     "re-install {cuda.ml} to enable FIL."
 #'   )
 #' }
 #' @export

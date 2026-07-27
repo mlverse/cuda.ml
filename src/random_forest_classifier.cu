@@ -218,7 +218,8 @@ __host__ SEXP rf_classifier_fit(
 
   auto stream_view = stream_allocator::getOrCreateStream();
   raft::handle_t handle;
-  handle_utils::initializeHandle(handle, stream_view.value());
+  handle_utils::initializeHandle(
+    handle, stream_view.value(), static_cast<std::size_t>(n_streams));
 
   // rf input data & labels
   auto const& h_input = input_m.values;

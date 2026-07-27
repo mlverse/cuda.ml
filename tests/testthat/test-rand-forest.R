@@ -2,7 +2,8 @@ context("Random Forest")
 
 test_that("random forest classifier works as expected", {
   cuda_ml_rf_model <- cuda_ml_rand_forest(
-    formula = Species ~ ., data = iris, trees = 200, bootstrap = FALSE
+    formula = Species ~ ., data = iris, trees = 200, bootstrap = FALSE,
+    n_streams = 12L
   )
   sklearn_rf_model <- sklearn$ensemble$RandomForestClassifier(
     n_estimators = 200L, bootstrap = FALSE
@@ -26,7 +27,8 @@ test_that("random forest classifier works as expected", {
 
 test_that("random forest regressor works as expected", {
   cuda_ml_rf_model <- cuda_ml_rand_forest(
-    formula = mpg ~ ., data = mtcars, trees = 100, bootstrap = FALSE
+    formula = mpg ~ ., data = mtcars, trees = 100, bootstrap = FALSE,
+    n_streams = 12L
   )
   cuda_ml_preds <- predict(
     cuda_ml_rf_model, mtcars[which(names(mtcars) != "mpg")]
