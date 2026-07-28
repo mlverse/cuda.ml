@@ -304,20 +304,18 @@ bootstrap_libcuml_from_pip <- function(nvcc = find_nvcc(stop_if_missing = FALSE)
     return(NA_character_)
   }
 
+  Sys.setenv(CUML_BOOTSTRAP_FAILED = "1")
+
   cuda_suffix <- cuml_cuda_suffix(nvcc$version)
   if (is.na(cuda_suffix)) {
-    if (!can_download_libcuml(cuda_version = nvcc$version$major)) {
-      warning2(
-        paste0("Automatic RAPIDS pip bootstrap does not support CUDA ", nvcc$version, "."),
-        "Install RAPIDS cuML yourself and set `CUML_PREFIX`, or install a supported",
-        "CUDA toolkit and retry.",
-        "Falling back to a stub-only build."
-      )
-    }
+    warning2(
+      paste0("Automatic RAPIDS pip bootstrap does not support CUDA ", nvcc$version, "."),
+      "Install RAPIDS cuML 24.0 or newer and set `CUML_PREFIX`, or install a",
+      "supported CUDA toolkit and retry.",
+      "Falling back to a stub-only build."
+    )
     return(NA_character_)
   }
-
-  Sys.setenv(CUML_BOOTSTRAP_FAILED = "1")
 
   if (!cuml_nvidia_gpu_available()) {
     warn_missing_nvidia_gpu()

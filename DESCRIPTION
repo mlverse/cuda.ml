@@ -45,8 +45,9 @@ Suggests:
 LinkingTo: Rcpp
 Encoding: UTF-8
 OS_type: unix
-SystemRequirements: NVIDIA GPU and driver, CUDA Toolkit with nvcc, and uv or
-    Python/pip for automatic RAPIDS cuML bootstrap. Alternatively, an existing
-    RAPIDS cuML installation can be provided with CUML_PREFIX.
+SystemRequirements: NVIDIA GPU and driver, CUDA Toolkit with nvcc, and either
+    RAPIDS cuML 24.0 or newer or uv/Python/pip for automatic RAPIDS cuML
+    bootstrap. An existing RAPIDS cuML installation can be provided with
+    CUML_PREFIX.
 NeedsCompilation: yes
 Config/roxygen2/version: 8.0.0

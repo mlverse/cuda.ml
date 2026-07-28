@@ -4,6 +4,9 @@
 
 #include <cuml/version_config.hpp>
 
+static_assert(CUML_VERSION_MAJOR >= 24,
+              "{cuda.ml} requires RAPIDS cuML 24.0 or newer.");
+
 #endif
 
 #include <Rcpp.h>

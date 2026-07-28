@@ -1,18 +1,10 @@
 #' Options:
 #'
-#' CUML_VERSION: Specifies the version of the `libcuml` library to be downloaded
-#'               and installed. This version must be present in the
-#'               `libcuml_versions` list below.
-#'
-#' CUML_URL: Override the URL to download `libcuml` from. If specified, then no
-#'           checks for CUDA version will be performed.
-#'
 #' CUML_PREFIX: If you have a copy of `libcuml` installed already, you can
 #'              specify this environment variable to link {cuda.ml} with an
 #'              existing installation of `libcuml`.
 #'              If a valid copy of `libcuml` is found in '/usr' or in
-#'              "${CUML_PREFIX}/", then no pre-built copy of `libcuml` will be
-#'              downloaded.
+#'              "${CUML_PREFIX}/", then automatic bootstrap is skipped.
 #'
 #' CUML_BOOTSTRAP: The default is to bootstrap RAPIDS cuML from pip wheels if
 #'                 no existing `libcuml` is found and a suitable NVIDIA
@@ -27,11 +19,6 @@
 #'
 #' CUML_RAPIDS_CMAKE_SOURCE_DIR: Override the local rapids-cmake checkout used
 #'                               by CMake FetchContent.
-#'
-#' DOWNLOAD_CUML: The default is to automatically download a pre-built copy of
-#'                `libcuml` if no existing `libcuml` is specified with the
-#'                'CUML_PREFIX' env variable. Set DOWNLOAD_CUML=0 to disable
-#'                this default behavior.
 #'
 #' DISABLE_PARALLEL_BUILD: Parallel build using max($(nproc) - 1, 1) cores is
 #'                         enabled by default but can be disabled by setting
@@ -59,12 +46,6 @@ pkg_root <- function() {
   return(pkg_root)
 }
 
-load_libcuml_versions <- function() {
-  wd <- file.path(pkg_root(), "tools", "config")
-
-  source(file.path(wd, "libcuml_versions.R"))
-}
-
 load_util_fns <- function() {
   wd <- file.path(pkg_root(), "tools", "config", "utils")
 
@@ -73,7 +54,6 @@ load_util_fns <- function() {
   }
 }
 
-load_libcuml_versions()
 load_util_fns()
 
 find_rapids_cmake_source_dir <- function(src_dir, build_dir) {
@@ -122,16 +102,7 @@ run_cmake <- function() {
   )
 
   cuml_prefix <- get_cuml_prefix()
-  bundle_libcuml <- FALSE
-  if (is.na(cuml_prefix)) {
-    cuml_prefix <- normalizePath(file.path(pkg_root(), "libcuml"), mustWork = FALSE)
-    download_libcuml()
-    dir.create("inst", showWarnings = FALSE)
-    file.rename(file.path("libcuml", "lib"), file.path("inst", "libs"))
-    file.symlink(file.path("..", "inst", "libs"), file.path("libcuml", "lib"))
-    libs <- c("libtreelite", "libtreelite_runtime", "libcuml++")
-    bundle_libcuml <- TRUE
-  }
+  stopifnot(!is.na(cuml_prefix))
   cmake_prefix_path <- paste0(
     c(Sys.getenv("CMAKE_PREFIX_PATH", unset = ""), cuml_prefix),
     collapse = ":"
@@ -162,20 +133,14 @@ run_cmake <- function() {
       paste0("-DFETCHCONTENT_SOURCE_DIR_RAPIDS-CMAKE=", rapids_cmake_source_dir)
     )
   }
-  if (bundle_libcuml) {
-    cmake_args <- c(
-      cmake_args,
-      "-DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=TRUE",
-      "-DCMAKE_INSTALL_RPATH:STRING='$ORIGIN'"
-    )
-  } else if (!identical(Sys.getenv("CUML_SET_RPATH", unset = "1"), "0")) {
+  if (!identical(Sys.getenv("CUML_SET_RPATH", unset = "1"), "0")) {
     cmake_args <- c(
       cmake_args,
       "-DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=TRUE",
       paste0("-DCMAKE_INSTALL_RPATH:STRING=", file.path(cuml_prefix, "lib"))
     )
   }
-  rc <- system2(cmake_bin, args = cmake_args)
+  rc <- system2(cmake_bin, args = shQuote(cmake_args))
 
   if (rc != 0) {
     stop("Failed to run 'cmake'!")

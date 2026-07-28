@@ -5,9 +5,9 @@
 #' @section Installation:
 #' A functional GPU installation requires an NVIDIA GPU with a working driver,
 #' a CUDA Toolkit installation that provides \code{nvcc}, and normal R package
-#' build tools. During installation, \pkg{cuda.ml} first looks for an existing
-#' RAPIDS installation through \code{CUML_PREFIX} or \code{CUDA_PATH}. If none
-#' is found, it can bootstrap RAPIDS cuML from pip wheels with \code{uv} or
+#' build tools. During installation, \pkg{cuda.ml} first looks for RAPIDS cuML
+#' 24.0 or newer through \code{CUML_PREFIX} or \code{CUDA_PATH}. If none is
+#' found, it can bootstrap RAPIDS cuML from pip wheels with \code{uv} or
 #' Python/pip and link against the resulting local prefix.
 #'
 #' On machines without a usable NVIDIA driver/GPU and \code{nvcc}, including
@@ -41,8 +41,8 @@
       reinstall {", pkgname, "}. During installation, {", pkgname, "} can
       bootstrap RAPIDS cuML from pip wheels with `uv` or Python/pip.
 
-      If RAPIDS is already installed, set `CUML_PREFIX` to a prefix containing
-      include/cuml and lib/libcuml.so before reinstalling.\n\n
+      If RAPIDS cuML 24.0 or newer is already installed, set `CUML_PREFIX` to a
+      prefix containing include/cuml and lib/libcuml.so before reinstalling.\n\n
       "
     )
   }
