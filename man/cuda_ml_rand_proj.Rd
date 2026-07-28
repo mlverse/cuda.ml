@@ -53,13 +53,20 @@ using the generated random matrix.
 }
 \examples{
 library(cuda.ml)
-library(mlbench)
 
-data(Vehicle)
-vehicle_data <- Vehicle[order(Vehicle$Class), which(names(Vehicle) != "Class")]
+if (
+  requireNamespace("mlbench", quietly = TRUE) &&
+    cuda_ml_rand_proj_enabled()
+) {
+  data("Vehicle", package = "mlbench")
+  vehicle_data <- Vehicle[
+    order(Vehicle$Class),
+    which(names(Vehicle) != "Class")
+  ]
 
-model <- cuda_ml_rand_proj(vehicle_data, n_components = 4)
+  model <- cuda_ml_rand_proj(vehicle_data, n_components = 4)
 
-set.seed(0L)
-print(kmeans(model$transformed_data, centers = 4, iter.max = 1000))
+  set.seed(0L)
+  print(kmeans(model$transformed_data, centers = 4, iter.max = 1000))
+}
 }

@@ -5,7 +5,19 @@ new_rproj_model <- function(rproj_ctx) {
   model
 }
 
-cuda_ml_rand_proj_available <- function() {
+#' Determine whether random projection is enabled
+#'
+#' Random projection requires the cuML random projection C API. This function
+#' reports whether that API was available when \{cuda.ml\} was installed.
+#'
+#' @return A logical value indicating whether random projection is enabled.
+#'
+#' @examples
+#' if (cuda_ml_rand_proj_enabled()) {
+#'   # run GPU-accelerated random projection
+#' }
+#' @export
+cuda_ml_rand_proj_enabled <- function() {
   tryCatch(
     {
       .rproj_johnson_lindenstrauss_min_dim(2L, 0.5)
@@ -52,15 +64,22 @@ cuda_ml_rand_proj_available <- function() {
 #'
 #' @examples
 #' library(cuda.ml)
-#' library(mlbench)
 #'
-#' data(Vehicle)
-#' vehicle_data <- Vehicle[order(Vehicle$Class), which(names(Vehicle) != "Class")]
+#' if (
+#'   requireNamespace("mlbench", quietly = TRUE) &&
+#'     cuda_ml_rand_proj_enabled()
+#' ) {
+#'   data("Vehicle", package = "mlbench")
+#'   vehicle_data <- Vehicle[
+#'     order(Vehicle$Class),
+#'     which(names(Vehicle) != "Class")
+#'   ]
 #'
-#' model <- cuda_ml_rand_proj(vehicle_data, n_components = 4)
+#'   model <- cuda_ml_rand_proj(vehicle_data, n_components = 4)
 #'
-#' set.seed(0L)
-#' print(kmeans(model$transformed_data, centers = 4, iter.max = 1000))
+#'   set.seed(0L)
+#'   print(kmeans(model$transformed_data, centers = 4, iter.max = 1000))
+#' }
 #' @export
 cuda_ml_rand_proj <- function(x, n_components = NULL, eps = 0.1,
                               gaussian_method = TRUE, density = NULL,

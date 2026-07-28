@@ -141,23 +141,23 @@ cuda_ml_predictions <- predict(model, mtcars)
 # (in `glmnet`, `lambda` is the weight of the penalty term, and `alpha` is
 #  the elastic mixing parameter between L1 and L2 penalties.
 
-library(glmnet)
-
-glmnet_model <- glmnet(
-  x = as.matrix(mtcars[names(mtcars) != "mpg"]), y = mtcars$mpg,
-  alpha = 0.6, lambda = 1e-3, nlambda = 1, standardize = FALSE
-)
-
-glm_predictions <- predict(
-  glmnet_model, as.matrix(mtcars[names(mtcars) != "mpg"]),
-  s = 0
-)
-
-print(
-  all.equal(
-    as.numeric(glm_predictions),
-    cuda_ml_predictions$.pred,
-    tolerance = 1e-2
+if (requireNamespace("glmnet", quietly = TRUE)) {
+  glmnet_model <- glmnet::glmnet(
+    x = as.matrix(mtcars[names(mtcars) != "mpg"]), y = mtcars$mpg,
+    alpha = 0.6, lambda = 1e-3, nlambda = 1, standardize = FALSE
   )
-)
+
+  glm_predictions <- predict(
+    glmnet_model, as.matrix(mtcars[names(mtcars) != "mpg"]),
+    s = 0
+  )
+
+  print(
+    all.equal(
+      as.numeric(glm_predictions),
+      cuda_ml_predictions$.pred,
+      tolerance = 1e-2
+    )
+  )
+}
 }

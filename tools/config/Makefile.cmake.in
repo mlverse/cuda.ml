@@ -5,6 +5,9 @@ all: cuda.ml.so
 cuda.ml.so:
 	@CMAKE_BIN@ --build @CMAKE_BUILD_DIR@ --target cuda.ml @CMAKE_BUILD_PARALLEL_ARGS@
 	cp @CMAKE_BUILD_OUTPUT@ cuda.ml.so
+	@RSCRIPT_BIN@ -e 'tools:::.shlib_objects_symbol_tables()' @CMAKE_BUILD_DIR@/CMakeFiles/cuda.ml.dir/*.o --pkglibs
+	@CMAKE_BIN@ -E remove_directory @CMAKE_BUILD_DIR@/_deps/rapids-cmake-src/.git
 
 clean:
-	rm -rf @CMAKE_BUILD_DIR@ cuda.ml.so
+	@CMAKE_BIN@ -E remove_directory @CMAKE_BUILD_DIR@
+	rm -f cuda.ml.so symbols.rds

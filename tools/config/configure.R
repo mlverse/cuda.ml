@@ -94,7 +94,8 @@ run_cmake <- function() {
   define(
     CMAKE_BIN = shQuote(cmake_bin),
     CMAKE_BUILD_DIR = shQuote(build_dir),
-    CMAKE_BUILD_OUTPUT = shQuote(file.path(build_dir, "cuda.ml.so"))
+    CMAKE_BUILD_OUTPUT = shQuote(file.path(build_dir, "cuda.ml.so")),
+    RSCRIPT_BIN = shQuote(file.path(R.home("bin"), "Rscript"))
   )
   configure_file(
     file.path("tools", "config", "Makefile.cmake.in"),
@@ -157,7 +158,6 @@ if (is.null(nvcc) || !has_libcuml(nvcc = nvcc)) {
   on.exit(setwd(wd))
   setwd(pkg_root())
   define(STUBS_HEADERS_DIR = normalizePath(file.path(getwd(), "src", "stubs")))
-  define(CUSTOMIZED_MAKEFLAGS = "")
 } else {
   define(STUBS_HEADERS_DIR = "")
   n_jobs <- (
@@ -171,7 +171,6 @@ if (is.null(nvcc) || !has_libcuml(nvcc = nvcc)) {
         max(nproc() - 1L, 1L)
       }
     })
-  define(CUSTOMIZED_MAKEFLAGS = paste0("MAKEFLAGS += '-j", n_jobs, "'"))
   define(CMAKE_BUILD_PARALLEL_ARGS = paste("--parallel", n_jobs))
 
   run_cmake()

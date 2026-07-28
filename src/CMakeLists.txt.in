@@ -40,7 +40,7 @@ if(DEFINED CUML_INCLUDE_DIR)
       # RAPIDS pip wheels may ship a CCCL copy that matches the RAPIDS shared
       # libraries under include/rapids, plus a newer top-level CCCL copy.
       # Prefer the ABI-compatible copy for cuda/cub/thrust/nv headers.
-      include_directories(BEFORE ${CUML_INCLUDE_DIR}/rapids)
+      include_directories(BEFORE SYSTEM ${CUML_INCLUDE_DIR}/rapids)
     endif()
 else()
     message(FATAL_ERROR "CUML_INCLUDE_DIR not specified.")
@@ -93,6 +93,7 @@ add_library(
   device_allocator.cu
   fil_utils.cu
   handle_utils.cu
+  r_console.cpp
   stream_allocator.cu
   # models & algorithms
   agglomerative_clustering.cpp
@@ -149,11 +150,13 @@ add_library(
 # Need to set linker language to CUDA to link the CUDA Runtime
 set_target_properties(cuda.ml PROPERTIES LINKER_LANGUAGE "CUDA")
 set_target_properties(cuda.ml PROPERTIES PREFIX "")
-target_compile_options(
+target_compile_definitions(
   cuda.ml
   PRIVATE
-  $<$<COMPILE_LANGUAGE:CXX>:-Wno-deprecated-declarations>
-  $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=-Wno-deprecated-declarations>
+  NDEBUG
+  CUML_LOG_ACTIVE_LEVEL=RAPIDS_LOGGER_LOG_LEVEL_OFF
+  RAFT_LOG_ACTIVE_LEVEL=RAPIDS_LOGGER_LOG_LEVEL_OFF
+  RMM_LOG_ACTIVE_LEVEL=RAPIDS_LOGGER_LOG_LEVEL_OFF
 )
 
 set(CUML4R_LIBS cuda.ml PRIVATE ${CUML_LIBRARY} cublas cusolver cudart cusparse)
@@ -198,12 +201,26 @@ else()
   )
 endif()
 
-include_directories(${CUML4R_INCLUDE_DIRS})
+target_include_directories(cuda.ml SYSTEM PRIVATE ${CUML4R_INCLUDE_DIRS})
 
-set(CUML4R_ADDITIONAL_LINKER_FLAGS "")
+set(CUML4R_ADDITIONAL_LINKER_FLAGS)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  list(
+    APPEND
+    CUML4R_ADDITIONAL_LINKER_FLAGS
+    -Wl,--wrap=printf
+    -Wl,--wrap=fprintf
+    -Wl,--wrap=stderr
+  )
+endif()
 if(DEFINED ENV{CUML4R_ENABLE_ASAN})
     if($ENV{CUML4R_ENABLE_ASAN} MATCHES "true")
-        set(CUML4R_ADDITIONAL_LINKER_FLAGS -fno-omit-frame-pointer -fsanitize-recover=address)
+        list(
+          APPEND
+          CUML4R_ADDITIONAL_LINKER_FLAGS
+          -fno-omit-frame-pointer
+          -fsanitize-recover=address
+        )
     endif($ENV{CUML4R_ENABLE_ASAN} MATCHES "true")
 endif(DEFINED ENV{CUML4R_ENABLE_ASAN})
 

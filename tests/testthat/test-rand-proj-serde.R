@@ -7,7 +7,7 @@ test_that("random projection model can be serialized and unserialized correctly"
   data(Vehicle)
   data <- Vehicle[, which(names(Vehicle) != "Class")]
 
-  if (cuda_ml_rand_proj_available()) {
+  if (cuda_ml_rand_proj_enabled()) {
     model <- cuda_ml_rand_proj(data, n_components = 4)
     model_state <- cuda_ml_serialize(model)
 

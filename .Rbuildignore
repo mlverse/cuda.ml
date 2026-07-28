@@ -15,6 +15,7 @@
 ^src/eval_gpu_archs*
 ^src/*\.o$
 ^src/*\.so$
+^src/symbols\.rds$
 ^src/\.clang-format$
 ^.*\.swp
 ^\.clang-format.sh$

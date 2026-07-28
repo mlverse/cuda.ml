@@ -93,31 +93,35 @@ file_match_storage_type <- function(storage_type = c("auto", "dense", "sparse"))
 #' @examples
 #'
 #' library(cuda.ml)
-#' library(xgboost)
 #'
-#' model_path <- file.path(tempdir(), "xgboost.model")
+#' if (
+#'   requireNamespace("xgboost", quietly = TRUE) &&
+#'     cuda_ml_fil_enabled()
+#' ) {
+#'   model_path <- file.path(tempdir(), "xgboost.model")
 #'
-#' model <- xgboost(
-#'   data = as.matrix(mtcars[names(mtcars) != "mpg"]),
-#'   label = as.matrix(mtcars["mpg"]),
-#'   max.depth = 6,
-#'   eta = 1,
-#'   nthread = 2,
-#'   nrounds = 20,
-#'   objective = "reg:squarederror"
-#' )
+#'   model <- xgboost::xgboost(
+#'     data = as.matrix(mtcars[names(mtcars) != "mpg"]),
+#'     label = as.matrix(mtcars["mpg"]),
+#'     max.depth = 6,
+#'     eta = 1,
+#'     nthread = 2,
+#'     nrounds = 20,
+#'     objective = "reg:squarederror"
+#'   )
 #'
-#' xgb.save(model, model_path)
+#'   xgboost::xgb.save(model, model_path)
 #'
-#' model <- cuda_ml_fil_load_model(
-#'   model_path,
-#'   mode = "regression",
-#'   model_type = "xgboost"
-#' )
+#'   model <- cuda_ml_fil_load_model(
+#'     model_path,
+#'     mode = "regression",
+#'     model_type = "xgboost"
+#'   )
 #'
-#' preds <- predict(model, mtcars[names(mtcars) != "mpg"])
+#'   preds <- predict(model, mtcars[names(mtcars) != "mpg"])
 #'
-#' print(preds)
+#'   print(preds)
+#' }
 #' @export
 cuda_ml_fil_load_model <- function(filename,
                                    mode = c("classification", "regression"),
