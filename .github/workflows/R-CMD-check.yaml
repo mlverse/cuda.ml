@@ -134,10 +134,6 @@ jobs:
 
       - name: Reuse the prepared runtime without downloads
         env:
-          HTTP_PROXY: http://127.0.0.1:9
-          HTTPS_PROXY: http://127.0.0.1:9
-          ALL_PROXY: http://127.0.0.1:9
-          NO_PROXY: ""
           http_proxy: http://127.0.0.1:9
           https_proxy: http://127.0.0.1:9
           all_proxy: http://127.0.0.1:9
