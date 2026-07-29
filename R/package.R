@@ -10,14 +10,17 @@
 #' found, it can bootstrap RAPIDS cuML from pip wheels with \code{uv} or
 #' Python/pip and link against the resulting local prefix.
 #'
-#' On machines without a usable NVIDIA driver/GPU and \code{nvcc}, including
-#' CRAN check machines, \pkg{cuda.ml} may install in stub-only mode. In that
-#' mode \code{has_cuML()} returns \code{FALSE}, and cuML-backed algorithms are
-#' unavailable until the system prerequisites are installed and \pkg{cuda.ml}
-#' is reinstalled.
+#' Builds without a visible GPU can be cross-compiled by setting
+#' \code{CUML_CUDA_ARCHITECTURES} explicitly. On machines without \code{nvcc},
+#' or without both a usable NVIDIA driver/GPU and an explicit target
+#' architecture, including CRAN check machines, \pkg{cuda.ml} may install in
+#' stub-only mode. In that mode \code{has_cuML()} returns \code{FALSE}, and
+#' cuML-backed algorithms are unavailable until the system prerequisites are
+#' installed and \pkg{cuda.ml} is reinstalled.
 #'
 #' Useful environment variables include \code{CUDA_HOME}, \code{CUML_PREFIX},
-#' \code{CUML_BOOTSTRAP}, and \code{CUML_BOOTSTRAP_CACHE}.
+#' \code{CUML_BOOTSTRAP}, \code{CUML_BOOTSTRAP_CACHE}, and
+#' \code{CUML_CUDA_ARCHITECTURES}.
 #'
 #' @author Yitao Li <yitao@rstudio.com>
 #' @import Rcpp

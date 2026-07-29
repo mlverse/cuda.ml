@@ -18,11 +18,12 @@ shared library.
 \details{
 If this returns \code{FALSE}, \pkg{cuda.ml} was installed in stub-only mode.
 On a GPU machine, verify that \code{nvidia-smi} and \code{nvcc --version}
-both work, then reinstall \pkg{cuda.ml}. During installation, \pkg{cuda.ml}
-can bootstrap RAPIDS cuML from pip wheels with \code{uv} or Python/pip. If
-RAPIDS cuML 24.0 or newer is already installed, set \code{CUML_PREFIX} to a
-prefix containing \code{include/cuml} and \code{lib/libcuml.so} before
-reinstalling.
+both work, then reinstall \pkg{cuda.ml}. To cross-compile without a visible
+GPU, set \code{CUML_CUDA_ARCHITECTURES}. During installation,
+\pkg{cuda.ml} can bootstrap RAPIDS cuML from pip wheels with \code{uv} or
+Python/pip. If RAPIDS cuML 24.0 or newer is already installed, set
+\code{CUML_PREFIX} to a prefix containing \code{include/cuml} and
+\code{lib/libcuml.so} before reinstalling.
 }
 \examples{
 

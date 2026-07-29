@@ -7,15 +7,18 @@
 #'              "${CUML_PREFIX}/", then automatic bootstrap is skipped.
 #'
 #' CUML_BOOTSTRAP: The default is to bootstrap RAPIDS cuML from pip wheels if
-#'                 no existing `libcuml` is found and a suitable NVIDIA
-#'                 GPU/driver, `nvcc`, and Python package installer are
-#'                 available. Set CUML_BOOTSTRAP=0 to disable this behavior.
+#'                 no existing `libcuml` is found and `nvcc` and a Python
+#'                 package installer are available. A GPU/driver is required
+#'                 unless CUML_CUDA_ARCHITECTURES is set for cross-compilation.
+#'                 Set CUML_BOOTSTRAP=0 to disable this behavior.
 #'
 #' CUML_BOOTSTRAP_CACHE: Override the cache directory used for bootstrapped
 #'                       RAPIDS headers and shared libraries.
 #'
-#' CUML_CUDA_ARCHITECTURES: Override CMAKE_CUDA_ARCHITECTURES. Defaults to
-#'                          detected GPU architectures supported by nvcc.
+#' CUML_CUDA_ARCHITECTURES: Override CMAKE_CUDA_ARCHITECTURES. Setting this
+#'                          enables cross-compilation without a visible GPU.
+#'                          Otherwise, defaults to detected GPU architectures
+#'                          supported by nvcc.
 #'
 #' CUML_RAPIDS_CMAKE_SOURCE_DIR: Override the local rapids-cmake checkout used
 #'                               by CMake FetchContent.

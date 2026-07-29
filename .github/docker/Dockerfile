@@ -36,6 +36,8 @@ RUN echo "MAKEFLAGS=-j$(nproc)" >> "$(R RHOME)/etc/Renviron.site"
 COPY . /build
 
 ENV NOT_CRAN=true
+ENV CUML_BOOTSTRAP_CACHE=/opt/cuda.ml
+ENV CUML_CUDA_ARCHITECTURES=75
 
 # Install R dependencies
 RUN PKG_SYSREQS=false Rscript -e "\
@@ -43,4 +45,9 @@ RUN PKG_SYSREQS=false Rscript -e "\
     pak::local_install_deps('/build', dependencies = TRUE)" \
     && rm -rf /tmp/* /root/.cache
 
-# The package is installed by the GPU job so configuration can bootstrap cuML.
+# Install cuda.ml with tests
+RUN R CMD INSTALL --install-tests /build
+RUN Rscript -e "library(cuda.ml); stopifnot(has_cuML())"
+
+# Clean up
+RUN rm -rf /tmp/* /build

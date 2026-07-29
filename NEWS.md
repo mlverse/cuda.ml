@@ -3,6 +3,8 @@
 - Updated the automatic RAPIDS bootstrap and native linkage for CUDA 13.3 and
   RAPIDS cuML 26.6.
 
+- Added GPU-less cross-compilation when `CUML_CUDA_ARCHITECTURES` is set.
+
 # cuml 0.3.2
 
 ### Linear Models

@@ -92,7 +92,8 @@ warn_missing_nvidia_gpu <- function() {
   warning2(
     "No usable NVIDIA GPU/driver was detected with `nvidia-smi`.",
     "Install or fix the NVIDIA driver, then verify that `nvidia-smi` lists",
-    "your GPU before reinstalling {cuda.ml}.",
+    "your GPU before reinstalling {cuda.ml}, or set",
+    "`CUML_CUDA_ARCHITECTURES` for GPU-less cross-compilation.",
     "Falling back to a stub-only build."
   )
 }
@@ -317,7 +318,10 @@ bootstrap_libcuml_from_pip <- function(nvcc = find_nvcc(stop_if_missing = FALSE)
     return(NA_character_)
   }
 
-  if (!cuml_nvidia_gpu_available()) {
+  if (
+    !cuml_nvidia_gpu_available() &&
+    !nzchar(Sys.getenv("CUML_CUDA_ARCHITECTURES", unset = ""))
+  ) {
     warn_missing_nvidia_gpu()
     return(NA_character_)
   }
