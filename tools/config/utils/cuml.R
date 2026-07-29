@@ -4,85 +4,64 @@ check_libcuml_path <- function(path) {
   dir.exists(cuml_headers_dir) && any(file.exists(cuml_libs))
 }
 
-get_cuml_prefix <- function(nvcc = find_nvcc(stop_if_missing = FALSE)) {
-  cuml_prefix <- Sys.getenv("CUML_PREFIX", unset = NA_character_)
-  if (!is.na(cuml_prefix)) {
-    return(cuml_prefix)
+cuml_version_from_prefix <- function(path) {
+  version_header <- file.path(path, "include", "cuml", "version_config.hpp")
+  if (!file.exists(version_header)) {
+    return(NA_character_)
   }
 
-  cuda_path <- Sys.getenv("CUDA_PATH", unset = NA_character_)
-  if (!is.na(cuda_path) && check_libcuml_path(cuda_path)) {
-    return(cuda_path)
+  lines <- readLines(version_header, warn = FALSE)
+  read_component <- function(component) {
+    pattern <- paste0("^#define[[:space:]]+CUML_VERSION_", component, "[[:space:]]+")
+    line <- grep(pattern, lines, value = TRUE)
+    if (length(line) != 1L) {
+      return(NA_integer_)
+    }
+    as.integer(sub(pattern, "", line))
   }
 
-  cuml_prefix <- "/usr"
-  if (check_libcuml_path(cuml_prefix)) {
-    warning2(
-      "'CUML_PREFIX' env variable is missing",
-      "will boldly assume it is '/usr' !"
-    )
-    return(cuml_prefix)
+  major <- read_component("MAJOR")
+  minor <- read_component("MINOR")
+  if (is.na(major) || is.na(minor)) {
+    return(NA_character_)
   }
 
-  # devtools::load_all() might run the config script from the `src` directory.
-  cuml_prefix <- file.path(pkg_root(), "libcuml")
-  if (check_libcuml_path(cuml_prefix)) {
-    return(cuml_prefix)
-  }
-
-  cuml_prefix <- bootstrap_libcuml_from_pip(nvcc)
-  if (!is.na(cuml_prefix)) {
-    return(cuml_prefix)
-  }
-
-  NA_character_
+  sprintf("%d.%02d", major, minor)
 }
 
-has_libcuml <- function(nvcc = find_nvcc()) {
-  cuml_prefix <- get_cuml_prefix(nvcc)
-  if (is.na(cuml_prefix)) {
-    if (!identical(Sys.getenv("CUML_BOOTSTRAP_FAILED", unset = "0"), "1")) {
-      warning2(
-        "No `libcuml` installation has been found.",
-        "Install RAPIDS cuML 24.0 or newer and set `CUML_PREFIX`, or enable",
-        "automatic bootstrap with `CUML_BOOTSTRAP=1`.",
-        "Falling back to a stub-only build."
-      )
-    }
-    FALSE
-  } else {
-    cuml_headers_dir <- file.path(cuml_prefix, "include", "cuml")
-    cuml_libs <- file.path(
-      cuml_prefix,
-      "lib",
-      c("libcuml.so", "libcuml++.so")
-    )
+validate_managed_build_versions <- function(nvcc, cuml_prefix) {
+  stopifnot(is.list(nvcc), length(nvcc$version) == 1L, is.character(cuml_prefix))
 
-    if (!check_libcuml_path(cuml_prefix)) {
-      missing_paths <- cuml_headers_dir[!dir.exists(cuml_headers_dir)]
-      if (!any(file.exists(cuml_libs))) {
-        missing_paths <- c(
-          missing_paths,
-          paste(cuml_libs, collapse = " or ")
-        )
-      }
-      warning2(
-        paste0("Invalid CUML_PREFIX: ", cuml_prefix),
-        paste0("Missing expected path(s): ", paste(missing_paths, collapse = ", ")),
-        "",
-        "{cuda.ml} requires a valid RAPIDS installation.",
-        "Please follow https://rapids.ai/start.html#get-rapids to install RAPIDS first"
+  cuda_version <- paste(nvcc$version$major, nvcc$version$minor, sep = ".")
+  if (!identical(cuda_version, cuml_managed_cuda_version())) {
+    stop2(
+      paste0("CUDA ", cuda_version, " is not supported by this build."),
+      paste0(
+        "Use the pinned CUDA ", cuml_managed_cuda_version(),
+        " toolchain."
       )
-      warning2(
-        "{cuda.ml} must be installed from an environment containing a valid",
-        "CUML_PREFIX env variable such that \"${CUML_PREFIX}/include/cuml\"",
-        "is the directory of RAPIDS cuML header files and \"${CUML_PREFIX}/lib\"",
-        "is the directory of RAPIDS cuML shared library files. RAPIDS can be",
-        "installed with pip, conda, or from source."
-      )
-      FALSE
-    } else {
-      TRUE
-    }
+    )
   }
+
+  rapids_version <- cuml_version_from_prefix(cuml_prefix)
+  if (!identical(rapids_version, cuml_managed_rapids_version())) {
+    stop2(
+      paste0("RAPIDS cuML ", rapids_version, " is not supported by this build."),
+      paste0(
+        "Use the pinned RAPIDS cuML ", cuml_managed_rapids_version(),
+        " headers and libraries."
+      )
+    )
+  }
+
+  invisible(TRUE)
+}
+
+get_cuml_prefix <- function() {
+  cuml_prefix <- Sys.getenv("CUML_PREFIX", unset = NA_character_)
+  if (is.na(cuml_prefix) || !nzchar(cuml_prefix)) {
+    return(NA_character_)
+  }
+
+  normalizePath(cuml_prefix, mustWork = FALSE)
 }

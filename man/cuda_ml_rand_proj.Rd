@@ -55,7 +55,8 @@ using the generated random matrix.
 library(cuda.ml)
 
 if (
-  requireNamespace("mlbench", quietly = TRUE) &&
+  interactive() &&
+    requireNamespace("mlbench", quietly = TRUE) &&
     cuda_ml_rand_proj_enabled()
 ) {
   data("Vehicle", package = "mlbench")

@@ -175,23 +175,25 @@ Train a Support Vector Machine model for classification or regression tasks.
 
 library(cuda.ml)
 
-# Classification
+if (interactive() && has_cuML()) {
+  # Classification
 
-model <- cuda_ml_svm(
-  formula = Species ~ .,
-  data = iris,
-  kernel = "rbf"
-)
+  model <- cuda_ml_svm(
+    formula = Species ~ .,
+    data = iris,
+    kernel = "rbf"
+  )
 
-predictions <- predict(model, iris[names(iris) != "Species"])
+  predictions <- predict(model, iris[names(iris) != "Species"])
 
-# Regression
+  # Regression
 
-model <- cuda_ml_svm(
-  formula = mpg ~ .,
-  data = mtcars,
-  kernel = "rbf"
-)
+  model <- cuda_ml_svm(
+    formula = mpg ~ .,
+    data = mtcars,
+    kernel = "rbf"
+  )
 
-predictions <- predict(model, mtcars)
+  predictions <- predict(model, mtcars)
+}
 }

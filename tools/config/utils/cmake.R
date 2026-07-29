@@ -1,11 +1,5 @@
-# NOTE: this version threshold may change depending on which branch of
-#       https://github.com/rapidsai/rapids-cmake.git is being used
-#       (e.g., see
-#        https://github.com/rapidsai/rapids-cmake/blob/d5d59dbfaff7feafdd87700e8c2b347188897af7/CMakeLists.txt#L28
-#        where the minimum cmake version is specified in the rapids-cmake repo in branch-21.10,
-#        and
-#        https://github.com/mlverse/cuda.ml/blob/7bad914c729011bcf05edc1c873609c518d9a77d/src/CMakeLists.txt.in#L13
-#        where cuda.ml specifies which branch of the rapids-cmake repo to use)
+# CMake 3.21 supports explicit `-real` and `-virtual` CUDA architecture
+# suffixes, which the portable backend uses to control SASS and PTX output.
 cuda_ml_min_cmake_version <- numeric_version("3.21.1")
 
 has_cmake <- function() {

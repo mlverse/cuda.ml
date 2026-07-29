@@ -72,10 +72,12 @@ new_tsne_model <- function(embedding) {
 #' @examples
 #' library(cuda.ml)
 #'
-#' embedding <- cuda_ml_tsne(iris[1:4], method = "exact")
+#' if (interactive() && has_cuML()) {
+#'   embedding <- cuda_ml_tsne(iris[1:4], method = "exact")
 #'
-#' set.seed(0L)
-#' print(kmeans(embedding, centers = 3))
+#'   set.seed(0L)
+#'   print(kmeans(embedding, centers = 3))
+#' }
 #' @export
 cuda_ml_tsne <- function(x, n_components = 2L,
                          n_neighbors = ceiling(3 * perplexity),

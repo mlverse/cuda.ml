@@ -20,5 +20,7 @@ to.
 
 library(cuda.ml)
 
-print(cuML_major_version())
+if (interactive()) {
+  print(cuML_major_version())
+}
 }

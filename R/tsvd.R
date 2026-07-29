@@ -27,8 +27,10 @@
 #' @examples
 #' library(cuda.ml)
 #'
-#' iris.tsvd <- cuda_ml_tsvd(iris[1:4], n_components = 2)
-#' print(iris.tsvd)
+#' if (interactive() && has_cuML()) {
+#'   iris.tsvd <- cuda_ml_tsvd(iris[1:4], n_components = 2)
+#'   print(iris.tsvd)
+#' }
 #' @export
 cuda_ml_tsvd <- function(x,
                          n_components = 2L,

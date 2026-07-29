@@ -108,8 +108,10 @@ dimensional data.
 \examples{
 library(cuda.ml)
 
-embedding <- cuda_ml_tsne(iris[1:4], method = "exact")
+if (interactive() && has_cuML()) {
+  embedding <- cuda_ml_tsne(iris[1:4], method = "exact")
 
-set.seed(0L)
-print(kmeans(embedding, centers = 3))
+  set.seed(0L)
+  print(kmeans(embedding, centers = 3))
+}
 }

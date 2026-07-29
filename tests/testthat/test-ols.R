@@ -1,3 +1,5 @@
+skip_if_not(run_gpu_tests, "requires the GPU test environment")
+
 context("Ordinary Least Square")
 
 test_that("OLS regressor works as expected", {

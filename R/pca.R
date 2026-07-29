@@ -45,8 +45,10 @@ new_pca_model <- function(model) {
 #'
 #' library(cuda.ml)
 #'
-#' iris.pca <- cuda_ml_pca(iris[1:4], n_components = 3)
-#' print(iris.pca)
+#' if (interactive() && has_cuML()) {
+#'   iris.pca <- cuda_ml_pca(iris[1:4], n_components = 3)
+#'   print(iris.pca)
+#' }
 #' @export
 cuda_ml_pca <- function(x,
                         n_components = NULL,

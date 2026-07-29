@@ -1,3 +1,5 @@
+skip_if_not(run_gpu_tests, "requires the GPU test environment")
+
 context("t-distributed Stochastic Neighbor Embedding")
 
 iris_input <- iris[, names(iris) != "Species"]

@@ -1,19 +1,46 @@
-cuml_pip_version <- function() {
-  Sys.getenv("CUML_PIP_VERSION", unset = "26.6.0")
+cuml_managed_cuda_version <- function() {
+  "13.2"
 }
 
-cuml_cuda_cccl_version <- function() {
-  Sys.getenv("CUML_CUDA_CCCL_VERSION", unset = "0.6.0")
+cuml_managed_cuda_toolkit_version <- function() {
+  "13.2.2"
+}
+
+cuml_managed_cuda_component_version <- function() {
+  "13.2.86"
+}
+
+cuml_managed_cuda_cccl_version <- function() {
+  "0.6.0"
+}
+
+cuml_managed_rapids_version <- function() {
+  "26.06"
+}
+
+cuml_managed_rapids_pip_version <- function() {
+  "26.6.0"
+}
+
+cuml_managed_cuda_architectures <- function() {
+  paste(
+    c(
+      "75-real",
+      "80-real",
+      "86-real",
+      "89-real",
+      "90-real",
+      "100-real",
+      "120-real",
+      "120-virtual"
+    ),
+    collapse = ";"
+  )
 }
 
 cuml_cran_like <- function() {
   nzchar(Sys.getenv("_R_CHECK_PACKAGE_NAME_")) ||
     identical(Sys.getenv("CRAN", unset = ""), "true")
-}
-
-cuml_bootstrap_enabled <- function() {
-  !identical(Sys.getenv("CUML_BOOTSTRAP", unset = "1"), "0") &&
-    !cuml_cran_like()
 }
 
 cuml_bootstrap_cache_dir <- function() {
@@ -35,66 +62,25 @@ cuml_bootstrap_cache_dir <- function() {
   file.path(tempdir(), "cuda.ml")
 }
 
-cuml_cuda_suffix <- function(cuda_version) {
-  major <- as.integer(cuda_version$major)
-  if (major %in% c(12L, 13L)) {
-    paste0("cu", major)
-  } else {
-    NA_character_
-  }
-}
-
-cuml_bootstrap_prefix <- function(
-  cuda_suffix,
-  rapids_version = cuml_pip_version()
-) {
+cuml_managed_bootstrap_prefix <- function() {
   file.path(
     cuml_bootstrap_cache_dir(),
-    "rapids",
-    paste0("rapids-", rapids_version, "-", cuda_suffix)
+    "managed-build",
+    paste0(
+      "cuda-", cuml_managed_cuda_toolkit_version(),
+      "-rapids-", cuml_managed_rapids_pip_version()
+    )
   )
 }
 
-cuml_bootstrap_target <- function(
-  cuda_suffix,
-  rapids_version = cuml_pip_version()
-) {
+cuml_managed_bootstrap_target <- function() {
   file.path(
     cuml_bootstrap_cache_dir(),
     "wheel-targets",
-    paste0("rapids-", rapids_version, "-", cuda_suffix)
-  )
-}
-
-cuml_nvidia_gpu_available <- function() {
-  nvidia_smi <- Sys.which("nvidia-smi")
-  if (!nzchar(nvidia_smi)) {
-    return(FALSE)
-  }
-
-  out <- tryCatch(
-    suppressWarnings(
-      system2(
-        nvidia_smi,
-        c("--query-gpu=name,driver_version", "--format=csv,noheader"),
-        stdout = TRUE,
-        stderr = TRUE
-      )
-    ),
-    error = function(e) character()
-  )
-  status <- attr(out, "status", exact = TRUE)
-
-  (is.null(status) || identical(status, 0L)) && length(out) > 0L && any(nzchar(out))
-}
-
-warn_missing_nvidia_gpu <- function() {
-  warning2(
-    "No usable NVIDIA GPU/driver was detected with `nvidia-smi`.",
-    "Install or fix the NVIDIA driver, then verify that `nvidia-smi` lists",
-    "your GPU before reinstalling {cuda.ml}, or set",
-    "`CUML_CUDA_ARCHITECTURES` for GPU-less cross-compilation.",
-    "Falling back to a stub-only build."
+    paste0(
+      "managed-cuda-", cuml_managed_cuda_toolkit_version(),
+      "-rapids-", cuml_managed_rapids_pip_version()
+    )
   )
 }
 
@@ -173,10 +159,35 @@ cuml_find_package_installer <- function() {
   NULL
 }
 
-cuml_pip_packages <- function(cuda_suffix) {
+cuml_managed_pip_packages <- function() {
+  component_version <- cuml_managed_cuda_component_version()
+  rapids_version <- cuml_managed_rapids_pip_version()
+
   c(
-    paste0("libcuml-", cuda_suffix, "==", cuml_pip_version()),
-    paste0("cuda-cccl==", cuml_cuda_cccl_version())
+    paste0("libcuml-cu13==", rapids_version),
+    paste0("cuda-cccl==", cuml_managed_cuda_cccl_version()),
+    paste0("cuda-toolkit==", cuml_managed_cuda_toolkit_version()),
+    paste0("libnvforest-cu13==", rapids_version),
+    paste0("libraft-cu13==", rapids_version),
+    paste0("librmm-cu13==", rapids_version),
+    "rapids-logger==0.2.3",
+    "nvidia-cublas==13.4.1.3",
+    paste0("nvidia-cuda-crt==", component_version),
+    paste0("nvidia-cuda-cuobjdump==", component_version),
+    paste0("nvidia-cuda-nvcc==", component_version),
+    paste0("nvidia-cuda-nvrtc==", component_version),
+    paste0("nvidia-cuda-runtime==", component_version),
+    "nvidia-cufft==12.2.0.57",
+    "nvidia-curand==10.4.2.66",
+    "nvidia-cusolver==12.2.0.11",
+    "nvidia-cusparse==12.7.10.12",
+    "nvidia-nccl-cu13==2.30.7",
+    paste0("nvidia-nvjitlink==", component_version),
+    paste0("nvidia-nvvm==", component_version),
+    "cuda-core==1.1.0",
+    "cuda-pathfinder==1.6.0",
+    "numpy==2.5.1",
+    "typing-extensions==4.16.0"
   )
 }
 
@@ -200,6 +211,7 @@ cuml_package_install_args <- function(installer, target, packages) {
     "--target", target,
     "--only-binary", ":all:",
     "--upgrade",
+    "--no-deps",
     packages
   )
 }
@@ -257,6 +269,27 @@ copy_dir_contents <- function(src, dst) {
   identical(status, 0L)
 }
 
+create_shared_library_linker_names <- function(lib_dir) {
+  libraries <- list.files(
+    lib_dir,
+    pattern = "^lib.+[.]so[.][0-9].*$",
+    full.names = TRUE
+  )
+
+  for (library in libraries) {
+    linker_name <- sub("[.]so[.].*$", ".so", basename(library))
+    linker_path <- file.path(lib_dir, linker_name)
+
+    if (!file.exists(linker_path) && is.na(Sys.readlink(linker_path))) {
+      if (!file.symlink(basename(library), linker_path)) {
+        stop2("Failed to create the linker name for ", basename(library), ".")
+      }
+    }
+  }
+
+  invisible(TRUE)
+}
+
 extract_cuml_pip_prefix <- function(target, prefix) {
   unlink(prefix, recursive = TRUE, force = TRUE)
   dir.create(file.path(prefix, "include"), recursive = TRUE, showWarnings = FALSE)
@@ -290,6 +323,8 @@ extract_cuml_pip_prefix <- function(target, prefix) {
     for (component in list.files(nvidia_dir, full.names = TRUE)) {
       copy_dir_contents(file.path(component, "include"), file.path(prefix, "include"))
       copy_dir_contents(file.path(component, "lib"), file.path(prefix, "lib"))
+      copy_dir_contents(file.path(component, "bin"), file.path(prefix, "bin"))
+      copy_dir_contents(file.path(component, "nvvm"), file.path(prefix, "nvvm"))
     }
   }
 
@@ -297,91 +332,225 @@ extract_cuml_pip_prefix <- function(target, prefix) {
     copy_dir_contents(bundle_dir, file.path(prefix, "lib"))
   }
 
+  create_shared_library_linker_names(file.path(prefix, "lib"))
+
   check_libcuml_path(prefix)
 }
 
-bootstrap_libcuml_from_pip <- function(nvcc = find_nvcc(stop_if_missing = FALSE)) {
-  if (!cuml_bootstrap_enabled() || is.null(nvcc)) {
+cuml_managed_package_set_hash <- function() {
+  digest::digest(
+    paste(cuml_managed_pip_packages(), collapse = "\n"),
+    algo = "sha256",
+    serialize = FALSE
+  )
+}
+
+cuml_managed_build_metadata <- function() {
+  c(
+    Schema = "1",
+    CUDA = cuml_managed_cuda_version(),
+    `CUDA-Toolkit` = cuml_managed_cuda_toolkit_version(),
+    `CUDA-Component` = cuml_managed_cuda_component_version(),
+    RAPIDS = cuml_managed_rapids_version(),
+    `RAPIDS-Package` = cuml_managed_rapids_pip_version(),
+    `Package-Set-SHA256` = cuml_managed_package_set_hash()
+  )
+}
+
+cuml_managed_build_marker <- function(prefix) {
+  file.path(prefix, "cuda-ml-managed-build.dcf")
+}
+
+write_cuml_managed_build_marker <- function(prefix) {
+  metadata <- cuml_managed_build_metadata()
+  write.dcf(
+    matrix(
+      unname(metadata),
+      nrow = 1L,
+      dimnames = list(NULL, names(metadata))
+    ),
+    file = cuml_managed_build_marker(prefix)
+  )
+  invisible(TRUE)
+}
+
+read_cuml_managed_build_marker <- function(prefix) {
+  path <- cuml_managed_build_marker(prefix)
+  if (!file.exists(path)) {
+    return(NULL)
+  }
+
+  tryCatch(
+    {
+      metadata <- read.dcf(path)
+      if (nrow(metadata) != 1L) {
+        return(NULL)
+      }
+      metadata[1L, , drop = TRUE]
+    },
+    error = function(e) NULL
+  )
+}
+
+cuda_header_version_from_prefix <- function(prefix) {
+  header <- file.path(prefix, "include", "cuda.h")
+  if (!file.exists(header)) {
     return(NA_character_)
   }
 
-  Sys.setenv(CUML_BOOTSTRAP_FAILED = "1")
+  lines <- readLines(header, warn = FALSE)
+  line <- grep(
+    "^#define[[:space:]]+CUDA_VERSION[[:space:]]+[0-9]+[[:space:]]*$",
+    lines,
+    value = TRUE
+  )
+  if (length(line) != 1L) {
+    return(NA_character_)
+  }
 
-  cuda_suffix <- cuml_cuda_suffix(nvcc$version)
-  if (is.na(cuda_suffix)) {
-    warning2(
-      paste0("Automatic RAPIDS pip bootstrap does not support CUDA ", nvcc$version, "."),
-      "Install RAPIDS cuML 24.0 or newer and set `CUML_PREFIX`, or install a",
-      "supported CUDA toolkit and retry.",
-      "Falling back to a stub-only build."
+  version <- as.integer(sub(".*[[:space:]]", "", line))
+  sprintf("%d.%d", version %/% 1000L, (version %% 1000L) %/% 10L)
+}
+
+nvcc_component_version_from_path <- function(nvcc) {
+  output <- suppressWarnings(
+    tryCatch(
+      system2(nvcc, "--version", stdout = TRUE, stderr = TRUE),
+      error = function(e) character()
     )
+  )
+  line <- grep(", V[0-9]+[.][0-9]+[.][0-9]+", output, value = TRUE)
+  if (length(line) != 1L) {
     return(NA_character_)
   }
+  sub(".*, V([0-9]+[.][0-9]+[.][0-9]+).*", "\\1", line)
+}
 
-  if (
-    !cuml_nvidia_gpu_available() &&
-    !nzchar(Sys.getenv("CUML_CUDA_ARCHITECTURES", unset = ""))
-  ) {
-    warn_missing_nvidia_gpu()
-    return(NA_character_)
+check_managed_build_prefix <- function(prefix) {
+  nvcc <- file.path(prefix, "bin", "nvcc")
+  cuobjdump <- file.path(prefix, "bin", "cuobjdump")
+  version <- nvcc_version_from_path(nvcc)
+  metadata <- read_cuml_managed_build_marker(prefix)
+  expected_metadata <- cuml_managed_build_metadata()
+  linker_names <- file.path(
+    prefix,
+    "lib",
+    c("libcublas.so", "libcudart.so", "libcusolver.so", "libcusparse.so")
+  )
+
+  check_libcuml_path(prefix) &&
+    file.exists(nvcc) &&
+    file.exists(cuobjdump) &&
+    all(file.exists(linker_names)) &&
+    !is.null(version) &&
+    identical(
+      paste(version$major, version$minor, sep = "."),
+      cuml_managed_cuda_version()
+    ) &&
+    identical(
+      nvcc_component_version_from_path(nvcc),
+      cuml_managed_cuda_component_version()
+    ) &&
+    identical(
+      cuda_header_version_from_prefix(prefix),
+      cuml_managed_cuda_version()
+    ) &&
+    identical(
+      cuml_version_from_prefix(prefix),
+      cuml_managed_rapids_version()
+    ) &&
+    !is.null(metadata) &&
+    all(names(expected_metadata) %in% names(metadata)) &&
+    identical(
+      unname(metadata[names(expected_metadata)]),
+      unname(expected_metadata)
+    )
+}
+
+bootstrap_managed_build_from_pip <- function() {
+  stopifnot(cuml_r_universe_build())
+
+  if (!cuml_linux_x86_64()) {
+    stop2(
+      "Managed {cuda.ml} builds are supported only on Linux x86_64.",
+      paste0(
+        "Detected: ", Sys.info()[["sysname"]], " ",
+        Sys.info()[["machine"]], "."
+      )
+    )
   }
 
-  prefix <- cuml_bootstrap_prefix(cuda_suffix)
-  if (check_libcuml_path(prefix)) {
-    Sys.setenv(CUML_BOOTSTRAP_FAILED = "0")
-    Sys.setenv(CUML_PREFIX = prefix)
-    return(prefix)
+  prefix <- cuml_managed_bootstrap_prefix()
+  if (check_managed_build_prefix(prefix)) {
+    Sys.setenv(
+      CUDA_HOME = prefix,
+      CUDA_PATH = prefix,
+      CUML_PREFIX = prefix
+    )
+    return(list(
+      prefix = prefix,
+      nvcc = list(
+        path = file.path(prefix, "bin", "nvcc"),
+        version = package_version(cuml_managed_cuda_version())
+      )
+    ))
   }
 
   installer <- cuml_find_package_installer()
   if (is.null(installer)) {
-    warning2(
-      "Unable to find a Python package installer for bootstrapping RAPIDS cuML.",
-      "Install `uv` or install Python with pip, then reinstall {cuda.ml}.",
-      "On Ubuntu, the Python fallback can be installed with:",
-      "`sudo apt install python3 python3-pip python3-venv`",
-      "Falling back to a stub-only build."
+    stop2(
+      "A managed R-universe build requires uv or Python 3 with pip.",
+      "No package installer was found, so the pinned CUDA/RAPIDS build",
+      "toolchain could not be provisioned."
     )
-    return(NA_character_)
   }
 
-  target <- cuml_bootstrap_target(cuda_suffix)
-  packages <- cuml_pip_packages(cuda_suffix)
+  target <- cuml_managed_bootstrap_target()
+  packages <- cuml_managed_pip_packages()
 
   message(format_msg(
-    "Bootstrapping RAPIDS cuML from pip wheels.",
+    "Provisioning the managed CUDA/RAPIDS build toolchain.",
     paste0("Installer: ", installer$label),
     paste0("Packages: ", paste(packages, collapse = ", ")),
     paste0("Prefix: ", prefix)
   ))
 
   if (!cuml_run_package_install(installer, target, packages)) {
-    args <- cuml_package_install_args(installer, target, packages)
-    warning2(
-      "Failed to install RAPIDS cuML pip wheels.",
-      "You can retry manually with:",
-      paste(
-        shQuote(cuml_package_install_command(installer)),
-        paste(shQuote(cuml_package_install_command_args(installer, args)), collapse = " ")
-      ),
-      "Or install RAPIDS yourself and set `CUML_PREFIX`.",
-      "Falling back to a stub-only build."
+    stop2(
+      "Failed to install the pinned CUDA/RAPIDS build wheels.",
+      paste0("CUDA Toolkit: ", cuml_managed_cuda_toolkit_version()),
+      paste0("RAPIDS cuML: ", cuml_managed_rapids_pip_version())
     )
-    return(NA_character_)
   }
 
   if (!extract_cuml_pip_prefix(target, prefix)) {
-    warning2(
-      "RAPIDS cuML pip wheels were installed, but the expected C/C++ headers",
-      "and shared libraries could not be extracted.",
-      "Install RAPIDS yourself and set `CUML_PREFIX`.",
-      "Falling back to a stub-only build."
+    stop2(
+      "The managed build wheels did not contain the expected cuML headers",
+      "and shared libraries."
     )
-    return(NA_character_)
   }
 
+  write_cuml_managed_build_marker(prefix)
   unlink(target, recursive = TRUE, force = TRUE)
-  Sys.setenv(CUML_BOOTSTRAP_FAILED = "0")
-  Sys.setenv(CUML_PREFIX = prefix)
-  prefix
+
+  if (!check_managed_build_prefix(prefix)) {
+    stop2(
+      "The managed build wheels did not contain a working CUDA 13.2 nvcc",
+      "and RAPIDS cuML 26.06 prefix."
+    )
+  }
+
+  Sys.setenv(
+    CUDA_HOME = prefix,
+    CUDA_PATH = prefix,
+    CUML_PREFIX = prefix
+  )
+
+  list(
+    prefix = prefix,
+    nvcc = list(
+      path = file.path(prefix, "bin", "nvcc"),
+      version = package_version(cuml_managed_cuda_version())
+    )
+  )
 }

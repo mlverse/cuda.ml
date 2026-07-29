@@ -1,0 +1,8 @@
+Schema: 1
+CUDA: 13.2
+RAPIDS: 26.06
+Platform: linux-x86_64
+Minimum-Driver: 580
+Architectures: 75;80;86;89;90;100;120
+NVRTC-Needed-Old: libnvrtc-a49e67e8.so.13.0.88
+NVRTC-Needed-New: libnvrtc.so.13

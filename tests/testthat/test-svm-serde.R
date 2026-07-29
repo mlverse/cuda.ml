@@ -1,3 +1,5 @@
+skip_if_not(run_gpu_tests, "requires the GPU test environment")
+
 context("(de)serialization of SVM models")
 
 test_that("SVM regressor can be serialized and unserialized correctly", {

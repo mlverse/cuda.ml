@@ -46,10 +46,12 @@ Run the K means clustering algorithm.
 
 library(cuda.ml)
 
-kclust <- cuda_ml_kmeans(
-  iris[names(iris) != "Species"],
-  k = 3, max_iters = 100
-)
+if (interactive() && has_cuML()) {
+  kclust <- cuda_ml_kmeans(
+    iris[names(iris) != "Species"],
+    k = 3, max_iters = 100
+  )
 
-print(kclust)
+  print(kclust)
+}
 }

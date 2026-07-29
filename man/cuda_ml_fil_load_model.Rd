@@ -66,7 +66,8 @@ The current cuML FIL API supports only the default loading controls:
 library(cuda.ml)
 
 if (
-  requireNamespace("xgboost", quietly = TRUE) &&
+  interactive() &&
+    requireNamespace("xgboost", quietly = TRUE) &&
     cuda_ml_fil_enabled()
 ) {
   model_path <- file.path(tempdir(), "xgboost.model")

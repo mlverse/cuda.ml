@@ -114,31 +114,33 @@ Operator) regression.
 
 library(cuda.ml)
 
-model <- cuda_ml_lasso(formula = mpg ~ ., data = mtcars, alpha = 1e-3)
-cuda_ml_predictions <- predict(model, mtcars)
+if (interactive() && has_cuML()) {
+  model <- cuda_ml_lasso(formula = mpg ~ ., data = mtcars, alpha = 1e-3)
+  cuda_ml_predictions <- predict(model, mtcars)
 
-# predictions will be comparable to those from a `glmnet` model with `lambda`
-# set to 1e-3 and `alpha` set to 1
-# (in `glmnet`, `lambda` is the weight of the penalty term, and `alpha` is
-#  the elastic mixing parameter between L1 and L2 penalties.
+  # predictions will be comparable to those from a `glmnet` model with
+  # `lambda` set to 1e-3 and `alpha` set to 1
+  # (in `glmnet`, `lambda` is the weight of the penalty term, and `alpha` is
+  #  the elastic mixing parameter between L1 and L2 penalties.
 
-if (requireNamespace("glmnet", quietly = TRUE)) {
-  glmnet_model <- glmnet::glmnet(
-    x = as.matrix(mtcars[names(mtcars) != "mpg"]), y = mtcars$mpg,
-    alpha = 1, lambda = 1e-3, nlambda = 1, standardize = FALSE
-  )
-
-  glm_predictions <- predict(
-    glmnet_model, as.matrix(mtcars[names(mtcars) != "mpg"]),
-    s = 0
-  )
-
-  print(
-    all.equal(
-      as.numeric(glm_predictions),
-      cuda_ml_predictions$.pred,
-      tolerance = 1e-2
+  if (requireNamespace("glmnet", quietly = TRUE)) {
+    glmnet_model <- glmnet::glmnet(
+      x = as.matrix(mtcars[names(mtcars) != "mpg"]), y = mtcars$mpg,
+      alpha = 1, lambda = 1e-3, nlambda = 1, standardize = FALSE
     )
-  )
+
+    glm_predictions <- predict(
+      glmnet_model, as.matrix(mtcars[names(mtcars) != "mpg"]),
+      s = 0
+    )
+
+    print(
+      all.equal(
+        as.numeric(glm_predictions),
+        cuda_ml_predictions$.pred,
+        tolerance = 1e-2
+      )
+    )
+  }
 }
 }

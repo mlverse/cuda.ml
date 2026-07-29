@@ -1,3 +1,5 @@
+skip_if_not(run_gpu_tests, "requires the GPU test environment")
+
 context("Mini-batch Stochastic Gradient Descent")
 
 set.seed(0L)

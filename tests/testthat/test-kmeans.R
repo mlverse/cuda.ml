@@ -1,3 +1,5 @@
+skip_if_not(run_gpu_tests, "requires the GPU test environment")
+
 context("K-Means")
 
 sklearn_kmeans_model <- sklearn$cluster$KMeans(

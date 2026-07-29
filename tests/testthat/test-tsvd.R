@@ -1,3 +1,5 @@
+skip_if_not(run_gpu_tests, "requires the GPU test environment")
+
 context("Truncated SVD")
 
 tsvd_model <- sklearn$decomposition$TruncatedSVD(

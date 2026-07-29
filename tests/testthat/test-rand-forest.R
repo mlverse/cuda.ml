@@ -1,3 +1,5 @@
+skip_if_not(run_gpu_tests, "requires the GPU test environment")
+
 context("Random Forest")
 
 test_that("random forest classifier works as expected", {

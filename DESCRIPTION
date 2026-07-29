@@ -25,9 +25,11 @@ License: MIT + file LICENSE
 URL: https://mlverse.github.io/cuda.ml/
 BugReports: https://github.com/mlverse/cuda.ml/issues
 Depends:
-    R (>= 3.2)
+    R (>= 4.0)
 Imports:
+    digest,
     ellipsis,
+    filelock,
     hardhat,
     parsnip,
     Rcpp (>= 1.0.6),
@@ -45,10 +47,10 @@ Suggests:
 LinkingTo: Rcpp
 Encoding: UTF-8
 OS_type: unix
-SystemRequirements: NVIDIA GPU and driver at runtime, CUDA Toolkit with nvcc,
-    and either RAPIDS cuML 24.0 or newer or uv/Python/pip for automatic RAPIDS
-    cuML bootstrap. Builds can be cross-compiled without a GPU by setting
-    CUML_CUDA_ARCHITECTURES. An existing RAPIDS cuML installation can be
-    provided with CUML_PREFIX.
+SystemRequirements: The managed R-universe binary targets Ubuntu 26.04 x86_64
+    (including WSL2 running that distribution) with an NVIDIA GPU and driver
+    580 or newer. Functional source builds require CUDA Toolkit 13.2 and RAPIDS
+    cuML 26.06 supplied through a compatible local toolchain or the mlverse
+    R-universe build environment.
 NeedsCompilation: yes
 Config/roxygen2/version: 8.0.0

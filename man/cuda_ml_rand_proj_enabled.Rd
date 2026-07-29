@@ -14,7 +14,7 @@ Random projection requires the cuML random projection C API. This function
 reports whether that API was available when \{cuda.ml\} was installed.
 }
 \examples{
-if (cuda_ml_rand_proj_enabled()) {
+if (interactive() && cuda_ml_rand_proj_enabled()) {
   # run GPU-accelerated random projection
 }
 }

@@ -20,13 +20,15 @@ FALSE, install compatible Treelite and cuML versions, then re-install
 \{cuda.ml\}.
 }
 \examples{
-if (cuda_ml_fil_enabled()) {
-  # run GPU-accelerated Forest Inference Library (FIL) functionalities
-} else {
-  message(
-    "FIL functionalities are disabled in the current installation of ",
-    "{cuda.ml}. Install compatible Treelite and cuML versions, then ",
-    "re-install {cuda.ml} to enable FIL."
-  )
+if (interactive()) {
+  if (cuda_ml_fil_enabled()) {
+    # run GPU-accelerated Forest Inference Library (FIL) functionalities
+  } else {
+    message(
+      "FIL functionalities are disabled in the current installation of ",
+      "{cuda.ml}. Install compatible Treelite and cuML versions, then ",
+      "re-install {cuda.ml} to enable FIL."
+    )
+  }
 }
 }

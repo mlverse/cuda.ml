@@ -12,17 +12,24 @@
 #'   functionalities are enabled.
 #'
 #' @examples
-#' if (cuda_ml_fil_enabled()) {
-#'   # run GPU-accelerated Forest Inference Library (FIL) functionalities
-#' } else {
-#'   message(
-#'     "FIL functionalities are disabled in the current installation of ",
-#'     "{cuda.ml}. Install compatible Treelite and cuML versions, then ",
-#'     "re-install {cuda.ml} to enable FIL."
-#'   )
+#' if (interactive()) {
+#'   if (cuda_ml_fil_enabled()) {
+#'     # run GPU-accelerated Forest Inference Library (FIL) functionalities
+#'   } else {
+#'     message(
+#'       "FIL functionalities are disabled in the current installation of ",
+#'       "{cuda.ml}. Install compatible Treelite and cuML versions, then ",
+#'       "re-install {cuda.ml} to enable FIL."
+#'     )
+#'   }
 #' }
 #' @export
-cuda_ml_fil_enabled <- .fil_enabled
+cuda_ml_fil_enabled <- function() {
+  if (!has_cuML()) {
+    return(FALSE)
+  }
+  .fil_enabled()
+}
 
 fil_match_model_type <- function(filename, model_type = c("xgboost", "lightgbm")) {
   model_type <- match.arg(model_type)
@@ -95,7 +102,8 @@ file_match_storage_type <- function(storage_type = c("auto", "dense", "sparse"))
 #' library(cuda.ml)
 #'
 #' if (
-#'   requireNamespace("xgboost", quietly = TRUE) &&
+#'   interactive() &&
+#'     requireNamespace("xgboost", quietly = TRUE) &&
 #'     cuda_ml_fil_enabled()
 #' ) {
 #'   model_path <- file.path(tempdir(), "xgboost.model")

@@ -39,12 +39,14 @@ kmeans_match_init_method <- function(m = c("kmeans++", "random")) {
 #'
 #' library(cuda.ml)
 #'
-#' kclust <- cuda_ml_kmeans(
-#'   iris[names(iris) != "Species"],
-#'   k = 3, max_iters = 100
-#' )
+#' if (interactive() && has_cuML()) {
+#'   kclust <- cuda_ml_kmeans(
+#'     iris[names(iris) != "Species"],
+#'     k = 3, max_iters = 100
+#'   )
 #'
-#' print(kclust)
+#'   print(kclust)
+#' }
 #' @export
 cuda_ml_kmeans <- function(x, k, max_iters = 300, tol = 0,
                            init_method = c("kmeans++", "random"),

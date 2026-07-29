@@ -1,3 +1,5 @@
+skip_if_not(run_gpu_tests, "requires the GPU test environment")
+
 test_that("FIL rejects unsupported loading controls", {
   unsupported_controls <- list(
     algo = "naive",

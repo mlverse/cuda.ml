@@ -1,3 +1,5 @@
+skip_if_not(run_gpu_tests, "requires the GPU test environment")
+
 context("Support Vector Machine")
 
 test_that("cuda_ml_svm() works as expected for binary classification tasks", {

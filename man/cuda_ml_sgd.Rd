@@ -185,14 +185,16 @@ Train a linear model using mini-batch stochastic gradient descent.
 
 library(cuda.ml)
 
-model <- cuda_ml_sgd(
-  mpg ~ ., mtcars,
-  batch_size = 4L, epochs = 50000L,
-  learning_rate = "adaptive", eta0 = 1e-5,
-  penalty = "l2", alpha = 1e-5, tol = 1e-6,
-  n_iters_no_change = 10L
-)
+if (interactive() && has_cuML()) {
+  model <- cuda_ml_sgd(
+    mpg ~ ., mtcars,
+    batch_size = 4L, epochs = 50000L,
+    learning_rate = "adaptive", eta0 = 1e-5,
+    penalty = "l2", alpha = 1e-5, tol = 1e-6,
+    n_iters_no_change = 10L
+  )
 
-preds <- predict(model, mtcars[names(mtcars) != "mpg"])
-print(all.equal(preds$.pred, mtcars$mpg, tolerance = 0.09))
+  preds <- predict(model, mtcars[names(mtcars) != "mpg"])
+  print(all.equal(preds$.pred, mtcars$mpg, tolerance = 0.09))
+}
 }

@@ -1,3 +1,5 @@
+skip_if_not(run_gpu_tests, "requires the GPU test environment")
+
 context("(de)serialization of Random Projection models")
 
 test_that("random projection model can be serialized and unserialized correctly", {

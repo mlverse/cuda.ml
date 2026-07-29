@@ -13,11 +13,14 @@ new_rproj_model <- function(rproj_ctx) {
 #' @return A logical value indicating whether random projection is enabled.
 #'
 #' @examples
-#' if (cuda_ml_rand_proj_enabled()) {
+#' if (interactive() && cuda_ml_rand_proj_enabled()) {
 #'   # run GPU-accelerated random projection
 #' }
 #' @export
 cuda_ml_rand_proj_enabled <- function() {
+  if (!has_cuML()) {
+    return(FALSE)
+  }
   tryCatch(
     {
       .rproj_johnson_lindenstrauss_min_dim(2L, 0.5)
@@ -66,7 +69,8 @@ cuda_ml_rand_proj_enabled <- function() {
 #' library(cuda.ml)
 #'
 #' if (
-#'   requireNamespace("mlbench", quietly = TRUE) &&
+#'   interactive() &&
+#'     requireNamespace("mlbench", quietly = TRUE) &&
 #'     cuda_ml_rand_proj_enabled()
 #' ) {
 #'   data("Vehicle", package = "mlbench")

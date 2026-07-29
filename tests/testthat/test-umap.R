@@ -1,3 +1,5 @@
+skip_if_not(run_gpu_tests, "requires the GPU test environment")
+
 context("Uniform Manifold Approximation and Projection")
 
 iris_input <- iris[, names(iris) != "Species"]

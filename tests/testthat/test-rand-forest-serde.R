@@ -1,3 +1,5 @@
+skip_if_not(run_gpu_tests, "requires the GPU test environment")
+
 context("(de)serialization of Random Forest models")
 
 test_that("random forest classifier can be serialized and unserialized correctly", {

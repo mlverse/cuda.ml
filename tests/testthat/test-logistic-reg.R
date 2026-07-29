@@ -1,3 +1,5 @@
+skip_if_not(run_gpu_tests, "requires the GPU test environment")
+
 context("Logistic Regression")
 
 iris_scaled <- scale(as.matrix(iris[names(iris) != "Species"]))

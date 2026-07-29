@@ -1,16 +1,13 @@
 library(testthat)
 library(cuda.ml)
 
-if (identical(Sys.getenv("NOT_CRAN"), "true") && has_cuML()) {
-  filter <- Sys.getenv("TESTTHAT_FILTER", unset = "")
-  if (identical(filter, "")) filter <- NULL
+filter <- Sys.getenv("TESTTHAT_FILTER", unset = "")
+if (identical(filter, "")) filter <- NULL
 
-  reporter <- MultiReporter$new(reporters = list(
-    CheckReporter$new(),
-    LocationReporter$new(),
-    SummaryReporter$new(show_praise = FALSE)
-  ))
+reporter <- MultiReporter$new(reporters = list(
+  CheckReporter$new(),
+  LocationReporter$new(),
+  SummaryReporter$new(show_praise = FALSE)
+))
 
-  test_check("cuda.ml", filter = filter, reporter = reporter)
-}
-
+test_check("cuda.ml", filter = filter, reporter = reporter)

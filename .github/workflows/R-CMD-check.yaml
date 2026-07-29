@@ -38,16 +38,18 @@ jobs:
         run: R CMD build .
 
       - name: Check
-        run: R CMD check --no-manual --as-cran cuda.ml_*.tar.gz
+        run: sudo -E unshare --net -- R CMD check --no-manual --as-cran cuda.ml_*.tar.gz
         env:
+          CRAN: true
           _R_CHECK_CRAN_INCOMING_: false
+          _R_CHECK_SYSTEM_CLOCK_: false
 
   build-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-    timeout-minutes: 120
+    timeout-minutes: 60
     outputs:
       image: ghcr.io/${{ github.repository }}-ci:${{ github.sha }}
     steps:
@@ -66,7 +68,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: "."
           file: .github/docker/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository }}-ci:${{ github.sha }}
@@ -84,9 +86,11 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
       options: --gpus all --runtime=nvidia
-    timeout-minutes: 60
+    timeout-minutes: 120
     env:
       NOT_CRAN: true
+      CUDA_ML_GPU_TESTS: true
+      CUDA_ML_CACHE_DIR: /tmp/cuda-ml-runtime
 
     steps:
       - name: Verify GPU access
@@ -94,6 +98,10 @@ jobs:
 
       - name: Verify cuML linkage
         run: Rscript -e "library(cuda.ml); stopifnot(has_cuML())"
+
+      - name: Exercise cold-cache automatic provisioning
+        run: |
+          Rscript -e "library(cuda.ml); stopifnot(!dir.exists(Sys.getenv('CUDA_ML_CACHE_DIR'))); x <- matrix(c(0, 0, 0, 1, 10, 10, 10, 11), ncol = 2, byrow = TRUE); fit <- cuda_ml_kmeans(x, k = 2); stopifnot(length(fit\$labels) == 4L)"
 
       - name: Session info
         run: |
@@ -103,3 +111,42 @@ jobs:
       - name: Run tests
         run: |
           Rscript -e "testthat::test_package('cuda.ml', reporter = 'progress')"
+
+  test-runtime-cpu:
+    needs: build-image
+    if: ${{ always() && needs.build-image.result == 'success' }}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ needs.build-image.outputs.image }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    timeout-minutes: 90
+    env:
+      NOT_CRAN: false
+      CUDA_ML_RUNTIME_TESTS: true
+      CUDA_ML_CACHE_DIR: /tmp/cuda-ml-runtime
+
+    steps:
+      - name: Exercise CPU-only runtime provisioning and loading
+        run: |
+          Rscript -e "testthat::test_package('cuda.ml', filter = 'runtime-functional', reporter = 'progress')"
+
+      - name: Reuse the prepared runtime without downloads
+        env:
+          HTTP_PROXY: http://127.0.0.1:9
+          HTTPS_PROXY: http://127.0.0.1:9
+          ALL_PROXY: http://127.0.0.1:9
+          NO_PROXY: ""
+          http_proxy: http://127.0.0.1:9
+          https_proxy: http://127.0.0.1:9
+          all_proxy: http://127.0.0.1:9
+          no_proxy: ""
+        run: |
+          Rscript -e "library(cuda.ml); trace('download.file', where = asNamespace('utils'), tracer = quote(stop('unexpected runtime download')), print = FALSE); cuda_ml_install(); version <- sprintf('%s.%02d', cuML_major_version(), as.integer(cuML_minor_version())); stopifnot(identical(version, '26.06'))"
+
+      - name: Compile an NVRTC kernel without a GPU
+        run: |
+          runtime_lib="$(find "$CUDA_ML_CACHE_DIR/runtime-v1" -type f -name .complete -printf '%h/lib\n' -quit)"
+          test -d "$runtime_lib"
+          LD_LIBRARY_PATH="$runtime_lib" /usr/local/bin/nvrtc-probe

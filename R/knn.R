@@ -156,40 +156,45 @@ cuda_ml_knn_algo_ivfsq <- function(nlist, nprobe,
 #' @examples
 #'
 #' library(cuda.ml)
-#' library(MASS)
-#' library(magrittr)
-#' library(purrr)
 #'
-#' set.seed(0L)
+#' if (interactive() && has_cuML()) {
+#'   library(MASS)
+#'   library(magrittr)
+#'   library(purrr)
 #'
-#' centers <- list(c(3, 3), c(-3, -3), c(-3, 3))
+#'   set.seed(0L)
 #'
-#' gen_pts <- function(cluster_sz) {
-#'   pts <- centers %>%
-#'     map(~ mvrnorm(cluster_sz, mu = .x, Sigma = diag(2)))
+#'   centers <- list(c(3, 3), c(-3, -3), c(-3, 3))
 #'
-#'   rlang::exec(rbind, !!!pts) %>% as.matrix()
+#'   gen_pts <- function(cluster_sz) {
+#'     pts <- centers %>%
+#'       map(~ mvrnorm(cluster_sz, mu = .x, Sigma = diag(2)))
+#'
+#'     rlang::exec(rbind, !!!pts) %>% as.matrix()
+#'   }
+#'
+#'   gen_labels <- function(cluster_sz) {
+#'     seq_along(centers) %>%
+#'       sapply(function(x) rep(x, cluster_sz)) %>%
+#'       factor()
+#'   }
+#'
+#'   sample_cluster_sz <- 1000
+#'   sample_pts <- cbind(
+#'     gen_pts(sample_cluster_sz) %>% as.data.frame(),
+#'     label = gen_labels(sample_cluster_sz)
+#'   )
+#'
+#'   model <- cuda_ml_knn(
+#'     label ~ ., sample_pts, algo = "ivfflat", metric = "euclidean"
+#'   )
+#'
+#'   test_cluster_sz <- 10
+#'   test_pts <- gen_pts(test_cluster_sz) %>% as.data.frame()
+#'
+#'   predictions <- predict(model, test_pts)
+#'   print(predictions, n = 30)
 #' }
-#'
-#' gen_labels <- function(cluster_sz) {
-#'   seq_along(centers) %>%
-#'     sapply(function(x) rep(x, cluster_sz)) %>%
-#'     factor()
-#' }
-#'
-#' sample_cluster_sz <- 1000
-#' sample_pts <- cbind(
-#'   gen_pts(sample_cluster_sz) %>% as.data.frame(),
-#'   label = gen_labels(sample_cluster_sz)
-#' )
-#'
-#' model <- cuda_ml_knn(label ~ ., sample_pts, algo = "ivfflat", metric = "euclidean")
-#'
-#' test_cluster_sz <- 10
-#' test_pts <- gen_pts(test_cluster_sz) %>% as.data.frame()
-#'
-#' predictions <- predict(model, test_pts)
-#' print(predictions, n = 30)
 #' @importFrom ellipsis check_dots_used
 #' @export
 cuda_ml_knn <- function(x, ...) {

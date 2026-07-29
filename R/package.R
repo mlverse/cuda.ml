@@ -3,50 +3,100 @@
 #' This package provides a R interface for the RAPIDS cuML library.
 #'
 #' @section Installation:
-#' A functional GPU installation requires an NVIDIA GPU with a working driver,
-#' a CUDA Toolkit installation that provides \code{nvcc}, and normal R package
-#' build tools. During installation, \pkg{cuda.ml} first looks for RAPIDS cuML
-#' 24.0 or newer through \code{CUML_PREFIX} or \code{CUDA_PATH}. If none is
-#' found, it can bootstrap RAPIDS cuML from pip wheels with \code{uv} or
-#' Python/pip and link against the resulting local prefix.
+#' Install the functional Ubuntu 26.04 (Resolute) x86_64 binary from the
+#' mlverse \href{https://docs.r-universe.dev/install/binaries.html}{R-universe
+#' Linux binary repository}:
+#' \preformatted{
+#' linux_binary_repo <- function(universe) {
+#'   r_version <- paste(
+#'     R.version$major,
+#'     strsplit(R.version$minor, ".", fixed = TRUE)[[1L]][1L],
+#'     sep = "."
+#'   )
+#'   paste0(
+#'     "https://", universe,
+#'     ".r-universe.dev/bin/linux/resolute-",
+#'     R.version$arch,
+#'     "/",
+#'     r_version,
+#'     "/"
+#'   )
+#' }
 #'
-#' Builds without a visible GPU can be cross-compiled by setting
-#' \code{CUML_CUDA_ARCHITECTURES} explicitly. On machines without \code{nvcc},
-#' or without both a usable NVIDIA driver/GPU and an explicit target
-#' architecture, including CRAN check machines, \pkg{cuda.ml} may install in
-#' stub-only mode. In that mode \code{has_cuML()} returns \code{FALSE}, and
-#' cuML-backed algorithms are unavailable until the system prerequisites are
-#' installed and \pkg{cuda.ml} is reinstalled.
+#' repos <- c(
+#'   mlverse = linux_binary_repo("mlverse"),
+#'   CRAN = linux_binary_repo("cran")
+#' )
+#' stopifnot(
+#'   identical(unname(Sys.info()[["sysname"]]), "Linux"),
+#'   identical(R.version$arch, "x86_64"),
+#'   grepl(
+#'     "/bin/linux/resolute-x86_64/[0-9]+[.][0-9]+/$",
+#'     repos[["mlverse"]]
+#'   )
+#' )
 #'
-#' Useful environment variables include \code{CUDA_HOME}, \code{CUML_PREFIX},
-#' \code{CUML_BOOTSTRAP}, \code{CUML_BOOTSTRAP_CACHE}, and
-#' \code{CUML_CUDA_ARCHITECTURES}.
+#' install.packages(
+#'   "cuda.ml",
+#'   repos = repos
+#' )
+#' }
+#'
+#' The binary repository path selects the prebuilt tarball. Stock Linux R does
+#' not support \code{type = "binary"}, so leave \code{type} at its default.
+#' This binary also supports WSL2 running Ubuntu 26.04. Other Linux
+#' distributions are not yet supported by the managed binary.
+#'
+#' Loading \pkg{cuda.ml} does not require a GPU, load native code, create a
+#' cache, or contact the network. Call \code{\link{cuda_ml_install}()} to
+#' download and cache the pinned CUDA 13.2 and RAPIDS cuML 26.06 runtime while
+#' preparing a container or machine image. Otherwise, the first native
+#' operation prepares the same runtime automatically. The target machine
+#' supplies only a supported NVIDIA GPU and driver 580 or newer.
+#'
+#' CRAN builds are network-free, stub-capable source builds. A stub returns
+#' \code{FALSE} from \code{has_cuML()}; install the R-universe binary for a
+#' no-compiler setup. Local functional source builds must use matching CUDA
+#' 13.2 and RAPIDS cuML 26.06 toolchains. Set \code{CUDA_ML_CACHE_DIR} to
+#' override the default managed runtime cache.
 #'
 #' @author Yitao Li <yitao@rstudio.com>
 #' @import Rcpp
-#' @useDynLib cuda.ml, .registration = TRUE
+#' @rawNamespace
+#' if (FALSE) {
+#'   # Code-generation hint only; the false branch never loads the DLL.
+#'   useDynLib(cuda.ml, .registration = TRUE)
+#' }
 "_PACKAGE"
 
 .onLoad <- function(libname, pkgname) {
+  .cuda_ml_state$metadata <- cuda_ml_backend_metadata(pkgname)
+  delayedAssign(
+    "runtime_dir",
+    cuda_ml_prepare_runtime(),
+    eval.env = environment(),
+    assign.env = .cuda_ml_state
+  )
+  delayedAssign(
+    "dll",
+    cuda_ml_load_backend(.cuda_ml_state$runtime_dir),
+    eval.env = environment(),
+    assign.env = .cuda_ml_state
+  )
+
+  ns <- asNamespace(pkgname)
+  wrappers <- cuda_ml_native_wrappers(ns)
+  symbols <- unname(wrappers)
+  referenced <- cuda_ml_referenced_native_symbols(ns)
+  stopifnot(
+    length(symbols) > 0L,
+    !anyDuplicated(symbols),
+    setequal(symbols, referenced)
+  )
+  .cuda_ml_state$native_symbols <- symbols
+  cuda_ml_bind_native_symbols(ns, wrappers)
+
   register_rand_forest_model(pkgname)
   register_svm_model(pkgname)
   register_knn_model(pkgname)
-}
-
-.onAttach <- function(libname, pkgname) {
-  if (!has_cuML()) {
-    packageStartupMessage(
-      "
-      The current installation of {", pkgname, "} was built without a usable
-      RAPIDS cuML shared library.
-
-      To fix this, ensure `nvidia-smi` and `nvcc --version` both work, then
-      reinstall {", pkgname, "}. During installation, {", pkgname, "} can
-      bootstrap RAPIDS cuML from pip wheels with `uv` or Python/pip.
-
-      If RAPIDS cuML 24.0 or newer is already installed, set `CUML_PREFIX` to a
-      prefix containing include/cuml and lib/libcuml.so before reinstalling.\n\n
-      "
-    )
-  }
 }

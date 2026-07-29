@@ -1,9 +1,19 @@
 # cuda.ml (development version)
 
-- Updated the automatic RAPIDS bootstrap and native linkage for CUDA 13.3 and
-  RAPIDS cuML 26.6.
+- Added an Ubuntu 26.04 x86_64 backend distributed through R-universe. CUDA
+  13.2 and RAPIDS cuML 26.06 runtime libraries are provisioned lazily from a
+  verified, pinned cache rather than bundled in the R package.
 
-- Added GPU-less cross-compilation when `CUML_CUDA_ARCHITECTURES` is set.
+- Added `cuda_ml_install()` to prewarm the runtime without a GPU or driver.
+
+- Package loading is now silent and does not inspect the GPU, touch the runtime
+  cache, contact the network, or load the native backend.
+
+- `has_cuML()` now reports whether the installed package contains a functional
+  backend. CRAN builds use an explicit network-free stub backend.
+
+- Added GPU-less fat-binary compilation for compute capabilities 7.5, 8.0, 8.6,
+  8.9, 9.0, 10.0, and 12.0, with PTX forward compatibility from 12.0.
 
 # cuml 0.3.2
 

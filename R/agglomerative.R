@@ -43,27 +43,29 @@ agglomerative_clustering_match_metric <- function(metric = c("euclidean", "l1", 
 #' @examples
 #'
 #' library(cuda.ml)
-#' library(MASS)
-#' library(magrittr)
-#' library(purrr)
+#' if (interactive() && has_cuML()) {
+#'   library(MASS)
+#'   library(magrittr)
+#'   library(purrr)
 #'
-#' set.seed(0L)
+#'   set.seed(0L)
 #'
-#' gen_pts <- function() {
-#'   centers <- list(c(1000, 1000), c(-1000, -1000), c(-1000, 1000))
-#'   pts <- centers %>%
-#'     map(~ mvrnorm(50, mu = .x, Sigma = diag(2)))
+#'   gen_pts <- function() {
+#'     centers <- list(c(1000, 1000), c(-1000, -1000), c(-1000, 1000))
+#'     pts <- centers %>%
+#'       map(~ mvrnorm(50, mu = .x, Sigma = diag(2)))
 #'
-#'   rlang::exec(rbind, !!!pts) %>% as.matrix()
+#'     rlang::exec(rbind, !!!pts) %>% as.matrix()
+#'   }
+#'
+#'   clust <- cuda_ml_agglomerative_clustering(
+#'     x = gen_pts(),
+#'     metric = "euclidean",
+#'     n_clusters = 3L
+#'   )
+#'
+#'   print(clust$labels)
 #' }
-#'
-#' clust <- cuda_ml_agglomerative_clustering(
-#'   x = gen_pts(),
-#'   metric = "euclidean",
-#'   n_clusters = 3L
-#' )
-#'
-#' print(clust$labels)
 #' @export
 cuda_ml_agglomerative_clustering <- function(x, n_clusters = 2L,
                                              metric = c("euclidean", "l1", "l2", "manhattan", "cosine"),

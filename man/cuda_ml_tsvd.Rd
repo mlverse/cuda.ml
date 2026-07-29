@@ -61,6 +61,8 @@ Dimensionality reduction using Truncated Singular Value Decomposition.
 \examples{
 library(cuda.ml)
 
-iris.tsvd <- cuda_ml_tsvd(iris[1:4], n_components = 2)
-print(iris.tsvd)
+if (interactive() && has_cuML()) {
+  iris.tsvd <- cuda_ml_tsvd(iris[1:4], n_components = 2)
+  print(iris.tsvd)
+}
 }

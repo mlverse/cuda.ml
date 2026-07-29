@@ -1,3 +1,5 @@
+skip_if_not(run_gpu_tests, "requires the GPU test environment")
+
 context("Least Absolute Shrinkage and Selection Operator")
 
 test_that("LASSO regressor works as expected", {

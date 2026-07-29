@@ -36,20 +36,22 @@ ols_match_method <- function(method = c("svd", "eig", "qr")) {
 #'
 #' library(cuda.ml)
 #'
-#' model <- cuda_ml_ols(formula = mpg ~ ., data = mtcars, method = "qr")
-#' predictions <- predict(model, mtcars[names(mtcars) != "mpg"])
+#' if (interactive() && has_cuML()) {
+#'   model <- cuda_ml_ols(formula = mpg ~ ., data = mtcars, method = "qr")
+#'   predictions <- predict(model, mtcars[names(mtcars) != "mpg"])
 #'
-#' # predictions will be comparable to those from a `stats::lm` model
-#' lm_model <- stats::lm(formula = mpg ~ ., data = mtcars, method = "qr")
-#' lm_predictions <- predict(lm_model, mtcars[names(mtcars) != "mpg"])
+#'   # predictions will be comparable to those from a `stats::lm` model
+#'   lm_model <- stats::lm(formula = mpg ~ ., data = mtcars, method = "qr")
+#'   lm_predictions <- predict(lm_model, mtcars[names(mtcars) != "mpg"])
 #'
-#' print(
-#'   all.equal(
-#'     as.numeric(lm_predictions),
-#'     predictions$.pred,
-#'     tolerance = 1e-3
+#'   print(
+#'     all.equal(
+#'       as.numeric(lm_predictions),
+#'       predictions$.pred,
+#'       tolerance = 1e-3
+#'     )
 #'   )
-#' )
+#' }
 #' @importFrom ellipsis check_dots_used
 #' @export
 cuda_ml_ols <- function(x, ...) {

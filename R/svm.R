@@ -68,25 +68,27 @@ svm_match_kernel_type <- function(kernel = c("rbf", "tanh", "polynomial", "linea
 #'
 #' library(cuda.ml)
 #'
-#' # Classification
+#' if (interactive() && has_cuML()) {
+#'   # Classification
 #'
-#' model <- cuda_ml_svm(
-#'   formula = Species ~ .,
-#'   data = iris,
-#'   kernel = "rbf"
-#' )
+#'   model <- cuda_ml_svm(
+#'     formula = Species ~ .,
+#'     data = iris,
+#'     kernel = "rbf"
+#'   )
 #'
-#' predictions <- predict(model, iris[names(iris) != "Species"])
+#'   predictions <- predict(model, iris[names(iris) != "Species"])
 #'
-#' # Regression
+#'   # Regression
 #'
-#' model <- cuda_ml_svm(
-#'   formula = mpg ~ .,
-#'   data = mtcars,
-#'   kernel = "rbf"
-#' )
+#'   model <- cuda_ml_svm(
+#'     formula = mpg ~ .,
+#'     data = mtcars,
+#'     kernel = "rbf"
+#'   )
 #'
-#' predictions <- predict(model, mtcars)
+#'   predictions <- predict(model, mtcars)
+#' }
 #' @importFrom ellipsis check_dots_used
 #' @export
 cuda_ml_svm <- function(x, ...) {

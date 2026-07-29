@@ -92,16 +92,18 @@ new_umap_model <- function(model) {
 #' @examples
 #' library(cuda.ml)
 #'
-#' model <- cuda_ml_umap(
-#'   x = iris[1:4],
-#'   y = iris[[5]],
-#'   n_components = 2,
-#'   n_epochs = 200,
-#'   transform_input = TRUE
-#' )
+#' if (interactive() && has_cuML()) {
+#'   model <- cuda_ml_umap(
+#'     x = iris[1:4],
+#'     y = iris[[5]],
+#'     n_components = 2,
+#'     n_epochs = 200,
+#'     transform_input = TRUE
+#'   )
 #'
-#' set.seed(0L)
-#' print(kmeans(model$transformed, iter.max = 100, centers = 3))
+#'   set.seed(0L)
+#'   print(kmeans(model$transformed, iter.max = 100, centers = 3))
+#' }
 #' @export
 cuda_ml_umap <- function(x, y = NULL, n_components = 2L, n_neighbors = 15L,
                          n_epochs = 500L, learning_rate = 1.0,

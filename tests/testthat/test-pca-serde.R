@@ -1,3 +1,5 @@
+skip_if_not(run_gpu_tests, "requires the GPU test environment")
+
 context("(de)serialization of PCA models")
 
 test_that("PCA models can be serialized and unserialized correctly", {

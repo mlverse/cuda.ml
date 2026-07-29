@@ -2,28 +2,22 @@
 % Please edit documentation in R/cuml_utils.R
 \name{has_cuML}
 \alias{has_cuML}
-\title{Determine whether \{cuda.ml\} was linked to a valid version of the RAPIDS cuML
-shared library.}
+\title{Determine whether this \{cuda.ml\} build contains a cuML backend}
 \usage{
 has_cuML()
 }
 \value{
-A logical value indicating whether the current installation \{cuda.ml\}
-  was linked to a valid version of the RAPIDS cuML shared library.
+A logical value indicating whether the current \{cuda.ml\}
+  installation contains a functional RAPIDS cuML backend.
 }
 \description{
-Determine whether \{cuda.ml\} was linked to a valid version of the RAPIDS cuML
-shared library.
+Determine whether this \{cuda.ml\} build contains a cuML backend
 }
 \details{
-If this returns \code{FALSE}, \pkg{cuda.ml} was installed in stub-only mode.
-On a GPU machine, verify that \code{nvidia-smi} and \code{nvcc --version}
-both work, then reinstall \pkg{cuda.ml}. To cross-compile without a visible
-GPU, set \code{CUML_CUDA_ARCHITECTURES}. During installation,
-\pkg{cuda.ml} can bootstrap RAPIDS cuML from pip wheels with \code{uv} or
-Python/pip. If RAPIDS cuML 24.0 or newer is already installed, set
-\code{CUML_PREFIX} to a prefix containing \code{include/cuml} and
-\code{lib/libcuml.so} before reinstalling.
+This is a pure build-capability query. It does not inspect or modify the
+managed runtime cache, contact the network, load native code, or check for
+a GPU. A functional binary returns \code{TRUE} before
+\code{\link{cuda_ml_install}()} has prepared its runtime.
 }
 \examples{
 
@@ -31,8 +25,7 @@ library(cuda.ml)
 
 if (!has_cuML()) {
   warning(
-    "This installation was built without RAPIDS cuML. Verify `nvidia-smi` ",
-    "and `nvcc --version`, then reinstall {cuda.ml}."
+    "Install the functional cuda.ml binary from the mlverse R-universe."
   )
 }
 }

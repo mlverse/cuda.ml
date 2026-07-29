@@ -169,23 +169,25 @@ Train a random forest model for classification or regression tasks.
 \examples{
 library(cuda.ml)
 
-# Classification
+if (interactive() && has_cuML()) {
+  # Classification
 
-model <- cuda_ml_rand_forest(
-  formula = Species ~ .,
-  data = iris,
-  trees = 100
-)
+  model <- cuda_ml_rand_forest(
+    formula = Species ~ .,
+    data = iris,
+    trees = 100
+  )
 
-predictions <- predict(model, iris[names(iris) != "Species"])
+  predictions <- predict(model, iris[names(iris) != "Species"])
 
-# Regression
+  # Regression
 
-model <- cuda_ml_rand_forest(
-  formula = mpg ~ .,
-  data = mtcars,
-  trees = 100
-)
+  model <- cuda_ml_rand_forest(
+    formula = mpg ~ .,
+    data = mtcars,
+    trees = 100
+  )
 
-predictions <- predict(model, mtcars[names(mtcars) != "mpg"])
+  predictions <- predict(model, mtcars[names(mtcars) != "mpg"])
+}
 }

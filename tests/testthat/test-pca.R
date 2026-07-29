@@ -1,3 +1,5 @@
+skip_if_not(run_gpu_tests, "requires the GPU test environment")
+
 context("Principal Component Analysis")
 
 cuda_ml_pca_model <- cuda_ml_pca(

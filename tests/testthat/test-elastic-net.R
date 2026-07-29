@@ -1,3 +1,5 @@
+skip_if_not(run_gpu_tests, "requires the GPU test environment")
+
 context("Elastic Net")
 
 test_that("Elastic net regressor works as expected", {

@@ -126,23 +126,25 @@ logistic_reg_build_sample_weight <- function(sample_weight,
 #' @examples
 #' library(cuda.ml)
 #'
-#' X <- scale(as.matrix(iris[names(iris) != "Species"]))
-#' y <- iris$Species
+#' if (interactive() && has_cuML()) {
+#'   X <- scale(as.matrix(iris[names(iris) != "Species"]))
+#'   y <- iris$Species
 #'
-#' model <- cuda_ml_logistic_reg(X, y, max_iters = 100)
-#' predictions <- predict(model, X)
+#'   model <- cuda_ml_logistic_reg(X, y, max_iters = 100)
+#'   predictions <- predict(model, X)
 #'
-#' # NOTE: if we were only performing binary classifications (e.g., by having
-#' # `iris_data <- iris %>% mutate(Species = (Species == "setosa"))`), then the
-#' # above would be conceptually equivalent to the following:
-#' #
-#' # iris_data <- iris %>% mutate(Species = (Species == "setosa"))
-#' # model <- glm(
-#' #   Species ~ ., data = iris_data, family = binomial(link = "logit"),
-#' #   control = glm.control(epsilon = 1e-8, maxit = 100)
-#' # )
-#' #
-#' # predict(model, iris_data, type = "response")
+#'   # NOTE: if we were only performing binary classifications (e.g., by having
+#'   # `iris_data <- iris %>% mutate(Species = (Species == "setosa"))`), then the
+#'   # above would be conceptually equivalent to the following:
+#'   #
+#'   # iris_data <- iris %>% mutate(Species = (Species == "setosa"))
+#'   # model <- glm(
+#'   #   Species ~ ., data = iris_data, family = binomial(link = "logit"),
+#'   #   control = glm.control(epsilon = 1e-8, maxit = 100)
+#'   # )
+#'   #
+#'   # predict(model, iris_data, type = "response")
+#' }
 #' @importFrom ellipsis check_dots_used
 #' @export
 cuda_ml_logistic_reg <- function(x, ...) {

@@ -1,6 +1,11 @@
-library(magrittr, warn.conflicts = FALSE)
-library(reticulate)
-library(rlang, warn.conflicts = FALSE)
+run_gpu_tests <- identical(Sys.getenv("CUDA_ML_GPU_TESTS"), "true") &&
+  has_cuML()
+
+if (run_gpu_tests) {
+  library(magrittr, warn.conflicts = FALSE)
+  library(reticulate)
+  library(rlang, warn.conflicts = FALSE)
+}
 
 expect_libcuml <- function() {
   if (!has_cuML()) {
@@ -13,23 +18,25 @@ expect_libcuml <- function() {
   }
 }
 
-expect_libcuml()
+if (run_gpu_tests) {
+  expect_libcuml()
 
-reticulate::py_require("scikit-learn")
-sklearn <- reticulate::import("sklearn")
-sklearn_iris_dataset <- list(
-  data = iris[, names(iris) != "Species"] %>%
-    unname() %>%
-    as.matrix(),
-  target = as.integer(iris[["Species"]])
-)
-sklearn_mtcars_dataset <- list(
-  data = mtcars[, names(mtcars) != "mpg"] %>%
-    data.frame(row.names = NULL) %>%
-    unname() %>%
-    as.matrix(),
-  target = mtcars[["mpg"]]
-)
+  reticulate::py_require("scikit-learn")
+  sklearn <- reticulate::import("sklearn")
+  sklearn_iris_dataset <- list(
+    data = iris[, names(iris) != "Species"] %>%
+      unname() %>%
+      as.matrix(),
+    target = as.integer(iris[["Species"]])
+  )
+  sklearn_mtcars_dataset <- list(
+    data = mtcars[, names(mtcars) != "mpg"] %>%
+      data.frame(row.names = NULL) %>%
+      unname() %>%
+      as.matrix(),
+    target = mtcars[["mpg"]]
+  )
+}
 
 #' Sort matrix rows by all columns or by a subset of columns.
 #'
