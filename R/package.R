@@ -49,18 +49,22 @@
 #'
 #' Loading \pkg{cuda.ml} does not require a GPU, load native code, create a
 #' cache, or contact the network. Call \code{\link{cuda_ml_install}()} to
-#' download and cache the pinned CUDA 13.2.2, RAPIDS cuML and nvForest 26.06,
-#' and Treelite 4.7.0 runtime while preparing a container or machine image.
-#' Native operations fail with an installation instruction until that explicit
-#' setup step has completed. GPU operations then require a supported NVIDIA GPU
-#' and driver 580 or newer; nvForest CPU inference does not.
+#' download and cache the pinned CUDA 13.2.2 and RAPIDS cuML and nvForest 26.06
+#' runtime while preparing a container or machine image. Treelite 4.7.0 is
+#' linked statically into the full backend and is not a runtime download. Native
+#' operations fail with an installation instruction until that explicit setup
+#' step has completed. GPU operations then require a supported NVIDIA GPU and
+#' driver 580 or newer; nvForest CPU inference does not.
 #'
 #' CRAN builds are network-free source stubs. A stub reports
 #' \code{backend = "stub"} from \code{\link{cuda_ml_backend_info}()}; install
 #' the R-universe binary for a no-compiler setup. Local functional source builds
-#' require exact CUDA 13.2.2, GNU C++ 14 or newer, cuML and nvForest 26.06, and
-#' Treelite 4.7.0 inputs. Set \code{CUDA_ML_CACHE_DIR} to override the default
-#' managed runtime cache.
+#' require exact CUDA 13.2.2, GNU C++ 14 or newer, cuML and nvForest 26.06,
+#' Treelite 4.7.0 headers, and a position-independent
+#' \code{lib/libtreelite_static.a} built with the default libstdc++ ABI and
+#' OpenMP disabled.
+#' Local builds do not provision Treelite. Set \code{CUDA_ML_CACHE_DIR} to
+#' override the default managed runtime cache.
 #'
 #' @author Yitao Li <yitao@rstudio.com>
 #' @import Rcpp

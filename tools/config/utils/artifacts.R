@@ -68,9 +68,12 @@ cuml_artifact_lock <- function(platform = "ubuntu-26.04-x86_64") {
     nrow(artifacts) > 0L,
     !anyDuplicated(artifacts$component),
     all(grepl("^[a-z0-9-]+$", artifacts$component)),
-    all(artifacts$archive %in% c("zip", "tar.gz")),
+    all(artifacts$archive %in% c("zip", "tar.gz", "tar.xz")),
     all(basename(artifacts$filename) == artifacts$filename),
-    all(startsWith(artifacts$url, "https://files.pythonhosted.org/")),
+    all(
+      startsWith(artifacts$url, "https://files.pythonhosted.org/") |
+        startsWith(artifacts$url, "https://github.com/")
+    ),
     all(grepl("^[[:xdigit:]]{64}$", artifacts$sha256)),
     all(artifacts$size > 0)
   )
@@ -86,8 +89,13 @@ cuml_artifact_lock <- function(platform = "ubuntu-26.04-x86_64") {
       package_version(version("libnvforest")),
       package_version(unname(metadata[["nvForest"]]))
     ),
-    identical(version("treelite"), unname(metadata[["Treelite"]])),
-    identical(version("treelite-headers"), unname(metadata[["Treelite"]])),
+    identical(version("treelite-source"), unname(metadata[["Treelite"]])),
+    identical(
+      version("rapidjson-source"),
+      "ab1842a2dae061284c0a62dca1cc6d5e7e37e346"
+    ),
+    identical(version("nlohmann-json-source"), "3.11.3"),
+    identical(version("mdspan-source"), "0.6.0"),
     identical(version("cccl"), unname(metadata[["CUDA-CCCL"]])),
     identical(version("nvcc"), unname(metadata[["CUDA-Component"]])),
     identical(version("nvrtc"), unname(metadata[["CUDA-Component"]])),
@@ -131,7 +139,6 @@ cuml_generate_runtime_lock <- function() {
       paste0("CUDA-Toolkit: ", cuml_managed_cuda_toolkit_version()),
       paste0("RAPIDS: ", cuml_managed_rapids_version()),
       paste0("nvForest: ", cuml_managed_nvforest_version()),
-      paste0("Treelite: ", cuml_managed_treelite_version()),
       paste0("Platform: ", cuml_managed_platform()),
       paste0("Minimum-Driver: ", cuml_managed_minimum_driver()),
       paste0(

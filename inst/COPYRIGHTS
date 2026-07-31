@@ -1,0 +1,19 @@
+cuda.ml is Copyright (c) 2021 cuda.ml authors and is distributed under the
+MIT license in LICENSE.
+
+The managed R-universe build statically links Treelite 4.7.0 into the cuda.ml
+backend. Treelite is part of the installed full backend; it is not downloaded
+by cuda_ml_install(). The CRAN/check stub does not contain the compiled backend.
+
+The managed builder uses the following source-only dependencies while compiling
+Treelite. Their header code may be incorporated into the static backend, but
+they are not installed or downloaded as separate runtime libraries.
+
+Component       Version or revision                              License file
+Treelite        4.7.0                                            third-party/treelite-LICENSE
+RapidJSON       ab1842a2dae061284c0a62dca1cc6d5e7e37e346         third-party/rapidjson-LICENSE
+nlohmann/json   3.11.3                                           third-party/nlohmann-json-LICENSE
+mdspan          0.6.0                                            third-party/mdspan-LICENSE
+
+The license files are copied from the exact source artifacts used by the
+Treelite 4.7.0 build.

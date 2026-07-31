@@ -300,7 +300,7 @@
 <span>  repos <span class="op">=</span> <span class="va">repos</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>The binary repository path selects the prebuilt tarball. Stock Linux R does not support <code>type = "binary"</code>, so leave <code>type</code> at its default. The <code><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot()</a></code> check prevents accidentally installing from the source endpoint or an unsupported architecture.</p>
-<p>The binary contains a precompiled {cuda.ml} backend, but not the CUDA and RAPIDS runtime libraries. Loading the package is silent and side-effect free:</p>
+<p>The binary contains a precompiled {cuda.ml} backend with Treelite 4.7.0 linked statically, but not the CUDA and RAPIDS runtime libraries. Loading the package is silent and side-effect free:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span></span>
 <span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cuda_ml_backend_info.html">cuda_ml_backend_info</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -310,7 +310,7 @@
 <div class="section level3">
 <h3 id="runtime-provisioning">Runtime provisioning<a class="anchor" aria-label="anchor" href="#runtime-provisioning"></a>
 </h3>
-<p>Prepare the exact CUDA 13.2.2, RAPIDS cuML and nvForest 26.06, and Treelite 4.7.0 runtime required by the binary before fitting or predicting. The current lock downloads about 1.6 GiB, so installation can take several minutes:</p>
+<p>Prepare the exact CUDA 13.2.2 and RAPIDS cuML and nvForest 26.06 runtime required by the binary before fitting or predicting. The current runtime lock downloads about 1.6 GiB, so installation can take several minutes:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">cuda.ml</span><span class="fu">::</span><span class="fu"><a href="reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><code><a href="reference/cuda_ml_install.html">cuda_ml_install()</a></code> does not require a GPU or NVIDIA driver, and repeated calls reuse the completed cache. It does not load the backend or initialize CUDA. Model operations do not provision the runtime implicitly; when the cache is absent, they report the installation command. After provisioning, GPU-backed operations require only a supported NVIDIA GPU and driver. nvForest CPU inference does not require a GPU or driver.</p>
@@ -329,7 +329,7 @@
 <h3 id="cran-and-source-builds">CRAN and source builds<a class="anchor" aria-label="anchor" href="#cran-and-source-builds"></a>
 </h3>
 <p>CRAN checks are network-free and install an explicit stub backend. <code><a href="reference/cuda_ml_backend_info.html">cuda_ml_backend_info()</a></code> reports <code>backend = "stub"</code> for that build, and <code><a href="reference/cuda_ml_install.html">cuda_ml_install()</a></code> directs users to the R-universe binary. Install from R-universe when a functional binary without local compilation is required.</p>
-<p>Advanced local source builds remain available. Set <code>CUDA_ML_BUILD_MODE=local</code>, supply CUDA Toolkit 13.2.2 through <code>CUDA_HOME</code>, and supply a prefix containing cuML and nvForest 26.06 plus Treelite 4.7.0 through <code>CUML_PREFIX</code>. Set <code>CUML_CUDA_ARCHITECTURES</code> explicitly to the CMake CUDA architectures to compile, and set <code>CUDA_ML_CXX</code> to GNU C++ 14 or newer. The same compiler is used for C++ sources and nvcc host compilation. Missing inputs and other library versions fail at configuration time.</p>
+<p>Advanced local source builds remain available. Set <code>CUDA_ML_BUILD_MODE=local</code>, supply CUDA Toolkit 13.2.2 through <code>CUDA_HOME</code>, and supply a prefix through <code>CUML_PREFIX</code> containing cuML and nvForest 26.06, Treelite 4.7.0 headers, and <code>lib/libtreelite_static.a</code>. Build Treelite as position-independent code with its default libstdc++ ABI and with OpenMP disabled. Local builds never download or provision Treelite. Set <code>CUML_CUDA_ARCHITECTURES</code> explicitly to the CMake CUDA architectures to compile, and set <code>CUDA_ML_CXX</code> to GNU C++ 14 or newer. The same compiler is used for C++ sources and nvcc host compilation. Missing inputs and other library versions fail at configuration time.</p>
 </div>
 <div class="section level3">
 <h3 id="development-version">Development version<a class="anchor" aria-label="anchor" href="#development-version"></a>

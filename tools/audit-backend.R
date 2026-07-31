@@ -162,10 +162,29 @@ stopifnot(
     c(
       "libcuml.so",
       expected_cudart_soname,
-      "libnvforest++.so",
-      "libtreelite.so"
+      "libnvforest++.so"
     )
   )
+)
+
+dynamic_symbols <- system2(
+  "nm",
+  c("-D", "--defined-only", shQuote(backend)),
+  stdout = TRUE,
+  stderr = TRUE
+)
+dynamic_symbol_names <- sub("^.*[[:space:]]", "", dynamic_symbols)
+treelite_symbols <- grepl(
+  paste0(
+    "^(Treelite|TREELITE_|_Z[0-9]+Treelite|_ZNK?8treelite|",
+    "_ZT[ISV]N8treelite|_Z(GVZN|THN|TWN)8treelite|",
+    "_ZT[hv].*N8treelite)"
+  ),
+  dynamic_symbol_names
+)
+stopifnot(
+  is.null(attr(dynamic_symbols, "status")),
+  !any(treelite_symbols)
 )
 
 message("cuda.ml backend audit passed")

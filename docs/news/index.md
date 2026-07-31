@@ -6,8 +6,9 @@ This is a breaking release targeting one backend: CUDA Toolkit 13.2.2,
 RAPIDS cuML and nvForest 26.06, and Treelite 4.7.0.
 
 - Added an Ubuntu 26.04 x86_64 backend distributed through R-universe.
-  The package contains the compiled cuda.ml backend but not the
-  approximately 1.6 GiB CUDA and RAPIDS runtime.
+  The package contains the compiled cuda.ml backend with Treelite 4.7.0
+  linked statically, but not the approximately 1.6 GiB CUDA and RAPIDS
+  runtime.
 
 - Added explicit
   [`cuda_ml_install()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_install.md)

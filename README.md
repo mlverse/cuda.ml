@@ -217,9 +217,9 @@ does not support `type = "binary"`, so leave `type` at its default. The
 `stopifnot()` check prevents accidentally installing from the source
 endpoint or an unsupported architecture.
 
-The binary contains a precompiled {cuda.ml} backend, but not the CUDA
-and RAPIDS runtime libraries. Loading the package is silent and
-side-effect free:
+The binary contains a precompiled {cuda.ml} backend with Treelite 4.7.0
+linked statically, but not the CUDA and RAPIDS runtime libraries.
+Loading the package is silent and side-effect free:
 
 ``` r
 library(cuda.ml)
@@ -236,10 +236,10 @@ to the CRAN-compatible source stub.
 
 ### Runtime provisioning
 
-Prepare the exact CUDA 13.2.2, RAPIDS cuML and nvForest 26.06, and
-Treelite 4.7.0 runtime required by the binary before fitting or
-predicting. The current lock downloads about 1.6 GiB, so installation
-can take several minutes:
+Prepare the exact CUDA 13.2.2 and RAPIDS cuML and nvForest 26.06 runtime
+required by the binary before fitting or predicting. The current
+runtime lock downloads about 1.6 GiB, so installation can take several
+minutes:
 
 ``` r
 cuda.ml::cuda_ml_install()
@@ -286,8 +286,11 @@ required.
 
 Advanced local source builds remain available. Set
 `CUDA_ML_BUILD_MODE=local`, supply CUDA Toolkit 13.2.2 through
-`CUDA_HOME`, and supply a prefix containing cuML and nvForest 26.06 plus
-Treelite 4.7.0 through `CUML_PREFIX`. Set `CUML_CUDA_ARCHITECTURES`
+`CUDA_HOME`, and supply a prefix through `CUML_PREFIX` containing cuML
+and nvForest 26.06, Treelite 4.7.0 headers, and
+`lib/libtreelite_static.a`. Build Treelite as position-independent code
+with its default libstdc++ ABI and with OpenMP disabled. Local builds
+never download or provision Treelite. Set `CUML_CUDA_ARCHITECTURES`
 explicitly to the CMake CUDA architectures to compile, and set
 `CUDA_ML_CXX` to GNU C++ 14 or newer. The same compiler is used for C++
 sources and nvcc host compilation. Missing inputs and other library

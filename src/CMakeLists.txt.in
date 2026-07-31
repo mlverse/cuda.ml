@@ -44,14 +44,9 @@ if(DEFINED CUML_LIB_DIR)
     if(NOT NVFOREST_LIBRARY)
       message(FATAL_ERROR "libnvforest++.so was not found in ${CUML_LIB_DIR}.")
     endif()
-    find_library(
-      TREELITE_LIBRARY
-      NAMES treelite
-      PATHS ${CUML_LIB_DIR}
-      NO_DEFAULT_PATH
-    )
-    if(NOT TREELITE_LIBRARY)
-      message(FATAL_ERROR "libtreelite.so was not found in ${CUML_LIB_DIR}.")
+    set(TREELITE_STATIC_LIBRARY "${CUML_LIB_DIR}/libtreelite_static.a")
+    if(NOT EXISTS "${TREELITE_STATIC_LIBRARY}")
+      message(FATAL_ERROR "libtreelite_static.a was not found in ${CUML_LIB_DIR}.")
     endif()
 else()
     message(FATAL_ERROR "CUML_LIB_DIR not specified.")
@@ -123,13 +118,18 @@ add_library(
   svm_serde.cu
   tsne.cpp
   tsne.cu
-  treelite_bridge.cpp
   tsvd.cpp
   tsvd.cu
   umap.cpp
   umap.cu
   # Rcpp exports
   RcppExports.cpp
+)
+
+# nvForest's importer instantiates Treelite templates in this translation unit.
+set_source_files_properties(
+  nvforest.cu
+  PROPERTIES COMPILE_OPTIONS "-Xcompiler=-fvisibility=hidden"
 )
 
 # Need to set linker language to CUDA to link the CUDA Runtime
@@ -153,12 +153,20 @@ target_compile_definitions(
   RMM_LOG_ACTIVE_LEVEL=RAPIDS_LOGGER_LOG_LEVEL_OFF
 )
 
+# Treelite is a private implementation detail. Its C API explicitly requests
+# default visibility, so also localize every symbol supplied by its archive.
+target_link_options(
+  cuda.ml
+  PRIVATE
+  "LINKER:--exclude-libs,libtreelite_static.a"
+)
+
 target_link_libraries(
   cuda.ml
   PRIVATE
   ${CUML_LIBRARY}
   ${NVFOREST_LIBRARY}
-  ${TREELITE_LIBRARY}
+  ${TREELITE_STATIC_LIBRARY}
   cublas
   cusolver
   cudart

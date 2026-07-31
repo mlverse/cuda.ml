@@ -198,11 +198,11 @@ if (identical(build_mode, "managed")) {
   if (!cuml_ubuntu_2604_x86_64()) {
     stop2("Managed cuda.ml builds require Ubuntu 26.04 x86_64.")
   }
-  managed_build <- bootstrap_managed_build_from_artifacts()
+  cxx <- find_cuda_ml_cxx("/usr/bin/g++")
+  managed_build <- bootstrap_managed_build_from_artifacts(cxx)
   nvcc <- managed_build$nvcc
   cuml_prefix <- managed_build$prefix
   cuda_architectures <- cuml_managed_cuda_architectures()
-  cxx <- find_cuda_ml_cxx("/usr/bin/g++")
 } else if (identical(build_mode, "local")) {
   if (!cuml_ubuntu_2604_x86_64()) {
     stop2("Functional local cuda.ml builds require Ubuntu 26.04 x86_64.")
@@ -237,7 +237,10 @@ if (identical(build_mode, "managed")) {
   if (!check_functional_prefix(cuml_prefix)) {
     stop2(
       "CUML_PREFIX does not contain the exact cuML, nvForest, and Treelite prefix.",
-      "Use CUDA 13.2.2, RAPIDS 26.06, nvForest 26.06.0, and Treelite 4.7.0."
+      paste0(
+        "Use CUDA 13.2.2, RAPIDS 26.06, nvForest 26.06.0, and the ",
+        "Treelite 4.7.0 static library."
+      )
     )
   }
 }

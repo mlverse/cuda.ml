@@ -211,7 +211,7 @@ jobs:
             identical(info$cuda_version, "13.2.2"),
             identical(info$rapids_version, "26.06"),
             identical(info$nvforest_version, "26.06.0"),
-            identical(info$treelite_version, "4.6.1")
+            identical(info$treelite_version, "4.7.0")
           )
 
       # NVRTC is part of the managed cache. Compile PTX to prove it works

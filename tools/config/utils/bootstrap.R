@@ -144,30 +144,98 @@ create_shared_library_linker_names <- function(lib_dir) {
   invisible(TRUE)
 }
 
-write_treelite_version_header <- function(prefix) {
-  version <- strsplit(cuml_managed_treelite_version(), ".", fixed = TRUE)[[1L]]
-  stopifnot(length(version) == 3L, all(grepl("^[0-9]+$", version)))
-  writeLines(
-    c(
-      "#ifndef TREELITE_VERSION_H_",
-      "#define TREELITE_VERSION_H_",
-      "",
-      paste0("#define TREELITE_VER_MAJOR ", version[[1L]]),
-      paste0("#define TREELITE_VER_MINOR ", version[[2L]]),
-      paste0("#define TREELITE_VER_PATCH ", version[[3L]]),
-      paste0(
-        "#define TREELITE_VERSION_STR \"",
-        paste(version, collapse = "."),
-        "\""
-      ),
-      "",
-      "#endif  // TREELITE_VERSION_H_"
-    ),
-    file.path(prefix, "include", "treelite", "version.h")
+build_treelite_static <- function(target, prefix, cxx) {
+  stopifnot(
+    dir.exists(target),
+    dir.exists(prefix),
+    dir.exists(file.path(prefix, "include")),
+    dir.exists(file.path(prefix, "lib")),
+    file.exists(cxx),
+    identical(cuml_managed_treelite_version(), "4.7.0")
   )
+
+  treelite_source <- file.path(target, "treelite-4.7.0", "cpp_src")
+  rapidjson_source <- file.path(
+    target,
+    "rapidjson-ab1842a2dae061284c0a62dca1cc6d5e7e37e346"
+  )
+  nlohmann_json_source <- file.path(target, "json")
+  mdspan_source <- file.path(target, "mdspan-mdspan-0.6.0")
+  sources <- c(
+    treelite_source,
+    rapidjson_source,
+    nlohmann_json_source,
+    mdspan_source
+  )
+  if (any(!dir.exists(sources))) {
+    stop2("The locked Treelite source artifact layout is incomplete.")
+  }
+
+  build <- file.path(target, "treelite-static-build")
+  cmake <- find_cmake()
+  configure_args <- c(
+    "-S",
+    treelite_source,
+    "-B",
+    build,
+    "-DCMAKE_BUILD_TYPE=Release",
+    paste0("-DCMAKE_CXX_COMPILER=", cxx),
+    "-DTreelite_BUILD_STATIC_LIBS=ON",
+    "-DUSE_OPENMP=OFF",
+    "-DBUILD_CPP_TEST=OFF",
+    "-DDETECT_CONDA_ENV=OFF",
+    "-DHIDE_CXX_SYMBOLS=ON",
+    "-DCMAKE_DISABLE_FIND_PACKAGE_RapidJSON=ON",
+    "-DCMAKE_DISABLE_FIND_PACKAGE_nlohmann_json=ON",
+    "-DCMAKE_DISABLE_FIND_PACKAGE_mdspan=ON",
+    "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
+    paste0("-DFETCHCONTENT_SOURCE_DIR_RAPIDJSON=", rapidjson_source),
+    paste0(
+      "-DFETCHCONTENT_SOURCE_DIR_NLOHMANN_JSON=",
+      nlohmann_json_source
+    ),
+    paste0("-DFETCHCONTENT_SOURCE_DIR_MDSPAN=", mdspan_source)
+  )
+  status <- system2(cmake, shQuote(configure_args))
+  if (!identical(status, 0L)) {
+    stop2("Failed to configure the locked Treelite static build.")
+  }
+
+  status <- system2(
+    cmake,
+    shQuote(c("--build", build, "--target", "treelite_static", "--parallel"))
+  )
+  if (!identical(status, 0L)) {
+    stop2("Failed to build the locked Treelite static library.")
+  }
+
+  copy_required_dir(
+    file.path(treelite_source, "include", "treelite"),
+    file.path(prefix, "include", "treelite")
+  )
+  version_header <- file.path(build, "include", "treelite", "version.h")
+  static_library <- file.path(build, "libtreelite_static.a")
+  if (
+    !file.exists(version_header) ||
+      !file.copy(
+        version_header,
+        file.path(prefix, "include", "treelite", "version.h"),
+        overwrite = TRUE
+      ) ||
+      !file.exists(static_library) ||
+      !file.copy(
+        static_library,
+        file.path(prefix, "lib", "libtreelite_static.a"),
+        overwrite = TRUE
+      )
+  ) {
+    stop2("Failed to install the locked Treelite static build.")
+  }
+
+  invisible(TRUE)
 }
 
-extract_cuml_artifact_prefix <- function(target, prefix) {
+extract_cuml_artifact_prefix <- function(target, prefix, cxx) {
   unlink(prefix, recursive = TRUE, force = TRUE)
   dir.create(
     file.path(prefix, "include"),
@@ -225,25 +293,7 @@ extract_cuml_artifact_prefix <- function(target, prefix) {
     file.path(target, "libcuml_cu13.libs"),
     file.path(prefix, "lib")
   )
-  copy_required_dir(
-    file.path(target, "treelite", "lib"),
-    file.path(prefix, "lib")
-  )
-  copy_required_dir(
-    file.path(target, "treelite.libs"),
-    file.path(prefix, "lib")
-  )
-  copy_required_dir(
-    file.path(
-      target,
-      paste0("treelite-", cuml_managed_treelite_version()),
-      "cpp_src",
-      "include",
-      "treelite"
-    ),
-    file.path(prefix, "include", "treelite")
-  )
-  write_treelite_version_header(prefix)
+  build_treelite_static(target, prefix, cxx)
 
   prepare_cuml_managed_executables(prefix)
   create_shared_library_linker_names(file.path(prefix, "lib"))
@@ -402,9 +452,8 @@ check_managed_build_prefix <- function(prefix) {
       "include/treelite/tree.h",
       "include/treelite/version.h",
       "lib/libnvforest++.so",
-      "lib/libtreelite.so",
-      "lib/libgomp-855c301a.so.1.0.0",
-      "lib/libgomp-a34b3233.so.1.0.0"
+      "lib/libtreelite_static.a",
+      "lib/libgomp-855c301a.so.1.0.0"
     )
   )
 
@@ -447,8 +496,11 @@ check_managed_build_prefix <- function(prefix) {
     )
 }
 
-bootstrap_managed_build_from_artifacts <- function() {
-  stopifnot(identical(cuml_build_mode(), "managed"))
+bootstrap_managed_build_from_artifacts <- function(cxx) {
+  stopifnot(
+    identical(cuml_build_mode(), "managed"),
+    file.exists(cxx)
+  )
 
   if (!cuml_ubuntu_2604_x86_64()) {
     stop2(
@@ -495,7 +547,7 @@ bootstrap_managed_build_from_artifacts <- function() {
     cuml_extract_artifact(artifacts[i, , drop = FALSE], target)
   }
 
-  extract_cuml_artifact_prefix(target, prefix)
+  extract_cuml_artifact_prefix(target, prefix, cxx)
   write_cuml_managed_build_marker(prefix)
 
   if (!check_managed_build_prefix(prefix)) {

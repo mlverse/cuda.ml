@@ -219,7 +219,6 @@ cuda_ml_runtime_manifest <- function() {
     "CUDA-Toolkit",
     "RAPIDS",
     "nvForest",
-    "Treelite",
     "Platform",
     "Minimum-Driver",
     "NVRTC-Needed-Old",
@@ -288,10 +287,6 @@ cuda_ml_runtime_identity <- function() {
       !identical(
         unname(.cuda_ml_state$metadata[["nvForest"]]),
         unname(manifest$metadata[["nvForest"]])
-      ) ||
-      !identical(
-        unname(.cuda_ml_state$metadata[["Treelite"]]),
-        unname(manifest$metadata[["Treelite"]])
       )
   ) {
     stop(

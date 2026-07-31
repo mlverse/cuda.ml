@@ -13,7 +13,7 @@ check_functional_prefix <- function(path) {
       "include/treelite/tree.h",
       "include/treelite/version.h",
       "lib/libnvforest++.so",
-      "lib/libtreelite.so"
+      "lib/libtreelite_static.a"
     )
   )
   check_libcuml_path(path) &&
