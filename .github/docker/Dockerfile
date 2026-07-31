@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -y && apt-get install -y \
     sudo software-properties-common dialog apt-utils \
     tzdata locales curl git \
-    libcurl4-openssl-dev libssl-dev libxml2-dev \
+    libcurl4-openssl-dev libssl-dev libxml2-dev libuv1-dev \
     libfontconfig1-dev libfreetype6-dev libpng-dev \
     libharfbuzz-dev libfribidi-dev libtiff-dev libjpeg-dev \
     make gcc g++ binutils cmake pandoc \
