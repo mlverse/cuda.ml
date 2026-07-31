@@ -1,15 +1,15 @@
-FROM nvidia/cuda:13.2.0-devel-ubuntu24.04 AS build
+FROM ubuntu:26.04 AS build
 
 ENV DEBIAN_FRONTEND=noninteractive
 
 # System dependencies
 RUN apt-get update -y && apt-get install -y \
     sudo software-properties-common dialog apt-utils \
-    tzdata locales curl wget git \
+    tzdata locales curl git \
     libcurl4-openssl-dev libssl-dev libxml2-dev \
     libfontconfig1-dev libfreetype6-dev libpng-dev \
     libharfbuzz-dev libfribidi-dev libtiff-dev libjpeg-dev \
-    make gcc g++ binutils cmake pandoc python3 python3-pip python3-venv \
+    make gcc g++ binutils cmake pandoc \
     && locale-gen en_US.UTF-8
 
 ENV LANG=en_US.UTF-8
@@ -35,21 +35,22 @@ RUN echo "MAKEFLAGS=-j$(nproc)" >> "$(R RHOME)/etc/Renviron.site"
 # Copy source
 COPY . /build
 
-ENV NOT_CRAN=true
-ENV UNIVERSE_NAME=mlverse
+ENV CUDA_ML_BUILD_MODE=managed
 ENV CUML_BOOTSTRAP_CACHE=/opt/cuda.ml
 
 # Install R dependencies
 RUN PKG_SYSREQS=false Rscript -e "\
     install.packages('pak', repos = 'https://r-lib.github.io/p/pak/devel/'); \
-    pak::local_install_deps('/build', dependencies = TRUE)" \
+    pak::local_install_deps('/build', dependencies = TRUE); \
+    stopifnot(requireNamespace('xgboost', quietly = TRUE))" \
     && rm -rf /tmp/* /root/.cache
 
 # Install cuda.ml with tests
 RUN R CMD INSTALL --install-tests /build
-RUN Rscript -e "library(cuda.ml); stopifnot(has_cuML())"
-RUN managed_prefix="$(Rscript -e "source('/build/tools/config/utils/bootstrap.R'); cat(cuml_managed_bootstrap_prefix())")" \
-    && Rscript /build/tools/audit-backend.R "${managed_prefix}/bin/cuobjdump" \
+RUN Rscript -e "library(cuda.ml); info <- cuda_ml_backend_info(); stopifnot(identical(info\$backend, 'full'), identical(info\$build_mode, 'managed'), !info\$runtime_installed)"
+RUN managed_prefix="$(Rscript -e "pkg_root <- function() '/build'; source('/build/tools/config/utils/artifacts.R'); source('/build/tools/config/utils/bootstrap.R'); cat(cuml_managed_bootstrap_prefix())")" \
+    && LD_LIBRARY_PATH="${managed_prefix}/lib" \
+        Rscript /build/tools/audit-backend.R "${managed_prefix}/bin/cuobjdump" \
     && cc -std=c11 -Wall -Wextra -Werror \
         -I"${managed_prefix}/include" \
         -L"${managed_prefix}/lib" \
@@ -59,7 +60,7 @@ RUN managed_prefix="$(Rscript -e "source('/build/tools/config/utils/bootstrap.R'
 # Clean up
 RUN rm -rf /tmp/* /build
 
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -82,16 +83,11 @@ RUN curl -L https://rig.r-pkg.org/deb/rig.gpg -o /etc/apt/trusted.gpg.d/rig.gpg 
     && rm -rf /var/lib/apt/lists/*
 
 ENV R_LIBS_USER=/opt/R/library
-ENV NOT_CRAN=true
 
 RUN mkdir -p /opt/R/library
 COPY --from=build /opt/R/library /opt/R/library
 COPY --from=build /usr/local/bin/nvrtc-probe /usr/local/bin/nvrtc-probe
 
-# Provision and load the native backend without a CUDA toolkit or GPU.
-# GPU algorithms are exercised separately by the GPU CI job.
-RUN CUDA_ML_CACHE_DIR=/tmp/cuda-ml-smoke \
-    Rscript -e "library(cuda.ml); cuda_ml_install(); stopifnot(identical(cuML_major_version(), '26'), identical(cuML_minor_version(), '6'))" \
-    && rm -rf /tmp/cuda-ml-smoke \
-    && test ! -e /usr/local/cuda \
+# The final image deliberately has no CUDA toolkit or prepared runtime cache.
+RUN test ! -e /usr/local/cuda \
     && test -z "$(command -v nvcc)"

@@ -5,7 +5,6 @@
 #' @template model-with-numeric-input
 #' @template eigen-decomposition
 #' @template transform-input
-#' @template cuML-log-level
 #' @param n_components Desired dimensionality of output data. Must be strictly
 #'   less than \code{ncol(x)} (i.e., the number of features in input data).
 #'   Default: 2.
@@ -27,19 +26,20 @@
 #' @examples
 #' library(cuda.ml)
 #'
-#' if (interactive() && has_cuML()) {
+#' if (interactive() && cuda_ml_backend_info()$runtime_installed) {
 #'   iris.tsvd <- cuda_ml_tsvd(iris[1:4], n_components = 2)
 #'   print(iris.tsvd)
 #' }
 #' @export
-cuda_ml_tsvd <- function(x,
-                         n_components = 2L,
-                         eig_algo = c("dq", "jacobi"),
-                         tol = 1e-7, n_iters = 15L,
-                         transform_input = TRUE,
-                         cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
+cuda_ml_tsvd <- function(
+  x,
+  n_components = 2L,
+  eig_algo = c("dq", "jacobi"),
+  tol = 1e-7,
+  n_iters = 15L,
+  transform_input = TRUE
+) {
   eig_algo <- match_eig_algo(eig_algo)
-  cuML_log_level <- match_cuML_log_level(cuML_log_level)
 
   model <- .tsvd_fit_transform(
     x = as.matrix(x),
@@ -48,27 +48,9 @@ cuda_ml_tsvd <- function(x,
     tol = as.numeric(tol),
     n_iters = as.integer(n_iters),
     transform_input = transform_input,
-    verbosity = cuML_log_level
+    verbosity = 0L
   )
-  model <- tsvd_flip_signs(model)
   class(model) <- c("cuda_ml_tsvd", class(model))
-
-  model
-}
-
-tsvd_flip_signs <- function(model) {
-  if (!is.matrix(model$components)) {
-    return(model)
-  }
-
-  signs <- apply(model$components, 1L, function(x) {
-    if (x[[which.max(abs(x))]] < 0) -1 else 1
-  })
-
-  model$components <- sweep(model$components, 1L, signs, `*`)
-  if (is.matrix(model$transformed_data)) {
-    model$transformed_data <- sweep(model$transformed_data, 2L, signs, `*`)
-  }
 
   model
 }

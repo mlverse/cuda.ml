@@ -2,8 +2,6 @@
 
 #include <Rcpp.h>
 
-#ifdef HAS_CUML
-
 namespace cuml4r {
 
 Rcpp::List kmeans(Rcpp::NumericMatrix const& x, int const k,
@@ -12,9 +10,3 @@ Rcpp::List kmeans(Rcpp::NumericMatrix const& x, int const k,
                   int const verbosity);
 
 }  // namespace cuml4r
-
-#else
-
-#include "warn_cuml_missing.h"
-
-#endif

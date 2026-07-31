@@ -1,13 +1,9 @@
-agglomerative_clustering_match_metric <- function(metric = c("euclidean", "l1", "l2", "manhattan", "cosine")) {
+agglomerative_clustering_match_metric <- function(
+  metric = c("euclidean", "l1", "l2", "manhattan", "cosine")
+) {
   metric <- match.arg(metric)
 
-  switch(metric,
-    euclidean = 1L,
-    l1 = 3L,
-    l2 = 1L,
-    manhattan = 3L,
-    cosine = 2L
-  )
+  switch(metric, euclidean = 1L, l1 = 3L, l2 = 1L, manhattan = 3L, cosine = 2L)
 }
 
 #' Perform Single-Linkage Agglomerative Clustering.
@@ -43,7 +39,7 @@ agglomerative_clustering_match_metric <- function(metric = c("euclidean", "l1", 
 #' @examples
 #'
 #' library(cuda.ml)
-#' if (interactive() && has_cuML()) {
+#' if (interactive() && cuda_ml_backend_info()$runtime_installed) {
 #'   library(MASS)
 #'   library(magrittr)
 #'   library(purrr)
@@ -67,10 +63,13 @@ agglomerative_clustering_match_metric <- function(metric = c("euclidean", "l1", 
 #'   print(clust$labels)
 #' }
 #' @export
-cuda_ml_agglomerative_clustering <- function(x, n_clusters = 2L,
-                                             metric = c("euclidean", "l1", "l2", "manhattan", "cosine"),
-                                             connectivity = c("pairwise", "knn"),
-                                             n_neighbors = 15L) {
+cuda_ml_agglomerative_clustering <- function(
+  x,
+  n_clusters = 2L,
+  metric = c("euclidean", "l1", "l2", "manhattan", "cosine"),
+  connectivity = c("pairwise", "knn"),
+  n_neighbors = 15L
+) {
   metric <- agglomerative_clustering_match_metric(metric)
   connectivity <- match.arg(connectivity)
 

@@ -124,11 +124,8 @@ __host__ Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x,
       /*mu=*/d_mu.data().get(),
       /*noise_vars=*/d_noise_vars.data().get(),
       /*prms=*/*params
-#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
-     CUML4R_LIBCUML_VERSION(24, 0))
       ,
       /*flip_signs_based_on_U=*/true
-#endif
     );
   } else {
     ML::pcaFit(handle,
@@ -140,11 +137,8 @@ __host__ Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x,
                /*mu=*/d_mu.data().get(),
                /*noise_vars=*/d_noise_vars.data().get(),
                /*prms=*/*params
-#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
-     CUML4R_LIBCUML_VERSION(24, 0))
                ,
                /*flip_signs_based_on_U=*/true
-#endif
     );
   }
 

@@ -2,8 +2,6 @@
 
 #include <Rcpp.h>
 
-#ifdef HAS_CUML
-
 namespace cuml4r {
 
 Rcpp::List pca_fit_transform(Rcpp::NumericMatrix const& x, double const tol,
@@ -19,9 +17,3 @@ Rcpp::List pca_get_state(Rcpp::List const& model);
 Rcpp::List pca_set_state(Rcpp::List const& model_state);
 
 }  // namespace cuml4r
-
-#else
-
-#include "warn_cuml_missing.h"
-
-#endif

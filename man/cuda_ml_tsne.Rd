@@ -23,8 +23,7 @@ cuda_ml_tsne(
   pre_momentum = 0.5,
   post_momentum = 0.8,
   square_distances = TRUE,
-  seed = NULL,
-  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")
+  seed = NULL
 )
 }
 \arguments{
@@ -92,10 +91,6 @@ repeated runs look more similar. Note, however, that this highly
 parallelized t-SNE implementation is not completely deterministic between
 runs, even with the same \code{seed} being used for each run.
 Default: NULL.}
-
-\item{cuML_log_level}{Log level within cuML library functions. Must be one of
-\{"off", "critical", "error", "warn", "info", "debug", "trace"\}.
-Default: off.}
 }
 \value{
 A matrix containing the embedding of the input data in a low-
@@ -108,7 +103,7 @@ dimensional data.
 \examples{
 library(cuda.ml)
 
-if (interactive() && has_cuML()) {
+if (interactive() && cuda_ml_backend_info()$runtime_installed) {
   embedding <- cuda_ml_tsne(iris[1:4], method = "exact")
 
   set.seed(0L)

@@ -21,7 +21,6 @@ cuda_ml_elastic_net(x, ...)
   max_iter = 1000L,
   tol = 0.001,
   fit_intercept = TRUE,
-  normalize_input = FALSE,
   selection = c("cyclic", "random"),
   ...
 )
@@ -34,7 +33,6 @@ cuda_ml_elastic_net(x, ...)
   max_iter = 1000L,
   tol = 0.001,
   fit_intercept = TRUE,
-  normalize_input = FALSE,
   selection = c("cyclic", "random"),
   ...
 )
@@ -47,7 +45,6 @@ cuda_ml_elastic_net(x, ...)
   max_iter = 1000L,
   tol = 0.001,
   fit_intercept = TRUE,
-  normalize_input = FALSE,
   selection = c("cyclic", "random"),
   ...
 )
@@ -60,7 +57,6 @@ cuda_ml_elastic_net(x, ...)
   max_iter = 1000L,
   tol = 0.001,
   fit_intercept = TRUE,
-  normalize_input = FALSE,
   selection = c("cyclic", "random"),
   ...
 )
@@ -79,12 +75,8 @@ cuda_ml_elastic_net(x, ...)
 \item{y}{A numeric vector (for regression) or factor (for classification) of
 desired responses.}
 
-\item{alpha}{Multiplier of the penalty term (i.e., the result would become
-and Ordinary Least Square model if \code{alpha} were set to 0). Default: 1.
-For numerical reasons, running elastic regression with \code{alpha} set to
-0 is not advised. For the \code{alpha}-equals-to-0 scenario, one should use
-\code{cuda_ml_ols} to train an OLS model instead.
-Default: 1.}
+\item{alpha}{Positive multiplier of the penalty term. Use
+\code{cuda_ml_ols()} for an unpenalized linear model. Default: 1.}
 
 \item{l1_ratio}{The ElasticNet mixing parameter, with 0 <= l1_ratio <= 1.
 For l1_ratio = 0 the penalty is an L2 penalty. For l1_ratio = 1 it is an L1
@@ -105,10 +97,6 @@ threshold. Default: 1e-3.}
 \item{fit_intercept}{If TRUE, then the model tries to correct for the global
 mean of the response variable. If FALSE, then the model expects data to be
 centered. Default: TRUE.}
-
-\item{normalize_input}{Ignored when \code{fit_intercept} is FALSE. If TRUE,
-then the predictors will be normalized to have a L2 norm of 1.
-Default: FALSE.}
 
 \item{selection}{If "random", then instead of updating coefficients in cyclic
 order, a random coefficient is updated in each iteration. Default: "cyclic".}
@@ -131,7 +119,7 @@ Train a linear model with combined L1 and L2 priors as the regularizer.
 
 library(cuda.ml)
 
-if (interactive() && has_cuML()) {
+if (interactive() && cuda_ml_backend_info()$runtime_installed) {
   model <- cuda_ml_elastic_net(
     formula = mpg ~ ., data = mtcars, alpha = 1e-3, l1_ratio = 0.6
   )

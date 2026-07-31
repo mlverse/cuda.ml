@@ -2,8 +2,6 @@
 
 #include <Rcpp.h>
 
-#ifdef HAS_CUML
-
 namespace cuml4r {
 
 Rcpp::List tsvd_fit_transform(Rcpp::NumericMatrix const& x, double const tol,
@@ -18,9 +16,3 @@ Rcpp::NumericMatrix tsvd_inverse_transform(Rcpp::List model,
                                            Rcpp::NumericMatrix const& x);
 
 }  // namespace cuml4r
-
-#else
-
-#include "warn_cuml_missing.h"
-
-#endif

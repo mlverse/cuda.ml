@@ -7,7 +7,7 @@
 \alias{cuda_ml_rand_forest.matrix}
 \alias{cuda_ml_rand_forest.formula}
 \alias{cuda_ml_rand_forest.recipe}
-\title{Train a random forest model.}
+\title{Train a random forest model}
 \usage{
 cuda_ml_rand_forest(x, ...)
 
@@ -17,19 +17,19 @@ cuda_ml_rand_forest(x, ...)
   x,
   y,
   mtry = NULL,
-  trees = NULL,
+  trees = 100L,
   min_n = 2L,
   bootstrap = TRUE,
+  sample_fraction = 1,
   max_depth = 16L,
   max_leaves = Inf,
-  max_predictors_per_note_split = NULL,
   n_bins = 128L,
   min_samples_leaf = 1L,
   split_criterion = NULL,
   min_impurity_decrease = 0,
-  max_batch_size = 128L,
-  n_streams = 8L,
-  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+  max_batch_size = 4096L,
+  n_streams = 4L,
+  seed = NULL,
   ...
 )
 
@@ -37,19 +37,19 @@ cuda_ml_rand_forest(x, ...)
   x,
   y,
   mtry = NULL,
-  trees = NULL,
+  trees = 100L,
   min_n = 2L,
   bootstrap = TRUE,
+  sample_fraction = 1,
   max_depth = 16L,
   max_leaves = Inf,
-  max_predictors_per_note_split = NULL,
   n_bins = 128L,
   min_samples_leaf = 1L,
   split_criterion = NULL,
   min_impurity_decrease = 0,
-  max_batch_size = 128L,
-  n_streams = 8L,
-  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+  max_batch_size = 4096L,
+  n_streams = 4L,
+  seed = NULL,
   ...
 )
 
@@ -57,19 +57,19 @@ cuda_ml_rand_forest(x, ...)
   formula,
   data,
   mtry = NULL,
-  trees = NULL,
+  trees = 100L,
   min_n = 2L,
   bootstrap = TRUE,
+  sample_fraction = 1,
   max_depth = 16L,
   max_leaves = Inf,
-  max_predictors_per_note_split = NULL,
   n_bins = 128L,
   min_samples_leaf = 1L,
   split_criterion = NULL,
   min_impurity_decrease = 0,
-  max_batch_size = 128L,
-  n_streams = 8L,
-  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+  max_batch_size = 4096L,
+  n_streams = 4L,
+  seed = NULL,
   ...
 )
 
@@ -77,19 +77,19 @@ cuda_ml_rand_forest(x, ...)
   x,
   data,
   mtry = NULL,
-  trees = NULL,
+  trees = 100L,
   min_n = 2L,
   bootstrap = TRUE,
+  sample_fraction = 1,
   max_depth = 16L,
   max_leaves = Inf,
-  max_predictors_per_note_split = NULL,
   n_bins = 128L,
   min_samples_leaf = 1L,
   split_criterion = NULL,
   min_impurity_decrease = 0,
-  max_batch_size = 128L,
-  n_streams = 8L,
-  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
+  max_batch_size = 4096L,
+  n_streams = 4L,
+  seed = NULL,
   ...
 )
 }
@@ -107,50 +107,40 @@ cuda_ml_rand_forest(x, ...)
 \item{y}{A numeric vector (for regression) or factor (for classification) of
 desired responses.}
 
-\item{mtry}{The number of predictors that will be randomly sampled at each
-split when creating the tree models. Default: the square root of the total
-number of predictors.}
+\item{mtry}{Number of predictors sampled at each split. When \code{NULL},
+classification uses the square root of the predictor count and regression
+uses all predictors.}
 
-\item{trees}{An integer for the number of trees contained in the ensemble.
-Default: 100L.}
+\item{trees}{Number of trees. Default: 100L.}
 
-\item{min_n}{An integer for the minimum number of data points in a node that
-are required for the node to be split further. Default: 2L.}
+\item{min_n}{Minimum observations required to split a node. Default: 2L.}
 
-\item{bootstrap}{Whether to perform bootstrap.
-If TRUE, each tree in the forest is built on a bootstrapped sample with
-replacement.
-If FALSE, the whole dataset is used to build each tree.}
+\item{bootstrap}{Whether to sample observations with replacement.}
+
+\item{sample_fraction}{Proportion of rows used for each tree, between 0 and
+1. This is separate from \code{mtry}, which controls predictor sampling.}
 
 \item{max_depth}{Maximum tree depth. Default: 16L.}
 
-\item{max_leaves}{Maximum leaf nodes per tree. Soft constraint. Default: Inf
-(unlimited).}
+\item{max_leaves}{Maximum leaves per tree, or \code{Inf} for no limit.}
 
-\item{max_predictors_per_note_split}{Number of predictor to consider per node
-split. Default: square root of the total number predictors.}
+\item{n_bins}{Number of candidate split bins. Default: 128L.}
 
-\item{n_bins}{Number of bins used by the split algorithm. Default: 128L.}
+\item{min_samples_leaf}{Minimum observations in a leaf. Default: 1L.}
 
-\item{min_samples_leaf}{The minimum number of data points in each leaf node.
-Default: 1L.}
+\item{split_criterion}{Split criterion, or \code{NULL} for the mode default.
+Classification supports \code{"gini"} and \code{"entropy"}; regression
+supports \code{"mse"}, \code{"poisson"}, \code{"gamma"}, and
+\code{"inverse_gaussian"}.}
 
-\item{split_criterion}{The criterion used to split nodes, can be "gini" or
-"entropy" for classifications, and "mse" or "mae" for regressions.
-Default: "gini" for classification; "mse" for regression.}
+\item{min_impurity_decrease}{Minimum impurity decrease required for a split.}
 
-\item{min_impurity_decrease}{Minimum decrease in impurity requried for node
-to be spilt. Default: 0.}
+\item{max_batch_size}{Maximum nodes processed in one batch. Default: 4096L.}
 
-\item{max_batch_size}{Maximum number of nodes that can be processed in a
-given batch. Default: 128L.}
+\item{n_streams}{Number of CUDA streams used while fitting. Default: 4L.}
 
-\item{n_streams}{Number of CUDA streams to use for building trees.
-Default: 8L.}
-
-\item{cuML_log_level}{Log level within cuML library functions. Must be one of
-\{"off", "critical", "error", "warn", "info", "debug", "trace"\}.
-Default: off.}
+\item{seed}{Random seed forwarded to cuML. When \code{NULL}, a seed is drawn
+from R's random-number generator, so \code{set.seed()} controls the fit.}
 
 \item{formula}{A formula specifying the outcome terms on the left-hand side,
 and the predictor terms on the right-hand side.}
@@ -160,34 +150,9 @@ specified as a  __data frame__ containing the predictors and (if
 applicable) the outcome.}
 }
 \value{
-A random forest classifier / regressor object that can be used with
-  the 'predict' S3 generic to make predictions on new data points.
+A random forest model for use with \code{predict()}.
 }
 \description{
-Train a random forest model for classification or regression tasks.
-}
-\examples{
-library(cuda.ml)
-
-if (interactive() && has_cuML()) {
-  # Classification
-
-  model <- cuda_ml_rand_forest(
-    formula = Species ~ .,
-    data = iris,
-    trees = 100
-  )
-
-  predictions <- predict(model, iris[names(iris) != "Species"])
-
-  # Regression
-
-  model <- cuda_ml_rand_forest(
-    formula = mpg ~ .,
-    data = mtcars,
-    trees = 100
-  )
-
-  predictions <- predict(model, mtcars[names(mtcars) != "mpg"])
-}
+Trains a cuML random forest for classification or regression and returns an
+nvForest-backed model for inference.
 }

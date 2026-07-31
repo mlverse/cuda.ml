@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef HAS_CUML
-
 #include <Rcpp.h>
 #include "pinned_host_vector.h"
 
@@ -23,9 +21,3 @@ struct Matrix {
 };
 
 }  // namespace cuml4r
-
-#else
-
-#include "warn_cuml_missing.h"
-
-#endif

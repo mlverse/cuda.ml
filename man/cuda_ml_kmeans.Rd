@@ -10,8 +10,7 @@ cuda_ml_kmeans(
   max_iters = 300,
   tol = 0,
   init_method = c("kmeans++", "random"),
-  seed = 0L,
-  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")
+  seed = 0L
 )
 }
 \arguments{
@@ -30,10 +29,6 @@ include "kmeans++", "random", or a matrix of k rows, each row specifying
 the initial value of a centroid. Default: "kmeans++".}
 
 \item{seed}{Seed to the random number generator. Default: 0.}
-
-\item{cuML_log_level}{Log level within cuML library functions. Must be one of
-\{"off", "critical", "error", "warn", "info", "debug", "trace"\}.
-Default: off.}
 }
 \value{
 A list containing the cluster assignments and the centroid of each
@@ -46,7 +41,7 @@ Run the K means clustering algorithm.
 
 library(cuda.ml)
 
-if (interactive() && has_cuML()) {
+if (interactive() && cuda_ml_backend_info()$runtime_installed) {
   kclust <- cuda_ml_kmeans(
     iris[names(iris) != "Species"],
     k = 3, max_iters = 100

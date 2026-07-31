@@ -37,3 +37,4 @@
 ^\.claude$
 ^\.codex$
 ^CRAN-SUBMISSION$
+^inst/cuda-ml-backend\.dcf$

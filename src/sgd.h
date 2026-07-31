@@ -2,8 +2,6 @@
 
 #include <Rcpp.h>
 
-#ifdef HAS_CUML
-
 namespace cuml4r {
 
 Rcpp::List sgd_fit(Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& y,
@@ -15,9 +13,3 @@ Rcpp::List sgd_fit(Rcpp::NumericMatrix const& x, Rcpp::NumericVector const& y,
                    int const n_iter_no_change);
 
 }  // namespace cuml4r
-
-#else
-
-#include "warn_cuml_missing.h"
-
-#endif

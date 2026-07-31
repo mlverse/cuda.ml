@@ -2,12 +2,9 @@
 % Please edit documentation in R/model.R
 \name{cuda_ml_unserialize}
 \alias{cuda_ml_unserialize}
-\alias{cuda_ml_unserialise}
 \title{Unserialize a CuML model state}
 \usage{
 cuda_ml_unserialize(connection, ...)
-
-cuda_ml_unserialise(connection, ...)
 }
 \arguments{
 \item{connection}{An open connection or a raw vector.}

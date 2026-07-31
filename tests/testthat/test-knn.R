@@ -20,21 +20,15 @@ test_that("KNN classifier works as expected", {
   test_blobs_df <- gen_blobs(test_blob_sz, centers) %>%
     as.data.frame()
   algos <- c("brute", "ivfflat", "ivfpq")
-  if (as.integer(cuML_major_version()) < 24) {
-    algos <- c(algos, "ivfsq")
-  } else {
-    expect_error(
-      cuda_ml_knn(label ~ ., blobs_df, algo = "ivfsq", metric = "euclidean"),
-      "IVFSQ KNN is unsupported by this cuML version"
-    )
-  }
 
   for (algo in algos) {
     model <- cuda_ml_knn(
-      label ~ ., blobs_df,
-      algo = algo, metric = "euclidean"
+      label ~ .,
+      blobs_df,
+      algo = algo,
+      metric = "euclidean"
     )
-    preds <- predict(model, test_blobs_df)
+    preds <- predict(model, test_blobs_df, type = "class")
 
     expect_equal(
       as.integer(preds$.pred_class),
@@ -44,6 +38,37 @@ test_that("KNN classifier works as expected", {
       label = algo
     )
   }
+})
+
+test_that("KNN classifier returns per-class probabilities", {
+  test_data <- as.data.frame(gen_blobs(test_blob_sz, centers))
+  model <- cuda_ml_knn(label ~ ., blobs_df, algo = "brute", neighbors = 5L)
+
+  probabilities <- predict(model, test_data, type = "prob")
+
+  expect_named(probabilities, paste0(".pred_", levels(blobs_df$label)))
+  expect_equal(rowSums(probabilities), rep(1, nrow(test_data)))
+})
+
+test_that("KNN forwards explicit IVFPQ bit width", {
+  test_data <- as.data.frame(gen_blobs(test_blob_sz, centers))
+  specification <- cuda_ml_knn_algo_ivfpq(
+    nlist = 8L,
+    nprobe = 3L,
+    m = 2L,
+    n_bits = 4L
+  )
+  model <- cuda_ml_knn(
+    label ~ .,
+    blobs_df,
+    algo = specification,
+    metric = "euclidean"
+  )
+
+  predictions <- predict(model, test_data, type = "class")
+
+  expect_named(predictions, ".pred_class")
+  expect_equal(nrow(predictions), nrow(test_data))
 })
 
 test_that("KNN regressor works as expected", {
@@ -57,14 +82,20 @@ test_that("KNN regressor works as expected", {
 
   cuda_ml_knn_regressor <- cuda_ml_knn(
     y ~ .,
-    data = train_df, algo = "brute", metric = "euclidean", neighbors = 5L
+    data = train_df,
+    algo = "brute",
+    metric = "euclidean",
+    neighbors = 5L
   )
   cuda_ml_knn_regressor_preds <- predict(
-    cuda_ml_knn_regressor, as.data.frame(test_blobs)
+    cuda_ml_knn_regressor,
+    as.data.frame(test_blobs)
   )
 
   sklearn_knn_regressor <- sklearn$neighbors$KNeighborsRegressor(
-    n_neighbors = 5L, algorithm = "brute", metric = "euclidean"
+    n_neighbors = 5L,
+    algorithm = "brute",
+    metric = "euclidean"
   )
   sklearn_knn_regressor$fit(X = blobs, y = resps)
   sklearn_knn_regressor_preds <- sklearn_knn_regressor$predict(
@@ -72,7 +103,8 @@ test_that("KNN regressor works as expected", {
   )
 
   expect_equal(
-    cuda_ml_knn_regressor_preds$.pred, as.numeric(sklearn_knn_regressor_preds)
+    cuda_ml_knn_regressor_preds$.pred,
+    as.numeric(sklearn_knn_regressor_preds)
   )
 })
 
@@ -82,7 +114,9 @@ test_that("KNN classifier works as expected through parsnip", {
   test_blobs_df <- gen_blobs(test_blob_sz, centers) %>%
     as.data.frame()
   model <- nearest_neighbor(
-    mode = "classification", neighbors = 10, dist_power = 2
+    mode = "classification",
+    neighbors = 10,
+    dist_power = 2
   ) %>%
     set_engine("cuda.ml") %>%
     fit(label ~ ., blobs_df)
@@ -108,16 +142,21 @@ test_that("KNN regressor works as expected through parsnip", {
   test_blobs <- gen_blobs(test_blob_sz, centers)
 
   cuda_ml_knn_regressor <- nearest_neighbor(
-    mode = "regression", neighbors = 5, dist_power = 2
+    mode = "regression",
+    neighbors = 5,
+    dist_power = 2
   ) %>%
     set_engine("cuda.ml") %>%
     fit(y ~ ., data = train_df)
   cuda_ml_knn_regressor_preds <- predict(
-    cuda_ml_knn_regressor, as.data.frame(test_blobs)
+    cuda_ml_knn_regressor,
+    as.data.frame(test_blobs)
   )
 
   sklearn_knn_regressor <- sklearn$neighbors$KNeighborsRegressor(
-    n_neighbors = 5L, algorithm = "brute", metric = "euclidean"
+    n_neighbors = 5L,
+    algorithm = "brute",
+    metric = "euclidean"
   )
   sklearn_knn_regressor$fit(X = blobs, y = resps)
   sklearn_knn_regressor_preds <- sklearn_knn_regressor$predict(
@@ -125,6 +164,7 @@ test_that("KNN regressor works as expected through parsnip", {
   )
 
   expect_equal(
-    cuda_ml_knn_regressor_preds$.pred, as.numeric(sklearn_knn_regressor_preds)
+    cuda_ml_knn_regressor_preds$.pred,
+    as.numeric(sklearn_knn_regressor_preds)
   )
 })

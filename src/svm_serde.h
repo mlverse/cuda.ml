@@ -1,48 +1,10 @@
 #pragma once
 
-#include "preprocessor.h"
-
-#include <cuml/version_config.hpp>
-
-#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
-     CUML4R_LIBCUML_VERSION(24, 0))
 #include <cuml/matrix/kernel_params.hpp>
-#else
-#include <cuml/matrix/kernelparams.h>
-#endif
-
 #include <cuml/svm/svm_model.h>
 #include <cuml/svm/svm_parameter.h>
 
 #include <Rcpp.h>
-
-#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
-     CUML4R_LIBCUML_VERSION(24, 0))
-namespace MLCommon {
-namespace Matrix {
-
-using KernelParams = ML::matrix::KernelParams;
-using KernelType = ML::matrix::KernelType;
-
-}  // namespace Matrix
-}  // namespace MLCommon
-#endif
-
-#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
-     CUML4R_LIBCUML_VERSION(21, 10))
-
-namespace ML {
-namespace SVM {
-
-using svmParameter = SvmParameter;
-
-template <typename math_t>
-using svmModel = SvmModel<math_t>;
-
-}  // namespace SVM
-}  // namespace ML
-
-#endif
 
 namespace cuml4r {
 namespace detail {
@@ -68,19 +30,19 @@ constexpr auto kSvmModelSupportIdxes = "support_idx";
 constexpr auto kSvmModelNumClasses = "n_classes";
 constexpr auto kSvmModelUniqueLabels = "unique_labels";
 
-Rcpp::List getState(MLCommon::Matrix::KernelParams const& kernel_params);
+Rcpp::List getState(ML::matrix::KernelParams const& kernel_params);
 
-Rcpp::List getState(ML::SVM::svmParameter const& svm_params);
+Rcpp::List getState(ML::SVM::SvmParameter const& svm_params);
 
-Rcpp::List getState(ML::SVM::svmModel<double> const& svm_model,
+Rcpp::List getState(ML::SVM::SvmModel<double> const& svm_model,
                     raft::handle_t const& handle);
 
-void setState(MLCommon::Matrix::KernelParams& kernel_params,
+void setState(ML::matrix::KernelParams& kernel_params,
               Rcpp::List const& state);
 
-void setState(ML::SVM::svmParameter& svm_params, Rcpp::List const& state);
+void setState(ML::SVM::SvmParameter& svm_params, Rcpp::List const& state);
 
-void setState(ML::SVM::svmModel<double>& svm_model,
+void setState(ML::SVM::SvmModel<double>& svm_model,
               raft::handle_t const& handle, Rcpp::List const& state);
 
 }  // namespace detail

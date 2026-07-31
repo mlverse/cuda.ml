@@ -7,7 +7,7 @@
 \alias{cuda_ml_logistic_reg.matrix}
 \alias{cuda_ml_logistic_reg.formula}
 \alias{cuda_ml_logistic_reg.recipe}
-\title{Train a logistic regression model.}
+\title{Train a logistic or multinomial regression model}
 \usage{
 cuda_ml_logistic_reg(x, ...)
 
@@ -17,14 +17,15 @@ cuda_ml_logistic_reg(x, ...)
   x,
   y,
   fit_intercept = TRUE,
-  penalty = c("l2", "l1", "elasticnet", "none"),
+  penalty = NULL,
+  mixture = 0,
   tol = 1e-04,
-  C = 1,
   class_weight = NULL,
   sample_weight = NULL,
-  max_iters = 1000L,
-  linesearch_max_iters = 50L,
-  l1_ratio = NULL,
+  max_iter = 1000L,
+  linesearch_max_iter = 50L,
+  lbfgs_memory = 5L,
+  penalty_normalized = TRUE,
   ...
 )
 
@@ -32,14 +33,15 @@ cuda_ml_logistic_reg(x, ...)
   x,
   y,
   fit_intercept = TRUE,
-  penalty = c("l2", "l1", "elasticnet", "none"),
+  penalty = NULL,
+  mixture = 0,
   tol = 1e-04,
-  C = 1,
   class_weight = NULL,
   sample_weight = NULL,
-  max_iters = 1000L,
-  linesearch_max_iters = 50L,
-  l1_ratio = NULL,
+  max_iter = 1000L,
+  linesearch_max_iter = 50L,
+  lbfgs_memory = 5L,
+  penalty_normalized = TRUE,
   ...
 )
 
@@ -47,14 +49,15 @@ cuda_ml_logistic_reg(x, ...)
   formula,
   data,
   fit_intercept = TRUE,
-  penalty = c("l2", "l1", "elasticnet", "none"),
+  penalty = NULL,
+  mixture = 0,
   tol = 1e-04,
-  C = 1,
   class_weight = NULL,
   sample_weight = NULL,
-  max_iters = 1000L,
-  linesearch_max_iters = 50L,
-  l1_ratio = NULL,
+  max_iter = 1000L,
+  linesearch_max_iter = 50L,
+  lbfgs_memory = 5L,
+  penalty_normalized = TRUE,
   ...
 )
 
@@ -62,14 +65,15 @@ cuda_ml_logistic_reg(x, ...)
   x,
   data,
   fit_intercept = TRUE,
-  penalty = c("l2", "l1", "elasticnet", "none"),
+  penalty = NULL,
+  mixture = 0,
   tol = 1e-04,
-  C = 1,
   class_weight = NULL,
   sample_weight = NULL,
-  max_iters = 1000L,
-  linesearch_max_iters = 50L,
-  l1_ratio = NULL,
+  max_iter = 1000L,
+  linesearch_max_iter = 50L,
+  lbfgs_memory = 5L,
+  penalty_normalized = TRUE,
   ...
 )
 }
@@ -91,39 +95,30 @@ desired responses.}
 mean of the response variable. If FALSE, then the model expects data to be
 centered. Default: TRUE.}
 
-\item{penalty}{The penalty type, must be one of
-\{"none", "l1", "l2", "elasticnet"\}.
-If "none" or "l2" is selected, then L-BFGS solver will be used.
-If "l1" is selected, solver OWL-QN will be used.
-If "elasticnet" is selected, OWL-QN will be used if l1_ratio > 0, otherwise
-L-BFGS will be used. Default: "l2".}
+\item{penalty}{A non-negative regularization strength, or \code{NULL} for no
+regularization. Default: \code{NULL}.}
 
-\item{tol}{Tolerance for stopping criteria. Default: 1e-4.}
+\item{mixture}{The proportion of regularization assigned to the L1 penalty,
+between 0 and 1. Default: 0.}
 
-\item{C}{Inverse of regularization strength; must be a positive float.
-Default: 1.0.}
+\item{tol}{Stopping tolerance. Default: 1e-4.}
 
-\item{class_weight}{If \code{NULL}, then each class has equal weight of
-\code{1}.
-If \code{class_weight} is set to \code{"balanced"}, then weights will be
-inversely proportional to class frequencies in the input data.
-If otherwise, then \code{class_weight} must be a named numeric vector of
-weight values, with names being class labels.
-If \code{class_weight} is not \code{NULL}, then each entry in
-\code{sample_weight} will be adjusted by multiplying its original value
-with the class weight of the corresponding sample's class.
-Default: NULL.}
+\item{class_weight}{\code{NULL}, \code{"balanced"}, or a named numeric vector
+with one non-negative weight per outcome level.}
 
-\item{sample_weight}{Array of weights assigned to individual samples.
-If \code{NULL}, then each sample has an equal weight of 1. Default: NULL.}
+\item{sample_weight}{A numeric vector with one non-negative weight per
+training observation, or \code{NULL}.}
 
-\item{max_iters}{Maximum number of solver iterations. Default: 1000L.}
+\item{max_iter}{Maximum solver iterations. Default: 1000L.}
 
-\item{linesearch_max_iters}{Max number of linesearch iterations per outer
-iteration used in the LBFGS- and OWL- QN solvers. Default: 50L.}
+\item{linesearch_max_iter}{Maximum line-search iterations per solver
+iteration. Default: 50L.}
 
-\item{l1_ratio}{The Elastic-Net mixing parameter, must \code{NULL} or be
-within the range of [0, 1]. Default: NULL.}
+\item{lbfgs_memory}{Number of vectors retained by the L-BFGS approximation.
+Default: 5L.}
+
+\item{penalty_normalized}{Whether to normalize regularization by the number
+of observations. Default: TRUE.}
 
 \item{formula}{A formula specifying the outcome terms on the left-hand side,
 and the predictor terms on the right-hand side.}
@@ -132,31 +127,14 @@ and the predictor terms on the right-hand side.}
 specified as a  __data frame__ containing the predictors and (if
 applicable) the outcome.}
 }
+\value{
+A classification model for use with \code{predict()}.
+}
 \description{
-Train a logistic regression model using Quasi-Newton (QN) algorithms (i.e.,
-Orthant-Wise Limited Memory Quasi-Newton (OWL-QN) if there is L1
-regularization, Limited Memory BFGS (L-BFGS) otherwise).
-}
-\examples{
-library(cuda.ml)
-
-if (interactive() && has_cuML()) {
-  X <- scale(as.matrix(iris[names(iris) != "Species"]))
-  y <- iris$Species
-
-  model <- cuda_ml_logistic_reg(X, y, max_iters = 100)
-  predictions <- predict(model, X)
-
-  # NOTE: if we were only performing binary classifications (e.g., by having
-  # `iris_data <- iris \%>\% mutate(Species = (Species == "setosa"))`), then the
-  # above would be conceptually equivalent to the following:
-  #
-  # iris_data <- iris \%>\% mutate(Species = (Species == "setosa"))
-  # model <- glm(
-  #   Species ~ ., data = iris_data, family = binomial(link = "logit"),
-  #   control = glm.control(epsilon = 1e-8, maxit = 100)
-  # )
-  #
-  # predict(model, iris_data, type = "response")
-}
+Fits a factor outcome with cuML's quasi-Newton solver. Regularization follows
+tidymodels conventions: \code{penalty} is the total regularization strength
+and \code{mixture} is the proportion assigned to the L1 penalty. Set
+\code{mixture = 0} for ridge, \code{mixture = 1} for lasso, or use an
+intermediate value for an elastic-net penalty. Normalize predictors with a
+recipe before fitting when scaling is required.
 }

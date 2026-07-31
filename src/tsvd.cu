@@ -73,11 +73,8 @@ __host__ Rcpp::List tsvd_fit_transform(Rcpp::NumericMatrix const& x,
       /*explained_var_ratio=*/d_explained_var_ratio.data().get(),
       /*singular_vals=*/d_singular_vals.data().get(),
       /*prms=*/*params
-#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
-     CUML4R_LIBCUML_VERSION(24, 0))
       ,
       /*flip_signs_based_on_U=*/true
-#endif
     );
   } else {
     ML::tsvdFit(handle,
@@ -85,11 +82,8 @@ __host__ Rcpp::List tsvd_fit_transform(Rcpp::NumericMatrix const& x,
                 /*components=*/d_components.data().get(),
                 /*singular_vals=*/d_singular_vals.data().get(),
                 /*prms=*/*params
-#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
-     CUML4R_LIBCUML_VERSION(24, 0))
                 ,
                 /*flip_signs_based_on_U=*/true
-#endif
     );
   }
 

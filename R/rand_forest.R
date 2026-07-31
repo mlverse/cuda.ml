@@ -1,71 +1,38 @@
-#' Train a random forest model.
+#' Train a random forest model
 #'
-#' Train a random forest model for classification or regression tasks.
+#' Trains a cuML random forest for classification or regression and returns an
+#' nvForest-backed model for inference.
 #'
 #' @template supervised-model-inputs
 #' @template supervised-model-output
 #' @template ellipsis-unused
-#' @template cuML-log-level
-#' @param mtry The number of predictors that will be randomly sampled at each
-#'   split when creating the tree models. Default: the square root of the total
-#'   number of predictors.
-#' @param trees An integer for the number of trees contained in the ensemble.
-#'   Default: 100L.
-#' @param min_n An integer for the minimum number of data points in a node that
-#'   are required for the node to be split further. Default: 2L.
-#' @param bootstrap Whether to perform bootstrap.
-#'   If TRUE, each tree in the forest is built on a bootstrapped sample with
-#'   replacement.
-#'   If FALSE, the whole dataset is used to build each tree.
+#' @param mtry Number of predictors sampled at each split. When \code{NULL},
+#'   classification uses the square root of the predictor count and regression
+#'   uses all predictors.
+#' @param trees Number of trees. Default: 100L.
+#' @param min_n Minimum observations required to split a node. Default: 2L.
+#' @param bootstrap Whether to sample observations with replacement.
+#' @param sample_fraction Proportion of rows used for each tree, between 0 and
+#'   1. This is separate from \code{mtry}, which controls predictor sampling.
 #' @param max_depth Maximum tree depth. Default: 16L.
-#' @param max_leaves Maximum leaf nodes per tree. Soft constraint. Default: Inf
-#'   (unlimited).
-#' @param max_predictors_per_note_split Number of predictor to consider per node
-#'   split. Default: square root of the total number predictors.
-#' @param n_bins Number of bins used by the split algorithm. Default: 128L.
-#' @param min_samples_leaf The minimum number of data points in each leaf node.
-#'   Default: 1L.
-#' @param split_criterion The criterion used to split nodes, can be "gini" or
-#'   "entropy" for classifications, and "mse" or "mae" for regressions.
-#'   Default: "gini" for classification; "mse" for regression.
-#' @param min_impurity_decrease Minimum decrease in impurity requried for node
-#'   to be spilt. Default: 0.
-#' @param max_batch_size Maximum number of nodes that can be processed in a
-#'   given batch. Default: 128L.
-#' @param n_streams Number of CUDA streams to use for building trees.
-#'   Default: 8L.
+#' @param max_leaves Maximum leaves per tree, or \code{Inf} for no limit.
+#' @param n_bins Number of candidate split bins. Default: 128L.
+#' @param min_samples_leaf Minimum observations in a leaf. Default: 1L.
+#' @param split_criterion Split criterion, or \code{NULL} for the mode default.
+#'   Classification supports \code{"gini"} and \code{"entropy"}; regression
+#'   supports \code{"mse"}, \code{"poisson"}, \code{"gamma"}, and
+#'   \code{"inverse_gaussian"}.
+#' @param min_impurity_decrease Minimum impurity decrease required for a split.
+#' @param max_batch_size Maximum nodes processed in one batch. Default: 4096L.
+#' @param n_streams Number of CUDA streams used while fitting. Default: 4L.
+#' @param seed Random seed forwarded to cuML. When \code{NULL}, a seed is drawn
+#'   from R's random-number generator, so \code{set.seed()} controls the fit.
 #'
-#' @return A random forest classifier / regressor object that can be used with
-#'   the 'predict' S3 generic to make predictions on new data points.
+#' @return A random forest model for use with \code{predict()}.
 #'
-#' @examples
-#' library(cuda.ml)
-#'
-#' if (interactive() && has_cuML()) {
-#'   # Classification
-#'
-#'   model <- cuda_ml_rand_forest(
-#'     formula = Species ~ .,
-#'     data = iris,
-#'     trees = 100
-#'   )
-#'
-#'   predictions <- predict(model, iris[names(iris) != "Species"])
-#'
-#'   # Regression
-#'
-#'   model <- cuda_ml_rand_forest(
-#'     formula = mpg ~ .,
-#'     data = mtcars,
-#'     trees = 100
-#'   )
-#'
-#'   predictions <- predict(model, mtcars[names(mtcars) != "mpg"])
-#' }
 #' @importFrom ellipsis check_dots_used
 #' @export
 cuda_ml_rand_forest <- function(x, ...) {
-  check_dots_used()
   UseMethod("cuda_ml_rand_forest")
 }
 
@@ -77,408 +44,375 @@ cuda_ml_rand_forest.default <- function(x, ...) {
 
 #' @rdname cuda_ml_rand_forest
 #' @export
-cuda_ml_rand_forest.data.frame <- function(x, y, mtry = NULL, trees = NULL,
-                                           min_n = 2L, bootstrap = TRUE,
-                                           max_depth = 16L, max_leaves = Inf,
-                                           max_predictors_per_note_split = NULL,
-                                           n_bins = 128L, min_samples_leaf = 1L,
-                                           split_criterion = NULL,
-                                           min_impurity_decrease = 0,
-                                           max_batch_size = 128L, n_streams = 8L,
-                                           cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
-                                           ...) {
+cuda_ml_rand_forest.data.frame <- function(
+  x,
+  y,
+  mtry = NULL,
+  trees = 100L,
+  min_n = 2L,
+  bootstrap = TRUE,
+  sample_fraction = 1,
+  max_depth = 16L,
+  max_leaves = Inf,
+  n_bins = 128L,
+  min_samples_leaf = 1L,
+  split_criterion = NULL,
+  min_impurity_decrease = 0,
+  max_batch_size = 4096L,
+  n_streams = 4L,
+  seed = NULL,
+  ...
+) {
+  check_dots_used()
   processed <- hardhat::mold(x, y)
-
   cuda_ml_rand_forest_bridge(
-    processed = processed,
-    mtry = mtry,
-    trees = trees,
-    min_n = min_n,
-    bootstrap = bootstrap,
-    max_depth = max_depth,
-    max_leaves = max_leaves,
-    max_predictors_per_note_split = max_predictors_per_note_split,
-    n_bins = n_bins,
-    min_samples_leaf = min_samples_leaf,
-    split_criterion = split_criterion,
-    min_impurity_decrease = min_impurity_decrease,
-    max_batch_size = max_batch_size,
-    n_streams = n_streams,
-    cuML_log_level = cuML_log_level
+    processed,
+    mtry,
+    trees,
+    min_n,
+    bootstrap,
+    sample_fraction,
+    max_depth,
+    max_leaves,
+    n_bins,
+    min_samples_leaf,
+    split_criterion,
+    min_impurity_decrease,
+    max_batch_size,
+    n_streams,
+    seed
   )
 }
 
 #' @rdname cuda_ml_rand_forest
 #' @export
-cuda_ml_rand_forest.matrix <- function(x, y, mtry = NULL, trees = NULL, min_n = 2L,
-                                       bootstrap = TRUE, max_depth = 16L,
-                                       max_leaves = Inf,
-                                       max_predictors_per_note_split = NULL,
-                                       n_bins = 128L, min_samples_leaf = 1L,
-                                       split_criterion = NULL,
-                                       min_impurity_decrease = 0,
-                                       max_batch_size = 128L, n_streams = 8L,
-                                       cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
-                                       ...) {
+cuda_ml_rand_forest.matrix <- function(
+  x,
+  y,
+  mtry = NULL,
+  trees = 100L,
+  min_n = 2L,
+  bootstrap = TRUE,
+  sample_fraction = 1,
+  max_depth = 16L,
+  max_leaves = Inf,
+  n_bins = 128L,
+  min_samples_leaf = 1L,
+  split_criterion = NULL,
+  min_impurity_decrease = 0,
+  max_batch_size = 4096L,
+  n_streams = 4L,
+  seed = NULL,
+  ...
+) {
+  check_dots_used()
   processed <- hardhat::mold(x, y)
-
   cuda_ml_rand_forest_bridge(
-    processed = processed,
-    mtry = mtry,
-    trees = trees,
-    min_n = min_n,
-    bootstrap = bootstrap,
-    max_depth = max_depth,
-    max_leaves = max_leaves,
-    max_predictors_per_note_split = max_predictors_per_note_split,
-    n_bins = n_bins,
-    min_samples_leaf = min_samples_leaf,
-    split_criterion = split_criterion,
-    min_impurity_decrease = min_impurity_decrease,
-    max_batch_size = max_batch_size,
-    n_streams = n_streams,
-    cuML_log_level = cuML_log_level
+    processed,
+    mtry,
+    trees,
+    min_n,
+    bootstrap,
+    sample_fraction,
+    max_depth,
+    max_leaves,
+    n_bins,
+    min_samples_leaf,
+    split_criterion,
+    min_impurity_decrease,
+    max_batch_size,
+    n_streams,
+    seed
   )
 }
 
 #' @rdname cuda_ml_rand_forest
 #' @export
-cuda_ml_rand_forest.formula <- function(formula, data, mtry = NULL, trees = NULL,
-                                        min_n = 2L, bootstrap = TRUE,
-                                        max_depth = 16L, max_leaves = Inf,
-                                        max_predictors_per_note_split = NULL,
-                                        n_bins = 128L, min_samples_leaf = 1L,
-                                        split_criterion = NULL,
-                                        min_impurity_decrease = 0,
-                                        max_batch_size = 128L, n_streams = 8L,
-                                        cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
-                                        ...) {
+cuda_ml_rand_forest.formula <- function(
+  formula,
+  data,
+  mtry = NULL,
+  trees = 100L,
+  min_n = 2L,
+  bootstrap = TRUE,
+  sample_fraction = 1,
+  max_depth = 16L,
+  max_leaves = Inf,
+  n_bins = 128L,
+  min_samples_leaf = 1L,
+  split_criterion = NULL,
+  min_impurity_decrease = 0,
+  max_batch_size = 4096L,
+  n_streams = 4L,
+  seed = NULL,
+  ...
+) {
+  check_dots_used()
   processed <- hardhat::mold(formula, data)
-
   cuda_ml_rand_forest_bridge(
-    processed = processed,
-    mtry = mtry,
-    trees = trees,
-    min_n = min_n,
-    bootstrap = bootstrap,
-    max_depth = max_depth,
-    max_leaves = max_leaves,
-    max_predictors_per_note_split = max_predictors_per_note_split,
-    n_bins = n_bins,
-    min_samples_leaf = min_samples_leaf,
-    split_criterion = split_criterion,
-    min_impurity_decrease = min_impurity_decrease,
-    max_batch_size = max_batch_size,
-    n_streams = n_streams,
-    cuML_log_level = cuML_log_level
+    processed,
+    mtry,
+    trees,
+    min_n,
+    bootstrap,
+    sample_fraction,
+    max_depth,
+    max_leaves,
+    n_bins,
+    min_samples_leaf,
+    split_criterion,
+    min_impurity_decrease,
+    max_batch_size,
+    n_streams,
+    seed
   )
 }
 
 #' @rdname cuda_ml_rand_forest
 #' @export
-cuda_ml_rand_forest.recipe <- function(x, data, mtry = NULL, trees = NULL,
-                                       min_n = 2L, bootstrap = TRUE,
-                                       max_depth = 16L, max_leaves = Inf,
-                                       max_predictors_per_note_split = NULL,
-                                       n_bins = 128L, min_samples_leaf = 1L,
-                                       split_criterion = NULL,
-                                       min_impurity_decrease = 0,
-                                       max_batch_size = 128L, n_streams = 8L,
-                                       cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
-                                       ...) {
+cuda_ml_rand_forest.recipe <- function(
+  x,
+  data,
+  mtry = NULL,
+  trees = 100L,
+  min_n = 2L,
+  bootstrap = TRUE,
+  sample_fraction = 1,
+  max_depth = 16L,
+  max_leaves = Inf,
+  n_bins = 128L,
+  min_samples_leaf = 1L,
+  split_criterion = NULL,
+  min_impurity_decrease = 0,
+  max_batch_size = 4096L,
+  n_streams = 4L,
+  seed = NULL,
+  ...
+) {
+  check_dots_used()
   processed <- hardhat::mold(x, data)
-
   cuda_ml_rand_forest_bridge(
-    processed = processed,
-    mtry = mtry,
-    trees = trees,
-    min_n = min_n,
-    bootstrap = bootstrap,
-    max_depth = max_depth,
-    max_leaves = max_leaves,
-    max_predictors_per_note_split = max_predictors_per_note_split,
-    n_bins = n_bins,
-    min_samples_leaf = min_samples_leaf,
-    split_criterion = split_criterion,
-    min_impurity_decrease = min_impurity_decrease,
-    max_batch_size = max_batch_size,
-    n_streams = n_streams,
-    cuML_log_level = cuML_log_level
+    processed,
+    mtry,
+    trees,
+    min_n,
+    bootstrap,
+    sample_fraction,
+    max_depth,
+    max_leaves,
+    n_bins,
+    min_samples_leaf,
+    split_criterion,
+    min_impurity_decrease,
+    max_batch_size,
+    n_streams,
+    seed
   )
 }
 
-cuda_ml_rand_forest_bridge <- function(processed, mtry, trees, min_n, bootstrap,
-                                       max_depth, max_leaves,
-                                       max_predictors_per_note_split, n_bins,
-                                       min_samples_leaf, split_criterion,
-                                       min_impurity_decrease, max_batch_size,
-                                       n_streams, cuML_log_level) {
+cuda_ml_rand_forest_bridge <- function(
+  processed,
+  mtry,
+  trees,
+  min_n,
+  bootstrap,
+  sample_fraction,
+  max_depth,
+  max_leaves,
+  n_bins,
+  min_samples_leaf,
+  split_criterion,
+  min_impurity_decrease,
+  max_batch_size,
+  n_streams,
+  seed
+) {
   hardhat::validate_predictors_are_numeric(processed$predictors)
   hardhat::validate_outcomes_are_univariate(processed$outcomes)
-  x <- as.matrix(processed$predictors)
-  y <- processed$outcomes[[1]]
-  classification <- is.factor(y)
-  if (identical(max_leaves, Inf)) {
-    max_leaves <- -1L
-  }
 
-  # Default value for 'split_criterion' depends on whether a classification or a
-  # regression task is being performed.
+  x <- as.matrix(processed$predictors)
+  outcome <- processed$outcomes[[1L]]
+  classification <- is.factor(outcome)
+  stopifnot(
+    "The outcome must be a factor or numeric vector" = classification ||
+      is.numeric(outcome)
+  )
+  if (classification) {
+    validate_classification_outcome(outcome)
+  }
+  mtry <- mtry %||%
+    if (classification) {
+      max(1L, as.integer(sqrt(ncol(x))))
+    } else {
+      ncol(x)
+    }
+  stopifnot(
+    "`mtry` must be a whole number between 1 and the number of predictors" = is.numeric(
+      mtry
+    ) &&
+      length(mtry) == 1L &&
+      is.finite(mtry) &&
+      mtry == as.integer(mtry) &&
+      mtry >= 1L &&
+      mtry <= ncol(x),
+    "`trees` must be one positive whole number" = is.numeric(trees) &&
+      length(trees) == 1L &&
+      is.finite(trees) &&
+      trees == as.integer(trees) &&
+      trees >= 1L,
+    "`min_n` must be one whole number of at least 2" = is.numeric(min_n) &&
+      length(min_n) == 1L &&
+      is.finite(min_n) &&
+      min_n == as.integer(min_n) &&
+      min_n >= 2L,
+    "`bootstrap` must be TRUE or FALSE" = is.logical(bootstrap) &&
+      length(bootstrap) == 1L &&
+      !is.na(bootstrap),
+    "`sample_fraction` must be one finite number in (0, 1]" = is.numeric(
+      sample_fraction
+    ) &&
+      length(sample_fraction) == 1L &&
+      is.finite(sample_fraction) &&
+      sample_fraction > 0 &&
+      sample_fraction <= 1,
+    "`max_depth` must be one positive whole number" = is.numeric(max_depth) &&
+      length(max_depth) == 1L &&
+      is.finite(max_depth) &&
+      max_depth == as.integer(max_depth) &&
+      max_depth >= 1L,
+    "`max_leaves` must be positive infinity or a whole number of at least 2" = is.numeric(
+      max_leaves
+    ) &&
+      length(max_leaves) == 1L &&
+      !is.na(max_leaves) &&
+      ((is.infinite(max_leaves) && max_leaves > 0) ||
+        (is.finite(max_leaves) &&
+          max_leaves == as.integer(max_leaves) &&
+          max_leaves >= 2L)),
+    "`n_bins` must be one whole number of at least 2" = is.numeric(n_bins) &&
+      length(n_bins) == 1L &&
+      is.finite(n_bins) &&
+      n_bins == as.integer(n_bins) &&
+      n_bins >= 2L,
+    "`min_samples_leaf` must be one positive whole number" = is.numeric(
+      min_samples_leaf
+    ) &&
+      length(min_samples_leaf) == 1L &&
+      is.finite(min_samples_leaf) &&
+      min_samples_leaf == as.integer(min_samples_leaf) &&
+      min_samples_leaf >= 1L,
+    "`min_impurity_decrease` must be one non-negative finite number" = is.numeric(
+      min_impurity_decrease
+    ) &&
+      length(min_impurity_decrease) == 1L &&
+      is.finite(min_impurity_decrease) &&
+      min_impurity_decrease >= 0,
+    "`max_batch_size` must be one positive whole number" = is.numeric(
+      max_batch_size
+    ) &&
+      length(max_batch_size) == 1L &&
+      is.finite(max_batch_size) &&
+      max_batch_size == as.integer(max_batch_size) &&
+      max_batch_size >= 1L,
+    "`n_streams` must be one positive whole number" = is.numeric(n_streams) &&
+      length(n_streams) == 1L &&
+      is.finite(n_streams) &&
+      n_streams == as.integer(n_streams) &&
+      n_streams >= 1L,
+    "`seed` must be NULL or one non-negative whole number" = is.null(seed) ||
+      (is.numeric(seed) &&
+        length(seed) == 1L &&
+        is.finite(seed) &&
+        seed == as.integer(seed) &&
+        seed >= 0)
+  )
+
+  seed <- seed %||% (sample.int(.Machine$integer.max, 1L) - 1L)
   split_criterion <- decision_tree_match_split_criterion(
     split_criterion,
     classification
   )
-  cuML_log_level <- match_cuML_log_level(cuML_log_level)
-
-  rand_forest_fit_impl <- ifelse(
-    classification,
-    cuda_ml_rand_forest_impl_classification,
-    cuda_ml_rand_forest_impl_regression
-  )
-
-  rand_forest_fit_impl(
-    processed = processed,
-    mtry = mtry,
-    trees = trees,
-    min_n = min_n,
-    bootstrap = bootstrap,
-    max_depth = max_depth,
+  max_leaves <- if (is.infinite(max_leaves)) -1L else as.integer(max_leaves)
+  common <- list(
+    n_trees = as.integer(trees),
+    bootstrap = as.logical(bootstrap),
+    max_samples = as.numeric(sample_fraction),
+    n_streams = as.integer(n_streams),
+    max_depth = as.integer(max_depth),
     max_leaves = max_leaves,
-    max_predictors_per_note_split = max_predictors_per_note_split,
-    n_bins = n_bins,
-    min_samples_leaf = min_samples_leaf,
-    split_criterion = split_criterion,
-    min_impurity_decrease = min_impurity_decrease,
-    max_batch_size = max_batch_size,
-    n_streams = n_streams,
-    cuML_log_level = cuML_log_level
-  )
-}
-
-cuda_ml_rand_forest_impl_classification <- function(processed, mtry, trees, min_n,
-                                                    bootstrap, max_depth,
-                                                    max_leaves,
-                                                    max_predictors_per_note_split,
-                                                    n_bins, min_samples_leaf,
-                                                    split_criterion,
-                                                    min_impurity_decrease,
-                                                    max_batch_size, n_streams,
-                                                    cuML_log_level) {
-  x <- as.matrix(processed$predictors)
-  y <- processed$outcomes[[1]]
-
-  model_xptr <- .rf_classifier_fit(
-    input = as.matrix(x),
-    labels = as.integer(y),
-    n_trees = as.integer(trees),
-    bootstrap = as.logical(bootstrap),
-    max_samples = as.numeric(mtry %||% sqrt(ncol(x))) / ncol(x),
-    n_streams = as.integer(n_streams),
-    max_depth = as.integer(max_depth),
-    max_leaves = as.integer(max_leaves),
-    max_features = as.numeric(max_predictors_per_note_split %||% sqrt(ncol(x))) / ncol(x),
+    max_features = as.numeric(mtry) / ncol(x),
     n_bins = as.integer(n_bins),
     min_samples_leaf = as.integer(min_samples_leaf),
-    min_samples_split = as.integer(min_n %||% 2L),
+    min_samples_split = as.integer(min_n),
     split_criterion = split_criterion,
     min_impurity_decrease = as.numeric(min_impurity_decrease),
     max_batch_size = as.integer(max_batch_size),
-    verbosity = cuML_log_level
+    seed = as.integer(seed)
   )
 
-  new_model(
-    cls = "cuda_ml_rand_forest",
-    mode = "classification",
-    xptr = model_xptr,
-    blueprint = processed$blueprint
-  )
-}
+  if (classification) {
+    xptr <- rlang::exec(
+      .rf_classifier_fit,
+      input = x,
+      labels = as.integer(outcome) - 1L,
+      !!!common
+    )
+    class_levels <- levels(outcome)
+  } else {
+    xptr <- rlang::exec(
+      .rf_regressor_fit,
+      input = x,
+      responses = as.numeric(outcome),
+      !!!common
+    )
+    class_levels <- NULL
+  }
 
-cuda_ml_rand_forest_impl_regression <- function(processed, mtry, trees, min_n,
-                                                bootstrap, max_depth, max_leaves,
-                                                max_predictors_per_note_split,
-                                                n_bins, min_samples_leaf,
-                                                split_criterion,
-                                                min_impurity_decrease,
-                                                max_batch_size, n_streams,
-                                                cuML_log_level) {
-  x <- as.matrix(processed$predictors)
-  y <- processed$outcomes[[1]]
-
-  model_xptr <- .rf_regressor_fit(
-    input = as.matrix(x),
-    responses = as.numeric(y),
-    n_trees = as.integer(trees),
-    bootstrap = as.logical(bootstrap),
-    max_samples = as.numeric(mtry %||% sqrt(ncol(x))) / ncol(x),
-    n_streams = as.integer(n_streams),
-    max_depth = as.integer(max_depth),
-    max_leaves = as.integer(max_leaves),
-    max_features = as.numeric(max_predictors_per_note_split %||% sqrt(ncol(x))) / ncol(x),
-    n_bins = as.integer(n_bins),
-    min_samples_leaf = as.integer(min_samples_leaf),
-    min_samples_split = as.integer(min_n %||% 2L),
-    split_criterion = split_criterion,
-    min_impurity_decrease = as.numeric(min_impurity_decrease),
-    max_batch_size = as.integer(max_batch_size),
-    verbosity = cuML_log_level
+  inference <- list(
+    device = 1L,
+    device_id = -1L,
+    layout = 0L,
+    precision = -1L,
+    default_chunk_size = 0L,
+    align_bytes = 0L
   )
-  new_model(
-    cls = "cuda_ml_rand_forest",
-    mode = "regression",
-    xptr = model_xptr,
+  new_nvforest_model(
+    xptr,
+    class_levels,
+    inference,
+    cls = c("cuda_ml_rand_forest", "cuda_ml_nvforest"),
     blueprint = processed$blueprint
   )
 }
 
 #' @export
 cuda_ml_get_state.cuda_ml_rand_forest <- function(model) {
-  if (!cuda_ml_fil_enabled()) {
-    stop(
-      "Random forest serialization requires Treelite/FIL support, but FIL is ",
-      "disabled in this cuda.ml build.",
-      call. = FALSE
-    )
-  }
-
-  get_state_impl <- switch(model$mode,
-    classification = .rf_classifier_get_state,
-    regression = .rf_regressor_get_state
+  new_model_state(
+    nvforest_model_payload(model),
+    "cuda_ml_rand_forest_model_state"
   )
-
-  model_state <- list(
-    mode = model$mode,
-    rf = get_state_impl(model$xptr),
-    blueprint = model$blueprint
-  )
-
-  new_model_state(model_state, "cuda_ml_rand_forest_model_state")
 }
 
 #' @export
 cuda_ml_set_state.cuda_ml_rand_forest_model_state <- function(model_state) {
-  set_state_impl <- switch(model_state$mode,
-    classification = .rf_classifier_set_state,
-    regression = .rf_regressor_set_state
+  payload <- cuda_ml_state_payload(
+    model_state,
+    "cuda_ml_rand_forest_model_state"
   )
-
-  new_model(
-    cls = "cuda_ml_rand_forest",
-    mode = model_state$mode,
-    xptr = set_state_impl(model_state$rf),
-    blueprint = model_state$blueprint
+  nvforest_unserialize_payload(
+    payload,
+    c("cuda_ml_rand_forest", "cuda_ml_nvforest")
   )
 }
 
-#' Make predictions on new data points.
-#'
-#' Make predictions on new data points using a CuML random forest model.
-#'
-#' @template predict
-#' @template output-class-probabilities
-#' @template cuML-log-level
-#'
-#' @importFrom ellipsis check_dots_used
-#' @export
-predict.cuda_ml_rand_forest <- function(object, x,
-                                        output_class_probabilities = NULL,
-                                        cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
-                                        ...) {
-  check_dots_used()
-
-  processed <- hardhat::forge(x, object$blueprint)
-
-  predict_cuda_ml_rand_forest_bridge(
-    model = object,
-    processed = processed,
-    output_class_probabilities = output_class_probabilities,
-    cuML_log_level = cuML_log_level
-  )
-}
-
-predict_cuda_ml_rand_forest_bridge <- function(model,
-                                               processed,
-                                               output_class_probabilities,
-                                               cuML_log_level) {
-  cuML_log_level <- match_cuML_log_level(cuML_log_level)
-
-  out <- switch(model$mode,
-    classification = {
-      predict_cuda_ml_rand_forest_classification_impl(
-        model = model,
-        processed = processed,
-        output_class_probabilities = output_class_probabilities %||% FALSE,
-        cuML_log_level = cuML_log_level
-      )
-    },
-    regression = {
-      if (!is.null(output_class_probabilities)) {
-        stop("'output_class_probabilities' is not applicable for regression tasks!")
-      }
-
-      predict_cuda_ml_rand_forest_regression_impl(
-        model = model,
-        processed = processed,
-        cuML_log_level = cuML_log_level
-      )
-    }
-  )
-  hardhat::validate_prediction_size(out, processed$predictors)
-
-  out
-}
-
-predict_cuda_ml_rand_forest_classification_impl <- function(model,
-                                                            processed,
-                                                            output_class_probabilities,
-                                                            cuML_log_level) {
-  if (output_class_probabilities) {
-    if (as.integer(cuML_major_version()) == 21 &&
-      as.integer(cuML_minor_version()) < 8) {
-      stop(
-        "Class probabilities output for random forest classifier is only ",
-        "supported by RAPIDS cuML 21.08 or above. Current version of ",
-        "RAPIDS cuML linked with {cuda.ml} is v",
-        paste0(cuML_major_version(), ".", cuML_minor_version()), "."
-      )
-    }
-
-    preds <- .rf_classifier_predict_class_probabilities(
-      model_xptr = model$xptr,
-      input = as.matrix(processed$predictors)
-    )
-
-    postprocess_class_probabilities(preds, model)
-  } else {
-    preds <- .rf_classifier_predict(
-      model_xptr = model$xptr,
-      input = as.matrix(processed$predictors),
-      verbosity = cuML_log_level
-    )
-
-    postprocess_classification_results(preds, model)
-  }
-}
-
-predict_cuda_ml_rand_forest_regression_impl <- function(model, processed,
-                                                        cuML_log_level) {
-  preds <- .rf_regressor_predict(
-    model_xptr = model$xptr,
-    input = as.matrix(processed$predictors),
-    verbosity = cuML_log_level
-  )
-
-  postprocess_regression_results(preds)
-}
-
-# register the CuML-based rand_forest model for parsnip
 register_rand_forest_model <- function(pkgname) {
   for (mode in c("classification", "regression")) {
     parsnip::set_model_engine(
-      model = "rand_forest", mode = mode, eng = pkgname
+      model = "rand_forest",
+      mode = mode,
+      eng = pkgname
     )
   }
-
   parsnip::set_dependency(model = "rand_forest", eng = pkgname, pkg = pkgname)
 
   parsnip::set_model_arg(
@@ -489,7 +423,6 @@ register_rand_forest_model <- function(pkgname) {
     func = list(pkg = "dials", fun = "mtry"),
     has_submodel = FALSE
   )
-
   parsnip::set_model_arg(
     model = "rand_forest",
     eng = pkgname,
@@ -498,7 +431,6 @@ register_rand_forest_model <- function(pkgname) {
     func = list(pkg = "dials", fun = "trees"),
     has_submodel = FALSE
   )
-
   parsnip::set_model_arg(
     model = "rand_forest",
     eng = pkgname,
@@ -517,22 +449,9 @@ register_rand_forest_model <- function(pkgname) {
         interface = "formula",
         protect = c("formula", "data"),
         func = c(pkg = pkgname, fun = "cuda_ml_rand_forest"),
-        defaults = list(
-          bootstrap = TRUE,
-          max_depth = 16L,
-          max_leaves = Inf,
-          max_predictors_per_note_split = NULL,
-          n_bins = 128L,
-          min_samples_leaf = 1L,
-          split_criterion = NULL,
-          min_impurity_decrease = 0,
-          max_batch_size = 128L,
-          n_streams = 8L,
-          cuML_log_level = "off"
-        )
+        defaults = list()
       )
     )
-
     parsnip::set_encoding(
       model = "rand_forest",
       eng = pkgname,
@@ -541,7 +460,7 @@ register_rand_forest_model <- function(pkgname) {
         predictor_indicators = "none",
         compute_intercept = FALSE,
         remove_intercept = FALSE,
-        allow_sparse_x = TRUE
+        allow_sparse_x = FALSE
       )
     )
   }
@@ -557,14 +476,13 @@ register_rand_forest_model <- function(pkgname) {
         post = NULL,
         func = c(fun = "predict"),
         args = list(
-          quote(object$fit),
-          quote(new_data),
-          identical(type, "prob") # output_class_probabilities
+          object = quote(object$fit),
+          new_data = quote(new_data),
+          type = type
         )
       )
     )
   }
-
   parsnip::set_pred(
     model = "rand_forest",
     eng = pkgname,
@@ -575,9 +493,12 @@ register_rand_forest_model <- function(pkgname) {
       post = NULL,
       func = c(fun = "predict"),
       args = list(
-        quote(object$fit),
-        quote(new_data)
+        object = quote(object$fit),
+        new_data = quote(new_data),
+        type = "numeric"
       )
     )
   )
+
+  invisible()
 }

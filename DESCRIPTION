@@ -1,7 +1,7 @@
 Package: cuda.ml
 Type: Package
 Title: R Interface for the RAPIDS cuML Suite of Libraries
-Version: 0.3.3.9000
+Version: 0.4.0
 Authors@R:
     c(person(given = "Yitao",
            family = "Li",
@@ -25,8 +25,9 @@ License: MIT + file LICENSE
 URL: https://mlverse.github.io/cuda.ml/
 BugReports: https://github.com/mlverse/cuda.ml/issues
 Depends:
-    R (>= 4.0)
+    R (>= 4.1)
 Imports:
+    bundle,
     digest,
     ellipsis,
     filelock,
@@ -39,8 +40,8 @@ Suggests:
     glmnet,
     MASS,
     magrittr,
-    mlbench,
     purrr,
+    recipes,
     reticulate,
     testthat,
     xgboost
@@ -48,9 +49,10 @@ LinkingTo: Rcpp
 Encoding: UTF-8
 OS_type: unix
 SystemRequirements: The managed R-universe binary targets Ubuntu 26.04 x86_64
-    (including WSL2 running that distribution) with an NVIDIA GPU and driver
-    580 or newer. Functional source builds require CUDA Toolkit 13.2 and RAPIDS
-    cuML 26.06 supplied through a compatible local toolchain or the mlverse
-    R-universe build environment.
+    (including WSL2 running that distribution). GPU-backed operations require
+    a supported NVIDIA GPU and driver 580 or newer. Functional source builds
+    require CUDA Toolkit 13.2.2, GNU C++ 14 or newer, RAPIDS cuML and nvForest
+    26.06, and Treelite 4.6.1 supplied through a compatible local toolchain or
+    the mlverse R-universe build environment.
 NeedsCompilation: yes
 Config/roxygen2/version: 8.0.0

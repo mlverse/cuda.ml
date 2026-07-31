@@ -5,55 +5,22 @@
 #include "matrix_utils.h"
 #include "pinned_host_vector.h"
 #include "preprocessor.h"
-#include "random_forest.cuh"
 #include "stream_allocator.h"
 
 #include <thrust/device_vector.h>
 #include <cuml/neighbors/knn.hpp>
-#include <cuml/version_config.hpp>
 
 #include <Rcpp.h>
 
 #include <initializer_list>
 #include <memory>
-#include <string>
-#include <unordered_map>
 #include <vector>
-
-#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
-     CUML4R_LIBCUML_VERSION(24, 0))
 
 using knnIndex = ML::knnIndex;
 using knnIndexParam = ML::knnIndexParam;
 using IVFFlatParam = ML::IVFFlatParam;
 using IVFPQParam = ML::IVFPQParam;
 using knnDistanceType = ML::distance::DistanceType;
-
-#elif CUML_VERSION_MAJOR == 21
-#if CUML4R_CONCAT(0x, CUML_VERSION_MINOR) >= 0x08
-
-#include <raft/spatial/knn/ann_common.h>
-
-using knnIndex = raft::spatial::knn::knnIndex;
-using knnIndexParam = raft::spatial::knn::knnIndexParam;
-using QuantizerType = raft::spatial::knn::QuantizerType;
-using IVFFlatParam = raft::spatial::knn::IVFFlatParam;
-using IVFPQParam = raft::spatial::knn::IVFPQParam;
-using IVFSQParam = raft::spatial::knn::IVFSQParam;
-using knnDistanceType = raft::distance::DistanceType;
-
-#else
-
-using knnIndex = ML::knnIndex;
-using knnIndexParam = ML::knnIndexParam;
-using QuantizerType = ML::QuantizerType;
-using IVFFlatParam = ML::IVFFlatParam;
-using IVFPQParam = ML::IVFPQParam;
-using IVFSQParam = ML::IVFSQParam;
-using knnDistanceType = raft::distance::DistanceType;
-
-#endif
-#endif
 
 namespace cuml4r {
 namespace knn {
@@ -65,8 +32,6 @@ constexpr auto kNumProbes = "nprobe";
 constexpr auto kM = "M";
 constexpr auto kNumBits = "n_bits";
 constexpr auto kUseComputedTables = "usePrecomputedTables";
-constexpr auto kQuantizerType = "qtype";
-constexpr auto kEncodeResidual = "encodeResidual";
 // string constants related to KNN model attributes
 constexpr auto kInput = "input";
 constexpr auto kIndex = "knn_index";
@@ -76,25 +41,13 @@ constexpr auto kMetric = "metric";
 constexpr auto kNumSamples = "n_samples";
 constexpr auto kNumDims = "n_dims";
 
-#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) < \
-     CUML4R_LIBCUML_VERSION(24, 0))
-std::unordered_map<std::string, QuantizerType> const kQuantizerTypes{
-  {"QT_8bit", QuantizerType::QT_8bit},
-  {"QT_4bit", QuantizerType::QT_4bit},
-  {"QT_8bit_uniform", QuantizerType::QT_8bit_uniform},
-  {"QT_4bit_uniform", QuantizerType::QT_4bit_uniform},
-  {"QT_fp16", QuantizerType::QT_fp16},
-  {"QT_8bit_direct", QuantizerType::QT_8bit_direct},
-  {"QT_6bit", QuantizerType::QT_6bit}};
-#endif
-
 // Additional info for setting KNN params
 struct ParamsDetails {
   int numRows_;
   int numCols_;
 };
 
-enum class Algo { BRUTE_FORCE = 0, IVFFLAT = 1, IVFPQ = 2, IVFSQ = 3 };
+enum class Algo { BRUTE_FORCE = 0, IVFFLAT = 1, IVFPQ = 2 };
 
 struct NearestNeighbors {
   NearestNeighbors() {}
@@ -213,9 +166,6 @@ __host__ void validate_algo_params(Algo const algo, Rcpp::List const& params) {
   } else if (algo == Algo::IVFPQ) {
     validate_param_list(
       params, {kNumLists, kNumProbes, kM, kNumBits, kUseComputedTables});
-  } else if (algo == Algo::IVFSQ) {
-    validate_param_list(
-      params, {kNumLists, kNumProbes, kQuantizerType, kEncodeResidual});
   }
 }
 
@@ -247,8 +197,6 @@ __host__ std::unique_ptr<knnIndexParam> build_ivfpq_algo_params(
     params[kNumLists] = 8;
     params[kNumProbes] = 3;
 
-#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
-     CUML4R_LIBCUML_VERSION(24, 0))
     for (auto iter = kAllowedSubDimSize.crbegin();
          iter != kAllowedSubDimSize.crend(); ++iter) {
       auto const pq_dim = *iter;
@@ -258,17 +206,6 @@ __host__ std::unique_ptr<knnIndexParam> build_ivfpq_algo_params(
         break;
       }
     }
-#else
-    for (auto const n_subq : kAllowedSubquantizers) {
-      if (d % n_subq == 0 &&
-          std::find(kAllowedSubDimSize.cbegin(), kAllowedSubDimSize.cend(),
-                    d / n_subq) != kAllowedSubDimSize.cend()) {
-        params[kUseComputedTables] = false;
-        params[kM] = n_subq;
-        break;
-      }
-    }
-#endif
 
     if (!params.containsElementNamed(kM)) {
       for (auto const n_subq : kAllowedSubquantizers) {
@@ -302,37 +239,6 @@ __host__ std::unique_ptr<knnIndexParam> build_ivfpq_algo_params(
   return algo_params;
 }
 
-__host__ std::unique_ptr<knnIndexParam> build_ivfsq_algo_params(
-  Rcpp::List params, bool const automated) {
-#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
-     CUML4R_LIBCUML_VERSION(24, 0))
-  Rcpp::stop("IVFSQ KNN is unsupported by this cuML version");
-  return nullptr;
-#else
-  if (automated) {
-    params[kNumLists] = 8;
-    params[kNumProbes] = 2;
-    params[kQuantizerType] = "QT_8bit";
-    params[kEncodeResidual] = true;
-  }
-
-  auto algo_params = std::make_unique<IVFSQParam>();
-  algo_params->nlist = Rcpp::as<int>(params[kNumLists]);
-  algo_params->nprobe = Rcpp::as<int>(params[kNumProbes]);
-  auto const qtype = Rcpp::as<std::string>(params[kQuantizerType]);
-  {
-    auto const qtype_iter = kQuantizerTypes.find(qtype);
-    if (kQuantizerTypes.cend() == qtype_iter) {
-      Rcpp::stop("Unsupported quantizer type '" + qtype + "'");
-    }
-    algo_params->qtype = qtype_iter->second;
-  }
-  algo_params->encodeResidual = Rcpp::as<bool>(params[kEncodeResidual]);
-
-  return algo_params;
-#endif
-}
-
 __host__ std::unique_ptr<knnIndexParam> build_algo_params(
   Algo const algo, Rcpp::List const& params, ParamsDetails const& details) {
   bool const automated = (params.size() == 0);
@@ -346,10 +252,8 @@ __host__ std::unique_ptr<knnIndexParam> build_algo_params(
       return build_ivfflat_algo_params(params, automated);
     case Algo::IVFPQ:
       return build_ivfpq_algo_params(params, automated, details);
-    case Algo::IVFSQ:
-      return build_ivfsq_algo_params(params, automated);
     default:
-      return nullptr;
+      Rcpp::stop("Unknown approximate KNN algorithm.");
   }
 }
 
@@ -360,8 +264,7 @@ __host__ std::unique_ptr<knnIndex> build_knn_index(
   Rcpp::List const& algo_params) {
   std::unique_ptr<knnIndex> knn_index(nullptr);
 
-  if (algo_type == Algo::IVFFLAT || algo_type == Algo::IVFPQ ||
-      algo_type == Algo::IVFSQ) {
+  if (algo_type == Algo::IVFFLAT || algo_type == Algo::IVFPQ) {
     ParamsDetails details;
     details.numRows_ = n_samples;
     details.numCols_ = n_features;
@@ -391,6 +294,10 @@ __host__ std::unique_ptr<knnIndex> build_knn_index(
 __host__ Rcpp::List knn_fit(Rcpp::NumericMatrix const& x, int const algo,
                             int const metric, float const p,
                             Rcpp::List const& algo_params) {
+  if (algo < static_cast<int>(knn::Algo::BRUTE_FORCE) ||
+      algo > static_cast<int>(knn::Algo::IVFPQ)) {
+    Rcpp::stop("Unknown KNN algorithm.");
+  }
   auto const algo_type = static_cast<knn::Algo>(algo);
   auto const dist_type = static_cast<knnDistanceType>(metric);
   auto const input_m = Matrix<float>(x, /*transpose=*/false);

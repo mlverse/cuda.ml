@@ -9,29 +9,38 @@ test_that("PCA models can be serialized and unserialized correctly", {
     for (transform_input in c(FALSE, TRUE)) {
       model <- cuda_ml_pca(
         iris[1:4],
-        n_components = 3, whiten = whiten,
+        n_components = 3,
+        whiten = whiten,
         transform_input = transform_input
       )
-      models <- append(models, list(model))
+      models <- append(models, list(list(model = model, whiten = whiten)))
     }
   }
 
-  for (model in models) {
+  for (entry in models) {
+    model <- entry$model
+    whiten <- entry$whiten
     actual_inv_transform <- callr::r(
-      function(model_state, expected_components, expected_expl_var,
-               expected_expl_var_ratio, expected_sg_vals, expected_m,
-               expected_tf_data, whiten) {
+      function(
+        model_state,
+        expected_components,
+        expected_expl_var,
+        expected_expl_var_ratio,
+        expected_sg_vals,
+        expected_m,
+        expected_tf_data,
+        whiten
+      ) {
         library(cuda.ml)
         library(testthat)
-
-        stopifnot(has_cuML())
 
         model <- cuda_ml_unserialize(model_state)
 
         expect_equal(model$components, expected_components)
         expect_equal(model$explained_variance, expected_expl_var)
         expect_equal(
-          model$explained_variance_ratio, expected_expl_var_ratio
+          model$explained_variance_ratio,
+          expected_expl_var_ratio
         )
         expect_equal(model$singular_values, expected_sg_vals)
         expect_equal(model$mean, expected_m)
@@ -59,7 +68,8 @@ test_that("PCA models can be serialized and unserialized correctly", {
     if (!is.null(model$transformed_data) && !whiten) {
       # TODO: look into why this may fail when `whiten` is `TRUE`
       expected_inv_transform <- cuda_ml_inverse_transform(
-        model, model$transformed_data
+        model,
+        model$transformed_data
       )
 
       expect_equal(expected_inv_transform, actual_inv_transform)

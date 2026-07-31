@@ -4,12 +4,12 @@
 \alias{predict.cuda_ml_svm}
 \title{Make predictions on new data points.}
 \usage{
-\method{predict}{cuda_ml_svm}(object, x, ...)
+\method{predict}{cuda_ml_svm}(object, new_data, ...)
 }
 \arguments{
 \item{object}{A trained CuML model.}
 
-\item{x}{A matrix or dataframe containing new data points.}
+\item{new_data}{A matrix or data frame containing new data points.}
 
 \item{...}{Additional arguments to \code{predict()}. Currently unused.}
 }

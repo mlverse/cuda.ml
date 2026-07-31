@@ -56,16 +56,18 @@ distributions are not yet supported by the managed binary.
 
 Loading \pkg{cuda.ml} does not require a GPU, load native code, create a
 cache, or contact the network. Call \code{\link{cuda_ml_install}()} to
-download and cache the pinned CUDA 13.2 and RAPIDS cuML 26.06 runtime while
-preparing a container or machine image. Otherwise, the first native
-operation prepares the same runtime automatically. The target machine
-supplies only a supported NVIDIA GPU and driver 580 or newer.
+download and cache the pinned CUDA 13.2.2, RAPIDS cuML and nvForest 26.06,
+and Treelite 4.6.1 runtime while preparing a container or machine image.
+Native operations fail with an installation instruction until that explicit
+setup step has completed. GPU operations then require a supported NVIDIA GPU
+and driver 580 or newer; nvForest CPU inference does not.
 
-CRAN builds are network-free, stub-capable source builds. A stub returns
-\code{FALSE} from \code{has_cuML()}; install the R-universe binary for a
-no-compiler setup. Local functional source builds must use matching CUDA
-13.2 and RAPIDS cuML 26.06 toolchains. Set \code{CUDA_ML_CACHE_DIR} to
-override the default managed runtime cache.
+CRAN builds are network-free source stubs. A stub reports
+\code{backend = "stub"} from \code{\link{cuda_ml_backend_info}()}; install
+the R-universe binary for a no-compiler setup. Local functional source builds
+require exact CUDA 13.2.2, GNU C++ 14 or newer, cuML and nvForest 26.06, and
+Treelite 4.6.1 inputs. Set \code{CUDA_ML_CACHE_DIR} to override the default
+managed runtime cache.
 }
 
 \seealso{

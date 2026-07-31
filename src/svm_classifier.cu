@@ -95,17 +95,12 @@ __host__ SEXP svc_fit(Rcpp::NumericMatrix const& input,
                  h_sample_weights.cend(), d_sample_weights.begin());
   }
 
-  MLCommon::Matrix::KernelParams kernel_params{
-    /*kernel=*/static_cast<MLCommon::Matrix::KernelType>(kernel), degree, gamma,
+  ML::matrix::KernelParams kernel_params{
+    /*kernel=*/static_cast<ML::matrix::KernelType>(kernel), degree, gamma,
     coef0};
 
-#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
-     CUML4R_LIBCUML_VERSION(24, 0))
   auto const verbosity_level =
     static_cast<rapids_logger::level_enum>(verbosity);
-#else
-  auto const verbosity_level = verbosity;
-#endif
 
   // SVM output
   auto svc = std::make_unique<ML::SVM::SVC<double>>(

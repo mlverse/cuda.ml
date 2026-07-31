@@ -1,51 +1,26 @@
 #include "preprocessor.h"
 
-#ifdef HAS_CUML
-
+#include <cuda_runtime_api.h>
+#include <treelite/version.h>
 #include <cuml/version_config.hpp>
+#include <nvforest/version_config.hpp>
 
-static_assert(CUML_VERSION_MAJOR >= 24,
-              "{cuda.ml} requires RAPIDS cuML 24.0 or newer.");
-
-#endif
+static_assert(CUML_VERSION_MAJOR == 26 && CUML_VERSION_MINOR == 6 &&
+                CUML_VERSION_PATCH == 0,
+              "{cuda.ml} requires RAPIDS cuML 26.06.");
+static_assert(NVForest_VERSION_MAJOR == 26 && NVForest_VERSION_MINOR == 6 &&
+                NVForest_VERSION_PATCH == 0,
+              "{cuda.ml} requires nvForest 26.06.0.");
+static_assert(TREELITE_VER_MAJOR == 4 && TREELITE_VER_MINOR == 6 &&
+                TREELITE_VER_PATCH == 1,
+              "{cuda.ml} requires Treelite 4.6.1.");
 
 #include <Rcpp.h>
 
-// [[Rcpp::export(".has_cuML")]]
-bool has_cuML() {
-#ifdef HAS_CUML
-
-  return true;
-
-#else
-
-  return false;
-
-#endif
-}
-
-// [[Rcpp::export(".cuML_major_version")]]
-Rcpp::CharacterVector cuML_major_version() {
-#ifdef HAS_CUML
-
-  return CUML4R_TO_STRING(CUML_VERSION_MAJOR);
-
-#else
-
-  return NA_STRING;
-
-#endif
-}
-
-// [[Rcpp::export(".cuML_minor_version")]]
-Rcpp::CharacterVector cuML_minor_version() {
-#ifdef HAS_CUML
-
-  return CUML4R_TO_STRING(CUML_VERSION_MINOR);
-
-#else
-
-  return NA_STRING;
-
-#endif
+// [[Rcpp::export(".backend_versions")]]
+Rcpp::List backend_versions() {
+  return Rcpp::List::create(Rcpp::Named("cuml") = "26.06",
+                            Rcpp::Named("nvforest") = "26.06.0",
+                            Rcpp::Named("treelite") = "4.6.1",
+                            Rcpp::Named("cuda_runtime") = CUDART_VERSION);
 }

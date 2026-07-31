@@ -27,13 +27,13 @@ constexpr auto kSvrCacheSize = "cache_size";
 
 struct SVR {
   std::unique_ptr<raft::handle_t> const handle_;
-  std::unique_ptr<ML::SVM::svmModel<double>> const model_;
-  MLCommon::Matrix::KernelParams kernelParams_;
+  std::unique_ptr<ML::SVM::SvmModel<double>> const model_;
+  ML::matrix::KernelParams kernelParams_;
   double cacheSize_;
 
   __host__ SVR(std::unique_ptr<raft::handle_t> handle,
-               std::unique_ptr<ML::SVM::svmModel<double>> model,
-               MLCommon::Matrix::KernelParams kernel_params,
+               std::unique_ptr<ML::SVM::SvmModel<double>> model,
+               ML::matrix::KernelParams kernel_params,
                double const cache_size) noexcept
     : handle_(std::move(handle)),
       model_(std::move(model)),
@@ -99,32 +99,22 @@ __host__ SEXP svr_fit(Rcpp::NumericMatrix const& X,
                  h_sample_weights.cend(), d_sample_weights.begin());
   }
 
-  ML::SVM::svmParameter param{};
+  ML::SVM::SvmParameter param{};
   param.C = cost;
   param.cache_size = cache_size;
-#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
-     CUML4R_LIBCUML_VERSION(24, 0))
   param.max_outer_iter = max_iter;
   param.max_iter = -1;
-#else
-  param.max_iter = max_iter;
-#endif
   param.nochange_steps = nochange_steps;
   param.tol = tol;
-#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
-     CUML4R_LIBCUML_VERSION(24, 0))
   param.verbosity = static_cast<rapids_logger::level_enum>(verbosity);
-#else
-  param.verbosity = verbosity;
-#endif
   param.epsilon = epsilon;
   param.svmType = ML::SVM::SvmType::EPSILON_SVR;
-  MLCommon::Matrix::KernelParams kernel_params{
-    /*kernel=*/static_cast<MLCommon::Matrix::KernelType>(kernel), degree, gamma,
+  ML::matrix::KernelParams kernel_params{
+    /*kernel=*/static_cast<ML::matrix::KernelType>(kernel), degree, gamma,
     coef0};
 
   // SVM output
-  auto model = std::make_unique<ML::SVM::svmModel<double>>();
+  auto model = std::make_unique<ML::SVM::SvmModel<double>>();
 
   ML::SVM::svrFit(
     *handle, d_X.data().get(),
@@ -191,8 +181,8 @@ __host__ SEXP svr_set_state(Rcpp::List const& state) {
 
   auto model = std::make_unique<SVR>(
     /*handle=*/std::move(handle),
-    /*model=*/std::make_unique<ML::SVM::svmModel<double>>(),
-    /*kernel_params=*/MLCommon::Matrix::KernelParams(),
+    /*model=*/std::make_unique<ML::SVM::SvmModel<double>>(),
+    /*kernel_params=*/ML::matrix::KernelParams(),
     /*cache_size=*/0);
   model->setState(state);
 

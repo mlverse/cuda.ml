@@ -1,5 +1,7 @@
+backend_info <- cuda_ml_backend_info()
 run_gpu_tests <- identical(Sys.getenv("CUDA_ML_GPU_TESTS"), "true") &&
-  has_cuML()
+  identical(backend_info$backend, "full") &&
+  backend_info$runtime_installed
 
 if (run_gpu_tests) {
   library(magrittr, warn.conflicts = FALSE)
@@ -7,20 +9,7 @@ if (run_gpu_tests) {
   library(rlang, warn.conflicts = FALSE)
 }
 
-expect_libcuml <- function() {
-  if (!has_cuML()) {
-    stop(
-      "The current installation of {cuda.ml} is not linked with a valid copy of",
-      " the RAPIDS cuML shared library!\n",
-      ".libPaths:\n",
-      paste(.libPaths(), collapse = "\n")
-    )
-  }
-}
-
 if (run_gpu_tests) {
-  expect_libcuml()
-
   reticulate::py_require("scikit-learn")
   sklearn <- reticulate::import("sklearn")
   sklearn_iris_dataset <- list(
@@ -47,20 +36,21 @@ sort_mat <- function(m, cols = seq(ncol(m))) {
 
 #' Attempt to unserialize a CuML model within a sub-process and use the
 #' unserialized model to make predictions.
-predict_in_sub_proc <- function(model_state, data, expected_mode,
-                                expected_model_cls = NULL,
-                                additional_predict_args = list()) {
-  impl <- function(model_state, data, expected_mode, expected_model_cls,
-                   additional_predict_args) {
+predict_in_sub_proc <- function(
+  model_state,
+  data,
+  expected_mode,
+  expected_model_cls = NULL,
+  additional_predict_args = list()
+) {
+  impl <- function(
+    model_state,
+    data,
+    expected_mode,
+    expected_model_cls,
+    additional_predict_args
+  ) {
     suppressPackageStartupMessages(library(cuda.ml))
-    if (!has_cuML()) {
-      stop(
-        "The current installation of {cuda.ml} is not linked with a valid copy of",
-        " the RAPIDS cuML shared library!\n",
-        ".libPaths:\n",
-        paste(.libPaths(), collapse = "\n")
-      )
-    }
 
     model <- cuda_ml_unserialize(model_state)
     for (cls in expected_model_cls) {
@@ -80,7 +70,8 @@ predict_in_sub_proc <- function(model_state, data, expected_mode,
       expected_model_cls = expected_model_cls,
       additional_predict_args = additional_predict_args
     ),
-    stdout = "", stderr = ""
+    stdout = "",
+    stderr = ""
   )
 }
 
@@ -107,7 +98,8 @@ verify_iris_embedding <- function(embedding) {
   # different clusters in the resulting clustering.
   expect_gte(
     sklearn$metrics$adjusted_rand_score(
-      labels_true = iris$Species, labels_pred = k_clust$cluster
+      labels_true = iris$Species,
+      labels_pred = k_clust$cluster
     ),
     0.7
   )

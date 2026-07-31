@@ -1,11 +1,7 @@
 ols_match_method <- function(method = c("svd", "eig", "qr")) {
   method <- match.arg(method)
 
-  switch(method,
-    "svd" = 0L,
-    "eig" = 1L,
-    "qr" = 2L
-  )
+  switch(method, "svd" = 0L, "eig" = 1L, "qr" = 2L)
 }
 
 #' Train a OLS model.
@@ -16,7 +12,6 @@ ols_match_method <- function(method = c("svd", "eig", "qr")) {
 #' @template supervised-model-output
 #' @template ellipsis-unused
 #' @template fit-intercept
-#' @template normalize-input
 #' @param method Must be one of \{"svd", "eig", "qr"\}.
 #'
 #'   - "svd": compute SVD decomposition using Jacobi iterations.
@@ -36,7 +31,7 @@ ols_match_method <- function(method = c("svd", "eig", "qr")) {
 #'
 #' library(cuda.ml)
 #'
-#' if (interactive() && has_cuML()) {
+#' if (interactive() && cuda_ml_backend_info()$runtime_installed) {
 #'   model <- cuda_ml_ols(formula = mpg ~ ., data = mtcars, method = "qr")
 #'   predictions <- predict(model, mtcars[names(mtcars) != "mpg"])
 #'
@@ -55,7 +50,6 @@ ols_match_method <- function(method = c("svd", "eig", "qr")) {
 #' @importFrom ellipsis check_dots_used
 #' @export
 cuda_ml_ols <- function(x, ...) {
-  check_dots_used()
   UseMethod("cuda_ml_ols")
 }
 
@@ -67,76 +61,81 @@ cuda_ml_ols.default <- function(x, ...) {
 
 #' @rdname cuda_ml_ols
 #' @export
-cuda_ml_ols.data.frame <- function(x, y,
-                                   method = c("svd", "eig", "qr"),
-                                   fit_intercept = TRUE,
-                                   normalize_input = FALSE,
-                                   ...) {
+cuda_ml_ols.data.frame <- function(
+  x,
+  y,
+  method = c("svd", "eig", "qr"),
+  fit_intercept = TRUE,
+  ...
+) {
+  check_dots_used()
   processed <- hardhat::mold(x, y)
 
   cuda_ml_ols_bridge(
     processed = processed,
     method = method,
-    fit_intercept = fit_intercept,
-    normalize_input = normalize_input
+    fit_intercept = fit_intercept
   )
 }
 
 #' @rdname cuda_ml_ols
 #' @export
-cuda_ml_ols.matrix <- function(x, y,
-                               method = c("svd", "eig", "qr"),
-                               fit_intercept = TRUE,
-                               normalize_input = FALSE,
-                               ...) {
+cuda_ml_ols.matrix <- function(
+  x,
+  y,
+  method = c("svd", "eig", "qr"),
+  fit_intercept = TRUE,
+  ...
+) {
+  check_dots_used()
   processed <- hardhat::mold(x, y)
 
   cuda_ml_ols_bridge(
     processed = processed,
     method = method,
-    fit_intercept = fit_intercept,
-    normalize_input = normalize_input
+    fit_intercept = fit_intercept
   )
 }
 
 #' @rdname cuda_ml_ols
 #' @export
-cuda_ml_ols.formula <- function(formula, data,
-                                method = c("svd", "eig", "qr"),
-                                fit_intercept = TRUE,
-                                normalize_input = FALSE,
-                                ...) {
+cuda_ml_ols.formula <- function(
+  formula,
+  data,
+  method = c("svd", "eig", "qr"),
+  fit_intercept = TRUE,
+  ...
+) {
+  check_dots_used()
   processed <- hardhat::mold(formula, data)
 
   cuda_ml_ols_bridge(
     processed = processed,
     method = method,
-    fit_intercept = fit_intercept,
-    normalize_input = normalize_input
+    fit_intercept = fit_intercept
   )
 }
 
 #' @rdname cuda_ml_ols
 #' @export
-cuda_ml_ols.recipe <- function(x, data,
-                               method = c("svd", "eig", "qr"),
-                               fit_intercept = TRUE,
-                               normalize_input = FALSE,
-                               ...) {
+cuda_ml_ols.recipe <- function(
+  x,
+  data,
+  method = c("svd", "eig", "qr"),
+  fit_intercept = TRUE,
+  ...
+) {
+  check_dots_used()
   processed <- hardhat::mold(x, data)
 
   cuda_ml_ols_bridge(
     processed = processed,
     method = method,
-    fit_intercept = fit_intercept,
-    normalize_input = normalize_input
+    fit_intercept = fit_intercept
   )
 }
 
-cuda_ml_ols_bridge <- function(processed,
-                               method,
-                               fit_intercept,
-                               normalize_input) {
+cuda_ml_ols_bridge <- function(processed, method, fit_intercept) {
   validate_lm_input(processed)
 
   x <- as.matrix(processed$predictors)
@@ -148,7 +147,6 @@ cuda_ml_ols_bridge <- function(processed,
     x = x,
     y = y,
     fit_intercept = fit_intercept,
-    normalize_input = normalize_input,
     algo = method
   )
 

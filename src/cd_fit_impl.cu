@@ -2,8 +2,6 @@
 #include "preprocessor.h"
 
 #include <cuml/solvers/solver.hpp>
-#include <cuml/version_config.hpp>
-
 namespace cuml4r {
 namespace detail {
 
@@ -16,12 +14,7 @@ __host__ void cd_fit_impl(raft::handle_t& handle, lm::Params const& params,
                     /*labels=*/params.d_labels, /*coef=*/params.d_coef,
                     /*intercept=*/params.intercept,
                     /*fit_intercept=*/params.fit_intercept,
-#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) < \
-     CUML4R_LIBCUML_VERSION(24, 0))
-                    /*normalize=*/params.normalize_input, epochs, loss, alpha,
-#else
                     epochs,
-#endif
                     loss, alpha, l1_ratio, shuffle, tol);
 }
 

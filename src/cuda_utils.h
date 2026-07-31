@@ -1,25 +1,11 @@
 #pragma once
 
-#ifdef HAS_CUML
-
 #include <cuda_runtime.h>
-
-#ifndef NORET
-#if defined(__GNUC__) && __GNUC__ >= 3
-#define NORET __attribute__((noreturn))
-#else
-#define NORET
-#endif
-#endif
-
-#ifndef cudaEventWaitDefault
-#define cudaEventWaitDefault 0x00
-#endif
 
 namespace Rcpp {
 
 template <typename... Args>
-void NORET stop(const char* fmt, Args&&... args);
+[[noreturn]] void stop(const char* fmt, Args&&... args);
 
 }  // namespace Rcpp
 
@@ -42,9 +28,3 @@ namespace cuml4r {
 int currentDevice();
 
 }  // namespace cuml4r
-
-#else
-
-#include "warn_cuml_missing.h"
-
-#endif

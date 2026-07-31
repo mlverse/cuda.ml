@@ -7,12 +7,9 @@
 #include "stream_allocator.h"
 
 #include <cuml/cluster/linkage.hpp>
-#include <cuml/version_config.hpp>
 #include <thrust/device_vector.h>
 
 #include <Rcpp.h>
-
-#include <memory>
 
 namespace cuml4r {
 
@@ -41,31 +38,12 @@ __host__ Rcpp::List agglomerative_clustering(Rcpp::NumericMatrix const& x,
   thrust::device_vector<int> d_labels(n_samples);
   thrust::device_vector<int> d_children((n_samples - 1) * 2);
 
-#if CUML_VERSION_MAJOR >= 24
   ML::linkage::single_linkage(
     handle, /*X=*/d_x.data().get(), /*n_rows=*/n_samples,
     /*n_cols=*/n_features, /*n_clusters=*/n_clusters,
     /*metric=*/static_cast<ML::distance::DistanceType>(metric),
     /*children=*/d_children.data().get(), /*labels=*/d_labels.data().get(),
     /*use_knn=*/!pairwise_conn, /*c=*/n_neighbors);
-#else
-  auto out = std::make_unique<raft::hierarchy::linkage_output<int, float>>();
-  out->labels = d_labels.data().get();
-  out->children = d_children.data().get();
-
-  if (pairwise_conn) {
-    ML::single_linkage_pairwise(
-      handle, /*X=*/d_x.data().get(), /*m=*/n_samples, /*n=*/n_features,
-      /*out=*/out.get(),
-      /*metric=*/static_cast<raft::distance::DistanceType>(metric), n_clusters);
-  } else {
-    ML::single_linkage_neighbors(
-      handle, /*X=*/d_x.data().get(), /*m=*/n_samples, /*n=*/n_features,
-      /*out=*/out.get(),
-      /*metric=*/static_cast<raft::distance::DistanceType>(metric),
-      /*c=*/n_neighbors, n_clusters);
-  }
-#endif
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
@@ -79,11 +57,7 @@ __host__ Rcpp::List agglomerative_clustering(Rcpp::NumericMatrix const& x,
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
-#if CUML_VERSION_MAJOR >= 24
   result["n_clusters"] = n_clusters;
-#else
-  result["n_clusters"] = out->n_clusters;
-#endif
   result["children"] =
     Rcpp::transpose(Rcpp::IntegerMatrix(2, n_samples - 1, h_children.begin()));
   result["labels"] = Rcpp::IntegerVector(h_labels.cbegin(), h_labels.cend());

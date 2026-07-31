@@ -1,11 +1,7 @@
 tsne_match_method <- function(method = c("barnes_hut", "fft", "exact")) {
   method <- match.arg(method)
 
-  switch(method,
-    exact = 0L,
-    barnes_hut = 1L,
-    fft = 2L
-  )
+  switch(method, exact = 0L, barnes_hut = 1L, fft = 2L)
 }
 
 new_tsne_model <- function(embedding) {
@@ -20,7 +16,6 @@ new_tsne_model <- function(embedding) {
 #' dimensional data.
 #'
 #' @template model-with-numeric-input
-#' @template cuML-log-level
 #' @param n_components Dimension of the embedded space.
 #' @param n_neighbors The number of datapoints to use in the attractive forces.
 #'   Default: ceiling(3 * perplexity).
@@ -72,28 +67,40 @@ new_tsne_model <- function(embedding) {
 #' @examples
 #' library(cuda.ml)
 #'
-#' if (interactive() && has_cuML()) {
+#' if (interactive() && cuda_ml_backend_info()$runtime_installed) {
 #'   embedding <- cuda_ml_tsne(iris[1:4], method = "exact")
 #'
 #'   set.seed(0L)
 #'   print(kmeans(embedding, centers = 3))
 #' }
 #' @export
-cuda_ml_tsne <- function(x, n_components = 2L,
-                         n_neighbors = ceiling(3 * perplexity),
-                         method = c("barnes_hut", "fft", "exact"), angle = 0.5,
-                         n_iter = 1000L, learning_rate = 200.0,
-                         learning_rate_method = c("adaptive", "none"),
-                         perplexity = 30.0, perplexity_max_iter = 100L,
-                         perplexity_tol = 1e-5, early_exaggeration = 12.0,
-                         late_exaggeration = 1.0, exaggeration_iter = 250L,
-                         min_grad_norm = 1e-7, pre_momentum = 0.5,
-                         post_momentum = 0.8, square_distances = TRUE, seed = NULL,
-                         cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
+cuda_ml_tsne <- function(
+  x,
+  n_components = 2L,
+  n_neighbors = ceiling(3 * perplexity),
+  method = c("barnes_hut", "fft", "exact"),
+  angle = 0.5,
+  n_iter = 1000L,
+  learning_rate = 200.0,
+  learning_rate_method = c("adaptive", "none"),
+  perplexity = 30.0,
+  perplexity_max_iter = 100L,
+  perplexity_tol = 1e-5,
+  early_exaggeration = 12.0,
+  late_exaggeration = 1.0,
+  exaggeration_iter = 250L,
+  min_grad_norm = 1e-7,
+  pre_momentum = 0.5,
+  post_momentum = 0.8,
+  square_distances = TRUE,
+  seed = NULL
+) {
   learning_rate_method <- match.arg(learning_rate_method)
 
-  if (identical(learning_rate_method, "adaptive") &&
-    method %in% c("barnes_hut", "fft")) {
+  if (
+    identical(learning_rate_method, "adaptive") &&
+      method %in% c("barnes_hut", "fft")
+  ) {
     if (nrow(x) <= 2000L) {
       n_neighbors <- min(max(n_neighbors, 90L), nrow(x))
     } else {
@@ -108,7 +115,6 @@ cuda_ml_tsne <- function(x, n_components = 2L,
     post_learning_rate <- learning_rate * 2
   }
   algo <- tsne_match_method(method)
-  cuML_log_level <- match_cuML_log_level(cuML_log_level)
 
   model_obj <- .tsne_fit(
     x = as.matrix(x),
@@ -133,7 +139,7 @@ cuda_ml_tsne <- function(x, n_components = 2L,
     pre_momentum = as.numeric(pre_momentum),
     post_momentum = as.numeric(post_momentum),
     random_state = as.integer(seed %||% -1L),
-    verbosity = cuML_log_level
+    verbosity = 0L
   )
 
   new_tsne_model(model_obj)

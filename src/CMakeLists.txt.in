@@ -2,18 +2,15 @@ cmake_minimum_required(VERSION 3.21.1 FATAL_ERROR)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CUDA_STANDARD 17)
+set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-
-add_definitions(-DHAS_CUML)
 
 project(cuda.ml LANGUAGES CUDA CXX)
 
-if(DEFINED ENV{CUML4R_ENABLE_CCACHE})
-    find_program(CCACHE_FOUND ccache)
-    if(CCACHE_FOUND)
-        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "CCACHE_BASEDIR=${CMAKE_SOURCE_DIR} CCACHE_NOHASHDIR=true CCACHE_SLOPPINESS=include_file_ctime,include_file_mtime ccache")
-    endif(CCACHE_FOUND)
-endif(DEFINED ENV{CUML4R_ENABLE_CCACHE})
+if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_VERSION VERSION_LESS 14)
+    message(FATAL_ERROR "The pinned nvForest 26.06 binary requires GCC 14 or newer.")
+endif()
 
 if(DEFINED CUML_INCLUDE_DIR)
     # CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES is needed so that cuda_runtime.h is found
@@ -31,12 +28,30 @@ endif(DEFINED CUML_INCLUDE_DIR)
 if(DEFINED CUML_LIB_DIR)
     find_library(
       CUML_LIBRARY
-      NAMES cuml cuml++
+      NAMES cuml
       PATHS ${CUML_LIB_DIR}
       NO_DEFAULT_PATH
     )
     if(NOT CUML_LIBRARY)
-      message(FATAL_ERROR "Neither libcuml.so nor libcuml++.so was found in ${CUML_LIB_DIR}.")
+      message(FATAL_ERROR "libcuml.so was not found in ${CUML_LIB_DIR}.")
+    endif()
+    find_library(
+      NVFOREST_LIBRARY
+      NAMES nvforest++
+      PATHS ${CUML_LIB_DIR}
+      NO_DEFAULT_PATH
+    )
+    if(NOT NVFOREST_LIBRARY)
+      message(FATAL_ERROR "libnvforest++.so was not found in ${CUML_LIB_DIR}.")
+    endif()
+    find_library(
+      TREELITE_LIBRARY
+      NAMES treelite
+      PATHS ${CUML_LIB_DIR}
+      NO_DEFAULT_PATH
+    )
+    if(NOT TREELITE_LIBRARY)
+      message(FATAL_ERROR "libtreelite.so was not found in ${CUML_LIB_DIR}.")
     endif()
 else()
     message(FATAL_ERROR "CUML_LIB_DIR not specified.")
@@ -45,27 +60,18 @@ endif(DEFINED CUML_LIB_DIR)
 include_directories(@R_INCLUDE_DIR@)
 include_directories(@RCPP_INCLUDE_DIR@)
 
-include_directories(${TREELITE_C_API_INCLUDE_DIR})
-
-set(CUML4R_RPROJ_C_API_FOUND FALSE)
-foreach(CUML4R_INC_DIR IN LISTS CUML4R_INCLUDE_DIRS)
-  if(EXISTS "${CUML4R_INC_DIR}/cuml/random_projection/rproj_c.h")
-    set(CUML4R_RPROJ_C_API_FOUND TRUE)
+foreach(CUML4R_REQUIRED_HEADER
+    cuml/version_config.hpp
+    nvforest/forest_model.hpp
+    nvforest/treelite_importer.hpp
+    nvforest/version_config.hpp
+    treelite/c_api.h
+    treelite/tree.h
+    treelite/version.h)
+  if(NOT EXISTS "${CUML_INCLUDE_DIR}/${CUML4R_REQUIRED_HEADER}")
+    message(FATAL_ERROR "Required header ${CUML4R_REQUIRED_HEADER} was not found in ${CUML_INCLUDE_DIR}.")
   endif()
 endforeach()
-if(NOT CUML4R_RPROJ_C_API_FOUND)
-  message(
-    STATUS
-    "cuML random projection C API headers were not found; random projection support will be disabled."
-  )
-  add_definitions(-DCUML4R_RPROJ_C_API_MISSING)
-endif(NOT CUML4R_RPROJ_C_API_FOUND)
-
-if(DEFINED ENV{CUML4R_ENABLE_ASAN})
-    if($ENV{CUML4R_ENABLE_ASAN} MATCHES "true")
-        add_compile_options(-fno-omit-frame-pointer -fsanitize-recover=address)
-    endif($ENV{CUML4R_ENABLE_ASAN} MATCHES "true")
-endif(DEFINED ENV{CUML4R_ENABLE_ASAN})
 
 add_library(
   cuda.ml
@@ -73,10 +79,8 @@ add_library(
   # utils
   cuda_utils.cu
   cuml_utils.cpp
-  device_allocator.cu
-  fil_utils.cu
   handle_utils.cu
-  r_console.cpp
+  nvforest.cu
   stream_allocator.cu
   # models & algorithms
   agglomerative_clustering.cpp
@@ -86,8 +90,7 @@ add_library(
   cd_fit_impl.cu
   dbscan.cpp
   dbscan.cu
-  fil.cpp
-  fil.cu
+  nvforest.cpp
   kmeans.cpp
   kmeans.cu
   knn.cpp
@@ -95,6 +98,7 @@ add_library(
   lm.cu
   lm_predict.cpp
   lm_predict.cu
+  native_symbols.cpp
   ols.cpp
   ols.cu
   ols_fit_impl.cu
@@ -106,9 +110,6 @@ add_library(
   random_forest_classifier.cu
   random_forest_regressor.cpp
   random_forest_regressor.cu
-  random_forest_serde.cu
-  random_projection.cpp
-  random_projection.cu
   ridge.cpp
   ridge.cu
   ridge_fit_impl.cu
@@ -122,6 +123,7 @@ add_library(
   svm_serde.cu
   tsne.cpp
   tsne.cu
+  treelite_bridge.cpp
   tsvd.cpp
   tsvd.cu
   umap.cpp
@@ -145,74 +147,22 @@ target_compile_definitions(
   PRIVATE
   NDEBUG
   CUML_LOG_ACTIVE_LEVEL=RAPIDS_LOGGER_LOG_LEVEL_OFF
+  NVFOREST_ENABLE_GPU
+  NVFOREST_LOG_ACTIVE_LEVEL=RAPIDS_LOGGER_LOG_LEVEL_OFF
   RAFT_LOG_ACTIVE_LEVEL=RAPIDS_LOGGER_LOG_LEVEL_OFF
   RMM_LOG_ACTIVE_LEVEL=RAPIDS_LOGGER_LOG_LEVEL_OFF
 )
 
-set(CUML4R_LIBS cuda.ml PRIVATE ${CUML_LIBRARY} cublas cusolver cudart cusparse)
-
-set(CUML4R_FIL_API_FOUND FALSE)
-foreach(CUML4R_INC_DIR IN LISTS CUML4R_INCLUDE_DIRS)
-  if(EXISTS "${CUML4R_INC_DIR}/cuml/fil/forest_model.hpp")
-    set(CUML4R_FIL_API_FOUND TRUE)
-  endif()
-endforeach()
-
-find_package(Treelite QUIET)
-if(Treelite_FOUND AND CUML4R_FIL_API_FOUND)
-  target_compile_definitions(cuda.ml PRIVATE CUML_ENABLE_GPU)
-  if(TARGET treelite::treelite_static)
-    set(CUML4R_LIBS ${CUML4R_LIBS} treelite::treelite_static)
-  elseif(TARGET treelite::treelite)
-    set(CUML4R_LIBS ${CUML4R_LIBS} treelite::treelite)
-  else()
-    message(FATAL_ERROR "Treelite was found but no supported Treelite CMake target was exported.")
-  endif()
-  if(TARGET treelite::treelite_runtime)
-    set(CUML4R_LIBS ${CUML4R_LIBS} treelite::treelite_runtime)
-  endif()
-  set(CUML4R_INCLUDE_DIRS ${CUML4R_INCLUDE_DIRS} ${Treelite_INCLUDE_DIRS})
-  message(STATUS "Treelite found, ignoring stub headers: ${CUML_STUB_HEADERS_DIR}")
-else()
-  if(NOT Treelite_FOUND)
-    message(
-      STATUS
-      "Treelite was not found; Forest Inference Library (FIL) support will be disabled."
-    )
-  else()
-    message(
-      STATUS
-      "cuML FIL API headers were not found; Forest Inference Library (FIL) support will be disabled."
-    )
-  endif()
-  add_definitions(-DCUML4R_TREELITE_C_API_MISSING)
-  set(
-    CUML4R_INCLUDE_DIRS ${CUML4R_INCLUDE_DIRS} ${CUML_STUB_HEADERS_DIR}
-  )
-endif()
+target_link_libraries(
+  cuda.ml
+  PRIVATE
+  ${CUML_LIBRARY}
+  ${NVFOREST_LIBRARY}
+  ${TREELITE_LIBRARY}
+  cublas
+  cusolver
+  cudart
+  cusparse
+)
 
 target_include_directories(cuda.ml SYSTEM PRIVATE ${CUML4R_INCLUDE_DIRS})
-
-set(CUML4R_ADDITIONAL_LINKER_FLAGS)
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  list(
-    APPEND
-    CUML4R_ADDITIONAL_LINKER_FLAGS
-    -Wl,--wrap=printf
-    -Wl,--wrap=fprintf
-    -Wl,--wrap=stderr
-  )
-endif()
-if(DEFINED ENV{CUML4R_ENABLE_ASAN})
-    if($ENV{CUML4R_ENABLE_ASAN} MATCHES "true")
-        list(
-          APPEND
-          CUML4R_ADDITIONAL_LINKER_FLAGS
-          -fno-omit-frame-pointer
-          -fsanitize-recover=address
-        )
-    endif($ENV{CUML4R_ENABLE_ASAN} MATCHES "true")
-endif(DEFINED ENV{CUML4R_ENABLE_ASAN})
-
-# Link cuda.ml
-target_link_libraries(${CUML4R_LIBS} ${CUML4R_ADDITIONAL_LINKER_FLAGS})

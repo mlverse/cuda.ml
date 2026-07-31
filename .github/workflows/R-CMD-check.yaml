@@ -42,6 +42,7 @@ jobs:
       - name: Check without network access
         run: sudo -E unshare --net -- R CMD check --no-manual --as-cran cuda.ml_*.tar.gz
         env:
+          CUDA_ML_BUILD_MODE: stub
           _R_CHECK_CRAN_INCOMING_: false
           # --as-cran otherwise verifies the clock against an external service.
           _R_CHECK_SYSTEM_CLOCK_: false
@@ -51,7 +52,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    timeout-minutes: 60
+    timeout-minutes: 120
     outputs:
       image: ghcr.io/${{ github.repository }}-ci:${{ github.sha }}
     steps:
@@ -70,8 +71,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          # Managed versions are pinned in tools/config/utils/bootstrap.R and
-          # inst/runtime; they are intentionally not workflow build arguments.
+          # Managed versions and artifacts are pinned in the authoritative
+          # inst/artifacts/ubuntu-26.04-x86_64.tsv lock.
           context: "."
           file: .github/docker/Dockerfile
           push: true
@@ -79,7 +80,6 @@ jobs:
 
   test-gpu:
     needs: build-image
-    if: ${{ always() && needs.build-image.result == 'success' }}
     concurrency:
       group: gpu-tests
     runs-on:
@@ -92,7 +92,6 @@ jobs:
       options: --gpus all --runtime=nvidia
     timeout-minutes: 120
     env:
-      NOT_CRAN: true
       CUDA_ML_GPU_TESTS: true
       CUDA_ML_CACHE_DIR: /tmp/cuda-ml-runtime
 
@@ -100,20 +99,24 @@ jobs:
       - name: Verify GPU access
         run: nvidia-smi
 
-      - name: Verify functional backend metadata
+      - name: Install the managed runtime
         shell: Rscript {0}
         # fmt: r
         run: |
           library(cuda.ml)
-          stopifnot(has_cuML())
+          info <- cuda_ml_backend_info()
+          stopifnot(
+            identical(info$backend, "full"),
+            !info$runtime_installed,
+            !info$backend_loaded
+          )
+          cuda_ml_install()
 
-      - name: Exercise cold-cache automatic provisioning
+      - name: Exercise a GPU algorithm
         shell: Rscript {0}
         # fmt: r
         run: |
           library(cuda.ml)
-          stopifnot(!dir.exists(Sys.getenv("CUDA_ML_CACHE_DIR")))
-
           x <- matrix(
             c(0, 0, 0, 1, 10, 10, 10, 11),
             ncol = 2,
@@ -139,29 +142,47 @@ jobs:
   # a prepared runtime cache. This job validates the CPU-only setup path.
   test-runtime-cpu:
     needs: build-image
-    if: ${{ always() && needs.build-image.result == 'success' }}
     runs-on: ubuntu-latest
     container:
       image: ${{ needs.build-image.outputs.image }}
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-    timeout-minutes: 90
+    timeout-minutes: 180
     env:
-      NOT_CRAN: false
       CUDA_ML_RUNTIME_TESTS: true
       CUDA_ML_CACHE_DIR: /tmp/cuda-ml-runtime
 
     steps:
-      # The focused tests start concurrent installers against an empty cache,
-      # validate the completed cache, and load the backend through version calls.
-      - name: Exercise CPU-only runtime provisioning and loading
+      - name: Install the managed runtime once
+        shell: Rscript {0}
+        # fmt: r
+        run: |
+          library(cuda.ml)
+          stopifnot(!cuda_ml_backend_info()$runtime_installed)
+          cuda_ml_install()
+
+      # This fresh R process validates explicit installation, fast reuse, the
+      # content audit, and backend loading without a CUDA toolkit or GPU.
+      - name: Validate the managed runtime without a GPU
         shell: Rscript {0}
         # fmt: r
         run: |
           testthat::test_package(
             "cuda.ml",
             filter = "runtime-functional",
+            reporter = "progress"
+          )
+
+      # nvForest loads and retains the backend, so run it in a separate R
+      # process from the side-effect and lazy-loading assertions above.
+      - name: Exercise CPU-only nvForest inference
+        shell: Rscript {0}
+        # fmt: r
+        run: |
+          testthat::test_package(
+            "cuda.ml",
+            filter = "nvforest-runtime",
             reporter = "progress"
           )
 
@@ -184,17 +205,19 @@ jobs:
             print = FALSE
           )
           cuda_ml_install()
-          version <- sprintf(
-            "%s.%02d",
-            cuML_major_version(),
-            as.integer(cuML_minor_version())
+          info <- cuda_ml_backend_info()
+          stopifnot(
+            info$runtime_installed,
+            identical(info$cuda_version, "13.2.2"),
+            identical(info$rapids_version, "26.06"),
+            identical(info$nvforest_version, "26.06.0"),
+            identical(info$treelite_version, "4.6.1")
           )
-          stopifnot(identical(version, "26.06"))
 
       # NVRTC is part of the managed cache. Compile PTX to prove it works
       # without a GPU or a system CUDA installation.
       - name: Compile an NVRTC kernel without a GPU
         run: |
-          runtime_lib="$(find "$CUDA_ML_CACHE_DIR/runtime-v1" -type f -name .complete -printf '%h/lib\n' -quit)"
+          runtime_lib="$(Rscript -e 'library(cuda.ml); cat(file.path(cuda_ml_backend_info()$runtime_path, "lib"))')"
           test -d "$runtime_lib"
           LD_LIBRARY_PATH="$runtime_lib" /usr/local/bin/nvrtc-probe

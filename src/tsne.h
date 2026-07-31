@@ -2,8 +2,6 @@
 
 #include <Rcpp.h>
 
-#ifdef HAS_CUML
-
 namespace cuml4r {
 
 Rcpp::NumericMatrix tsne_fit(
@@ -19,9 +17,3 @@ Rcpp::NumericMatrix tsne_fit(
   int const algo);
 
 }  // namespace cuml4r
-
-#else
-
-#include "warn_cuml_missing.h"
-
-#endif

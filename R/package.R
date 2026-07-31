@@ -49,54 +49,32 @@
 #'
 #' Loading \pkg{cuda.ml} does not require a GPU, load native code, create a
 #' cache, or contact the network. Call \code{\link{cuda_ml_install}()} to
-#' download and cache the pinned CUDA 13.2 and RAPIDS cuML 26.06 runtime while
-#' preparing a container or machine image. Otherwise, the first native
-#' operation prepares the same runtime automatically. The target machine
-#' supplies only a supported NVIDIA GPU and driver 580 or newer.
+#' download and cache the pinned CUDA 13.2.2, RAPIDS cuML and nvForest 26.06,
+#' and Treelite 4.6.1 runtime while preparing a container or machine image.
+#' Native operations fail with an installation instruction until that explicit
+#' setup step has completed. GPU operations then require a supported NVIDIA GPU
+#' and driver 580 or newer; nvForest CPU inference does not.
 #'
-#' CRAN builds are network-free, stub-capable source builds. A stub returns
-#' \code{FALSE} from \code{has_cuML()}; install the R-universe binary for a
-#' no-compiler setup. Local functional source builds must use matching CUDA
-#' 13.2 and RAPIDS cuML 26.06 toolchains. Set \code{CUDA_ML_CACHE_DIR} to
-#' override the default managed runtime cache.
+#' CRAN builds are network-free source stubs. A stub reports
+#' \code{backend = "stub"} from \code{\link{cuda_ml_backend_info}()}; install
+#' the R-universe binary for a no-compiler setup. Local functional source builds
+#' require exact CUDA 13.2.2, GNU C++ 14 or newer, cuML and nvForest 26.06, and
+#' Treelite 4.6.1 inputs. Set \code{CUDA_ML_CACHE_DIR} to override the default
+#' managed runtime cache.
 #'
 #' @author Yitao Li <yitao@rstudio.com>
 #' @import Rcpp
-#' @rawNamespace
-#' if (FALSE) {
-#'   # Code-generation hint only; the false branch never loads the DLL.
-#'   useDynLib(cuda.ml, .registration = TRUE)
-#' }
 "_PACKAGE"
 
 .onLoad <- function(libname, pkgname) {
   .cuda_ml_state$metadata <- cuda_ml_backend_metadata(pkgname)
-  delayedAssign(
-    "runtime_dir",
-    cuda_ml_prepare_runtime(),
-    eval.env = environment(),
-    assign.env = .cuda_ml_state
-  )
-  delayedAssign(
-    "dll",
-    cuda_ml_load_backend(.cuda_ml_state$runtime_dir),
-    eval.env = environment(),
-    assign.env = .cuda_ml_state
-  )
-
-  ns <- asNamespace(pkgname)
-  wrappers <- cuda_ml_native_wrappers(ns)
-  symbols <- unname(wrappers)
-  referenced <- cuda_ml_referenced_native_symbols(ns)
-  stopifnot(
-    length(symbols) > 0L,
-    !anyDuplicated(symbols),
-    setequal(symbols, referenced)
-  )
+  symbols <- cuda_ml_native_symbols(pkgname)
   .cuda_ml_state$native_symbols <- symbols
-  cuda_ml_bind_native_symbols(ns, wrappers)
+  .cuda_ml_state$dll <- NULL
 
   register_rand_forest_model(pkgname)
   register_svm_model(pkgname)
   register_knn_model(pkgname)
+  register_logistic_reg_models(pkgname)
+  register_linear_reg_model(pkgname)
 }

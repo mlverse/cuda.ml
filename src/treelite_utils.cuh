@@ -2,60 +2,64 @@
 
 #include <treelite/c_api.h>
 
-#ifndef CUML4R_TREELITE_C_API_MISSING
+#include <stdexcept>
+#include <string>
 
 namespace cuml4r {
 
-/*
- * RAII wrapper for the Treelite model handle.
- */
 class TreeliteHandle {
  public:
-  __host__ explicit TreeliteHandle(TreeliteModelHandle const handle = nullptr) noexcept
+  explicit TreeliteHandle(TreeliteModelHandle const handle = nullptr) noexcept
     : handle_(handle) {}
 
-  __host__ TreeliteHandle(TreeliteHandle const& o) = delete;
+  TreeliteHandle(TreeliteHandle const&) = delete;
+  TreeliteHandle& operator=(TreeliteHandle const&) = delete;
 
-  __host__ TreeliteHandle(TreeliteHandle&& o) noexcept
-    : TreeliteHandle(o.handle_) {
-    o.handle_ = nullptr;
-  }
+  TreeliteHandle(TreeliteHandle&& other) noexcept
+    : handle_(other.release()) {}
 
-  __host__ ~TreeliteHandle() noexcept {
-    if (handle_ != nullptr) {
-      TreeliteFreeModel(handle_);
+  ~TreeliteHandle() noexcept { reset(); }
+
+  TreeliteHandle& operator=(TreeliteHandle&& other) noexcept {
+    if (this != &other) {
+      reset(other.release());
     }
-  }
-
-  __host__ TreeliteHandle& operator=(TreeliteHandle&& o) noexcept {
-    if (handle_ != nullptr) {
-      TreeliteFreeModel(handle_);
-    }
-    handle_ = o.handle_;
-    o.handle_ = nullptr;
     return *this;
   }
 
-  __host__ TreeliteHandle& operator=(TreeliteModelHandle const handle) noexcept {
+  void reset(TreeliteModelHandle const handle = nullptr) noexcept {
     if (handle_ != nullptr) {
       TreeliteFreeModel(handle_);
     }
     handle_ = handle;
-    return *this;
   }
 
-  __host__ bool empty() const noexcept { return handle_ == nullptr; }
+  TreeliteModelHandle release() noexcept {
+    auto const handle = handle_;
+    handle_ = nullptr;
+    return handle;
+  }
 
-  __host__ TreeliteModelHandle const* get() const noexcept { return &handle_; }
+  bool empty() const noexcept { return handle_ == nullptr; }
 
-  __host__ TreeliteModelHandle* get() noexcept { return &handle_; }
+  TreeliteModelHandle* out() noexcept {
+    reset();
+    return &handle_;
+  }
 
-  __host__ TreeliteModelHandle handle() const noexcept { return handle_; }
+  TreeliteModelHandle get() const noexcept { return handle_; }
 
  private:
   TreeliteModelHandle handle_;
 };
 
-}  // namespace cuml4r
+inline void treelite_check(int const status, std::string const& context) {
+  if (status != 0) {
+    auto const* error = TreeliteGetLastError();
+    throw std::runtime_error(context + ": " +
+                             (error == nullptr ? "unknown Treelite error"
+                                               : error));
+  }
+}
 
-#endif
+}  // namespace cuml4r

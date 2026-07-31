@@ -3,7 +3,8 @@ skip_if_not(run_gpu_tests, "requires the GPU test environment")
 context("K-Means")
 
 sklearn_kmeans_model <- sklearn$cluster$KMeans(
-  n_clusters = 3L, max_iter = 100L
+  n_clusters = 3L,
+  max_iter = 100L
 )
 sklearn_kclust <- sklearn_kmeans_model$fit(sklearn_iris_dataset$data)
 

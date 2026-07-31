@@ -10,31 +10,19 @@ namespace detail {
 
 namespace {
 
-#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
-     CUML4R_LIBCUML_VERSION(24, 0))
-__host__ double*& svmSupportData(ML::SVM::svmModel<double>& svm_model) {
+__host__ double*& svmSupportData(ML::SVM::SvmModel<double>& svm_model) {
   return svm_model.support_matrix.data;
 }
 
 __host__ double const* svmSupportData(
-  ML::SVM::svmModel<double> const& svm_model) {
+  ML::SVM::SvmModel<double> const& svm_model) {
   return svm_model.support_matrix.data;
 }
-#else
-__host__ double*& svmSupportData(ML::SVM::svmModel<double>& svm_model) {
-  return svm_model.x_support;
-}
-
-__host__ double const* svmSupportData(
-  ML::SVM::svmModel<double> const& svm_model) {
-  return svm_model.x_support;
-}
-#endif
 
 }  // namespace
 
 __host__ Rcpp::List getState(
-  MLCommon::Matrix::KernelParams const& kernel_params) {
+  ML::matrix::KernelParams const& kernel_params) {
   Rcpp::List state;
 
   state[kKernelParamsType] = static_cast<int>(kernel_params.kernel);
@@ -45,7 +33,7 @@ __host__ Rcpp::List getState(
   return state;
 }
 
-__host__ Rcpp::List getState(ML::SVM::svmParameter const& svm_params) {
+__host__ Rcpp::List getState(ML::SVM::SvmParameter const& svm_params) {
   Rcpp::List state;
 
   state[kSvmParamsC] = svm_params.C;
@@ -60,7 +48,7 @@ __host__ Rcpp::List getState(ML::SVM::svmParameter const& svm_params) {
   return state;
 }
 
-__host__ Rcpp::List getState(ML::SVM::svmModel<double> const& svm_model,
+__host__ Rcpp::List getState(ML::SVM::SvmModel<double> const& svm_model,
                              raft::handle_t const& handle) {
   Rcpp::List state;
   cudaStream_t const stream = handle.get_stream();
@@ -112,35 +100,30 @@ __host__ Rcpp::List getState(ML::SVM::svmModel<double> const& svm_model,
   return state;
 }
 
-__host__ void setState(MLCommon::Matrix::KernelParams& kernel_params,
+__host__ void setState(ML::matrix::KernelParams& kernel_params,
                        Rcpp::List const& state) {
-  kernel_params.kernel = static_cast<MLCommon::Matrix::KernelType>(
+  kernel_params.kernel = static_cast<ML::matrix::KernelType>(
     Rcpp::as<int>(state[kKernelParamsType]));
   kernel_params.degree = state[kKernelParamsDegree];
   kernel_params.gamma = state[kKernelParamsGamma];
   kernel_params.coef0 = state[kKernelParamsCoef0];
 }
 
-__host__ void setState(ML::SVM::svmParameter& svm_params,
+__host__ void setState(ML::SVM::SvmParameter& svm_params,
                        Rcpp::List const& state) {
   svm_params.C = state[kSvmParamsC];
   svm_params.cache_size = state[kSvmParamsCacheSize];
   svm_params.max_iter = state[kSvmParamsMaxIter];
   svm_params.nochange_steps = state[kSvmParamsNoChangeSteps];
   svm_params.tol = state[kSvmParamsTol];
-#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
-     CUML4R_LIBCUML_VERSION(24, 0))
   svm_params.verbosity = static_cast<rapids_logger::level_enum>(
     Rcpp::as<int>(state[kSvmParamsVerbosity]));
-#else
-  svm_params.verbosity = state[kSvmParamsVerbosity];
-#endif
   svm_params.epsilon = state[kSvmParamsEpsilon];
   svm_params.svmType =
     static_cast<ML::SVM::SvmType>(Rcpp::as<int>(state[kSvmParamsType]));
 }
 
-__host__ void setState(ML::SVM::svmModel<double>& svm_model,
+__host__ void setState(ML::SVM::SvmModel<double>& svm_model,
                        raft::handle_t const& handle, Rcpp::List const& state) {
   int const n_support = state[kSvmModelNumSupportVectors];
   int const n_cols = state[kSvmModelNumCols];
@@ -163,12 +146,9 @@ __host__ void setState(ML::SVM::svmModel<double>& svm_model,
 
   CUDA_RT_CALL(
     cudaMalloc(&svmSupportData(svm_model), n_support * n_cols * sizeof(double)));
-#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
-     CUML4R_LIBCUML_VERSION(24, 0))
   svm_model.support_matrix.nnz = -1;
   svm_model.support_matrix.indptr = nullptr;
   svm_model.support_matrix.indices = nullptr;
-#endif
   auto const h_x_support =
     Rcpp::as<pinned_host_vector<double>>(state[kSvmModelSupportVectors]);
   CUDA_RT_CALL(cudaMemcpyAsync(

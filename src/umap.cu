@@ -9,42 +9,11 @@
 #include <cuml/manifold/umapparams.h>
 #include <thrust/device_vector.h>
 #include <cuml/manifold/umap.hpp>
-#include <cuml/version_config.hpp>
 
 #include <Rcpp.h>
 
 #include <cmath>
 #include <memory>
-#include <type_traits>
-
-namespace {
-
-/*
- * The 'ML::UMAPParams::target_weights' parameter was renamed to 'target_weight'
- * in RAPIDS cuML v21.06 or above, so, using SFINAE here to be compatible with
- * both versions of the 'ML::UMAPParams' definitions.
- */
-
-// for cuML v21.06 or above
-template <typename T>
-__host__ void set_target_weight(
-  T& params,
-  typename std::remove_reference<decltype(T::target_weight)>::type const
-    w) noexcept {
-  params.target_weight = w;
-}
-
-// for earlier versions of cuML
-template <typename T>
-__host__ void set_target_weight(
-  T& params,
-  typename std::remove_reference<decltype(T::target_weights)>::type const
-    w) noexcept {
-  params.target_weights = w;
-}
-
-}  // namespace
-
 namespace cuml4r {
 
 __host__ Rcpp::List umap_fit(
@@ -79,12 +48,7 @@ __host__ Rcpp::List umap_fit(
   params->repulsion_strength = repulsion_strength;
   params->negative_sample_rate = negative_sample_rate;
   params->transform_queue_size = transform_queue_size;
-#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
-     CUML4R_LIBCUML_VERSION(24, 0))
   params->verbosity = static_cast<rapids_logger::level_enum>(verbosity);
-#else
-  params->verbosity = verbosity;
-#endif
   if (std::isnan(a) || std::isnan(b)) {
     ML::UMAP::find_ab(handle, params.get());
   } else {
@@ -95,7 +59,7 @@ __host__ Rcpp::List umap_fit(
   params->target_n_neighbors = target_n_neighbors;
   params->target_metric =
     static_cast<ML::UMAPParams::MetricType>(target_metric);
-  set_target_weight(*params, target_weight);
+  params->target_weight = target_weight;
   params->random_state = random_state;
   params->deterministic = deterministic;
 
@@ -113,8 +77,6 @@ __host__ Rcpp::List umap_fit(
       async_copy(stream_view.value(), h_y.cbegin(), h_y.cend(), d_y.begin());
   }
 
-#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
-     CUML4R_LIBCUML_VERSION(24, 0))
   std::unique_ptr<rmm::device_buffer> d_embedding;
   auto graph =
     raft::make_host_coo_matrix<float, int, int, uint64_t>(handle, n_samples,
@@ -132,20 +94,6 @@ __host__ Rcpp::List umap_fit(
 
   auto const d_embedding_data =
     thrust::device_pointer_cast(static_cast<float*>(d_embedding->data()));
-#else
-  thrust::device_vector<float> d_embedding(n_samples * n_components);
-
-  ML::UMAP::fit(handle, /*X=*/d_x.data().get(),
-                /*y=*/(y.size() > 0 ? d_y.data().get() : nullptr),
-                /*n=*/n_samples,
-                /*d=*/n_features,
-                /*knn_indices=*/nullptr,
-                /*knn_dists=*/nullptr,
-                /*params=*/params.get(),
-                /*embeddings=*/d_embedding.data().get());
-
-  auto const d_embedding_data = d_embedding.data();
-#endif
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
@@ -199,10 +147,6 @@ __host__ Rcpp::NumericMatrix umap_transform(Rcpp::List const& model,
 
   ML::UMAP::transform(
     handle, /*X=*/d_x.data().get(), /*n=*/n_samples, /*d=*/n_features,
-#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) < \
-     CUML4R_LIBCUML_VERSION(24, 0))
-    /*knn_indices=*/nullptr, /*knn_dists=*/nullptr,
-#endif
     /*orig_x=*/d_orig_x.data().get(), /*orig_n=*/m_orig.numRows,
     /*embedding=*/d_embedding.data().get(), /*embedding_n=*/m_embedding.numRows,
     /*params=*/params.get(), /*transformed=*/d_transformed.data().get());
@@ -279,13 +223,8 @@ __host__ Rcpp::List umap_set_state(Rcpp::List const& state) {
       umap_params_list["negative_sample_rate"];
     umap_params->transform_queue_size =
       umap_params_list["transform_queue_size"];
-#if (CUML4R_LIBCUML_VERSION(CUML_VERSION_MAJOR, CUML_VERSION_MINOR) >= \
-     CUML4R_LIBCUML_VERSION(24, 0))
     umap_params->verbosity = static_cast<rapids_logger::level_enum>(
       Rcpp::as<int>(umap_params_list["verbosity"]));
-#else
-    umap_params->verbosity = umap_params_list["verbosity"];
-#endif
     umap_params->a = umap_params_list["a"];
     umap_params->b = umap_params_list["b"];
     umap_params->init = umap_params_list["init"];

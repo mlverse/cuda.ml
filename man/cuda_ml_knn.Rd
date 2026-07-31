@@ -16,9 +16,10 @@ cuda_ml_knn(x, ...)
 \method{cuda_ml_knn}{data.frame}(
   x,
   y,
-  algo = c("brute", "ivfflat", "ivfpq", "ivfsq"),
+  algo = c("brute", "ivfflat", "ivfpq"),
   metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis",
-    "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine", "correlation"),
+    "canberra", "minkowski", "lp", "chebyshev", "linf", "jensenshannon", "cosine",
+    "correlation"),
   p = 2,
   neighbors = 5L,
   ...
@@ -27,9 +28,10 @@ cuda_ml_knn(x, ...)
 \method{cuda_ml_knn}{matrix}(
   x,
   y,
-  algo = c("brute", "ivfflat", "ivfpq", "ivfsq"),
+  algo = c("brute", "ivfflat", "ivfpq"),
   metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis",
-    "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine", "correlation"),
+    "canberra", "minkowski", "lp", "chebyshev", "linf", "jensenshannon", "cosine",
+    "correlation"),
   p = 2,
   neighbors = 5L,
   ...
@@ -38,9 +40,10 @@ cuda_ml_knn(x, ...)
 \method{cuda_ml_knn}{formula}(
   formula,
   data,
-  algo = c("brute", "ivfflat", "ivfpq", "ivfsq"),
+  algo = c("brute", "ivfflat", "ivfpq"),
   metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis",
-    "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine", "correlation"),
+    "canberra", "minkowski", "lp", "chebyshev", "linf", "jensenshannon", "cosine",
+    "correlation"),
   p = 2,
   neighbors = 5L,
   ...
@@ -49,9 +52,10 @@ cuda_ml_knn(x, ...)
 \method{cuda_ml_knn}{recipe}(
   x,
   data,
-  algo = c("brute", "ivfflat", "ivfpq", "ivfsq"),
+  algo = c("brute", "ivfflat", "ivfpq"),
   metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis",
-    "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine", "correlation"),
+    "canberra", "minkowski", "lp", "chebyshev", "linf", "jensenshannon", "cosine",
+    "correlation"),
   p = 2,
   neighbors = 5L,
   ...
@@ -72,7 +76,7 @@ cuda_ml_knn(x, ...)
 desired responses.}
 
 \item{algo}{The query algorithm to use. Must be one of
-  \{"brute", "ivfflat", "ivfpq", "ivfsq"\} or a KNN algorithm specification
+  \{"brute", "ivfflat", "ivfpq"\} or a KNN algorithm specification
   constructed using the \code{cuda_ml_knn_algo_*} family of functions.
   If the algorithm is specified by one of the \code{cuda_ml_knn_algo_*}
   functions, then values of all required parameters of the algorithm will
@@ -88,10 +92,6 @@ desired responses.}
                are divided into sub-vectors, and each sub-vector is encoded
                using intermediary k-means clusterings to provide partial
                information).
-    - "ivfsq": for inverted file and scalar quantization (vectors components
-               are quantized into reduced binary representation allowing
-               faster distances calculations).
-
   Default: "brute".}
 
 \item{metric}{Distance metric to use. Must be one of \{"euclidean", "l2",
@@ -131,7 +131,7 @@ Build a k-nearest-model for classification or regression tasks.
 
 library(cuda.ml)
 
-if (interactive() && has_cuML()) {
+if (interactive() && cuda_ml_backend_info()$runtime_installed) {
   library(MASS)
   library(magrittr)
   library(purrr)

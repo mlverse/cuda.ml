@@ -2,8 +2,6 @@
 
 #include <Rcpp.h>
 
-#ifdef HAS_CUML
-
 namespace cuml4r {
 
 SEXP svc_fit(Rcpp::NumericMatrix const& input,
@@ -21,9 +19,3 @@ Rcpp::List svc_get_state(SEXP model);
 SEXP svc_set_state(Rcpp::List const& state);
 
 }  // namespace cuml4r
-
-#else
-
-#include "warn_cuml_missing.h"
-
-#endif

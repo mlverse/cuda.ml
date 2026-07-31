@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef HAS_CUML
-
 #include "cuda_utils.h"
 #include "preprocessor.h"
 
@@ -58,9 +56,3 @@ __host__ CUML4R_NODISCARD auto async_copy(cudaStream_t stream, InputIt first,
 }
 
 }  // namespace cuml4r
-
-#else
-
-#include "warn_cuml_missing.h"
-
-#endif

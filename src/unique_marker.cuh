@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef HAS_CUML
-
 #include "cuda_utils.h"
 
 #include <memory>
@@ -38,9 +36,3 @@ struct unique_marker final {
 };
 
 }  // namespace cuml4r
-
-#else
-
-#include "warn_cuml_missing.h"
-
-#endif

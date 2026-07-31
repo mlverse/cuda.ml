@@ -2,8 +2,6 @@
 
 #include "knn_detail.h"
 
-#ifdef HAS_CUML
-
 namespace cuml4r {
 
 Rcpp::List knn_fit(Rcpp::NumericMatrix const& x, int const algo,
@@ -32,9 +30,3 @@ Rcpp::NumericVector knn_regressor_predict(Rcpp::List const& model,
                                           int const n_neighbors);
 
 }  // namespace cuml4r
-
-#else
-
-#include "warn_cuml_missing.h"
-
-#endif

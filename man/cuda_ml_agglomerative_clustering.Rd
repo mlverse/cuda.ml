@@ -51,7 +51,7 @@ linkage distance.
 \examples{
 
 library(cuda.ml)
-if (interactive() && has_cuML()) {
+if (interactive() && cuda_ml_backend_info()$runtime_installed) {
   library(MASS)
   library(magrittr)
   library(purrr)

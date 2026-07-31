@@ -1,4 +1,3 @@
-#ifdef HAS_CUML
 
 #include "cuda_utils.h"
 #include "stream_allocator.h"
@@ -49,9 +48,3 @@ __host__ rmm::cuda_stream_view getOrCreateStream() {
 
 }  // namespace stream_allocator
 }  // namespace cuml4r
-
-#else
-
-#include "warn_cuml_missing.h"
-
-#endif

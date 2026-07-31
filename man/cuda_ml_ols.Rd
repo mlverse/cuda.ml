@@ -13,41 +13,19 @@ cuda_ml_ols(x, ...)
 
 \method{cuda_ml_ols}{default}(x, ...)
 
-\method{cuda_ml_ols}{data.frame}(
-  x,
-  y,
-  method = c("svd", "eig", "qr"),
-  fit_intercept = TRUE,
-  normalize_input = FALSE,
-  ...
-)
+\method{cuda_ml_ols}{data.frame}(x, y, method = c("svd", "eig", "qr"), fit_intercept = TRUE, ...)
 
-\method{cuda_ml_ols}{matrix}(
-  x,
-  y,
-  method = c("svd", "eig", "qr"),
-  fit_intercept = TRUE,
-  normalize_input = FALSE,
-  ...
-)
+\method{cuda_ml_ols}{matrix}(x, y, method = c("svd", "eig", "qr"), fit_intercept = TRUE, ...)
 
 \method{cuda_ml_ols}{formula}(
   formula,
   data,
   method = c("svd", "eig", "qr"),
   fit_intercept = TRUE,
-  normalize_input = FALSE,
   ...
 )
 
-\method{cuda_ml_ols}{recipe}(
-  x,
-  data,
-  method = c("svd", "eig", "qr"),
-  fit_intercept = TRUE,
-  normalize_input = FALSE,
-  ...
-)
+\method{cuda_ml_ols}{recipe}(x, data, method = c("svd", "eig", "qr"), fit_intercept = TRUE, ...)
 }
 \arguments{
 \item{x}{Depending on the context:
@@ -79,10 +57,6 @@ desired responses.}
 mean of the response variable. If FALSE, then the model expects data to be
 centered. Default: TRUE.}
 
-\item{normalize_input}{Ignored when \code{fit_intercept} is FALSE. If TRUE,
-then the predictors will be normalized to have a L2 norm of 1.
-Default: FALSE.}
-
 \item{formula}{A formula specifying the outcome terms on the left-hand side,
 and the predictor terms on the right-hand side.}
 
@@ -101,7 +75,7 @@ Train an Ordinary Least Square (OLS) model for regression tasks.
 
 library(cuda.ml)
 
-if (interactive() && has_cuML()) {
+if (interactive() && cuda_ml_backend_info()$runtime_installed) {
   model <- cuda_ml_ols(formula = mpg ~ ., data = mtcars, method = "qr")
   predictions <- predict(model, mtcars[names(mtcars) != "mpg"])
 
