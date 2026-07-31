@@ -66,7 +66,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update -y && apt-get install -y \
     ca-certificates curl tzdata locales \
-    libcurl4-openssl-dev libssl-dev libxml2-dev \
+    libcurl4-openssl-dev libssl-dev libxml2-dev libuv1t64 \
     libfontconfig1-dev libfreetype6-dev libpng-dev \
     libharfbuzz-dev libfribidi-dev libtiff-dev libjpeg-dev \
     && locale-gen en_US.UTF-8
@@ -89,5 +89,6 @@ COPY --from=build /opt/R/library /opt/R/library
 COPY --from=build /usr/local/bin/nvrtc-probe /usr/local/bin/nvrtc-probe
 
 # The final image deliberately has no CUDA toolkit or prepared runtime cache.
-RUN test ! -e /usr/local/cuda \
+RUN Rscript -e "stopifnot(requireNamespace('testthat', quietly = TRUE))" \
+    && test ! -e /usr/local/cuda \
     && test -z "$(command -v nvcc)"
