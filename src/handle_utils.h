@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 #include <raft/core/handle.hpp>
 #include <rmm/cuda_stream_view.hpp>
 
