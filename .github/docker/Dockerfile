@@ -38,8 +38,6 @@ COPY . /build
 ENV NOT_CRAN=true
 ENV UNIVERSE_NAME=mlverse
 ENV CUML_BOOTSTRAP_CACHE=/opt/cuda.ml
-ENV CUML_MANAGED_PREFIX=/opt/cuda.ml/managed-build/cuda-13.2.2-rapids-26.6.0
-ENV CUML_CUDA_ARCHITECTURES=75-real;80-real;86-real;89-real;90-real;100-real;120-real;120-virtual
 
 # Install R dependencies
 RUN PKG_SYSREQS=false Rscript -e "\
@@ -50,13 +48,13 @@ RUN PKG_SYSREQS=false Rscript -e "\
 # Install cuda.ml with tests
 RUN R CMD INSTALL --install-tests /build
 RUN Rscript -e "library(cuda.ml); stopifnot(has_cuML())"
-RUN Rscript /build/tools/audit-backend.R \
-    /opt/cuda.ml/managed-build/cuda-13.2.2-rapids-26.6.0/bin/cuobjdump
-RUN cc -std=c11 -Wall -Wextra -Werror \
-    -I"${CUML_MANAGED_PREFIX}/include" \
-    -L"${CUML_MANAGED_PREFIX}/lib" \
-    /build/tools/nvrtc-probe.c -lnvrtc \
-    -o /usr/local/bin/nvrtc-probe
+RUN managed_prefix="$(Rscript -e "source('/build/tools/config/utils/bootstrap.R'); cat(cuml_managed_bootstrap_prefix())")" \
+    && Rscript /build/tools/audit-backend.R "${managed_prefix}/bin/cuobjdump" \
+    && cc -std=c11 -Wall -Wextra -Werror \
+        -I"${managed_prefix}/include" \
+        -L"${managed_prefix}/lib" \
+        /build/tools/nvrtc-probe.c -lnvrtc \
+        -o /usr/local/bin/nvrtc-probe
 
 # Clean up
 RUN rm -rf /tmp/* /build
@@ -90,6 +88,10 @@ RUN mkdir -p /opt/R/library
 COPY --from=build /opt/R/library /opt/R/library
 COPY --from=build /usr/local/bin/nvrtc-probe /usr/local/bin/nvrtc-probe
 
-RUN Rscript -e "library(cuda.ml); stopifnot(has_cuML())" \
+# Provision and load the native backend without a CUDA toolkit or GPU.
+# GPU algorithms are exercised separately by the GPU CI job.
+RUN CUDA_ML_CACHE_DIR=/tmp/cuda-ml-smoke \
+    Rscript -e "library(cuda.ml); cuda_ml_install(); stopifnot(identical(cuML_major_version(), '26'), identical(cuML_minor_version(), '6'))" \
+    && rm -rf /tmp/cuda-ml-smoke \
     && test ! -e /usr/local/cuda \
     && test -z "$(command -v nvcc)"

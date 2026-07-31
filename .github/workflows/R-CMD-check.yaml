@@ -37,11 +37,13 @@ jobs:
       - name: Build
         run: R CMD build .
 
-      - name: Check
+      # This is a regression check that CRAN installation and tests use the
+      # stub backend without downloading a build toolchain or managed runtime.
+      - name: Check without network access
         run: sudo -E unshare --net -- R CMD check --no-manual --as-cran cuda.ml_*.tar.gz
         env:
-          CRAN: true
           _R_CHECK_CRAN_INCOMING_: false
+          # --as-cran otherwise verifies the clock against an external service.
           _R_CHECK_SYSTEM_CLOCK_: false
 
   build-image:
@@ -68,6 +70,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
+          # Managed versions are pinned in tools/config/utils/bootstrap.R and
+          # inst/runtime; they are intentionally not workflow build arguments.
           context: "."
           file: .github/docker/Dockerfile
           push: true
@@ -96,22 +100,43 @@ jobs:
       - name: Verify GPU access
         run: nvidia-smi
 
-      - name: Verify cuML linkage
-        run: Rscript -e "library(cuda.ml); stopifnot(has_cuML())"
+      - name: Verify functional backend metadata
+        shell: Rscript {0}
+        # fmt: r
+        run: |
+          library(cuda.ml)
+          stopifnot(has_cuML())
 
       - name: Exercise cold-cache automatic provisioning
+        shell: Rscript {0}
+        # fmt: r
         run: |
-          Rscript -e "library(cuda.ml); stopifnot(!dir.exists(Sys.getenv('CUDA_ML_CACHE_DIR'))); x <- matrix(c(0, 0, 0, 1, 10, 10, 10, 11), ncol = 2, byrow = TRUE); fit <- cuda_ml_kmeans(x, k = 2); stopifnot(length(fit\$labels) == 4L)"
+          library(cuda.ml)
+          stopifnot(!dir.exists(Sys.getenv("CUDA_ML_CACHE_DIR")))
+
+          x <- matrix(
+            c(0, 0, 0, 1, 10, 10, 10, 11),
+            ncol = 2,
+            byrow = TRUE
+          )
+          fit <- cuda_ml_kmeans(x, k = 2)
+          stopifnot(length(fit$labels) == 4L)
 
       - name: Session info
+        shell: Rscript {0}
+        # fmt: r
         run: |
-          Rscript -e "sessionInfo()"
-          Rscript -e "library(cuda.ml)"
+          sessionInfo()
+          library(cuda.ml)
 
       - name: Run tests
+        shell: Rscript {0}
+        # fmt: r
         run: |
-          Rscript -e "testthat::test_package('cuda.ml', reporter = 'progress')"
+          testthat::test_package("cuda.ml", reporter = "progress")
 
+  # The image contains the functional R package but neither a CUDA toolkit nor
+  # a prepared runtime cache. This job validates the CPU-only setup path.
   test-runtime-cpu:
     needs: build-image
     if: ${{ always() && needs.build-image.result == 'success' }}
@@ -128,19 +153,46 @@ jobs:
       CUDA_ML_CACHE_DIR: /tmp/cuda-ml-runtime
 
     steps:
+      # The focused tests start concurrent installers against an empty cache,
+      # validate the completed cache, and load the backend through version calls.
       - name: Exercise CPU-only runtime provisioning and loading
+        shell: Rscript {0}
+        # fmt: r
         run: |
-          Rscript -e "testthat::test_package('cuda.ml', filter = 'runtime-functional', reporter = 'progress')"
+          testthat::test_package(
+            "cuda.ml",
+            filter = "runtime-functional",
+            reporter = "progress"
+          )
 
+      # Poison the proxy settings and make download.file() fail immediately.
+      # A completed cache must be reusable without any network access.
       - name: Reuse the prepared runtime without downloads
         env:
           http_proxy: http://127.0.0.1:9
           https_proxy: http://127.0.0.1:9
           all_proxy: http://127.0.0.1:9
           no_proxy: ""
+        shell: Rscript {0}
+        # fmt: r
         run: |
-          Rscript -e "library(cuda.ml); trace('download.file', where = asNamespace('utils'), tracer = quote(stop('unexpected runtime download')), print = FALSE); cuda_ml_install(); version <- sprintf('%s.%02d', cuML_major_version(), as.integer(cuML_minor_version())); stopifnot(identical(version, '26.06'))"
+          library(cuda.ml)
+          trace(
+            "download.file",
+            where = asNamespace("utils"),
+            tracer = quote(stop("unexpected runtime download")),
+            print = FALSE
+          )
+          cuda_ml_install()
+          version <- sprintf(
+            "%s.%02d",
+            cuML_major_version(),
+            as.integer(cuML_minor_version())
+          )
+          stopifnot(identical(version, "26.06"))
 
+      # NVRTC is part of the managed cache. Compile PTX to prove it works
+      # without a GPU or a system CUDA installation.
       - name: Compile an NVRTC kernel without a GPU
         run: |
           runtime_lib="$(find "$CUDA_ML_CACHE_DIR/runtime-v1" -type f -name .complete -printf '%h/lib\n' -quit)"
