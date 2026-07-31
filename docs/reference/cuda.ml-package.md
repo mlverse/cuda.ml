@@ -51,7 +51,7 @@ Loading cuda.ml does not require a GPU, load native code, create a
 cache, or contact the network. Call
 [`cuda_ml_install()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_install.md)
 to download and cache the pinned CUDA 13.2.2, RAPIDS cuML and nvForest
-26.06, and Treelite 4.6.1 runtime while preparing a container or machine
+26.06, and Treelite 4.7.0 runtime while preparing a container or machine
 image. Native operations fail with an installation instruction until
 that explicit setup step has completed. GPU operations then require a
 supported NVIDIA GPU and driver 580 or newer; nvForest CPU inference
@@ -62,7 +62,7 @@ CRAN builds are network-free source stubs. A stub reports
 [`cuda_ml_backend_info()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_backend_info.md);
 install the R-universe binary for a no-compiler setup. Local functional
 source builds require exact CUDA 13.2.2, GNU C++ 14 or newer, cuML and
-nvForest 26.06, and Treelite 4.6.1 inputs. Set `CUDA_ML_CACHE_DIR` to
+nvForest 26.06, and Treelite 4.7.0 inputs. Set `CUDA_ML_CACHE_DIR` to
 override the default managed runtime cache.
 
 ## See also

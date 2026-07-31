@@ -41,8 +41,8 @@ static_assert(CUML_VERSION_MAJOR == 26 && CUML_VERSION_MINOR == 6 &&
               CUML_VERSION_PATCH == 0);
 static_assert(NVForest_VERSION_MAJOR == 26 && NVForest_VERSION_MINOR == 6 &&
               NVForest_VERSION_PATCH == 0);
-static_assert(TREELITE_VER_MAJOR == 4 && TREELITE_VER_MINOR == 6 &&
-              TREELITE_VER_PATCH == 1);
+static_assert(TREELITE_VER_MAJOR == 4 && TREELITE_VER_MINOR == 7 &&
+              TREELITE_VER_PATCH == 0);
 
 enum class ModelType : int {
   XGBOOST_UBJSON = 0,

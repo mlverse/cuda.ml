@@ -88,7 +88,7 @@ test_that("backend metadata is a non-mutating package query", {
     expect_identical(state$value$cuda_version, "13.2.2")
     expect_identical(state$value$rapids_version, "26.06")
     expect_identical(state$value$nvforest_version, "26.06.0")
-    expect_identical(state$value$treelite_version, "4.6.1")
+    expect_identical(state$value$treelite_version, "4.7.0")
     expect_identical(state$value$platform, "ubuntu-26.04-x86_64")
     expect_identical(state$value$minimum_driver, 580L)
     expect_identical(

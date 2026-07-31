@@ -52,7 +52,7 @@ SystemRequirements: The managed R-universe binary targets Ubuntu 26.04 x86_64
     (including WSL2 running that distribution). GPU-backed operations require
     a supported NVIDIA GPU and driver 580 or newer. Functional source builds
     require CUDA Toolkit 13.2.2, GNU C++ 14 or newer, RAPIDS cuML and nvForest
-    26.06, and Treelite 4.6.1 supplied through a compatible local toolchain or
+    26.06, and Treelite 4.7.0 supplied through a compatible local toolchain or
     the mlverse R-universe build environment.
 NeedsCompilation: yes
 Config/roxygen2/version: 8.0.0

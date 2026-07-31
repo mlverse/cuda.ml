@@ -237,7 +237,7 @@ if (identical(build_mode, "managed")) {
   if (!check_functional_prefix(cuml_prefix)) {
     stop2(
       "CUML_PREFIX does not contain the exact cuML, nvForest, and Treelite prefix.",
-      "Use CUDA 13.2.2, RAPIDS 26.06, nvForest 26.06.0, and Treelite 4.6.1."
+      "Use CUDA 13.2.2, RAPIDS 26.06, nvForest 26.06.0, and Treelite 4.7.0."
     )
   }
 }

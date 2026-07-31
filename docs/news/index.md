@@ -3,7 +3,7 @@
 ## cuda.ml 0.4.0
 
 This is a breaking release targeting one backend: CUDA Toolkit 13.2.2,
-RAPIDS cuML and nvForest 26.06, and Treelite 4.6.1.
+RAPIDS cuML and nvForest 26.06, and Treelite 4.7.0.
 
 - Added an Ubuntu 26.04 x86_64 backend distributed through R-universe.
   The package contains the compiled cuda.ml backend but not the
