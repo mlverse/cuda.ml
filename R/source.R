@@ -24,6 +24,8 @@ cuda_ml_source_lock_metadata <- function() {
     "RAPIDS",
     "nvForest",
     "Treelite",
+    "CMake",
+    "Ninja",
     "Platform"
   )
   if (
@@ -139,41 +141,9 @@ cuda_ml_source_cuda_libdir <- function(cuda_home) {
   normalizePath(candidates[[1L]], mustWork = TRUE)
 }
 
-cuda_ml_source_build_inputs <- function() {
-  names <- c(
-    "CUDA_HOME",
-    "CUML_PREFIX",
-    "CUML_CUDA_ARCHITECTURES",
-    "CUDA_ML_CXX"
-  )
-  values <- Sys.getenv(names, unset = "")
-  if (any(!nzchar(values))) {
-    stop(
-      "A cuda.ml source installation requires explicit build inputs. ",
-      "Set CUDA_HOME, CUML_PREFIX, CUML_CUDA_ARCHITECTURES, and ",
-      "CUDA_ML_CXX.",
-      call. = FALSE
-    )
-  }
-
-  cuda_ml_platform()
-  source <- system.file("backend-src", package = "cuda.ml")
-  if (!nzchar(source) || !dir.exists(source)) {
-    stop("The cuda.ml backend source is missing.", call. = FALSE)
-  }
-  cuda_home <- normalizePath(values[["CUDA_HOME"]], mustWork = TRUE)
-  cuml_prefix <- normalizePath(values[["CUML_PREFIX"]], mustWork = TRUE)
-  cxx <- normalizePath(values[["CUDA_ML_CXX"]], mustWork = TRUE)
-  nvcc <- file.path(cuda_home, "bin", "nvcc")
-  if (!file.exists(nvcc)) {
-    stop("CUDA_HOME does not contain bin/nvcc.", call. = FALSE)
-  }
-
-  architectures <- strsplit(
-    values[["CUML_CUDA_ARCHITECTURES"]],
-    ";",
-    fixed = TRUE
-  )[[1L]]
+cuda_ml_source_architectures <- function(value) {
+  stopifnot(is.character(value), length(value) == 1L, !is.na(value))
+  architectures <- strsplit(value, ";", fixed = TRUE)[[1L]]
   if (
     !length(architectures) ||
       any(!grepl("^[0-9]+(-(real|virtual))?$", architectures)) ||
@@ -185,9 +155,17 @@ cuda_ml_source_build_inputs <- function() {
       call. = FALSE
     )
   }
+  paste(architectures, collapse = ";")
+}
 
+cuda_ml_source_compiler <- function(path) {
+  stopifnot(is.character(path), length(path) == 1L, !is.na(path))
+  if (!nzchar(path) || !file.exists(path)) {
+    stop("A source installation requires GNU C++ 14 or newer.", call. = FALSE)
+  }
+  path <- normalizePath(path, mustWork = TRUE)
   cxx_version <- cuda_ml_source_tool_version(
-    cxx,
+    path,
     "-dumpfullversion",
     "^([0-9]+([.][0-9]+)*)$"
   )
@@ -195,10 +173,14 @@ cuda_ml_source_build_inputs <- function() {
     is.na(cxx_version) ||
       base::package_version(cxx_version) < base::package_version("14.0")
   ) {
-    stop("CUDA_ML_CXX must be GNU C++ 14 or newer.", call. = FALSE)
+    stop("A source installation requires GNU C++ 14 or newer.", call. = FALSE)
   }
+  list(path = path, version = cxx_version)
+}
 
-  cmake <- unname(Sys.which("cmake"))
+cuda_ml_source_cmake <- function(path = unname(Sys.which("cmake"))) {
+  stopifnot(is.character(path), length(path) == 1L, !is.na(path))
+  cmake <- path
   cmake_version <- cuda_ml_source_tool_version(
     cmake,
     "--version",
@@ -210,6 +192,101 @@ cuda_ml_source_build_inputs <- function() {
       base::package_version(cmake_version) < base::package_version("3.21.1")
   ) {
     stop("A source installation requires CMake 3.21.1 or newer.", call. = FALSE)
+  }
+  list(
+    path = normalizePath(cmake, mustWork = TRUE),
+    version = cmake_version
+  )
+}
+
+cuda_ml_source_build_inputs <- function(dependencies, architectures = NULL) {
+  stopifnot(
+    is.character(dependencies),
+    length(dependencies) == 1L,
+    !is.na(dependencies),
+    dependencies %in% c("managed", "host"),
+    is.null(architectures) ||
+      (
+        is.character(architectures) &&
+          length(architectures) == 1L &&
+          !is.na(architectures)
+      )
+  )
+
+  platform <- cuda_ml_platform()
+  source <- system.file("backend-src", package = "cuda.ml")
+  artifact_lock_path <- system.file(
+    "artifacts",
+    paste0(platform, ".tsv"),
+    package = "cuda.ml"
+  )
+  if (!nzchar(source) || !dir.exists(source)) {
+    stop("The cuda.ml backend source is missing.", call. = FALSE)
+  }
+  if (!nzchar(artifact_lock_path) || !file.exists(artifact_lock_path)) {
+    stop("The cuda.ml source-build lock is missing.", call. = FALSE)
+  }
+
+  if (identical(dependencies, "managed")) {
+    cxx_path <- Sys.getenv("CUDA_ML_CXX", unset = "")
+    if (!nzchar(cxx_path)) {
+      cxx_path <- unname(Sys.which("g++"))
+    }
+    compiler <- cuda_ml_source_compiler(cxx_path)
+    tools <- cuda_ml_source_build_tools()
+    if (is.null(architectures)) {
+      architectures <- tools$cuml_managed_cuda_architectures()
+    }
+    architectures <- cuda_ml_source_architectures(architectures)
+
+    bootstrap_lock <- cuda_ml_acquire_lock("source-toolchain")
+    on.exit(filelock::unlock(bootstrap_lock), add = TRUE)
+    managed <- tools$bootstrap_managed_build_from_artifacts(compiler$path)
+    cuda_home <- managed$prefix
+    cuml_prefix <- managed$prefix
+    cmake <- cuda_ml_source_cmake(managed$cmake)
+    ninja <- normalizePath(managed$ninja, mustWork = TRUE)
+    ninja_version <- cuda_ml_source_tool_version(
+      ninja,
+      "--version",
+      "^([0-9]+[.][0-9]+[.][0-9]+)([.].*)?$"
+    )
+    if (is.na(ninja_version)) {
+      stop("The managed Ninja executable is invalid.", call. = FALSE)
+    }
+  } else {
+    names <- c(
+      "CUDA_HOME",
+      "CUML_PREFIX",
+      "CUML_CUDA_ARCHITECTURES",
+      "CUDA_ML_CXX"
+    )
+    values <- Sys.getenv(names, unset = "")
+    if (!is.null(architectures)) {
+      values[["CUML_CUDA_ARCHITECTURES"]] <- architectures
+    }
+    if (any(!nzchar(values))) {
+      stop(
+        "A host source installation requires explicit build inputs. ",
+        "Set CUDA_HOME, CUML_PREFIX, CUML_CUDA_ARCHITECTURES, and ",
+        "CUDA_ML_CXX.",
+        call. = FALSE
+      )
+    }
+    cuda_home <- normalizePath(values[["CUDA_HOME"]], mustWork = TRUE)
+    cuml_prefix <- normalizePath(values[["CUML_PREFIX"]], mustWork = TRUE)
+    architectures <- cuda_ml_source_architectures(
+      values[["CUML_CUDA_ARCHITECTURES"]]
+    )
+    compiler <- cuda_ml_source_compiler(values[["CUDA_ML_CXX"]])
+    cmake <- cuda_ml_source_cmake()
+    ninja <- NULL
+    ninja_version <- NULL
+  }
+
+  nvcc <- file.path(cuda_home, "bin", "nvcc")
+  if (!file.exists(nvcc)) {
+    stop("CUDA_HOME does not contain bin/nvcc.", call. = FALSE)
   }
 
   lock <- cuda_ml_source_lock_metadata()
@@ -277,13 +354,17 @@ cuda_ml_source_build_inputs <- function() {
     cuda_home = cuda_home,
     cuda_libdir = cuda_ml_source_cuda_libdir(cuda_home),
     cuml_prefix = cuml_prefix,
-    architectures = paste(architectures, collapse = ";"),
-    cxx = cxx,
-    cxx_version = cxx_version,
-    cmake = normalizePath(cmake, mustWork = TRUE),
-    cmake_version = cmake_version,
+    architectures = architectures,
+    cxx = compiler$path,
+    cxx_version = compiler$version,
+    cmake = cmake$path,
+    cmake_version = cmake$version,
+    ninja = ninja,
+    ninja_version = ninja_version,
     nvcc = normalizePath(nvcc, mustWork = TRUE),
-    lock = lock
+    dependencies = dependencies,
+    lock = lock,
+    artifact_lock = cuda_ml_hash_file(artifact_lock_path)
   )
 }
 
@@ -312,7 +393,12 @@ cuda_ml_source_identity <- function(inputs) {
     inputs$architectures,
     inputs$cxx,
     inputs$cxx_version,
+    inputs$cmake,
     inputs$cmake_version,
+    inputs$ninja,
+    inputs$ninja_version,
+    inputs$dependencies,
+    inputs$artifact_lock,
     unname(inputs$lock[c("CUDA-Toolkit", "RAPIDS", "nvForest", "Treelite")])
   )
   list(
@@ -542,7 +628,13 @@ cuda_ml_install_source_backend <- function(identity, final_path) {
     )),
     collapse = ";"
   )
+  generator_args <- if (is.null(inputs$ninja)) {
+    character()
+  } else {
+    c("-G", "Ninja", paste0("-DCMAKE_MAKE_PROGRAM=", inputs$ninja))
+  }
   configure_args <- c(
+    generator_args,
     "-S",
     source,
     "-B",
@@ -598,8 +690,13 @@ cuda_ml_install_source_backend <- function(identity, final_path) {
     `CUDA-Home` = inputs$cuda_home,
     `CUML-Prefix` = inputs$cuml_prefix,
     CXX = inputs$cxx,
+    CMake = inputs$cmake,
+    Dependencies = inputs$dependencies,
     `Inventory-SHA256` = cuda_ml_hash_file(inventory)
   )
+  if (!is.null(inputs$ninja)) {
+    fields <- c(fields, Ninja = inputs$ninja)
+  }
   write.dcf(
     matrix(
       unname(fields),

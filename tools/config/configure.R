@@ -2,7 +2,7 @@
 #'
 #' CUML_PREFIX: Required for a functional local source build. Set this to the
 #'              explicit prefix containing the compatible RAPIDS cuML headers
-#'              and libraries. Local builds never provision a toolchain.
+#'              and libraries. Local builds never provision dependencies.
 #'
 #' CUML_BOOTSTRAP_CACHE: Override the temporary build-toolchain cache used by
 #'                       the managed build.
@@ -16,9 +16,9 @@
 #'                     toolchain. Local builds require all inputs explicitly.
 #'                     Stub builds contain no native backend.
 #'
-#' CUDA_ML_CXX: Required for local functional builds. Path to the GNU C++ 14 or
-#'              newer compiler used for both C++ sources and nvcc host
-#'              compilation. Managed builds use g++ from PATH.
+#' CUDA_ML_CXX: Path to the GNU C++ 14 or newer compiler used for both C++
+#'              sources and nvcc host compilation. Required for local builds;
+#'              managed builds use g++ from PATH when this is unset.
 
 pkg_root <- function() {
   # devtools::load_all() might run the config script from the `src` directory.
@@ -38,9 +38,12 @@ pkg_root <- function() {
   return(pkg_root)
 }
 
-load_util_fns <- function() {
-  wd <- file.path(pkg_root(), "tools", "config", "utils")
+cuml_artifact_root <- function() {
+  file.path(pkg_root(), "inst", "artifacts")
+}
 
+load_util_fns <- function() {
+  wd <- file.path(pkg_root(), "inst", "build-tools")
   for (f in c(
     "logging.R",
     "platform.R",
@@ -48,11 +51,17 @@ load_util_fns <- function() {
     "artifacts.R",
     "bootstrap.R",
     "cuml.R",
-    "cmake.R",
-    "native-symbols.R"
+    "cmake.R"
   )) {
     source(file.path(wd, f))
   }
+  source(file.path(
+    pkg_root(),
+    "tools",
+    "config",
+    "utils",
+    "native-symbols.R"
+  ))
 }
 
 load_util_fns()
@@ -84,7 +93,14 @@ clear_build_artifacts()
 generate_cuda_ml_native_symbol_manifest()
 cuml_generate_runtime_lock()
 
-run_cmake <- function(nvcc, cuml_prefix, cuda_architectures, cxx) {
+run_cmake <- function(
+  nvcc,
+  cuml_prefix,
+  cuda_architectures,
+  cxx,
+  cmake_bin,
+  ninja = NULL
+) {
   stopifnot(
     is.list(nvcc),
     is.character(cuml_prefix),
@@ -93,7 +109,12 @@ run_cmake <- function(nvcc, cuml_prefix, cuda_architectures, cxx) {
     length(cuda_architectures) == 1L,
     is.character(cxx),
     length(cxx) == 1L,
-    nzchar(cxx)
+    nzchar(cxx),
+    is.character(cmake_bin),
+    length(cmake_bin) == 1L,
+    nzchar(cmake_bin),
+    is.null(ninja) ||
+      (is.character(ninja) && length(ninja) == 1L && nzchar(ninja))
   )
 
   wd <- getwd()
@@ -104,7 +125,6 @@ run_cmake <- function(nvcc, cuml_prefix, cuda_architectures, cxx) {
   define(RCPP_INCLUDE_DIR = system.file("include", package = "Rcpp"))
   configure_file(file.path("inst", "backend-src", "CMakeLists.txt.in"))
 
-  cmake_bin <- find_cmake()
   src_dir <- normalizePath(
     file.path(pkg_root(), "inst", "backend-src")
   )
@@ -133,7 +153,13 @@ run_cmake <- function(nvcc, cuml_prefix, cuda_architectures, cxx) {
   )
   Sys.setenv(CMAKE_PREFIX_PATH = cmake_prefix_path)
 
+  generator_args <- if (is.null(ninja)) {
+    character()
+  } else {
+    c("-G", "Ninja", paste0("-DCMAKE_MAKE_PROGRAM=", ninja))
+  }
   cmake_args <- c(
+    generator_args,
     "-S",
     src_dir,
     "-B",
@@ -163,6 +189,8 @@ run_cmake <- function(nvcc, cuml_prefix, cuda_architectures, cxx) {
 nvcc <- NULL
 cuml_prefix <- NA_character_
 cuda_architectures <- NA_character_
+cmake_bin <- NA_character_
+ninja <- NULL
 build_mode <- cuml_build_mode()
 
 if (identical(build_mode, "managed")) {
@@ -174,6 +202,8 @@ if (identical(build_mode, "managed")) {
   nvcc <- managed_build$nvcc
   cuml_prefix <- managed_build$prefix
   cuda_architectures <- cuml_managed_cuda_architectures()
+  cmake_bin <- managed_build$cmake
+  ninja <- managed_build$ninja
 } else if (identical(build_mode, "local")) {
   if (!cuml_supported_local_platform()) {
     stop2(
@@ -217,11 +247,19 @@ if (identical(build_mode, "managed")) {
       )
     )
   }
+  cmake_bin <- find_cmake()
 }
 
 full_build <- !identical(build_mode, "stub")
 
 if (full_build) {
   validate_managed_build_versions(nvcc, cuml_prefix)
-  run_cmake(nvcc, cuml_prefix, cuda_architectures, cxx)
+  run_cmake(
+    nvcc,
+    cuml_prefix,
+    cuda_architectures,
+    cxx,
+    cmake_bin,
+    ninja
+  )
 }

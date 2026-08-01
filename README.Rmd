@@ -252,8 +252,29 @@ versions older than 2.28 are not currently supported.
 
 ### Build the backend from source
 
-To compile the native backend directly on the host, install the locked native
-dependencies first, then provide their locations explicitly:
+To compile the native backend directly on the host without Docker or a
+prebuilt cuda.ml backend, install GNU C++ 14 or newer and run:
+
+``` r
+Sys.setenv(CUDA_ML_CXX = "/usr/bin/g++-14") # omit when g++ 14+ is on PATH
+cuda.ml::cuda_ml_install(source = TRUE)
+```
+
+The default managed source build downloads and verifies about 1.7 GiB of exact
+locked build artifacts from PyPI and GitHub. These provide CUDA Toolkit 13.2.2,
+cuML and nvForest 26.06, Treelite 4.7.0, CMake, and Ninja. Python, Conda, Docker,
+a system CUDA Toolkit, a system RAPIDS installation, and a GPU are not required
+for the build. Linux x86_64 with glibc 2.28 or newer and GNU C++ 14 or newer are
+required.
+
+The toolchain and compiled backend are cached under `CUDA_ML_CACHE_DIR`, or the
+default cuda.ml user cache. Calling the function again with the same inputs is a
+no-op. To target a smaller set of GPUs, supply an explicit semicolon-separated
+CMake CUDA architecture list, for example
+`architectures = "86-real;89-real"`.
+
+To use a native toolchain already installed on the host and make no downloads,
+provide every build input explicitly:
 
 ``` r
 Sys.setenv(
@@ -262,25 +283,14 @@ Sys.setenv(
   CUML_CUDA_ARCHITECTURES = "86-real",
   CUDA_ML_CXX = "/usr/bin/g++-14"
 )
-cuda.ml::cuda_ml_install(source = TRUE)
+cuda.ml::cuda_ml_install(source = TRUE, dependencies = "host")
 ```
 
-This pathway requires CUDA Toolkit 13.2.2, cuML and nvForest 26.06, Treelite
-4.7.0 headers and `lib/libtreelite_static.a`, GNU C++ 14 or newer, and CMake
-3.21.1 or newer. `CUML_CUDA_ARCHITECTURES` is an explicit semicolon-separated
-CMake CUDA architecture list for the GPUs that will run the backend.
-
-`cuda_ml_install(source = TRUE)` makes no downloads. It copies the native
-sources included in the installed R package to a temporary build directory,
-compiles `cuda.ml.so` with CMake, verifies its registered R routines and locked
-library versions, and moves it into the cuda.ml cache. It then records the
-source build as the selected backend, so later R sessions load it automatically.
-The compiled library links to the CUDA and RAPIDS directories supplied above;
-those directories must remain in place.
-
-This builds cuda.ml itself from source without Docker or a prebuilt cuda.ml
-backend. `CUML_PREFIX` may contain dependencies installed natively from source.
-The function does not build or provision CUDA, RAPIDS, or Treelite.
+This host pathway requires CUDA Toolkit 13.2.2; a `CUML_PREFIX` containing cuML
+and nvForest 26.06, Treelite 4.7.0 headers, and
+`lib/libtreelite_static.a`; GNU C++ 14 or newer; and CMake 3.21.1 or newer. The
+CUDA, RAPIDS, and Treelite prefixes must remain in place because the compiled
+backend links to their libraries.
 
 ### Packaging
 

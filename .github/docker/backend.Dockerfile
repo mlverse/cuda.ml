@@ -28,6 +28,7 @@ COPY R/RcppExports.R /build/R/RcppExports.R
 COPY inst/artifacts/ /build/inst/artifacts/
 COPY inst/runtime/ /build/inst/runtime/
 COPY inst/cuda-ml-backend.dcf inst/native-symbols.txt /build/inst/
+COPY inst/build-tools/ /build/inst/build-tools/
 COPY tools/config.R /build/tools/config.R
 COPY tools/config/ /build/tools/config/
 COPY inst/backend-src/ /build/inst/backend-src/
@@ -40,7 +41,7 @@ ENV CMAKE_BUILD_PARALLEL_LEVEL=2
 RUN Rscript -e \
     "install.packages(c('Rcpp', 'digest'), repos = 'https://cloud.r-project.org')"
 RUN Rscript tools/config.R configure
-RUN cmake \
+RUN /opt/cuda.ml/managed-build/cuda-13.2.2-rapids-26.6.0/cmake/bin/cmake \
       --build inst/backend-src/.cmake-build \
       --target cuda.ml \
       --parallel 2
@@ -50,7 +51,7 @@ FROM backend-build AS backend
 COPY tools/audit-backend.R tools/package-backend.R tools/nvrtc-probe.c /build/tools/
 
 RUN CUDA_ML_PREFIX="$(Rscript -e \
-      "pkg_root <- function() '/build'; source('tools/config/utils/artifacts.R'); source('tools/config/utils/bootstrap.R'); cat(cuml_managed_bootstrap_prefix())")" \
+      "cuml_artifact_root <- function() '/build/inst/artifacts'; source('inst/build-tools/artifacts.R'); source('inst/build-tools/bootstrap.R'); cat(cuml_managed_bootstrap_prefix())")" \
     && LD_LIBRARY_PATH="${CUDA_ML_PREFIX}/lib" \
       Rscript tools/audit-backend.R \
         inst/backend-src/.cmake-build/cuda.ml.so \
@@ -85,12 +86,11 @@ RUN cp /out/*.row.tsv \
 
 RUN --network=none \
     CUDA_ML_CACHE_DIR=/tmp/cuda-ml-source-cache \
-      CUDA_HOME=/opt/cuda.ml/managed-build/cuda-13.2.2-rapids-26.6.0 \
-      CUML_PREFIX=/opt/cuda.ml/managed-build/cuda-13.2.2-rapids-26.6.0 \
-      CUML_CUDA_ARCHITECTURES=75-real \
+      CUML_BOOTSTRAP_CACHE=/opt/cuda.ml \
       CUDA_ML_CXX="$(command -v g++)" \
       Rscript -e \
-        "library(cuda.ml); cuda_ml_install(source = TRUE); cuda_ml_install(source = TRUE)" \
+        "library(cuda.ml); cuda_ml_install(source = TRUE, architectures = '75-real'); cuda_ml_install(source = TRUE, architectures = '75-real')" \
+    && test ! -e /tmp/cuda-ml-source-cache/source-toolchains-v1 \
     && test ! -e /tmp/cuda-ml-source-cache/runtime-v3 \
     && test ! -e /tmp/cuda-ml-source-cache/backend-assets-v1 \
     && test ! -e /tmp/cuda-ml-source-cache/backends-v3

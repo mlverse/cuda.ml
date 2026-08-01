@@ -1,7 +1,7 @@
 cuml_artifact_lock_path <- function(
   platform = "linux-x86_64-glibc2.28"
 ) {
-  file.path(pkg_root(), "inst", "artifacts", paste0(platform, ".tsv"))
+  file.path(cuml_artifact_root(), paste0(platform, ".tsv"))
 }
 
 cuml_artifact_metadata <- function(
@@ -29,6 +29,8 @@ cuml_artifact_metadata <- function(
     "RAPIDS-Package",
     "nvForest",
     "Treelite",
+    "CMake",
+    "Ninja",
     "Platform",
     "Minimum-Driver",
     "Architectures",
@@ -96,6 +98,8 @@ cuml_artifact_lock <- function(
       package_version(unname(metadata[["nvForest"]]))
     ),
     identical(version("treelite-source"), unname(metadata[["Treelite"]])),
+    identical(version("cmake"), unname(metadata[["CMake"]])),
+    identical(version("ninja"), unname(metadata[["Ninja"]])),
     identical(
       version("rapidjson-source"),
       "ab1842a2dae061284c0a62dca1cc6d5e7e37e346"

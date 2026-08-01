@@ -30,6 +30,14 @@ cuml_managed_treelite_version <- function() {
   unname(cuml_artifact_metadata()[["Treelite"]])
 }
 
+cuml_managed_cmake_version <- function() {
+  unname(cuml_artifact_metadata()[["CMake"]])
+}
+
+cuml_managed_ninja_version <- function() {
+  unname(cuml_artifact_metadata()[["Ninja"]])
+}
+
 cuml_managed_cuda_architectures <- function() {
   unname(cuml_artifact_metadata()[["Architectures"]])
 }
@@ -85,7 +93,11 @@ cuml_managed_executables <- function(prefix) {
       "bin/fatbinary",
       "bin/nvcc",
       "bin/nvlink",
+      "bin/ninja",
       "bin/ptxas",
+      "cmake/bin/cmake",
+      "cmake/bin/cpack",
+      "cmake/bin/ctest",
       "nvvm/bin/cicc"
     )
   )
@@ -101,6 +113,18 @@ prepare_cuml_managed_executables <- function(prefix) {
     stop2("The locked CUDA build executables could not be made executable.")
   }
   invisible(TRUE)
+}
+
+cuml_executable_version <- function(path, argument, pattern) {
+  output <- suppressWarnings(tryCatch(
+    system2(path, argument, stdout = TRUE, stderr = TRUE),
+    error = function(e) character()
+  ))
+  line <- grep(pattern, output, value = TRUE)
+  if (length(line) != 1L) {
+    return(NA_character_)
+  }
+  sub(pattern, "\\1", line)
 }
 
 copy_dir_contents <- function(src, dst) {
@@ -172,13 +196,17 @@ build_treelite_static <- function(target, prefix, cxx) {
   }
 
   build <- file.path(target, "treelite-static-build")
-  cmake <- find_cmake()
+  cmake <- file.path(prefix, "cmake", "bin", "cmake")
+  ninja <- file.path(prefix, "bin", "ninja")
   configure_args <- c(
+    "-G",
+    "Ninja",
     "-S",
     treelite_source,
     "-B",
     build,
     "-DCMAKE_BUILD_TYPE=Release",
+    paste0("-DCMAKE_MAKE_PROGRAM=", ninja),
     paste0("-DCMAKE_CXX_COMPILER=", cxx),
     "-DTreelite_BUILD_STATIC_LIBS=ON",
     "-DUSE_OPENMP=OFF",
@@ -244,6 +272,19 @@ extract_cuml_artifact_prefix <- function(target, prefix, cxx) {
   )
   dir.create(file.path(prefix, "lib"), recursive = TRUE, showWarnings = FALSE)
 
+  copy_required_dir(
+    file.path(target, "cmake", "data"),
+    file.path(prefix, "cmake")
+  )
+  ninja <- file.path(target, "ninja", "data", "bin", "ninja")
+  dir.create(file.path(prefix, "bin"), recursive = TRUE, showWarnings = FALSE)
+  if (
+    !file.exists(ninja) ||
+      !file.copy(ninja, file.path(prefix, "bin", "ninja"), overwrite = TRUE)
+  ) {
+    stop2("The locked Ninja artifact layout is incomplete.")
+  }
+
   for (pkg in c(
     "libcuml",
     "libnvforest",
@@ -293,9 +334,9 @@ extract_cuml_artifact_prefix <- function(target, prefix, cxx) {
     file.path(target, "libcuml_cu13.libs"),
     file.path(prefix, "lib")
   )
+  prepare_cuml_managed_executables(prefix)
   build_treelite_static(target, prefix, cxx)
 
-  prepare_cuml_managed_executables(prefix)
   create_shared_library_linker_names(file.path(prefix, "lib"))
 
   invisible(TRUE)
@@ -315,6 +356,8 @@ cuml_managed_build_metadata <- function() {
     `RAPIDS-Package` = cuml_managed_rapids_pip_version(),
     nvForest = cuml_managed_nvforest_version(),
     Treelite = cuml_managed_treelite_version(),
+    CMake = cuml_managed_cmake_version(),
+    Ninja = cuml_managed_ninja_version(),
     `Artifact-Lock-SHA256` = cuml_managed_artifact_lock_hash()
   )
 }
@@ -435,6 +478,8 @@ treelite_version_from_prefix <- function(prefix) {
 check_managed_build_prefix <- function(prefix) {
   nvcc <- file.path(prefix, "bin", "nvcc")
   cuobjdump <- file.path(prefix, "bin", "cuobjdump")
+  cmake <- file.path(prefix, "cmake", "bin", "cmake")
+  ninja <- file.path(prefix, "bin", "ninja")
   executables <- cuml_managed_executables(prefix)
   version <- nvcc_version_from_path(nvcc)
   metadata <- read_cuml_managed_build_marker(prefix)
@@ -488,6 +533,22 @@ check_managed_build_prefix <- function(prefix) {
       treelite_version_from_prefix(prefix),
       cuml_managed_treelite_version()
     ) &&
+    identical(
+      cuml_executable_version(
+        cmake,
+        "--version",
+        "^cmake version ([0-9]+[.][0-9]+[.][0-9]+)$"
+      ),
+      cuml_managed_cmake_version()
+    ) &&
+    identical(
+      cuml_executable_version(
+        ninja,
+        "--version",
+        "^([0-9]+[.][0-9]+[.][0-9]+)([.].*)?$"
+      ),
+      sub("[.]1$", "", cuml_managed_ninja_version())
+    ) &&
     !is.null(metadata) &&
     all(names(expected_metadata) %in% names(metadata)) &&
     identical(
@@ -497,14 +558,11 @@ check_managed_build_prefix <- function(prefix) {
 }
 
 bootstrap_managed_build_from_artifacts <- function(cxx) {
-  stopifnot(
-    identical(cuml_build_mode(), "managed"),
-    file.exists(cxx)
-  )
+  stopifnot(file.exists(cxx))
 
-  if (!cuml_manylinux_2_28_x86_64()) {
+  if (!cuml_supported_local_platform()) {
     stop2(
-      "Managed {cuda.ml} builds require Linux x86_64 with glibc 2.28.",
+      "Managed {cuda.ml} builds require Linux x86_64 with glibc 2.28 or newer.",
       paste0(
         "Detected: ",
         Sys.info()[["sysname"]],
@@ -517,13 +575,10 @@ bootstrap_managed_build_from_artifacts <- function(cxx) {
 
   prefix <- cuml_managed_bootstrap_prefix()
   if (check_managed_build_prefix(prefix)) {
-    Sys.setenv(
-      CUDA_HOME = prefix,
-      CUDA_PATH = prefix,
-      CUML_PREFIX = prefix
-    )
     return(list(
       prefix = prefix,
+      cmake = file.path(prefix, "cmake", "bin", "cmake"),
+      ninja = file.path(prefix, "bin", "ninja"),
       nvcc = list(
         path = file.path(prefix, "bin", "nvcc"),
         version = package_version(cuml_managed_cuda_version())
@@ -556,18 +611,16 @@ bootstrap_managed_build_from_artifacts <- function(cxx) {
       paste0("CUDA Toolkit: ", cuml_managed_cuda_toolkit_version()),
       paste0("RAPIDS cuML: ", cuml_managed_rapids_version()),
       paste0("nvForest: ", cuml_managed_nvforest_version()),
-      paste0("Treelite: ", cuml_managed_treelite_version())
+      paste0("Treelite: ", cuml_managed_treelite_version()),
+      paste0("CMake: ", cuml_managed_cmake_version()),
+      paste0("Ninja: ", cuml_managed_ninja_version())
     )
   }
 
-  Sys.setenv(
-    CUDA_HOME = prefix,
-    CUDA_PATH = prefix,
-    CUML_PREFIX = prefix
-  )
-
   list(
     prefix = prefix,
+    cmake = file.path(prefix, "cmake", "bin", "cmake"),
+    ninja = file.path(prefix, "bin", "ninja"),
     nvcc = list(
       path = file.path(prefix, "bin", "nvcc"),
       version = package_version(cuml_managed_cuda_version())

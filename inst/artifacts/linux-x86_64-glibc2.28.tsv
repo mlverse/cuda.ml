@@ -7,6 +7,8 @@
 # RAPIDS-Package: 26.6.0
 # nvForest: 26.06.0
 # Treelite: 4.7.0
+# CMake: 3.28.3
+# Ninja: 1.11.1.1
 # Platform: linux-x86_64-glibc2.28
 # Minimum-Driver: 580
 # Architectures: 75-real;80-real;86-real;89-real;90-real;100-real;120-real;120-virtual
@@ -19,6 +21,8 @@ treelite-source	treelite	4.7.0	tar.gz	treelite-4.7.0.tar.gz	https://files.python
 rapidjson-source	rapidjson	ab1842a2dae061284c0a62dca1cc6d5e7e37e346	tar.gz	rapidjson-ab1842a2dae061284c0a62dca1cc6d5e7e37e346.tar.gz	https://github.com/Tencent/rapidjson/archive/ab1842a2dae061284c0a62dca1cc6d5e7e37e346.tar.gz	39f96f17b40f7201042c9b45d6444cb7eae1b7adfb7455412a86f6140450d32d	1116409	true	""
 nlohmann-json-source	nlohmann-json	3.11.3	tar.xz	json.tar.xz	https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz	d6c65aca6b1ed68e7a182f4757257b107ae403032760ed6ef121c9d55e81757d	110988	true	""
 mdspan-source	mdspan	0.6.0	tar.gz	mdspan-0.6.0.tar.gz	https://github.com/kokkos/mdspan/archive/refs/tags/mdspan-0.6.0.tar.gz	79f94d7f692cbabfbaff6cd0d3434704435c853ee5087b182965fa929a48a592	215304	true	""
+cmake	cmake	3.28.3	zip	cmake-3.28.3-py2.py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl	https://files.pythonhosted.org/packages/91/f2/93ceb9aaa7779abe5c3f4e361ba5a55b1ff0142ffb5966e7b8c1cfc0f627/cmake-3.28.3-py2.py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl	d3bc42bf54ea3d64e5d81eb31275076817507cf4a6aa07a49ffc01985cae1f09	26308599	true	""
+ninja	ninja	1.11.1.1	zip	ninja-1.11.1.1-py2.py3-none-manylinux1_x86_64.manylinux_2_5_x86_64.whl	https://files.pythonhosted.org/packages/6d/92/8d7aebd4430ab5ff65df2bfee6d5745f95c004284db2d8ca76dcbfd9de47/ninja-1.11.1.1-py2.py3-none-manylinux1_x86_64.manylinux_2_5_x86_64.whl	84502ec98f02a037a169c4b0d5d86075eaf6afc55e1879003d6cab51ced2ea4b	307194	true	""
 libraft	libraft-cu13	26.6.0	zip	libraft_cu13-26.6.0-py3-none-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl	https://files.pythonhosted.org/packages/0f/91/0b8e2ea9795ad89b6f3ee477f44aef7e3c2c3f0bdc36e2c591fc1265dbf2/libraft_cu13-26.6.0-py3-none-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl	945d3e40adb3d47f5dade5fe7819d1331b6ed9e22799cbcb215281946f94b858	17810654	true	^libraft/lib64/libraft[.]so$
 librmm	librmm-cu13	26.6.0	zip	librmm_cu13-26.6.0-py3-none-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl	https://files.pythonhosted.org/packages/54/56/6523f25d876914c8490bfe1319207b628250e092b71a8a5445ef9fe94f45/librmm_cu13-26.6.0-py3-none-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl	58dd98261f74ed0df523a93c063d182b8f1a8ee6b8afb46566e08f8829f28e13	4470751	true	^librmm/lib64/librmm[.]so$
 rapids-logger	rapids-logger	0.2.3	zip	rapids_logger-0.2.3-py3-none-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl	https://files.pythonhosted.org/packages/69/b6/139d9df6d0f7bd289a9a6286cecfff999e41c36865515d7fdb56b7b32a14/rapids_logger-0.2.3-py3-none-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl	7fe67ef4049c5d8ba6154746325dcf7cc0f327f0efa8f2611fc8f64e67510f60	202028	true	^rapids_logger/lib64/librapids_logger[.]so$

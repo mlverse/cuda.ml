@@ -13,10 +13,12 @@ cuML and nvForest 26.06, and Treelite 4.7.0.
   when the managed runtime is absent. `cuda_ml_runtime_audit()` performs a full
   content audit, and `cuda_ml_cache_clean()` removes cuda.ml cache generations.
 
-- Added `cuda_ml_install(source = TRUE)` for native host builds without Docker
-  or a prebuilt cuda.ml backend. It compiles the backend from sources included
-  in the R package against explicit host CUDA, RAPIDS, Treelite, architecture,
-  and compiler inputs, then persists that backend selection across R sessions.
+- Added `cuda_ml_install(source = TRUE)` for host builds without Docker or a
+  prebuilt cuda.ml backend. By default it bootstraps exact locked CUDA, RAPIDS,
+  Treelite, CMake, and Ninja build inputs, requiring only GNU C++ 14 or newer on
+  a supported Linux host. `dependencies = "host"` uses explicit native build
+  inputs and makes no downloads. Source backend selection persists across R
+  sessions.
 
 - Package loading and `cuda_ml_backend_info()` are silent and side-effect free.
   They do not inspect the GPU, create a cache, contact the network, or load the

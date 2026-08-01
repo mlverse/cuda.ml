@@ -1591,13 +1591,20 @@ cuda_ml_backend_registration_valid <- function(dll) {
 #' Install a cuda.ml native backend
 #'
 #' By default, downloads, verifies, extracts, and caches the precompiled backend
-#' and its runtime libraries. Alternatively, compiles the native backend on the
-#' host against an existing CUDA and RAPIDS installation. Calling it again with
-#' the same inputs is a no-op.
+#' and its runtime libraries. Alternatively, bootstraps a locked CUDA and RAPIDS
+#' build toolchain and compiles the native backend on the host. Calling it again
+#' with the same inputs is a no-op.
 #'
 #' @param source A logical value. If \code{FALSE}, install the prebuilt backend
 #'   and managed runtime. If \code{TRUE}, compile the backend from the native
 #'   sources included in the R package.
+#' @param dependencies For a source installation, either \code{"managed"} to
+#'   download and cache the exact locked build dependencies, or \code{"host"}
+#'   to use explicit host installations.
+#' @param architectures For a source installation, an optional explicit
+#'   semicolon-separated CMake CUDA architecture list. Managed source builds use
+#'   the package's portable architecture list by default. Host source builds use
+#'   \code{CUML_CUDA_ARCHITECTURES} by default.
 #'
 #' @return Invisibly returns \code{TRUE}.
 #'
@@ -1607,16 +1614,25 @@ cuda_ml_backend_registration_valid <- function(dll) {
 #' \code{CUDA_ML_BACKEND_MIRROR} to an \code{https://} or \code{file://}
 #' directory containing the exact locked backend archive.
 #'
-#' A source installation does not download a precompiled cuda.ml backend or a
-#' managed runtime. It requires an existing CUDA Toolkit 13.2.2 installation
-#' in \code{CUDA_HOME}; a \code{CUML_PREFIX} containing cuML and nvForest 26.06,
-#' Treelite 4.7.0 headers, and \code{lib/libtreelite_static.a}; an explicit CMake
-#' CUDA architecture list in \code{CUML_CUDA_ARCHITECTURES}; and GNU C++ 14 or
-#' newer in \code{CUDA_ML_CXX}. CMake 3.21.1 or newer must be on \code{PATH}.
+#' A managed source installation downloads no precompiled cuda.ml backend. It
+#' downloads and verifies the locked CUDA 13.2.2 and RAPIDS 26.06 development
+#' artifacts, CMake, and Ninja; builds Treelite 4.7.0 statically; and caches
+#' that toolchain. Only Linux x86_64 with glibc 2.28 or newer and GNU C++ 14 or
+#' newer are required on the host. Set \code{CUDA_ML_CXX} to override the
+#' \code{g++} found on \code{PATH}.
+#'
+#' A host source installation makes no downloads. It requires CUDA Toolkit
+#' 13.2.2 in \code{CUDA_HOME}; a \code{CUML_PREFIX} containing cuML and
+#' nvForest 26.06, Treelite 4.7.0 headers, and
+#' \code{lib/libtreelite_static.a}; an explicit CMake CUDA architecture list in
+#' \code{CUML_CUDA_ARCHITECTURES}; and GNU C++ 14 or newer in
+#' \code{CUDA_ML_CXX}. CMake 3.21.1 or newer must be on \code{PATH}.
 #'
 #' @examples
 #' \dontrun{
 #' cuda_ml_install()
+#'
+#' cuda_ml_install(source = TRUE)
 #'
 #' Sys.setenv(
 #'   CUDA_HOME = "/usr/local/cuda-13.2",
@@ -1624,19 +1640,42 @@ cuda_ml_backend_registration_valid <- function(dll) {
 #'   CUML_CUDA_ARCHITECTURES = "86-real",
 #'   CUDA_ML_CXX = "/usr/bin/g++-14"
 #' )
-#' cuda_ml_install(source = TRUE)
+#' cuda_ml_install(source = TRUE, dependencies = "host")
 #' }
 #' @export
-cuda_ml_install <- function(source = FALSE) {
+cuda_ml_install <- function(
+  source = FALSE,
+  dependencies = "managed",
+  architectures = NULL
+) {
   stopifnot(
     is.logical(source),
     length(source) == 1L,
-    !is.na(source)
+    !is.na(source),
+    is.character(dependencies),
+    length(dependencies) == 1L,
+    !is.na(dependencies),
+    dependencies %in% c("managed", "host"),
+    is.null(architectures) ||
+      (
+        is.character(architectures) &&
+          length(architectures) == 1L &&
+          !is.na(architectures)
+      )
   )
+  if (
+    !source &&
+      (!identical(dependencies, "managed") || !is.null(architectures))
+  ) {
+    stop(
+      "dependencies and architectures apply only to source installations.",
+      call. = FALSE
+    )
+  }
 
   requested <- if (source) "source" else "download"
   if (source) {
-    inputs <- cuda_ml_source_build_inputs()
+    inputs <- cuda_ml_source_build_inputs(dependencies, architectures)
   } else {
     cuda_ml_platform()
     cuda_ml_backend_release()
@@ -1794,7 +1833,8 @@ cuda_ml_cache_clean <- function() {
     "backend-assets-v1",
     "backends-v3",
     "source-backends-v1",
-    "backend-selection-v1"
+    "backend-selection-v1",
+    "source-toolchains-v1"
   )
   targets <- file.path(cache, generations)
   stopifnot(
