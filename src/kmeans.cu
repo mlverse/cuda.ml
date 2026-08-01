@@ -28,10 +28,10 @@ __host__ Rcpp::List kmeans(Rcpp::NumericMatrix const& x, int const k,
 
   ML::kmeans::KMeansParams params;
   params.n_clusters = k;
-  params.max_iter = max_iters;
-  if (tol > 0) {
-    params.tol = tol;
-  }
+  // cuVS rejects tol=0, so continue one iteration at a time instead.
+  bool const convergence_disabled = tol == 0;
+  params.max_iter = convergence_disabled ? 1 : max_iters;
+  params.tol = convergence_disabled ? 1e-4 : tol;
   params.init = static_cast<ML::kmeans::KMeansParams::InitMethod>(init_method);
   params.rng_state = raft::random::RngState(
     seed, raft::random::GeneratorType::GenPhilox);
@@ -63,9 +63,19 @@ __host__ Rcpp::List kmeans(Rcpp::NumericMatrix const& x, int const k,
 
   double inertia = 0;
   int n_iter = 0;
-  ML::kmeans::fit(handle, params, d_src_data.data().get(), n_samples,
-                  n_features, /*sample_weight=*/nullptr,
-                  d_pred_centroids.data().get(), inertia, n_iter);
+  if (convergence_disabled) {
+    for (int iteration = 0; iteration < max_iters; ++iteration) {
+      ML::kmeans::fit(handle, params, d_src_data.data().get(), n_samples,
+                      n_features, /*sample_weight=*/nullptr,
+                      d_pred_centroids.data().get(), inertia, n_iter);
+      params.init = ML::kmeans::KMeansParams::InitMethod::Array;
+    }
+    n_iter = max_iters;
+  } else {
+    ML::kmeans::fit(handle, params, d_src_data.data().get(), n_samples,
+                    n_features, /*sample_weight=*/nullptr,
+                    d_pred_centroids.data().get(), inertia, n_iter);
+  }
   ML::kmeans::predict(handle, params, d_pred_centroids.data().get(),
                       d_src_data.data().get(), n_samples, n_features,
                       /*sample_weight=*/nullptr, /*normalize_weights=*/false,

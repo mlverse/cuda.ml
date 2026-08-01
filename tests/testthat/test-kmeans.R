@@ -44,11 +44,24 @@ test_that("cuda_ml_kmeans() works as expected with 'random' initialization metho
   expect_lte(cuda_ml_kclust$n_iter, 100L)
 })
 
+test_that("zero tolerance disables inertia-based convergence", {
+  cuda_ml_kclust <- cuda_ml_kmeans(
+    iris[, which(names(iris) != "Species")],
+    k = 3,
+    max_iters = 10,
+    tol = 0,
+    seed = 0L
+  )
+
+  expect_equal(cuda_ml_kclust$n_iter, 10L)
+})
+
 test_that("cuda_ml_kmeans() works as expected with user-specified initial cluster centers", {
   cuda_ml_kclust <- cuda_ml_kmeans(
     iris[, which(names(iris) != "Species")],
     k = 3,
     max_iters = 100,
+    tol = 1e-4,
     init_method = sklearn_kclust$cluster_centers_
   )
 

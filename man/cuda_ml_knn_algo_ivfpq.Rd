@@ -20,9 +20,11 @@ neighbor search.}
 
 \item{m}{Number of subquantizers.}
 
-\item{n_bits}{Bits allocated per subquantizer.}
+\item{n_bits}{Bits allocated per subquantizer, from 4 to 8. The product of
+\code{m} and \code{n_bits} must be divisible by 8.}
 
-\item{use_precomputed_tables}{Whether to use precomputed tables.}
+\item{use_precomputed_tables}{Must be \code{FALSE}; precomputed tables are
+not supported by the CUVS backend.}
 }
 \value{
 An object encapsulating all required parameters of the "ivfpq" KNN

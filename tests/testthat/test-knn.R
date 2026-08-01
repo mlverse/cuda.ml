@@ -71,6 +71,25 @@ test_that("KNN forwards explicit IVFPQ bit width", {
   expect_equal(nrow(predictions), nrow(test_data))
 })
 
+test_that("automated IVFPQ selects an aligned bit width", {
+  set.seed(1L)
+  data <- data.frame(
+    x1 = rnorm(1000L),
+    x2 = rnorm(1000L),
+    x3 = rnorm(1000L),
+    label = factor(rep(1:2, each = 500L))
+  )
+
+  model <- cuda_ml_knn(
+    label ~ .,
+    data,
+    algo = "ivfpq",
+    metric = "euclidean"
+  )
+
+  expect_s3_class(model, "cuda_ml_knn")
+})
+
 test_that("KNN regressor works as expected", {
   resps <- seq_along(centers) %>%
     sapply(function(x) rep(exp(-x), blob_sz)) %>%

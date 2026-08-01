@@ -148,7 +148,7 @@ cuda_ml_umap <- function(
     target_weight = as.numeric(target_weight),
     random_state = as.integer(seed %||% 0L),
     deterministic = !is.null(seed),
-    verbosity = 0L
+    verbosity = 6L
   )
   model <- new_umap_model(model_obj)
 

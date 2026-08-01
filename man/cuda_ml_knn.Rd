@@ -98,6 +98,8 @@ desired responses.}
 "l1", "cityblock", "taxicab", "manhattan", "braycurtis", "canberra",
 "minkowski", "lp", "chebyshev", "linf", "jensenshannon", "cosine",
 "correlation"\}.
+The approximate algorithms support only "euclidean", "l2", "cosine", and
+"correlation".
 Default: "euclidean".}
 
 \item{p}{Parameter for the Minkowski metric. If p = 1, then the metric is

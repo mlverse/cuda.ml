@@ -37,7 +37,7 @@ cuda_ml_dbscan <- function(x, min_pts, eps) {
     min_pts = min_pts,
     eps = eps,
     max_bytes_per_batch = 0L,
-    verbosity = 0L
+    verbosity = 6L
   )
   res$labels[which(res$labels == -1)] <- NA
 

@@ -333,6 +333,12 @@ cuda_ml_rand_forest_bridge <- function(
     classification
   )
   max_leaves <- if (is.infinite(max_leaves)) -1L else as.integer(max_leaves)
+  # cuML recovers mtry by truncating this single-precision fraction times p.
+  max_features <- if (mtry == ncol(x)) {
+    1
+  } else {
+    (mtry + 0.5) / ncol(x)
+  }
   common <- list(
     n_trees = as.integer(trees),
     bootstrap = as.logical(bootstrap),
@@ -340,7 +346,7 @@ cuda_ml_rand_forest_bridge <- function(
     n_streams = as.integer(n_streams),
     max_depth = as.integer(max_depth),
     max_leaves = max_leaves,
-    max_features = as.numeric(mtry) / ncol(x),
+    max_features = as.numeric(max_features),
     n_bins = as.integer(n_bins),
     min_samples_leaf = as.integer(min_samples_leaf),
     min_samples_split = as.integer(min_n),

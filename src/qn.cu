@@ -9,6 +9,7 @@
 
 #include <thrust/device_vector.h>
 #include <cuml/linear_model/glm.hpp>
+#include <rapids_logger/logger.hpp>
 #include <Rcpp.h>
 
 #include <algorithm>
@@ -71,7 +72,7 @@ __host__ Rcpp::List qn_fit(Rcpp::NumericMatrix const& X,
   params.max_iter = max_iters;
   params.linesearch_max_iter = linesearch_max_iters;
   params.lbfgs_memory = lbfgs_memory;
-  params.verbose = 0;
+  params.verbose = static_cast<int>(rapids_logger::level_enum::off);
   params.fit_intercept = fit_intercept;
   params.penalty_normalized = penalty_normalized;
 
@@ -143,6 +144,7 @@ Rcpp::NumericVector qn_predict(Rcpp::NumericMatrix const& X,
 
   ML::GLM::qn_params params;
   params.loss = static_cast<ML::GLM::qn_loss_type>(loss_type);
+  params.verbose = static_cast<int>(rapids_logger::level_enum::off);
   params.fit_intercept = fit_intercept;
 
   ML::GLM::qnPredict(
@@ -206,6 +208,7 @@ Rcpp::NumericMatrix qn_predict_probabilities(
   thrust::device_vector<double> d_scores(n_samples * expected_rows);
   ML::GLM::qn_params params;
   params.loss = static_cast<ML::GLM::qn_loss_type>(loss_type);
+  params.verbose = static_cast<int>(rapids_logger::level_enum::off);
   params.fit_intercept = fit_intercept;
   ML::GLM::qnDecisionFunction(
     /*cuml_handle=*/*handle, params,

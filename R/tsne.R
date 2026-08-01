@@ -139,7 +139,7 @@ cuda_ml_tsne <- function(
     pre_momentum = as.numeric(pre_momentum),
     post_momentum = as.numeric(post_momentum),
     random_state = as.integer(seed %||% -1L),
-    verbosity = 0L
+    verbosity = 6L
   )
 
   new_tsne_model(model_obj)

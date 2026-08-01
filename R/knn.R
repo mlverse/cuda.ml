@@ -111,16 +111,19 @@ knn_validate_ivfpq_params <- function(
       is.finite(m) &&
       m >= 1L &&
       m == as.integer(m),
-    "`n_bits` must be one positive whole number" = is.numeric(n_bits) &&
+    "`n_bits` must be one whole number between 4 and 8" = is.numeric(n_bits) &&
       length(n_bits) == 1L &&
       is.finite(n_bits) &&
-      n_bits >= 1L &&
+      n_bits >= 4L &&
+      n_bits <= 8L &&
       n_bits == as.integer(n_bits),
+    "`m * n_bits` must be divisible by 8" = (m * n_bits) %% 8L == 0L,
     "`use_precomputed_tables` must be TRUE or FALSE" = is.logical(
       use_precomputed_tables
     ) &&
       length(use_precomputed_tables) == 1L &&
-      !is.na(use_precomputed_tables)
+      !is.na(use_precomputed_tables),
+    "`use_precomputed_tables = TRUE` is not supported" = !use_precomputed_tables
   )
   invisible(TRUE)
 }
@@ -195,6 +198,8 @@ cuda_ml_knn_algo_ivfpq <- function(
 #'   "l1", "cityblock", "taxicab", "manhattan", "braycurtis", "canberra",
 #'   "minkowski", "lp", "chebyshev", "linf", "jensenshannon", "cosine",
 #'   "correlation"\}.
+#'   The approximate algorithms support only "euclidean", "l2", "cosine", and
+#'   "correlation".
 #'   Default: "euclidean".
 #' @param p Parameter for the Minkowski metric. If p = 1, then the metric is
 #'   equivalent to manhattan distance (l1). If p = 2, the metric is equivalent
@@ -480,6 +485,11 @@ cuda_ml_knn_bridge <- function(processed, algo, metric, p, neighbors) {
     )
   }
   metric <- knn_match_metric(metric)
+  stopifnot(
+    "Approximate KNN algorithms support only `euclidean`, `l2`, `cosine`, and `correlation` metrics" = algo_type ==
+      0L ||
+      metric %in% c(1L, 2L, 10L)
+  )
 
   if (is.factor(y)) {
     # classification

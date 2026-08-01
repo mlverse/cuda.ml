@@ -335,7 +335,7 @@ cuda_ml_svm_classification_multiclass_impl <- function(
       nochange_steps = as.integer(nochange_steps),
       cache_size = as.numeric(cache_size),
       sample_weights = as.numeric(sample_weights),
-      verbosity = 0L
+      verbosity = 6L
     )
     model <- new_model(
       cls = c("cuda_ml_svc", "cuda_ml_svm"),
@@ -407,7 +407,7 @@ cuda_ml_svm_classification_binary_impl <- function(
     nochange_steps = as.integer(nochange_steps),
     cache_size = as.numeric(cache_size),
     sample_weights = as.numeric(sample_weights),
-    verbosity = 0L
+    verbosity = 6L
   )
 
   new_model(
@@ -472,7 +472,7 @@ cuda_ml_svm_regression_impl <- function(
     cache_size = as.numeric(cache_size),
     epsilon = as.numeric(epsilon),
     sample_weights = as.numeric(sample_weights),
-    verbosity = 0L
+    verbosity = 6L
   )
 
   new_model(

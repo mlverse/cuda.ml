@@ -73,6 +73,6 @@ cuda_ml_kmeans <- function(
     init_method = init_method_enum,
     centroids = centroids,
     seed = as.integer(seed),
-    verbosity = 0L
+    verbosity = 6L
   )
 }

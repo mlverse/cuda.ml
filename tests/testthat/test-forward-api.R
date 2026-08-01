@@ -67,11 +67,23 @@ test_that("KNN parameters fail before backend execution", {
     "n_bits"
   )
   expect_error(
+    cuda_ml_knn_algo_ivfpq(4, 2, 3, 4),
+    "divisible by 8"
+  )
+  expect_error(
+    cuda_ml_knn_algo_ivfpq(4, 2, 2, 9),
+    "n_bits"
+  )
+  expect_error(
     cuda_ml_knn_algo_ivfpq(4, 2, 2, 4, NA),
     "use_precomputed_tables"
   )
+  expect_error(
+    cuda_ml_knn_algo_ivfpq(4, 2, 2, 4, TRUE),
+    "not supported"
+  )
 
-  specification <- cuda_ml_knn_algo_ivfpq(4, 2, 3, 4)
+  specification <- cuda_ml_knn_algo_ivfpq(4, 2, 3, 8)
   expect_s3_class(specification, "cuda_ml_knn_algo")
   expect_error(
     cuda_ml_knn(mpg ~ ., mtcars, algo = specification),
@@ -86,6 +98,101 @@ test_that("KNN parameters fail before backend execution", {
     cuda_ml_knn(mpg ~ ., mtcars, algo = list(type = 1L, params = list())),
     "algorithm specification"
   )
+})
+
+test_that("approximate KNN rejects unsupported metrics", {
+  unsupported <- c(
+    "l1",
+    "cityblock",
+    "taxicab",
+    "manhattan",
+    "braycurtis",
+    "canberra",
+    "minkowski",
+    "lp",
+    "chebyshev",
+    "linf",
+    "jensenshannon"
+  )
+
+  for (algo in c("ivfflat", "ivfpq")) {
+    for (metric in unsupported) {
+      expect_error(
+        cuda_ml_knn(mpg ~ ., mtcars, algo = algo, metric = metric),
+        "Approximate KNN algorithms support only",
+        label = paste(algo, metric)
+      )
+    }
+  }
+})
+
+test_that("default fit calls request the RAPIDS off log level", {
+  verbosity <- new.env(parent = emptyenv())
+  local_mocked_bindings(
+    .dbscan = function(...) {
+      args <- list(...)
+      verbosity$dbscan <- args$verbosity
+      list(labels = integer(nrow(args$x)))
+    },
+    .kmeans = function(...) {
+      args <- list(...)
+      verbosity$kmeans <- args$verbosity
+      list()
+    },
+    .tsne_fit = function(...) {
+      args <- list(...)
+      verbosity$tsne <- args$verbosity
+      matrix(0, nrow(args$x), args$dim)
+    },
+    .umap_fit = function(...) {
+      args <- list(...)
+      verbosity$umap <- args$verbosity
+      list()
+    },
+    .svc_fit = function(...) {
+      args <- list(...)
+      verbosity$svm <- args$verbosity
+      NULL
+    },
+    .package = "cuda.ml"
+  )
+
+  cuda_ml_dbscan(matrix(c(0, 1), ncol = 1), min_pts = 1, eps = 1)
+  cuda_ml_kmeans(matrix(c(0, 1), ncol = 1), k = 1)
+  cuda_ml_tsne(matrix(seq_len(12), nrow = 6), method = "exact")
+  cuda_ml_umap(matrix(seq_len(12), nrow = 6), transform_input = FALSE)
+  data <- iris[iris$Species != "virginica", ]
+  data$Species <- droplevels(data$Species)
+  cuda_ml_svm(Species ~ ., data)
+
+  expect_identical(verbosity$dbscan, 6L)
+  expect_identical(verbosity$kmeans, 6L)
+  expect_identical(verbosity$tsne, 6L)
+  expect_identical(verbosity$umap, 6L)
+  expect_identical(verbosity$svm, 6L)
+})
+
+test_that("random forest mtry survives conversion to single precision", {
+  forwarded <- new.env(parent = emptyenv())
+  local_mocked_bindings(
+    .rf_classifier_fit = function(...) {
+      args <- list(...)
+      forwarded$max_features <- args$max_features
+      NULL
+    },
+    .nvforest_model_info = function(...) {
+      list(task_type = 2L, num_classes = 2L)
+    },
+    .package = "cuda.ml"
+  )
+  data <- as.data.frame(matrix(seq_len(10L * 37L), nrow = 10L))
+  data$outcome <- factor(rep(c("a", "b"), 5L))
+
+  cuda_ml_rand_forest(outcome ~ ., data, trees = 1L, seed = 0L)
+
+  raw_float <- writeBin(forwarded$max_features, raw(), size = 4L)
+  max_features <- readBin(raw_float, double(), n = 1L, size = 4L)
+  expect_identical(as.integer(max_features * 37L), 6L)
 })
 
 test_that("random forest arguments fail before native execution", {

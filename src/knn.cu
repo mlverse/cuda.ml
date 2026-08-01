@@ -217,15 +217,25 @@ __host__ std::unique_ptr<knnIndexParam> build_ivfpq_algo_params(
       }
     }
 
-    params[kNumBits] = 4;
+    int selected_n_bits = 0;
     for (auto const n_bits : {8, 6, 5, 4}) {
       auto const min_train_points = (1 << n_bits) * 39;
       if (n >= min_train_points &&
           ((n_bits * Rcpp::as<int>(params[kM])) % 8) == 0) {
-        params[kNumBits] = n_bits;
+        selected_n_bits = n_bits;
         break;
       }
     }
+    if (selected_n_bits == 0) {
+      // Fall back to the smallest valid width when the sample heuristic fails.
+      for (auto const n_bits : {4, 5, 6, 7, 8}) {
+        if (((n_bits * Rcpp::as<int>(params[kM])) % 8) == 0) {
+          selected_n_bits = n_bits;
+          break;
+        }
+      }
+    }
+    params[kNumBits] = selected_n_bits;
   }
 
   auto algo_params = std::make_unique<IVFPQParam>();

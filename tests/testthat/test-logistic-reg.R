@@ -15,6 +15,13 @@ test_that("logistic regression works as expected", {
   expect_gte(sum(preds$.pred_class == iris$Species), 140)
 })
 
+test_that("logistic regression is silent by default", {
+  expect_silent({
+    model <- cuda_ml_logistic_reg(iris_scaled, y, max_iter = 2)
+    predict(model, iris_scaled, type = "class")
+  })
+})
+
 test_that("multinomial regression returns probabilities for every class", {
   model <- cuda_ml_logistic_reg(iris_scaled, y, max_iter = 100)
   classes <- predict(model, iris_scaled, type = "class")
