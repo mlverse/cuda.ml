@@ -3,14 +3,20 @@
 This is a breaking release targeting one backend: CUDA Toolkit 13.2.2, RAPIDS
 cuML and nvForest 26.06, and Treelite 4.7.0.
 
-- Added an Ubuntu 26.04 x86_64 backend distributed through R-universe. The
-  package contains the compiled cuda.ml backend with Treelite 4.7.0 linked
-  statically, but not the approximately 1.6 GiB CUDA and RAPIDS runtime.
+- Added Linux x86_64 backends targeting glibc 2.28 or newer and hosted as
+  GitHub Release assets. The CRAN package remains a portable R installer and
+  loader; it contains neither compiled code nor the approximately 1.6 GiB CUDA
+  and RAPIDS runtime.
 
 - Added explicit `cuda_ml_install()` runtime preparation. Model operations no
   longer download libraries implicitly; they direct users to run the installer
   when the managed runtime is absent. `cuda_ml_runtime_audit()` performs a full
   content audit, and `cuda_ml_cache_clean()` removes cuda.ml cache generations.
+
+- Added `cuda_ml_install(source = TRUE)` for native host builds without Docker
+  or a prebuilt cuda.ml backend. It compiles the backend from sources included
+  in the R package against explicit host CUDA, RAPIDS, Treelite, architecture,
+  and compiler inputs, then persists that backend selection across R sessions.
 
 - Package loading and `cuda_ml_backend_info()` are silent and side-effect free.
   They do not inspect the GPU, create a cache, contact the network, or load the

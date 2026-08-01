@@ -3,7 +3,7 @@ cuda_ml_native_symbol_manifest <- function() {
 }
 
 cuda_ml_native_registration <- function() {
-  file.path(pkg_root(), "tools", "backend", "src", "native_symbols.cpp")
+  file.path(pkg_root(), "inst", "backend-src", "native_symbols.cpp")
 }
 
 write_cuda_ml_native_registration <- function(manifest) {
@@ -139,9 +139,8 @@ rewrite_cuda_ml_rcpp_wrappers <- function(symbols) {
 generate_cuda_ml_native_symbol_manifest <- function() {
   source <- file.path(
     pkg_root(),
-    "tools",
-    "backend",
-    "src",
+    "inst",
+    "backend-src",
     "RcppExports.cpp"
   )
   stopifnot(file.exists(source))

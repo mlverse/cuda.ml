@@ -73,7 +73,7 @@ clear_build_artifacts <- function() {
   )
   for (path in paths) {
     unlink(
-      file.path(pkg_root(), "tools", "backend", "src", path),
+      file.path(pkg_root(), "inst", "backend-src", path),
       recursive = TRUE,
       expand = TRUE
     )
@@ -102,11 +102,11 @@ run_cmake <- function(nvcc, cuml_prefix, cuda_architectures, cxx) {
 
   define(R_INCLUDE_DIR = R.home("include"))
   define(RCPP_INCLUDE_DIR = system.file("include", package = "Rcpp"))
-  configure_file(file.path("tools", "backend", "src", "CMakeLists.txt.in"))
+  configure_file(file.path("inst", "backend-src", "CMakeLists.txt.in"))
 
   cmake_bin <- find_cmake()
   src_dir <- normalizePath(
-    file.path(pkg_root(), "tools", "backend", "src")
+    file.path(pkg_root(), "inst", "backend-src")
   )
   build_dir <- file.path(src_dir, ".cmake-build")
   dir.create(build_dir, recursive = TRUE, showWarnings = FALSE)
@@ -119,7 +119,7 @@ run_cmake <- function(nvcc, cuml_prefix, cuda_architectures, cxx) {
   )
   configure_file(
     file.path("tools", "config", "Makefile.cmake.in"),
-    target = file.path("tools", "backend", "src", "Makefile")
+    target = file.path("inst", "backend-src", "Makefile")
   )
 
   stopifnot(!is.na(cuml_prefix), nzchar(cuml_prefix))

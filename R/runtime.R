@@ -37,12 +37,12 @@ cuda_ml_backend_metadata <- function(pkgname = "cuda.ml") {
   metadata
 }
 
-#' Report backend and managed-runtime metadata
+#' Report native-backend metadata
 #'
-#' @return A named list describing the locked backend and whether its exact
-#'   managed-runtime cache is complete. This function performs read-only cache
-#'   and inventory checks. It does not create or modify the cache, access the
-#'   network, inspect an NVIDIA GPU or driver, or load the native backend.
+#' @return A named list describing the selected backend and whether its exact
+#'   cache is complete. This function performs read-only cache and inventory
+#'   checks. It does not create or modify the cache, access the network, inspect
+#'   an NVIDIA GPU or driver, or load the native backend.
 #' @export
 cuda_ml_backend_info <- function() {
   metadata <- .cuda_ml_state$metadata
@@ -50,46 +50,70 @@ cuda_ml_backend_info <- function() {
     result <- unname(metadata[[name]])
     if (nzchar(result)) result else NA_character_
   }
+  selection <- cuda_ml_backend_selection()
+  backend <- value("Backend")
+  build_mode <- value("Build-Mode")
   architectures <- value("Architectures")
-  if (is.na(architectures)) {
-    architectures <- character()
-  } else {
-    architectures <- strsplit(architectures, ";", fixed = TRUE)[[1L]]
-  }
-
-  release <- cuda_ml_backend_release(required = FALSE)
-  backend_available <- !is.null(release)
   runtime_installed <- FALSE
   runtime_path <- NA_character_
-  if (
-    backend_available &&
-      cuda_ml_supported_platform()
-  ) {
-    runtime_identity <- cuda_ml_runtime_identity()
-    candidate_runtime <- cuda_ml_runtime_path(runtime_identity)
-    backend_identity <- cuda_ml_backend_identity(release)
-    candidate_backend <- cuda_ml_backend_cache_path(
-      runtime_identity,
-      backend_identity
-    )
-    runtime_installed <- cuda_ml_runtime_complete(
-      candidate_runtime,
-      runtime_identity
-    ) &&
-      cuda_ml_backend_complete(
+  if (identical(selection$backend, "source")) {
+    backend <- "source"
+    build_mode <- "local"
+    backend_available <- nzchar(system.file("backend-src", package = "cuda.ml"))
+    architectures <- character()
+    if (cuda_ml_supported_platform()) {
+      candidate_backend <- cuda_ml_source_backend_path(selection$source_hash)
+      runtime_installed <- cuda_ml_source_backend_complete(
         candidate_backend,
+        selection$source_hash
+      )
+      if (runtime_installed) {
+        runtime_path <- candidate_backend
+        source_metadata <- cuda_ml_complete_metadata(candidate_backend)
+        architectures <- strsplit(
+          unname(source_metadata[["Architectures"]]),
+          ";",
+          fixed = TRUE
+        )[[1L]]
+      }
+    }
+  } else {
+    release <- cuda_ml_backend_release(required = FALSE)
+    backend_available <- !is.null(release)
+    if (backend_available && cuda_ml_supported_platform()) {
+      runtime_identity <- cuda_ml_runtime_identity()
+      candidate_runtime <- cuda_ml_runtime_path(runtime_identity)
+      backend_identity <- cuda_ml_backend_identity(release)
+      candidate_backend <- cuda_ml_backend_cache_path(
         runtime_identity,
         backend_identity
       )
-    if (runtime_installed) {
-      runtime_path <- candidate_runtime
+      runtime_installed <- cuda_ml_runtime_complete(
+        candidate_runtime,
+        runtime_identity
+      ) &&
+        cuda_ml_backend_complete(
+          candidate_backend,
+          runtime_identity,
+          backend_identity
+        )
+      if (runtime_installed) {
+        runtime_path <- candidate_runtime
+      }
+    }
+  }
+  if (length(architectures) == 1L) {
+    if (is.na(architectures)) {
+      architectures <- character()
+    } else {
+      architectures <- strsplit(architectures, ";", fixed = TRUE)[[1L]]
     }
   }
 
   list(
     package_version = as.character(utils::packageVersion("cuda.ml")),
-    backend = value("Backend"),
-    build_mode = value("Build-Mode"),
+    backend = backend,
+    build_mode = build_mode,
     backend_available = backend_available,
     r_version = cuda_ml_r_version(),
     cuda_version = value("CUDA"),
@@ -185,7 +209,7 @@ cuda_ml_supported_platform <- function() {
 cuda_ml_platform <- function() {
   if (!cuda_ml_supported_platform()) {
     stop(
-      "The prebuilt cuda.ml backend requires Linux x86_64 with glibc ",
+      "The cuda.ml native backend requires Linux x86_64 with glibc ",
       .cuda_ml_state$metadata[["Minimum-glibc"]],
       " or newer.",
       call. = FALSE
@@ -1440,6 +1464,22 @@ cuda_ml_require_backend <- function() {
 
   cuda_ml_platform()
 
+  selection <- cuda_ml_backend_selection()
+  if (identical(selection$backend, "source")) {
+    backend_path <- cuda_ml_source_backend_path(selection$source_hash)
+    if (!cuda_ml_source_backend_complete(backend_path, selection$source_hash)) {
+      stop(
+        "The source-built cuda.ml backend is not installed. ",
+        "Call cuda_ml_install(source = TRUE) before using native ",
+        "cuda.ml operations.",
+        call. = FALSE
+      )
+    }
+    dll <- cuda_ml_load_backend(backend_path)
+    .cuda_ml_state$dll <- dll
+    return(dll)
+  }
+
   runtime_identity <- cuda_ml_runtime_identity()
   runtime_path <- cuda_ml_runtime_path(runtime_identity)
   backend_identity <- cuda_ml_backend_identity()
@@ -1548,12 +1588,16 @@ cuda_ml_backend_registration_valid <- function(dll) {
   )
 }
 
-#' Prepare the managed CUDA and RAPIDS runtime
+#' Install a cuda.ml native backend
 #'
-#' Downloads, verifies, extracts, and caches the precompiled backend and its
-#' runtime libraries. This operation does not load the backend or require a
-#' GPU, driver, CUDA toolkit, compiler, Python, or conda. Calling it again with
-#' the same package build is a no-op.
+#' By default, downloads, verifies, extracts, and caches the precompiled backend
+#' and its runtime libraries. Alternatively, compiles the native backend on the
+#' host against an existing CUDA and RAPIDS installation. Calling it again with
+#' the same inputs is a no-op.
+#'
+#' @param source A logical value. If \code{FALSE}, install the prebuilt backend
+#'   and managed runtime. If \code{TRUE}, compile the backend from the native
+#'   sources included in the R package.
 #'
 #' @return Invisibly returns \code{TRUE}.
 #'
@@ -1563,25 +1607,84 @@ cuda_ml_backend_registration_valid <- function(dll) {
 #' \code{CUDA_ML_BACKEND_MIRROR} to an \code{https://} or \code{file://}
 #' directory containing the exact locked backend archive.
 #'
+#' A source installation does not download a precompiled cuda.ml backend or a
+#' managed runtime. It requires an existing CUDA Toolkit 13.2.2 installation
+#' in \code{CUDA_HOME}; a \code{CUML_PREFIX} containing cuML and nvForest 26.06,
+#' Treelite 4.7.0 headers, and \code{lib/libtreelite_static.a}; an explicit CMake
+#' CUDA architecture list in \code{CUML_CUDA_ARCHITECTURES}; and GNU C++ 14 or
+#' newer in \code{CUDA_ML_CXX}. CMake 3.21.1 or newer must be on \code{PATH}.
+#'
 #' @examples
 #' \dontrun{
 #' cuda_ml_install()
+#'
+#' Sys.setenv(
+#'   CUDA_HOME = "/usr/local/cuda-13.2",
+#'   CUML_PREFIX = "/opt/rapids-26.06",
+#'   CUML_CUDA_ARCHITECTURES = "86-real",
+#'   CUDA_ML_CXX = "/usr/bin/g++-14"
+#' )
+#' cuda_ml_install(source = TRUE)
 #' }
 #' @export
-cuda_ml_install <- function() {
-  cuda_ml_platform()
-  cuda_ml_backend_release()
+cuda_ml_install <- function(source = FALSE) {
+  stopifnot(
+    is.logical(source),
+    length(source) == 1L,
+    !is.na(source)
+  )
+
+  requested <- if (source) "source" else "download"
+  if (source) {
+    inputs <- cuda_ml_source_build_inputs()
+  } else {
+    cuda_ml_platform()
+    cuda_ml_backend_release()
+  }
+  selected <- cuda_ml_backend_selection()
+  selected_matches <- identical(selected$backend, requested)
+  if (
+    source &&
+      selected_matches &&
+      !is.null(.cuda_ml_state$dll)
+  ) {
+    identity <- cuda_ml_source_identity(inputs)
+    selected_matches <- identical(
+      selected$source_hash,
+      identity$source_hash
+    )
+  }
+  if (
+    !is.null(.cuda_ml_state$dll) &&
+      !selected_matches
+  ) {
+    stop(
+      "Restart R before changing the selected cuda.ml backend or its ",
+      "source-build inputs.",
+      call. = FALSE
+    )
+  }
 
   lock <- cuda_ml_acquire_lock("cache-install")
   on.exit(filelock::unlock(lock), add = TRUE)
-  cuda_ml_prepare_runtime()
+  if (source) {
+    prepared <- cuda_ml_prepare_source_backend(inputs)
+    cuda_ml_write_backend_selection(
+      "source",
+      prepared$identity$source_hash
+    )
+  } else {
+    cuda_ml_prepare_runtime()
+    cuda_ml_write_backend_selection("download")
+  }
   invisible(TRUE)
 }
 
-#' Audit the installed managed runtime
+#' Audit the installed native backend
 #'
-#' Recomputes the hashes recorded when the managed runtime was installed and
-#' validates the complete native dependency closure. Ordinary runtime reuse
+#' Recomputes the hashes recorded when the selected backend was installed and
+#' validates its native registration. For a downloaded backend, also validates
+#' the complete managed-runtime dependency closure. Ordinary runtime reuse
 #' performs only fast marker, inventory, size, and link checks.
 #'
 #' @return Invisibly returns \code{TRUE}.
@@ -1591,6 +1694,35 @@ cuda_ml_runtime_audit <- function() {
 
   lock <- cuda_ml_acquire_lock("cache-install")
   on.exit(filelock::unlock(lock), add = TRUE)
+  selection <- cuda_ml_backend_selection()
+  if (identical(selection$backend, "source")) {
+    backend_path <- cuda_ml_source_backend_path(selection$source_hash)
+    if (
+      !cuda_ml_source_backend_complete(
+        backend_path,
+        selection$source_hash,
+        audit = TRUE
+      )
+    ) {
+      stop(
+        "The source-built cuda.ml backend failed its content audit. ",
+        "Run cuda_ml_cache_clean(), then ",
+        "cuda_ml_install(source = TRUE).",
+        call. = FALSE
+      )
+    }
+    if (is.null(.cuda_ml_state$dll)) {
+      dll <- cuda_ml_load_backend(backend_path)
+      on.exit(dyn.unload(dll[["path"]]), add = TRUE)
+    } else if (!cuda_ml_backend_registration_valid(.cuda_ml_state$dll)) {
+      stop(
+        "The loaded cuda.ml backend failed its registration check.",
+        call. = FALSE
+      )
+    }
+    return(invisible(TRUE))
+  }
+
   runtime_identity <- cuda_ml_runtime_identity()
   runtime_path <- cuda_ml_runtime_path(runtime_identity)
   backend_identity <- cuda_ml_backend_identity()
@@ -1636,10 +1768,11 @@ cuda_ml_runtime_audit <- function() {
   invisible(TRUE)
 }
 
-#' Remove managed cuda.ml runtime caches
+#' Remove cuda.ml native-backend caches
 #'
-#' Removes cuda.ml runtime and backend cache generations. Restart R before
-#' calling this function if the native backend has been loaded in this process.
+#' Removes downloaded and source-built runtime and backend cache generations,
+#' including the selected-backend record. Restart R before calling this function
+#' if the native backend has been loaded in this process.
 #'
 #' @return Invisibly returns \code{TRUE}.
 #' @export
@@ -1659,7 +1792,9 @@ cuda_ml_cache_clean <- function() {
     "backends-v2",
     "runtime-v3",
     "backend-assets-v1",
-    "backends-v3"
+    "backends-v3",
+    "source-backends-v1",
+    "backend-selection-v1"
   )
   targets <- file.path(cache, generations)
   stopifnot(

@@ -127,7 +127,9 @@ test_that("cache cleanup is scoped to cuda.ml cache generations", {
     "backends-v2",
     "runtime-v3",
     "backend-assets-v1",
-    "backends-v3"
+    "backends-v3",
+    "source-backends-v1",
+    "backend-selection-v1"
   )
   for (generation in generations) {
     dir.create(file.path(cache, generation), recursive = TRUE)

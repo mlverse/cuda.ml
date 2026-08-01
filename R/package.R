@@ -24,6 +24,11 @@
 #' inference does not. Set \code{CUDA_ML_CACHE_DIR} to override the default
 #' cache and \code{CUDA_ML_BACKEND_MIRROR} to use an exact backend mirror.
 #'
+#' To compile cuda.ml itself on the host without a prebuilt cuda.ml backend,
+#' call \code{cuda_ml_install(source = TRUE)} with explicit \code{CUDA_HOME},
+#' \code{CUML_PREFIX}, \code{CUML_CUDA_ARCHITECTURES}, and \code{CUDA_ML_CXX}
+#' build inputs. This pathway makes no downloads and does not require Docker.
+#'
 #' @author Yitao Li <yitao@rstudio.com>
 #' @import Rcpp
 "_PACKAGE"

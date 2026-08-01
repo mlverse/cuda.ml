@@ -30,7 +30,7 @@ COPY inst/runtime/ /build/inst/runtime/
 COPY inst/cuda-ml-backend.dcf inst/native-symbols.txt /build/inst/
 COPY tools/config.R /build/tools/config.R
 COPY tools/config/ /build/tools/config/
-COPY tools/backend/src/ /build/tools/backend/src/
+COPY inst/backend-src/ /build/inst/backend-src/
 WORKDIR /build
 
 ENV CUDA_ML_BUILD_MODE=managed
@@ -41,7 +41,7 @@ RUN Rscript -e \
     "install.packages(c('Rcpp', 'digest'), repos = 'https://cloud.r-project.org')"
 RUN Rscript tools/config.R configure
 RUN cmake \
-      --build tools/backend/src/.cmake-build \
+      --build inst/backend-src/.cmake-build \
       --target cuda.ml \
       --parallel 2
 
@@ -53,7 +53,7 @@ RUN CUDA_ML_PREFIX="$(Rscript -e \
       "pkg_root <- function() '/build'; source('tools/config/utils/artifacts.R'); source('tools/config/utils/bootstrap.R'); cat(cuml_managed_bootstrap_prefix())")" \
     && LD_LIBRARY_PATH="${CUDA_ML_PREFIX}/lib" \
       Rscript tools/audit-backend.R \
-        tools/backend/src/.cmake-build/cuda.ml.so \
+        inst/backend-src/.cmake-build/cuda.ml.so \
         "${CUDA_ML_PREFIX}/bin/cuobjdump" \
     && cc -std=c11 -Wall -Wextra -Werror \
       -I"${CUDA_ML_PREFIX}/include" \
@@ -64,7 +64,7 @@ RUN CUDA_ML_PREFIX="$(Rscript -e \
 
 RUN mkdir -p /out \
     && Rscript tools/package-backend.R \
-      tools/backend/src/.cmake-build/cuda.ml.so \
+      inst/backend-src/.cmake-build/cuda.ml.so \
       /out \
       "${SOURCE_COMMIT}" \
       "${BACKEND_BASE_URL}"
@@ -82,6 +82,22 @@ RUN cp /out/*.row.tsv \
       "install.packages('pak', repos = 'https://r-lib.github.io/p/pak/stable/'); options(repos = c(CRAN = 'https://packagemanager.posit.co/cran/__linux__/centos8/latest')); pak::local_install_deps('/build', dependencies = TRUE)" \
     && R CMD build . \
     && R CMD INSTALL --install-tests cuda.ml_*.tar.gz
+
+RUN --network=none \
+    CUDA_ML_CACHE_DIR=/tmp/cuda-ml-source-cache \
+      CUDA_HOME=/opt/cuda.ml/managed-build/cuda-13.2.2-rapids-26.6.0 \
+      CUML_PREFIX=/opt/cuda.ml/managed-build/cuda-13.2.2-rapids-26.6.0 \
+      CUML_CUDA_ARCHITECTURES=75-real \
+      CUDA_ML_CXX="$(command -v g++)" \
+      Rscript -e \
+        "library(cuda.ml); cuda_ml_install(source = TRUE); cuda_ml_install(source = TRUE)" \
+    && test ! -e /tmp/cuda-ml-source-cache/runtime-v3 \
+    && test ! -e /tmp/cuda-ml-source-cache/backend-assets-v1 \
+    && test ! -e /tmp/cuda-ml-source-cache/backends-v3
+
+RUN CUDA_ML_CACHE_DIR=/tmp/cuda-ml-source-cache \
+      Rscript -e \
+        "library(cuda.ml); info <- cuda_ml_backend_info(); stopifnot(identical(info\$backend, 'source'), identical(info\$build_mode, 'local'), info\$backend_available, info\$runtime_installed, !info\$backend_loaded, identical(info\$architectures, '75-real')); cuda_ml_runtime_audit()"
 
 FROM base AS runtime
 

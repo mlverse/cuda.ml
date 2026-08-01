@@ -12,7 +12,7 @@ for (x in c(
   "*.so"
 )) {
   unlink(
-    file.path("tools", "backend", "src", x),
+    file.path("inst", "backend-src", x),
     recursive = TRUE,
     expand = TRUE
   )

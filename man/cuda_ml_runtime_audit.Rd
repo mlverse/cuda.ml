@@ -2,7 +2,7 @@
 % Please edit documentation in R/runtime.R
 \name{cuda_ml_runtime_audit}
 \alias{cuda_ml_runtime_audit}
-\title{Audit the installed managed runtime}
+\title{Audit the installed native backend}
 \usage{
 cuda_ml_runtime_audit()
 }
@@ -10,7 +10,8 @@ cuda_ml_runtime_audit()
 Invisibly returns \code{TRUE}.
 }
 \description{
-Recomputes the hashes recorded when the managed runtime was installed and
-validates the complete native dependency closure. Ordinary runtime reuse
+Recomputes the hashes recorded when the selected backend was installed and
+validates its native registration. For a downloaded backend, also validates
+the complete managed-runtime dependency closure. Ordinary runtime reuse
 performs only fast marker, inventory, size, and link checks.
 }

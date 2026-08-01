@@ -2,7 +2,7 @@
 % Please edit documentation in R/runtime.R
 \name{cuda_ml_cache_clean}
 \alias{cuda_ml_cache_clean}
-\title{Remove managed cuda.ml runtime caches}
+\title{Remove cuda.ml native-backend caches}
 \usage{
 cuda_ml_cache_clean()
 }
@@ -10,6 +10,7 @@ cuda_ml_cache_clean()
 Invisibly returns \code{TRUE}.
 }
 \description{
-Removes cuda.ml runtime and backend cache generations. Restart R before
-calling this function if the native backend has been loaded in this process.
+Removes downloaded and source-built runtime and backend cache generations,
+including the selected-backend record. Restart R before calling this function
+if the native backend has been loaded in this process.
 }

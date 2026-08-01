@@ -244,25 +244,48 @@ model](https://docs.nvidia.com/cuda/archive/13.2.0/cuda-compiler-driver-nvcc/ind
 Native Windows, macOS, Linux ARM64, musl-based Linux distributions, and
 glibc versions older than 2.28 are not currently supported.
 
-### Packaging and source
+### Build the backend from source
+
+To compile the native backend directly on the host, install the locked
+native dependencies first, then provide their locations explicitly:
+
+``` r
+Sys.setenv(
+  CUDA_HOME = "/usr/local/cuda-13.2",
+  CUML_PREFIX = "/opt/rapids-26.06",
+  CUML_CUDA_ARCHITECTURES = "86-real",
+  CUDA_ML_CXX = "/usr/bin/g++-14"
+)
+cuda.ml::cuda_ml_install(source = TRUE)
+```
+
+This pathway requires CUDA Toolkit 13.2.2, cuML and nvForest 26.06,
+Treelite 4.7.0 headers and `lib/libtreelite_static.a`, GNU C++ 14 or
+newer, and CMake 3.21.1 or newer. `CUML_CUDA_ARCHITECTURES` is an
+explicit semicolon-separated CMake CUDA architecture list for the GPUs
+that will run the backend.
+
+`cuda_ml_install(source = TRUE)` makes no downloads. It copies the
+native sources included in the installed R package to a temporary build
+directory, compiles `cuda.ml.so` with CMake, verifies its registered R
+routines and locked library versions, and moves it into the cuda.ml
+cache. It then records the source build as the selected backend, so
+later R sessions load it automatically. The compiled library links to
+the CUDA and RAPIDS directories supplied above; those directories must
+remain in place.
+
+This builds cuda.ml itself from source without Docker or a prebuilt
+cuda.ml backend. `CUML_PREFIX` may contain dependencies installed
+natively from source. The function does not build or provision CUDA,
+RAPIDS, or Treelite.
+
+### Packaging
 
 CRAN installation and checks are network-free. The package contacts the
 network only when `cuda_ml_install()` is called explicitly. Native
 backend archives are built in a pinned manylinux 2.28 container, audited
 for their glibc and libstdc++ requirements, and hosted as GitHub Release
 assets. One archive is published for each supported R minor version.
-
-The native source remains in the source package for advanced local
-builds. Set `CUDA_ML_BUILD_MODE=local`, supply CUDA Toolkit 13.2.2
-through `CUDA_HOME`, and supply a prefix through `CUML_PREFIX`
-containing cuML and nvForest 26.06, Treelite 4.7.0 headers, and
-`lib/libtreelite_static.a`. Build Treelite as position-independent code
-with its default libstdc++ ABI and with OpenMP disabled. Local builds
-never download or provision Treelite. Set `CUML_CUDA_ARCHITECTURES`
-explicitly to the CMake CUDA architectures to compile, and set
-`CUDA_ML_CXX` to GNU C++ 14 or newer. The same compiler is used for C++
-sources and nvcc host compilation. Missing inputs and other library
-versions fail at configuration time.
 
 ### Development version
 

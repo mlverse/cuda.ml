@@ -4,9 +4,9 @@ docs
 *.Rcheck
 *.tar.gz
 README.html
-tools/backend/src/.cmake-build
-tools/backend/src/CMakeLists.txt
-tools/backend/src/Makefile
-tools/backend/src/Makevars
-tools/backend/src/*.o
-tools/backend/src/*.so
+inst/backend-src/.cmake-build
+inst/backend-src/CMakeLists.txt
+inst/backend-src/Makefile
+inst/backend-src/Makevars
+inst/backend-src/*.o
+inst/backend-src/*.so

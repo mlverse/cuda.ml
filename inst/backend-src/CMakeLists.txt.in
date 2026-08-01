@@ -126,6 +126,10 @@ add_library(
   RcppExports.cpp
 )
 
+if(NOT DEFINED CUDA_ML_INSTALL_RPATH)
+  set(CUDA_ML_INSTALL_RPATH "$ORIGIN")
+endif()
+
 # nvForest's importer instantiates Treelite templates in this translation unit.
 set_source_files_properties(
   nvforest.cu
@@ -139,7 +143,7 @@ set_target_properties(
   LINKER_LANGUAGE "CUDA"
   PREFIX ""
   BUILD_WITH_INSTALL_RPATH TRUE
-  INSTALL_RPATH "$ORIGIN"
+  INSTALL_RPATH "${CUDA_ML_INSTALL_RPATH}"
   INSTALL_RPATH_USE_LINK_PATH FALSE
 )
 target_compile_definitions(

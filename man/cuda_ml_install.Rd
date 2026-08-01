@@ -2,27 +2,47 @@
 % Please edit documentation in R/runtime.R
 \name{cuda_ml_install}
 \alias{cuda_ml_install}
-\title{Prepare the managed CUDA and RAPIDS runtime}
+\title{Install a cuda.ml native backend}
 \usage{
-cuda_ml_install()
+cuda_ml_install(source = FALSE)
+}
+\arguments{
+\item{source}{A logical value. If \code{FALSE}, install the prebuilt backend
+and managed runtime. If \code{TRUE}, compile the backend from the native
+sources included in the R package.}
 }
 \value{
 Invisibly returns \code{TRUE}.
 }
 \description{
-Downloads, verifies, extracts, and caches the precompiled backend and its
-runtime libraries. This operation does not load the backend or require a
-GPU, driver, CUDA toolkit, compiler, Python, or conda. Calling it again with
-the same package build is a no-op.
+By default, downloads, verifies, extracts, and caches the precompiled backend
+and its runtime libraries. Alternatively, compiles the native backend on the
+host against an existing CUDA and RAPIDS installation. Calling it again with
+the same inputs is a no-op.
 }
 \details{
 The default cache is \code{tools::R_user_dir("cuda.ml", "cache")}. Set
 \code{CUDA_ML_CACHE_DIR} to use a different cache root. Set
 \code{CUDA_ML_BACKEND_MIRROR} to an \code{https://} or \code{file://}
 directory containing the exact locked backend archive.
+
+A source installation does not download a precompiled cuda.ml backend or a
+managed runtime. It requires an existing CUDA Toolkit 13.2.2 installation
+in \code{CUDA_HOME}; a \code{CUML_PREFIX} containing cuML and nvForest 26.06,
+Treelite 4.7.0 headers, and \code{lib/libtreelite_static.a}; an explicit CMake
+CUDA architecture list in \code{CUML_CUDA_ARCHITECTURES}; and GNU C++ 14 or
+newer in \code{CUDA_ML_CXX}. CMake 3.21.1 or newer must be on \code{PATH}.
 }
 \examples{
 \dontrun{
 cuda_ml_install()
+
+Sys.setenv(
+  CUDA_HOME = "/usr/local/cuda-13.2",
+  CUML_PREFIX = "/opt/rapids-26.06",
+  CUML_CUDA_ARCHITECTURES = "86-real",
+  CUDA_ML_CXX = "/usr/bin/g++-14"
+)
+cuda_ml_install(source = TRUE)
 }
 }
