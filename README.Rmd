@@ -190,42 +190,25 @@ rather than its source-package repository:
 
 ``` r
 linux_binary_repo <- function(universe) {
-  r_version <- paste(
-    R.version$major,
-    strsplit(R.version$minor, ".", fixed = TRUE)[[1L]][1L],
-    sep = "."
-  )
   sprintf(
     "https://%s.r-universe.dev/bin/linux/resolute-%s/%s/",
     universe,
     R.version$arch,
-    r_version
+    substr(getRversion(), 1, 3)
   )
 }
 
-repos <- c(
-  mlverse = linux_binary_repo("mlverse"),
-  CRAN = linux_binary_repo("cran")
-)
-stopifnot(
-  identical(unname(Sys.info()[["sysname"]]), "Linux"),
-  identical(R.version$arch, "x86_64"),
-  grepl(
-    "/bin/linux/resolute-x86_64/[0-9]+[.][0-9]+/$",
-    repos[["mlverse"]]
-  )
-)
+options(repos = linux_binary_repo(c("mlverse", "cran")))
 
-install.packages(
-  "cuda.ml",
-  repos = repos
-)
+install.packages("cuda.ml")
 ```
 
-The binary repository path selects the prebuilt tarball. Stock Linux R does not
-support `type = "binary"`, so leave `type` at its default. The `stopifnot()`
-check prevents accidentally installing from the source endpoint or an
-unsupported architecture.
+After setting `options(repos)` this way, `install.packages()` automatically
+installs binaries when available and falls back to source packages otherwise.
+The `mlverse` repository provides the {cuda.ml} binary, while the `cran`
+repository provides Linux binaries for its CRAN dependencies.
+Stock Linux R does not support `type = "binary"`, so leave `type` at its
+default.
 
 The binary contains a precompiled {cuda.ml} backend with Treelite 4.7.0 linked
 statically, but not the CUDA and RAPIDS runtime libraries. Loading the package
