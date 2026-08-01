@@ -85,13 +85,19 @@ RUN cp /out/*.row.tsv \
 
 FROM base AS runtime
 
+RUN uv venv --python /usr/bin/python3 /opt/cuda.ml/python \
+    && uv pip install \
+      --python /opt/cuda.ml/python/bin/python \
+      scikit-learn
+
 COPY --from=test-build /opt/R/library /opt/R/library
 COPY --from=backend /out/*.tar.gz /opt/cuda.ml/backend/
 COPY --from=backend /usr/local/bin/nvrtc-probe /usr/local/bin/nvrtc-probe
 
 ENV CUDA_ML_BACKEND_MIRROR=file:///opt/cuda.ml/backend
+ENV RETICULATE_PYTHON=/opt/cuda.ml/python/bin/python
 
 RUN Rscript -e \
-    "library(cuda.ml); info <- cuda_ml_backend_info(); stopifnot(identical(info\$backend, 'download'), info\$backend_available, !info\$runtime_installed, !info\$backend_loaded)" \
+    "library(cuda.ml); info <- cuda_ml_backend_info(); stopifnot(identical(info\$backend, 'download'), info\$backend_available, !info\$runtime_installed, !info\$backend_loaded, reticulate::py_module_available('sklearn'))" \
     && test ! -e /usr/local/cuda \
     && test -z "$(command -v nvcc)"

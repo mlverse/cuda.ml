@@ -183,21 +183,26 @@ test_that("an unpublished backend fails before downloading the runtime", {
 
 test_that("an uninstalled downloadable backend remains side-effect free", {
   cache <- tempfile("cuda-ml-cache-")
-  old_cache <- Sys.getenv("CUDA_ML_CACHE_DIR", unset = NA_character_)
-  Sys.setenv(CUDA_ML_CACHE_DIR = cache)
-  on.exit({
-    if (is.na(old_cache)) {
-      Sys.unsetenv("CUDA_ML_CACHE_DIR")
-    } else {
-      Sys.setenv(CUDA_ML_CACHE_DIR = old_cache)
-    }
-  }, add = TRUE)
 
-  before <- names(getLoadedDLLs())
-  info <- cuda_ml_backend_info()
-  expect_identical(info$backend, "download")
-  expect_identical(info$build_mode, "release")
-  expect_false(info$runtime_installed)
-  expect_false(info$backend_loaded)
-  expect_identical(setdiff(names(getLoadedDLLs()), before), character())
+  state <- callr::r(
+    function(cache) {
+      Sys.setenv(CUDA_ML_CACHE_DIR = cache)
+      suppressPackageStartupMessages(library(cuda.ml))
+      before <- names(getLoadedDLLs())
+      info <- cuda_ml_backend_info()
+
+      list(
+        info = info,
+        backend_dll_loaded = "cuda.ml" %in%
+          setdiff(names(getLoadedDLLs()), before)
+      )
+    },
+    args = list(cache = cache)
+  )
+
+  expect_identical(state$info$backend, "download")
+  expect_identical(state$info$build_mode, "release")
+  expect_false(state$info$runtime_installed)
+  expect_false(state$info$backend_loaded)
+  expect_false(state$backend_dll_loaded)
 })
