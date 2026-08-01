@@ -356,12 +356,14 @@ class NvForestModel {
     validate_chunk_size(effective_chunk_size);
 
     if (options_.device == NvForestDevice::CPU) {
+      auto const device_index = forest_.device_index();
       auto input_buffer = raft_proto::buffer<T>(
         const_cast<T*>(matrix.values.data()), matrix.values.size(),
-        raft_proto::device_type::cpu, 0);
+        raft_proto::device_type::cpu, device_index);
       auto output = std::vector<T>(output_size);
-      auto output_buffer = raft_proto::buffer<T>(
-        output.data(), output.size(), raft_proto::device_type::cpu, 0);
+      auto output_buffer =
+        raft_proto::buffer<T>(output.data(), output.size(),
+                              raft_proto::device_type::cpu, device_index);
       forest_.predict(output_buffer, input_buffer, cudaStream_t{}, kind,
                       as_chunk_size(effective_chunk_size));
       return output;

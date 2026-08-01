@@ -28,6 +28,7 @@ test_that("nvForest loads current XGBoost formats and reports model metadata", {
   )
   info <- cuda_ml_nvforest_info(model)
   classes <- predict(model, x, type = "class")
+  probabilities <- predict(model, x, type = "prob")
   per_tree <- cuda_ml_nvforest_predict_per_tree(model, x)
 
   expect_identical(info$task_type, "multiclass_classification")
@@ -42,10 +43,12 @@ test_that("nvForest loads current XGBoost formats and reports model metadata", {
   } else {
     expect_identical(dim(per_tree), c(nrow(x), info$num_trees))
   }
-  expect_error(
-    predict(model, x, type = "prob"),
-    "probability"
+  expect_true(info$has_probability_output)
+  expect_named(
+    probabilities,
+    paste0(".pred_", levels(iris$Species))
   )
+  expect_equal(rowSums(probabilities), rep(1, nrow(x)), tolerance = 1e-6)
 })
 
 test_that("nvForest exposes leaf and per-tree predictions", {
@@ -123,7 +126,7 @@ test_that("nvForest matches XGBoost binary probabilities and classes", {
 
   expect_equal(
     unname(as.matrix(probabilities)),
-    cbind(1 - expected_probability, expected_probability),
+    unname(cbind(1 - expected_probability, expected_probability)),
     tolerance = 1e-6,
     scale = 1
   )

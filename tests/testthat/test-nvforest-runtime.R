@@ -27,7 +27,8 @@ test_that("nvForest supports CPU-only inference and restoration", {
     model_type = "xgboost_ubj",
     device = "cpu"
   )
-  expected <- predict(model, x)
+  expected <- as.numeric(predict(xgb_model, x))
+  predictions <- predict(model, x)
   info <- cuda_ml_nvforest_info(model)
   per_tree <- cuda_ml_nvforest_predict_per_tree(model, x)
   restored <- cuda_ml_unserialize(cuda_ml_serialize(model))
@@ -36,9 +37,10 @@ test_that("nvForest supports CPU-only inference and restoration", {
   expect_identical(info$device, "cpu")
   expect_identical(info$align_bytes, 64L)
   expect_identical(dim(per_tree), c(nrow(x), info$num_trees))
-  expect_equal(predict(restored, x), expected)
-  expect_equal(predict(unbundled, x), expected)
+  expect_equal(predictions$.pred, expected, tolerance = 1e-6, scale = 1)
+  expect_equal(predict(restored, x), predictions)
+  expect_equal(predict(unbundled, x), predictions)
   expect_true(cuda_ml_runtime_audit())
   expect_true(cuda_ml_backend_info()$backend_loaded)
-  expect_equal(predict(model, x), expected)
+  expect_equal(predict(model, x), predictions)
 })
