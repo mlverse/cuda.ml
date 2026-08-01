@@ -1,0 +1,11 @@
+Schema: 3
+Backend: download
+Build-Mode: release
+CUDA: 13.2.2
+RAPIDS: 26.06
+nvForest: 26.06.0
+Treelite: 4.7.0
+Platform: linux-x86_64-glibc2.28
+Minimum-glibc: 2.28
+Minimum-Driver: 580
+Architectures: 75-real;80-real;86-real;89-real;90-real;100-real;120-real;120-virtual

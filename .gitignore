@@ -14,4 +14,3 @@ cuda.ml.Rcheck
 00check.log
 .positai
 .codex
-inst/cuda-ml-backend.dcf
