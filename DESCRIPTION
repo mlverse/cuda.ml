@@ -46,15 +46,11 @@ Suggests:
     reticulate,
     testthat,
     xgboost
-LinkingTo: Rcpp
 Encoding: UTF-8
 OS_type: unix
-SystemRequirements: The managed R-universe binary targets Ubuntu 26.04 x86_64
-    (including WSL2 running that distribution). GPU-backed operations require
-    a supported NVIDIA GPU and driver 580 or newer. The managed backend embeds
-    a static Treelite 4.7.0 build. Functional local source builds require CUDA
-    Toolkit 13.2.2, GNU C++ 14 or newer, RAPIDS cuML and nvForest 26.06, and
-    Treelite 4.7.0 headers and a position-independent libtreelite_static.a
-    built with the default libstdc++ ABI and OpenMP disabled.
-NeedsCompilation: yes
+SystemRequirements: Prebuilt backends require Linux x86_64 with glibc 2.28 or
+    newer. GPU-backed operations require a supported NVIDIA GPU and driver 580
+    or newer. The managed runtime uses CUDA Toolkit 13.2.2, RAPIDS cuML and
+    nvForest 26.06, and Treelite 4.7.0.
+NeedsCompilation: no
 Config/roxygen2/version: 8.0.0

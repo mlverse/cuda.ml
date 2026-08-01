@@ -18,7 +18,7 @@
 #'
 #' CUDA_ML_CXX: Required for local functional builds. Path to the GNU C++ 14 or
 #'              newer compiler used for both C++ sources and nvcc host
-#'              compilation. Managed builds use /usr/bin/g++.
+#'              compilation. Managed builds use g++ from PATH.
 
 pkg_root <- function() {
   # devtools::load_all() might run the config script from the `src` directory.
@@ -72,48 +72,17 @@ clear_build_artifacts <- function() {
     "*.so"
   )
   for (path in paths) {
-    unlink(file.path(pkg_root(), "src", path), recursive = TRUE, expand = TRUE)
+    unlink(
+      file.path(pkg_root(), "tools", "backend", "src", path),
+      recursive = TRUE,
+      expand = TRUE
+    )
   }
 }
 
 clear_build_artifacts()
 generate_cuda_ml_native_symbol_manifest()
 cuml_generate_runtime_lock()
-
-write_backend_metadata <- function(
-  backend,
-  build_mode,
-  cuda = "",
-  rapids = "",
-  nvforest = "",
-  treelite = "",
-  platform = "",
-  minimum_driver = "",
-  architectures = ""
-) {
-  stopifnot(
-    backend %in% c("full", "stub"),
-    build_mode %in% c("managed", "local", "stub")
-  )
-
-  path <- file.path(pkg_root(), "inst", "cuda-ml-backend.dcf")
-  dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
-  writeLines(
-    c(
-      "Schema: 2",
-      paste0("Backend: ", backend),
-      paste0("Build-Mode: ", build_mode),
-      paste0("CUDA: ", cuda),
-      paste0("RAPIDS: ", rapids),
-      paste0("nvForest: ", nvforest),
-      paste0("Treelite: ", treelite),
-      paste0("Platform: ", platform),
-      paste0("Minimum-Driver: ", minimum_driver),
-      paste0("Architectures: ", architectures)
-    ),
-    path
-  )
-}
 
 run_cmake <- function(nvcc, cuml_prefix, cuda_architectures, cxx) {
   stopifnot(
@@ -133,10 +102,12 @@ run_cmake <- function(nvcc, cuml_prefix, cuda_architectures, cxx) {
 
   define(R_INCLUDE_DIR = R.home("include"))
   define(RCPP_INCLUDE_DIR = system.file("include", package = "Rcpp"))
-  configure_file(file.path("src", "CMakeLists.txt.in"))
+  configure_file(file.path("tools", "backend", "src", "CMakeLists.txt.in"))
 
   cmake_bin <- find_cmake()
-  src_dir <- normalizePath(file.path(pkg_root(), "src"))
+  src_dir <- normalizePath(
+    file.path(pkg_root(), "tools", "backend", "src")
+  )
   build_dir <- file.path(src_dir, ".cmake-build")
   dir.create(build_dir, recursive = TRUE, showWarnings = FALSE)
 
@@ -148,7 +119,7 @@ run_cmake <- function(nvcc, cuml_prefix, cuda_architectures, cxx) {
   )
   configure_file(
     file.path("tools", "config", "Makefile.cmake.in"),
-    target = file.path("src", "Makefile")
+    target = file.path("tools", "backend", "src", "Makefile")
   )
 
   stopifnot(!is.na(cuml_prefix), nzchar(cuml_prefix))
@@ -195,17 +166,20 @@ cuda_architectures <- NA_character_
 build_mode <- cuml_build_mode()
 
 if (identical(build_mode, "managed")) {
-  if (!cuml_ubuntu_2604_x86_64()) {
-    stop2("Managed cuda.ml builds require Ubuntu 26.04 x86_64.")
+  if (!cuml_manylinux_2_28_x86_64()) {
+    stop2("Managed cuda.ml builds require Linux x86_64 with glibc 2.28.")
   }
-  cxx <- find_cuda_ml_cxx("/usr/bin/g++")
+  cxx <- find_cuda_ml_cxx(unname(Sys.which("g++")))
   managed_build <- bootstrap_managed_build_from_artifacts(cxx)
   nvcc <- managed_build$nvcc
   cuml_prefix <- managed_build$prefix
   cuda_architectures <- cuml_managed_cuda_architectures()
 } else if (identical(build_mode, "local")) {
-  if (!cuml_ubuntu_2604_x86_64()) {
-    stop2("Functional local cuda.ml builds require Ubuntu 26.04 x86_64.")
+  if (!cuml_supported_local_platform()) {
+    stop2(
+      "Functional local cuda.ml builds require Linux x86_64 with glibc ",
+      "2.28 or newer."
+    )
   }
   cuda_home <- Sys.getenv("CUDA_HOME", unset = "")
   cuml_prefix <- Sys.getenv("CUML_PREFIX", unset = "")
@@ -247,23 +221,7 @@ if (identical(build_mode, "managed")) {
 
 full_build <- !identical(build_mode, "stub")
 
-if (!full_build) {
-  wd <- getwd()
-  on.exit(setwd(wd))
-  setwd(pkg_root())
-  write_backend_metadata("stub", build_mode = build_mode)
-} else {
+if (full_build) {
   validate_managed_build_versions(nvcc, cuml_prefix)
   run_cmake(nvcc, cuml_prefix, cuda_architectures, cxx)
-  write_backend_metadata(
-    backend = "full",
-    build_mode = build_mode,
-    cuda = cuml_managed_cuda_toolkit_version(),
-    rapids = cuml_managed_rapids_version(),
-    nvforest = cuml_managed_nvforest_version(),
-    treelite = cuml_managed_treelite_version(),
-    platform = cuml_managed_platform(),
-    minimum_driver = cuml_managed_minimum_driver(),
-    architectures = cuda_architectures
-  )
 }

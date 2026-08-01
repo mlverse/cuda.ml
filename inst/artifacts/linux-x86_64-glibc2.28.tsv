@@ -7,7 +7,7 @@
 # RAPIDS-Package: 26.6.0
 # nvForest: 26.06.0
 # Treelite: 4.7.0
-# Platform: ubuntu-26.04-x86_64
+# Platform: linux-x86_64-glibc2.28
 # Minimum-Driver: 580
 # Architectures: 75-real;80-real;86-real;89-real;90-real;100-real;120-real;120-virtual
 # NVRTC-Needed-Old: libnvrtc-a49e67e8.so.13.0.88

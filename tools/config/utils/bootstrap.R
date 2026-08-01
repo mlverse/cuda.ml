@@ -502,9 +502,9 @@ bootstrap_managed_build_from_artifacts <- function(cxx) {
     file.exists(cxx)
   )
 
-  if (!cuml_ubuntu_2604_x86_64()) {
+  if (!cuml_manylinux_2_28_x86_64()) {
     stop2(
-      "Managed {cuda.ml} builds require Ubuntu 26.04 x86_64.",
+      "Managed {cuda.ml} builds require Linux x86_64 with glibc 2.28.",
       paste0(
         "Detected: ",
         Sys.info()[["sysname"]],

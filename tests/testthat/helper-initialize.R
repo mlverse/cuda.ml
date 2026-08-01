@@ -1,6 +1,6 @@
 backend_info <- cuda_ml_backend_info()
 run_gpu_tests <- identical(Sys.getenv("CUDA_ML_GPU_TESTS"), "true") &&
-  identical(backend_info$backend, "full") &&
+  backend_info$backend_available &&
   backend_info$runtime_installed
 
 if (run_gpu_tests) {

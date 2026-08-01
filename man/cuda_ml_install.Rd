@@ -10,14 +10,16 @@ cuda_ml_install()
 Invisibly returns \code{TRUE}.
 }
 \description{
-Downloads, verifies, extracts, and caches the runtime libraries required by
-the precompiled \pkg{cuda.ml} backend. This operation does not load the
-backend or require a GPU, driver, CUDA toolkit, compiler, Python, or conda.
-Calling it again with the same package build is a no-op.
+Downloads, verifies, extracts, and caches the precompiled backend and its
+runtime libraries. This operation does not load the backend or require a
+GPU, driver, CUDA toolkit, compiler, Python, or conda. Calling it again with
+the same package build is a no-op.
 }
 \details{
 The default cache is \code{tools::R_user_dir("cuda.ml", "cache")}. Set
-\code{CUDA_ML_CACHE_DIR} to use a different cache root.
+\code{CUDA_ML_CACHE_DIR} to use a different cache root. Set
+\code{CUDA_ML_BACKEND_MIRROR} to an \code{https://} or \code{file://}
+directory containing the exact locked backend archive.
 }
 \examples{
 \dontrun{

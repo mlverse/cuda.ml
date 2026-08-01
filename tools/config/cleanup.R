@@ -11,7 +11,9 @@ for (x in c(
   "*.o",
   "*.so"
 )) {
-  unlink(file.path("src", x), recursive = TRUE, expand = TRUE)
+  unlink(
+    file.path("tools", "backend", "src", x),
+    recursive = TRUE,
+    expand = TRUE
+  )
 }
-
-unlink(file.path("inst", "cuda-ml-backend.dcf"))

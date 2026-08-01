@@ -3,7 +3,7 @@ CUDA: 13.2
 CUDA-Toolkit: 13.2.2
 RAPIDS: 26.06
 nvForest: 26.06.0
-Platform: ubuntu-26.04-x86_64
+Platform: linux-x86_64-glibc2.28
 Minimum-Driver: 580
 NVRTC-Needed-Old: libnvrtc-a49e67e8.so.13.0.88
 NVRTC-Needed-New: libnvrtc.so.13

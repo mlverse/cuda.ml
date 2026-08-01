@@ -19,6 +19,7 @@ cuda_ml_backend_metadata <- function(pkgname = "cuda.ml") {
     "nvForest",
     "Treelite",
     "Platform",
+    "Minimum-glibc",
     "Minimum-Driver",
     "Architectures"
   )
@@ -27,8 +28,9 @@ cuda_ml_backend_metadata <- function(pkgname = "cuda.ml") {
   }
   metadata <- metadata[1L, , drop = TRUE]
   if (
-    !identical(unname(metadata[["Schema"]]), "2") ||
-      !unname(metadata[["Backend"]]) %in% c("full", "stub")
+    !identical(unname(metadata[["Schema"]]), "3") ||
+      !identical(unname(metadata[["Backend"]]), "download") ||
+      !identical(unname(metadata[["Build-Mode"]]), "release")
   ) {
     stop("The cuda.ml backend manifest is invalid.", call. = FALSE)
   }
@@ -37,7 +39,7 @@ cuda_ml_backend_metadata <- function(pkgname = "cuda.ml") {
 
 #' Report backend and managed-runtime metadata
 #'
-#' @return A named list describing the packaged backend and whether its exact
+#' @return A named list describing the locked backend and whether its exact
 #'   managed-runtime cache is complete. This function performs read-only cache
 #'   and inventory checks. It does not create or modify the cache, access the
 #'   network, inspect an NVIDIA GPU or driver, or load the native backend.
@@ -55,15 +57,17 @@ cuda_ml_backend_info <- function() {
     architectures <- strsplit(architectures, ";", fixed = TRUE)[[1L]]
   }
 
+  release <- cuda_ml_backend_release(required = FALSE)
+  backend_available <- !is.null(release)
   runtime_installed <- FALSE
   runtime_path <- NA_character_
   if (
-    identical(value("Backend"), "full") &&
+    backend_available &&
       cuda_ml_supported_platform()
   ) {
     runtime_identity <- cuda_ml_runtime_identity()
     candidate_runtime <- cuda_ml_runtime_path(runtime_identity)
-    backend_identity <- cuda_ml_backend_identity()
+    backend_identity <- cuda_ml_backend_identity(release)
     candidate_backend <- cuda_ml_backend_cache_path(
       runtime_identity,
       backend_identity
@@ -86,11 +90,14 @@ cuda_ml_backend_info <- function() {
     package_version = as.character(utils::packageVersion("cuda.ml")),
     backend = value("Backend"),
     build_mode = value("Build-Mode"),
+    backend_available = backend_available,
+    r_version = cuda_ml_r_version(),
     cuda_version = value("CUDA"),
     rapids_version = value("RAPIDS"),
     nvforest_version = value("nvForest"),
     treelite_version = value("Treelite"),
     platform = value("Platform"),
+    minimum_glibc = value("Minimum-glibc"),
     minimum_driver = {
       driver <- value("Minimum-Driver")
       if (is.na(driver)) NA_integer_ else as.integer(driver)
@@ -100,10 +107,6 @@ cuda_ml_backend_info <- function() {
     runtime_path = runtime_path,
     backend_loaded = !is.null(.cuda_ml_state$dll)
   )
-}
-
-cuda_ml_has_backend <- function() {
-  identical(.cuda_ml_state$metadata[["Backend"]], "full")
 }
 
 cuda_ml_native_symbols <- function(pkgname = "cuda.ml") {
@@ -144,37 +147,51 @@ cuda_ml_cache_dir <- function() {
   normalizePath(path.expand(cache), mustWork = FALSE)
 }
 
-cuda_ml_os_release_value <- function(name) {
-  path <- "/etc/os-release"
-  if (!file.exists(path)) {
-    return("")
+cuda_ml_r_version <- function() {
+  paste(
+    R.version$major,
+    strsplit(R.version$minor, ".", fixed = TRUE)[[1L]][[1L]],
+    sep = "."
+  )
+}
+
+cuda_ml_glibc_version <- function() {
+  output <- suppressWarnings(tryCatch(
+    system2("getconf", "GNU_LIBC_VERSION", stdout = TRUE, stderr = FALSE),
+    error = function(e) character()
+  ))
+  match <- regexec("^glibc ([0-9]+[.][0-9]+)$", output)
+  values <- regmatches(output, match)
+  if (length(values) != 1L || length(values[[1L]]) != 2L) {
+    return(NA_character_)
   }
-  lines <- readLines(path, warn = FALSE)
-  values <- lines[startsWith(lines, paste0(name, "="))]
-  if (length(values) != 1L) {
-    return("")
-  }
-  value <- substring(values, nchar(name) + 2L)
-  sub('^"(.*)"$', "\\1", value)
+  values[[1L]][[2L]]
 }
 
 cuda_ml_supported_platform <- function() {
   sysinfo <- Sys.info()
-  identical(unname(sysinfo[["sysname"]]), "Linux") &&
-    unname(sysinfo[["machine"]]) %in% c("x86_64", "amd64") &&
-    identical(cuda_ml_os_release_value("ID"), "ubuntu") &&
-    identical(cuda_ml_os_release_value("VERSION_ID"), "26.04")
+  if (
+    !identical(unname(sysinfo[["sysname"]]), "Linux") ||
+      !unname(sysinfo[["machine"]]) %in% c("x86_64", "amd64")
+  ) {
+    return(FALSE)
+  }
+  glibc <- cuda_ml_glibc_version()
+  !is.na(glibc) &&
+    base::package_version(glibc) >=
+      base::package_version(.cuda_ml_state$metadata[["Minimum-glibc"]])
 }
 
 cuda_ml_platform <- function() {
   if (!cuda_ml_supported_platform()) {
     stop(
-      "The managed cuda.ml runtime supports Ubuntu 26.04 x86_64 only ",
-      "(including WSL2 running that distribution).",
+      "The prebuilt cuda.ml backend requires Linux x86_64 with glibc ",
+      .cuda_ml_state$metadata[["Minimum-glibc"]],
+      " or newer.",
       call. = FALSE
     )
   }
-  "ubuntu-26.04-x86_64"
+  unname(.cuda_ml_state$metadata[["Platform"]])
 }
 
 cuda_ml_runtime_manifest <- function() {
@@ -249,25 +266,76 @@ cuda_ml_runtime_manifest <- function() {
   )
 }
 
-cuda_ml_backend_path <- function() {
-  libdir <- system.file("libs", package = "cuda.ml")
-  candidates <- list.files(
-    libdir,
-    pattern = paste0(
-      "^cuda\\.ml",
-      gsub("\\.", "\\\\.", .Platform$dynlib.ext),
-      "$"
-    ),
-    recursive = TRUE,
-    full.names = TRUE
+cuda_ml_backend_catalog <- function() {
+  platform <- unname(.cuda_ml_state$metadata[["Platform"]])
+  path <- system.file(
+    "backends",
+    paste0(platform, ".tsv"),
+    package = "cuda.ml"
   )
-  if (length(candidates) != 1L) {
+  if (!nzchar(path)) {
+    stop("The cuda.ml backend catalog is missing.", call. = FALSE)
+  }
+  catalog <- tryCatch(
+    utils::read.delim(
+      path,
+      stringsAsFactors = FALSE,
+      check.names = FALSE,
+      colClasses = c(
+        "character",
+        "character",
+        "character",
+        "numeric",
+        "character",
+        "character"
+      )
+    ),
+    error = function(e) NULL
+  )
+  required <- c(
+    "r_version",
+    "filename",
+    "url",
+    "size",
+    "sha256",
+    "backend_sha256"
+  )
+  valid <- !is.null(catalog) &&
+    identical(names(catalog), required) &&
+    !anyDuplicated(catalog$r_version) &&
+    all(grepl("^[0-9]+[.][0-9]+$", catalog$r_version)) &&
+    all(nzchar(catalog$filename)) &&
+    all(basename(catalog$filename) == catalog$filename) &&
+    all(endsWith(catalog$filename, ".tar.gz")) &&
+    all(startsWith(catalog$url, "https://")) &&
+    all(endsWith(catalog$url, paste0("/", catalog$filename))) &&
+    all(catalog$size > 0) &&
+    all(grepl("^[[:xdigit:]]{64}$", catalog$sha256)) &&
+    all(grepl("^[[:xdigit:]]{64}$", catalog$backend_sha256))
+  if (!valid) {
+    stop("The cuda.ml backend catalog is invalid.", call. = FALSE)
+  }
+  catalog
+}
+
+cuda_ml_backend_release <- function(required = TRUE) {
+  catalog <- cuda_ml_backend_catalog()
+  release <- catalog[catalog$r_version == cuda_ml_r_version(), , drop = FALSE]
+  if (!nrow(release)) {
+    if (!required) {
+      return(NULL)
+    }
     stop(
-      "Unable to locate the packaged cuda.ml backend.",
+      "No prebuilt cuda.ml backend is published for R ",
+      cuda_ml_r_version(),
+      " on ",
+      .cuda_ml_state$metadata[["Platform"]],
+      ".",
       call. = FALSE
     )
   }
-  normalizePath(candidates, mustWork = TRUE)
+  stopifnot(nrow(release) == 1L)
+  release
 }
 
 cuda_ml_hash_file <- function(path) {
@@ -291,7 +359,7 @@ cuda_ml_runtime_identity <- function() {
       )
   ) {
     stop(
-      "The packaged cuda.ml backend does not match its managed runtime lock.",
+      "The cuda.ml backend lock does not match its managed runtime lock.",
       call. = FALSE
     )
   }
@@ -311,29 +379,59 @@ cuda_ml_runtime_identity <- function() {
   )
 }
 
-cuda_ml_backend_identity <- function() {
-  backend <- cuda_ml_backend_path()
-  r_minor <- strsplit(R.version$minor, ".", fixed = TRUE)[[1L]][[1L]]
+cuda_ml_backend_identity <- function(release = cuda_ml_backend_release()) {
   list(
-    backend = backend,
-    backend_hash = cuda_ml_hash_file(backend),
-    r_version = paste0(R.version$major, ".", r_minor)
+    release = release,
+    backend_hash = unname(release[["sha256"]]),
+    backend_dso_hash = unname(release[["backend_sha256"]]),
+    r_version = cuda_ml_r_version()
+  )
+}
+
+cuda_ml_backend_url <- function(backend_identity) {
+  mirror <- Sys.getenv("CUDA_ML_BACKEND_MIRROR", unset = "")
+  if (!nzchar(mirror)) {
+    return(unname(backend_identity$release[["url"]]))
+  }
+  if (
+    !startsWith(mirror, "https://") &&
+      !startsWith(mirror, "file://")
+  ) {
+    stop(
+      "CUDA_ML_BACKEND_MIRROR must be an https:// or file:// URL.",
+      call. = FALSE
+    )
+  }
+  paste0(
+    sub("/+$", "", mirror),
+    "/",
+    backend_identity$release[["filename"]]
   )
 }
 
 cuda_ml_runtime_path <- function(identity) {
   file.path(
     cuda_ml_cache_dir(),
-    "runtime-v2",
+    "runtime-v3",
     cuda_ml_platform(),
     identity$runtime_hash
+  )
+}
+
+cuda_ml_backend_asset_path <- function(backend_identity) {
+  file.path(
+    cuda_ml_cache_dir(),
+    "backend-assets-v1",
+    cuda_ml_platform(),
+    paste0("r-", backend_identity$r_version),
+    backend_identity$backend_hash
   )
 }
 
 cuda_ml_backend_cache_path <- function(runtime_identity, backend_identity) {
   file.path(
     cuda_ml_cache_dir(),
-    "backends-v2",
+    "backends-v3",
     cuda_ml_platform(),
     paste0("r-", backend_identity$r_version),
     backend_identity$backend_hash,
@@ -466,20 +564,65 @@ cuda_ml_backend_complete <- function(
   fields <- c(
     "Schema",
     "Runtime-SHA256",
+    "Asset-SHA256",
     "Backend-SHA256",
     "Inventory-SHA256"
   )
   if (
     is.null(metadata) ||
       !all(fields %in% names(metadata)) ||
-      !identical(unname(metadata[["Schema"]]), "2") ||
+      !identical(unname(metadata[["Schema"]]), "3") ||
       !identical(
         unname(metadata[["Runtime-SHA256"]]),
         runtime_identity$runtime_hash
       ) ||
       !identical(
-        unname(metadata[["Backend-SHA256"]]),
+        unname(metadata[["Asset-SHA256"]]),
         backend_identity$backend_hash
+      ) ||
+      !identical(
+        unname(metadata[["Backend-SHA256"]]),
+        backend_identity$backend_dso_hash
+      ) ||
+      !identical(
+        unname(metadata[["Inventory-SHA256"]]),
+        cuda_ml_hash_file(file.path(path, "inventory.tsv"))
+      )
+  ) {
+    return(FALSE)
+  }
+  cuda_ml_inventory_complete(path, audit = audit)
+}
+
+cuda_ml_backend_asset_complete <- function(
+  path,
+  backend_identity,
+  audit = FALSE
+) {
+  backend <- file.path(path, "lib", paste0("cuda.ml", .Platform$dynlib.ext))
+  metadata_path <- file.path(path, "lib", "backend.dcf")
+  if (!file.exists(backend) || !file.exists(metadata_path)) {
+    return(FALSE)
+  }
+
+  metadata <- cuda_ml_complete_metadata(path)
+  fields <- c(
+    "Schema",
+    "Asset-SHA256",
+    "Backend-SHA256",
+    "Inventory-SHA256"
+  )
+  if (
+    is.null(metadata) ||
+      !all(fields %in% names(metadata)) ||
+      !identical(unname(metadata[["Schema"]]), "3") ||
+      !identical(
+        unname(metadata[["Asset-SHA256"]]),
+        backend_identity$backend_hash
+      ) ||
+      !identical(
+        unname(metadata[["Backend-SHA256"]]),
+        backend_identity$backend_dso_hash
       ) ||
       !identical(
         unname(metadata[["Inventory-SHA256"]]),
@@ -538,13 +681,134 @@ cuda_ml_download <- function(component, url, destination, size, sha256) {
   }
   unlink(destination, force = TRUE)
   stop(
-    "Failed to download and verify runtime component '",
+    "Failed to download and verify component '",
     component,
     "' after ",
     attempts,
     " attempts.",
     call. = FALSE
   )
+}
+
+cuda_ml_backend_archive_metadata <- function(path, backend_identity) {
+  metadata <- tryCatch(read.dcf(path), error = function(e) NULL)
+  required <- c(
+    "Schema",
+    "Package",
+    "Package-Version",
+    "R-Version",
+    "Platform",
+    "CUDA",
+    "RAPIDS",
+    "nvForest",
+    "Treelite",
+    "Backend-SHA256",
+    "Source-Commit"
+  )
+  valid <- !is.null(metadata) &&
+    nrow(metadata) == 1L &&
+    identical(colnames(metadata), required)
+  if (!valid) {
+    stop("The downloaded cuda.ml backend metadata is invalid.", call. = FALSE)
+  }
+  metadata <- metadata[1L, , drop = TRUE]
+  expected <- c(
+    Schema = "1",
+    Package = "cuda.ml",
+    `Package-Version` = as.character(utils::packageVersion("cuda.ml")),
+    `R-Version` = backend_identity$r_version,
+    Platform = unname(.cuda_ml_state$metadata[["Platform"]]),
+    CUDA = unname(.cuda_ml_state$metadata[["CUDA"]]),
+    RAPIDS = unname(.cuda_ml_state$metadata[["RAPIDS"]]),
+    nvForest = unname(.cuda_ml_state$metadata[["nvForest"]]),
+    Treelite = unname(.cuda_ml_state$metadata[["Treelite"]]),
+    `Backend-SHA256` = backend_identity$backend_dso_hash
+  )
+  if (
+    !identical(unname(metadata[names(expected)]), unname(expected)) ||
+      !grepl("^[[:xdigit:]]{40}$", metadata[["Source-Commit"]])
+  ) {
+    stop(
+      "The downloaded cuda.ml backend does not match this R package.",
+      call. = FALSE
+    )
+  }
+  metadata
+}
+
+cuda_ml_install_backend_asset <- function(backend_identity, final_path) {
+  lock <- cuda_ml_acquire_lock(paste0(
+    "backend-asset-",
+    backend_identity$backend_hash
+  ))
+  on.exit(filelock::unlock(lock), add = TRUE)
+  if (cuda_ml_backend_asset_complete(final_path, backend_identity)) {
+    return(final_path)
+  }
+
+  dir.create(dirname(final_path), recursive = TRUE, showWarnings = FALSE)
+  staging <- tempfile(
+    paste0(basename(final_path), "-staging-"),
+    tmpdir = dirname(final_path)
+  )
+  dir.create(staging)
+  on.exit(unlink(staging, recursive = TRUE, force = TRUE), add = TRUE)
+
+  release <- backend_identity$release
+  archive <- file.path(staging, release[["filename"]])
+  cuda_ml_download(
+    paste0("cuda.ml backend for R ", backend_identity$r_version),
+    cuda_ml_backend_url(backend_identity),
+    archive,
+    release[["size"]],
+    release[["sha256"]]
+  )
+
+  expected <- c("backend.dcf", paste0("cuda.ml", .Platform$dynlib.ext))
+  files <- tryCatch(utils::untar(archive, list = TRUE), error = function(e) NULL)
+  if (is.null(files) || !identical(sort(files), sort(expected))) {
+    stop("The downloaded cuda.ml backend archive is invalid.", call. = FALSE)
+  }
+  extract <- file.path(staging, "extract")
+  dir.create(extract)
+  utils::untar(archive, files = expected, exdir = extract)
+  metadata_path <- file.path(extract, "backend.dcf")
+  backend <- file.path(extract, paste0("cuda.ml", .Platform$dynlib.ext))
+  cuda_ml_backend_archive_metadata(metadata_path, backend_identity)
+  if (
+    !cuda_ml_is_elf(backend) ||
+      !identical(cuda_ml_hash_file(backend), backend_identity$backend_dso_hash)
+  ) {
+    stop("The downloaded cuda.ml backend library is invalid.", call. = FALSE)
+  }
+
+  libdir <- file.path(staging, "lib")
+  dir.create(libdir)
+  copied <- file.copy(
+    c(metadata_path, backend),
+    file.path(libdir, basename(c(metadata_path, backend))),
+    copy.mode = TRUE,
+    copy.date = TRUE
+  )
+  if (!all(copied)) {
+    stop("Unable to stage the downloaded cuda.ml backend.", call. = FALSE)
+  }
+  unlink(archive, force = TRUE)
+  unlink(extract, recursive = TRUE, force = TRUE)
+  inventory <- cuda_ml_write_inventory(staging)
+  cuda_ml_write_backend_asset_complete(
+    staging,
+    backend_identity,
+    cuda_ml_hash_file(inventory)
+  )
+
+  if (dir.exists(final_path)) {
+    unlink(final_path, recursive = TRUE, force = TRUE)
+  }
+  if (!file.rename(staging, final_path)) {
+    stop("Unable to publish the downloaded cuda.ml backend.", call. = FALSE)
+  }
+  final_path
 }
 
 cuda_ml_extract_component <- function(archive, row, directory) {
@@ -870,9 +1134,10 @@ cuda_ml_write_backend_complete <- function(
   write.dcf(
     matrix(
       c(
-        "2",
+        "3",
         runtime_identity$runtime_hash,
         backend_identity$backend_hash,
+        backend_identity$backend_dso_hash,
         inventory_hash
       ),
       nrow = 1L,
@@ -881,6 +1146,35 @@ cuda_ml_write_backend_complete <- function(
         c(
           "Schema",
           "Runtime-SHA256",
+          "Asset-SHA256",
+          "Backend-SHA256",
+          "Inventory-SHA256"
+        )
+      )
+    ),
+    file = file.path(path, ".complete")
+  )
+}
+
+cuda_ml_write_backend_asset_complete <- function(
+  path,
+  backend_identity,
+  inventory_hash
+) {
+  write.dcf(
+    matrix(
+      c(
+        "3",
+        backend_identity$backend_hash,
+        backend_identity$backend_dso_hash,
+        inventory_hash
+      ),
+      nrow = 1L,
+      dimnames = list(
+        NULL,
+        c(
+          "Schema",
+          "Asset-SHA256",
           "Backend-SHA256",
           "Inventory-SHA256"
         )
@@ -1035,6 +1329,7 @@ cuda_ml_link_runtime <- function(runtime_path, backend_path) {
 cuda_ml_install_backend <- function(
   runtime_identity,
   backend_identity,
+  backend_asset_path,
   runtime_path,
   final_path
 ) {
@@ -1066,15 +1361,20 @@ cuda_ml_install_backend <- function(
 
   libdir <- cuda_ml_link_runtime(runtime_path, staging)
   backend <- file.path(libdir, paste0("cuda.ml", .Platform$dynlib.ext))
+  source_backend <- file.path(
+    backend_asset_path,
+    "lib",
+    paste0("cuda.ml", .Platform$dynlib.ext)
+  )
   if (
     !file.copy(
-      backend_identity$backend,
+      source_backend,
       backend,
       copy.mode = TRUE,
       copy.date = TRUE
     )
   ) {
-    stop("Unable to stage the packaged cuda.ml backend.", call. = FALSE)
+    stop("Unable to stage the downloaded cuda.ml backend.", call. = FALSE)
   }
 
   patchelf <- file.path(runtime_path, "bin", "patchelf")
@@ -1096,30 +1396,13 @@ cuda_ml_install_backend <- function(
   final_path
 }
 
-cuda_ml_stub_error <- function() {
-  r_minor <- strsplit(R.version$minor, ".", fixed = TRUE)[[1L]][[1L]]
-  repository <- paste0(
-    "https://mlverse.r-universe.dev/bin/linux/resolute-x86_64/",
-    R.version$major,
-    ".",
-    r_minor,
-    "/"
-  )
-  stop(
-    "This cuda.ml installation contains only the CRAN-compatible stub. ",
-    "Install the functional Ubuntu 26.04 (Resolute) x86_64 binary from ",
-    "the mlverse R-universe repository at ",
-    repository,
-    " before calling cuda_ml_install() or a modeling function.",
-    call. = FALSE
-  )
-}
-
 cuda_ml_prepare_runtime <- function() {
-  if (!cuda_ml_has_backend()) {
-    cuda_ml_stub_error()
-  }
   cuda_ml_platform()
+  backend_identity <- cuda_ml_backend_identity()
+  backend_asset_path <- cuda_ml_backend_asset_path(backend_identity)
+  if (!cuda_ml_backend_asset_complete(backend_asset_path, backend_identity)) {
+    cuda_ml_install_backend_asset(backend_identity, backend_asset_path)
+  }
 
   runtime_identity <- cuda_ml_runtime_identity()
   runtime_path <- cuda_ml_runtime_path(runtime_identity)
@@ -1127,7 +1410,6 @@ cuda_ml_prepare_runtime <- function() {
     cuda_ml_install_runtime(runtime_identity, runtime_path)
   }
 
-  backend_identity <- cuda_ml_backend_identity()
   backend_path <- cuda_ml_backend_cache_path(
     runtime_identity,
     backend_identity
@@ -1142,6 +1424,7 @@ cuda_ml_prepare_runtime <- function() {
     cuda_ml_install_backend(
       runtime_identity,
       backend_identity,
+      backend_asset_path,
       runtime_path,
       backend_path
     )
@@ -1155,9 +1438,6 @@ cuda_ml_require_backend <- function() {
     return(.cuda_ml_state$dll)
   }
 
-  if (!cuda_ml_has_backend()) {
-    cuda_ml_stub_error()
-  }
   cuda_ml_platform()
 
   runtime_identity <- cuda_ml_runtime_identity()
@@ -1270,16 +1550,18 @@ cuda_ml_backend_registration_valid <- function(dll) {
 
 #' Prepare the managed CUDA and RAPIDS runtime
 #'
-#' Downloads, verifies, extracts, and caches the runtime libraries required by
-#' the precompiled \pkg{cuda.ml} backend. This operation does not load the
-#' backend or require a GPU, driver, CUDA toolkit, compiler, Python, or conda.
-#' Calling it again with the same package build is a no-op.
+#' Downloads, verifies, extracts, and caches the precompiled backend and its
+#' runtime libraries. This operation does not load the backend or require a
+#' GPU, driver, CUDA toolkit, compiler, Python, or conda. Calling it again with
+#' the same package build is a no-op.
 #'
 #' @return Invisibly returns \code{TRUE}.
 #'
 #' @details
 #' The default cache is \code{tools::R_user_dir("cuda.ml", "cache")}. Set
-#' \code{CUDA_ML_CACHE_DIR} to use a different cache root.
+#' \code{CUDA_ML_CACHE_DIR} to use a different cache root. Set
+#' \code{CUDA_ML_BACKEND_MIRROR} to an \code{https://} or \code{file://}
+#' directory containing the exact locked backend archive.
 #'
 #' @examples
 #' \dontrun{
@@ -1287,10 +1569,8 @@ cuda_ml_backend_registration_valid <- function(dll) {
 #' }
 #' @export
 cuda_ml_install <- function() {
-  if (!cuda_ml_has_backend()) {
-    cuda_ml_stub_error()
-  }
   cuda_ml_platform()
+  cuda_ml_backend_release()
 
   lock <- cuda_ml_acquire_lock("cache-install")
   on.exit(filelock::unlock(lock), add = TRUE)
@@ -1307,9 +1587,6 @@ cuda_ml_install <- function() {
 #' @return Invisibly returns \code{TRUE}.
 #' @export
 cuda_ml_runtime_audit <- function() {
-  if (!cuda_ml_has_backend()) {
-    cuda_ml_stub_error()
-  }
   cuda_ml_platform()
 
   lock <- cuda_ml_acquire_lock("cache-install")
@@ -1317,12 +1594,18 @@ cuda_ml_runtime_audit <- function() {
   runtime_identity <- cuda_ml_runtime_identity()
   runtime_path <- cuda_ml_runtime_path(runtime_identity)
   backend_identity <- cuda_ml_backend_identity()
+  backend_asset_path <- cuda_ml_backend_asset_path(backend_identity)
   backend_path <- cuda_ml_backend_cache_path(
     runtime_identity,
     backend_identity
   )
   if (
-    !cuda_ml_runtime_complete(runtime_path, runtime_identity, audit = TRUE) ||
+    !cuda_ml_backend_asset_complete(
+      backend_asset_path,
+      backend_identity,
+      audit = TRUE
+    ) ||
+      !cuda_ml_runtime_complete(runtime_path, runtime_identity, audit = TRUE) ||
       !cuda_ml_backend_complete(
         backend_path,
         runtime_identity,
@@ -1371,7 +1654,13 @@ cuda_ml_cache_clean <- function() {
   lock <- cuda_ml_acquire_lock("cache-install")
   on.exit(filelock::unlock(lock), add = TRUE)
   cache <- cuda_ml_cache_dir()
-  generations <- c("runtime-v2", "backends-v2")
+  generations <- c(
+    "runtime-v2",
+    "backends-v2",
+    "runtime-v3",
+    "backend-assets-v1",
+    "backends-v3"
+  )
   targets <- file.path(cache, generations)
   stopifnot(
     all(dirname(targets) == cache),

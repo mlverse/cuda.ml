@@ -6,11 +6,7 @@ cuml_build_mode <- function() {
     }
     return(mode)
   }
-  if (identical(Sys.getenv("UNIVERSE_NAME", unset = ""), "mlverse")) {
-    if (cuml_ubuntu_2604_x86_64()) "managed" else "stub"
-  } else {
-    "stub"
-  }
+  "stub"
 }
 
 cuml_linux_x86_64 <- function() {
@@ -18,22 +14,26 @@ cuml_linux_x86_64 <- function() {
     Sys.info()[["machine"]] %in% c("x86_64", "amd64")
 }
 
-cuml_os_release_value <- function(name) {
-  path <- "/etc/os-release"
-  if (!file.exists(path)) {
-    return("")
+cuml_glibc_version <- function() {
+  output <- suppressWarnings(tryCatch(
+    system2("getconf", "GNU_LIBC_VERSION", stdout = TRUE, stderr = FALSE),
+    error = function(e) character()
+  ))
+  match <- regexec("^glibc ([0-9]+[.][0-9]+)$", output)
+  values <- regmatches(output, match)
+  if (length(values) != 1L || length(values[[1L]]) != 2L) {
+    return(NA_character_)
   }
-  lines <- readLines(path, warn = FALSE)
-  values <- lines[startsWith(lines, paste0(name, "="))]
-  if (length(values) != 1L) {
-    return("")
-  }
-  value <- substring(values, nchar(name) + 2L)
-  sub('^"(.*)"$', "\\1", value)
+  values[[1L]][[2L]]
 }
 
-cuml_ubuntu_2604_x86_64 <- function() {
+cuml_manylinux_2_28_x86_64 <- function() {
+  cuml_linux_x86_64() && identical(cuml_glibc_version(), "2.28")
+}
+
+cuml_supported_local_platform <- function() {
+  glibc <- cuml_glibc_version()
   cuml_linux_x86_64() &&
-    identical(cuml_os_release_value("ID"), "ubuntu") &&
-    identical(cuml_os_release_value("VERSION_ID"), "26.04")
+    !is.na(glibc) &&
+    package_version(glibc) >= package_version("2.28")
 }

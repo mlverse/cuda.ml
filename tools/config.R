@@ -168,7 +168,7 @@ configure_auto <- function(type) {
 configure_common <- function(type) {
 
     sources <- list.files(
-        path = c("R", "src"),
+        path = c("R", file.path("tools", "backend", "src")),
         pattern = "[.]in$",
         full.names = TRUE
     )
@@ -193,7 +193,7 @@ configure_platform <- function(type) {
     if (sysname != "windows")
         subdirs <- c("unix", subdirs)
 
-    dirs <- c("R", "src")
+    dirs <- c("R", file.path("tools", "backend", "src"))
     for (dir in dirs) {
 
         # list files (take care to remove directories)
@@ -631,5 +631,4 @@ if (!interactive()) {
     message(sprintf(fmt, type, package))
 
 }
-
 

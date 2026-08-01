@@ -1,0 +1,12 @@
+.git
+.Rproj.user
+docs
+*.Rcheck
+*.tar.gz
+README.html
+tools/backend/src/.cmake-build
+tools/backend/src/CMakeLists.txt
+tools/backend/src/Makefile
+tools/backend/src/Makevars
+tools/backend/src/*.o
+tools/backend/src/*.so

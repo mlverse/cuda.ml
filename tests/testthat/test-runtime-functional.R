@@ -4,8 +4,8 @@ test_that("native operations require an explicit runtime installation", {
     "set CUDA_ML_RUNTIME_TESTS=true to exercise the managed runtime"
   )
   skip_if_not(
-    cuda_ml_backend_info()$backend == "full",
-    "requires a functional backend"
+    cuda_ml_backend_info()$backend_available,
+    "requires a published backend"
   )
 
   cache <- tempfile("cuda-ml-functional-cache-")
@@ -35,8 +35,8 @@ test_that("the managed runtime can be prewarmed without loading the backend", {
     "set CUDA_ML_RUNTIME_TESTS=true to exercise the managed runtime"
   )
   skip_if_not(
-    cuda_ml_backend_info()$backend == "full",
-    "requires a functional backend"
+    cuda_ml_backend_info()$backend_available,
+    "requires a published backend"
   )
 
   cache <- Sys.getenv(
@@ -93,8 +93,8 @@ test_that("the installed runtime passes an explicit content audit", {
     "set CUDA_ML_RUNTIME_TESTS=true to exercise the managed runtime"
   )
   skip_if_not(
-    cuda_ml_backend_info()$backend == "full",
-    "requires a functional backend"
+    cuda_ml_backend_info()$backend_available,
+    "requires a published backend"
   )
 
   expect_true(cuda_ml_runtime_audit())
@@ -110,8 +110,8 @@ test_that("R CMD check can audit the functional backend", {
     "set CUDA_ML_RUNTIME_TESTS=true to exercise the managed runtime"
   )
   skip_if_not(
-    cuda_ml_backend_info()$backend == "full",
-    "requires a functional backend"
+    cuda_ml_backend_info()$backend_available,
+    "requires a published backend"
   )
 
   cache <- Sys.getenv(

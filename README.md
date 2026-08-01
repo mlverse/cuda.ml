@@ -170,63 +170,43 @@ following about the MNIST dataset:
 
 ## Installation
 
-### R-universe binary
-
-The R-universe binary is the supported no-compiler installation for its
-current Linux target: Ubuntu 26.04 (Resolute) x86_64, including WSL2
-running that distribution. Use [R-universe’s Linux binary
-repository](https://docs.r-universe.dev/install/binaries.html) rather
-than its source-package repository:
+Install the R package from CRAN, then prepare its native backend and
+runtime:
 
 ``` r
-linux_binary_repo <- function(universe) {
-  sprintf(
-    "https://%s.r-universe.dev/bin/linux/resolute-%s/%s/",
-    universe,
-    R.version$arch,
-    substr(getRversion(), 1, 3)
-  )
-}
-
-options(repos = linux_binary_repo(c("mlverse", "cran")))
-
 install.packages("cuda.ml")
+cuda.ml::cuda_ml_install()
 ```
 
-After setting `options(repos)` this way, `install.packages()`
-automatically installs binaries when available and falls back to source
-packages otherwise. The `mlverse` repository provides the {cuda.ml}
-binary, while the `cran` repository provides Linux binaries for its CRAN
-dependencies. Stock Linux R does not support `type = "binary"`, so leave
-`type` at its default.
-
-The binary contains a precompiled {cuda.ml} backend with Treelite 4.7.0
-linked statically, but not the CUDA and RAPIDS runtime libraries.
-Loading the package is silent and side-effect free:
+The CRAN package is a portable R installer and loader. It contains no
+compiled code, so `install.packages("cuda.ml")` does not need a
+compiler, CUDA, RAPIDS, Python, or conda. Loading it is silent and
+side-effect free:
 
 ``` r
 library(cuda.ml)
 info <- cuda_ml_backend_info()
-stopifnot(identical(info$backend, "full"))
+stopifnot(
+  identical(info$backend, "download"),
+  info$backend_available
+)
 ```
 
 `library(cuda.ml)` does not inspect the GPU, create a cache, contact the
-network, or load the native backend. `cuda_ml_backend_info()` reports
-the packaged backend, its exact library versions, and whether its
-runtime has been installed; it does not report whether a GPU can execute
-a model. The assertion also catches an unavailable binary that fell back
-to the CRAN-compatible source stub.
+network, or load native code. `cuda_ml_backend_info()` reports the
+selected platform and R-version backend, its exact library versions, and
+whether the managed cache is complete. It does not report whether a GPU
+can execute a model.
 
 ### Runtime provisioning
 
-Prepare the exact CUDA 13.2.2 and RAPIDS cuML and nvForest 26.06 runtime
-required by the binary before fitting or predicting. The current
-runtime lock downloads about 1.6 GiB, so installation can take several
-minutes:
-
-``` r
-cuda.ml::cuda_ml_install()
-```
+`cuda_ml_install()` first downloads the small backend archive for the
+current R minor version from the package’s GitHub Releases. It verifies
+the archive and native library against hashes shipped in the R package.
+It then downloads the locked CUDA 13.2.2 and RAPIDS cuML and nvForest
+26.06 wheels directly from their upstream Python package hosts. The
+current runtime is about 1.6 GiB, so this step can take several minutes.
+Treelite 4.7.0 is linked into the backend and is not a runtime download.
 
 `cuda_ml_install()` does not require a GPU or NVIDIA driver, and
 repeated calls reuse the completed cache. It does not load the backend
@@ -244,11 +224,16 @@ Sys.setenv(CUDA_ML_CACHE_DIR = "/opt/cuda-ml-cache")
 cuda.ml::cuda_ml_install()
 ```
 
+For an internal or offline mirror, set `CUDA_ML_BACKEND_MIRROR` to an
+`https://` or `file://` directory containing the exact locked backend
+archive. Hash verification remains enabled.
+
 ### Supported systems
 
-R-universe currently publishes the managed binary for Ubuntu 26.04
-(Resolute) x86_64. This includes WSL2 when its Linux distribution is
-Ubuntu 26.04. Following the [RAPIDS 26.06 platform
+Prebuilt backends target Linux x86_64 with glibc 2.28 or newer rather
+than a specific distribution. This includes current Ubuntu, Debian,
+RHEL-compatible, and WSL2 Linux distributions that meet the glibc
+requirement. Following the [RAPIDS 26.06 platform
 requirements](https://docs.rapids.ai/platform-support/), the binary
 requires an NVIDIA driver version 580 or newer and supports GPU compute
 capabilities 7.5, 8.0, 8.6, 8.9, 9.0, 10.0, and 12.0. The compute
@@ -256,21 +241,21 @@ capability 12.0 PTX image also provides forward compatibility for newer
 GPUs supported by CUDA, following [CUDA’s forward-compatibility
 model](https://docs.nvidia.com/cuda/archive/13.2.0/cuda-compiler-driver-nvcc/index.html).
 
-Other Linux distributions, native Windows, macOS, and Linux ARM64 are
-not yet supported by the managed binary.
+Native Windows, macOS, Linux ARM64, musl-based Linux distributions, and
+glibc versions older than 2.28 are not currently supported.
 
-### CRAN and source builds
+### Packaging and source
 
-CRAN checks are network-free and install an explicit stub backend.
-`cuda_ml_backend_info()` reports `backend = "stub"` for that build, and
-`cuda_ml_install()` directs users to the R-universe binary. Install from
-R-universe when a functional binary without local compilation is
-required.
+CRAN installation and checks are network-free. The package contacts the
+network only when `cuda_ml_install()` is called explicitly. Native
+backend archives are built in a pinned manylinux 2.28 container, audited
+for their glibc and libstdc++ requirements, and hosted as GitHub Release
+assets. One archive is published for each supported R minor version.
 
-Advanced local source builds remain available. Set
-`CUDA_ML_BUILD_MODE=local`, supply CUDA Toolkit 13.2.2 through
-`CUDA_HOME`, and supply a prefix through `CUML_PREFIX` containing cuML
-and nvForest 26.06, Treelite 4.7.0 headers, and
+The native source remains in the source package for advanced local
+builds. Set `CUDA_ML_BUILD_MODE=local`, supply CUDA Toolkit 13.2.2
+through `CUDA_HOME`, and supply a prefix through `CUML_PREFIX`
+containing cuML and nvForest 26.06, Treelite 4.7.0 headers, and
 `lib/libtreelite_static.a`. Build Treelite as position-independent code
 with its default libstdc++ ABI and with OpenMP disabled. Local builds
 never download or provision Treelite. Set `CUML_CUDA_ARCHITECTURES`
@@ -281,26 +266,12 @@ versions fail at configuration time.
 
 ### Development version
 
-A bare development installation from [GitHub](https://github.com/)
-produces the same CRAN-compatible stub:
+A development installation uses the same downloaded backend pathway:
 
 ``` r
 # install.packages("devtools")
 devtools::install_github("mlverse/cuda.ml")
-```
-
-For a functional local build, set the exact toolchain and backend inputs
-described above before installing:
-
-``` r
-Sys.setenv(
-  CUDA_ML_BUILD_MODE = "local",
-  CUDA_HOME = "/opt/cuda-13.2.2",
-  CUML_PREFIX = "/opt/cuda-ml-backend",
-  CUML_CUDA_ARCHITECTURES = "75",
-  CUDA_ML_CXX = "g++-14"
-)
-devtools::install_github("mlverse/cuda.ml")
+cuda.ml::cuda_ml_install()
 ```
 
 ## Appendix

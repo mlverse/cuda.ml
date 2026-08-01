@@ -1,2 +1,0 @@
-# Stub builds contain no native backend.
-OBJECTS = cuda_ml_stub.o

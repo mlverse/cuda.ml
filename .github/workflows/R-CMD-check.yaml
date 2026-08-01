@@ -37,12 +37,11 @@ jobs:
       - name: Build
         run: R CMD build .
 
-      # This is a regression check that CRAN installation and tests use the
-      # stub backend without downloading a build toolchain or managed runtime.
+      # The CRAN package is a pure-R installer and must remain fully network
+      # free during installation and checking.
       - name: Check without network access
         run: sudo -E unshare --net -- R CMD check --no-manual --as-cran cuda.ml_*.tar.gz
         env:
-          CUDA_ML_BUILD_MODE: stub
           _R_CHECK_CRAN_INCOMING_: false
           # --as-cran otherwise verifies the clock against an external service.
           _R_CHECK_SYSTEM_CLOCK_: false
@@ -71,10 +70,13 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          # Managed versions and artifacts are pinned in the authoritative
-          # inst/artifacts/ubuntu-26.04-x86_64.tsv lock.
           context: "."
-          file: .github/docker/Dockerfile
+          file: .github/docker/backend.Dockerfile
+          target: runtime
+          build-args: |
+            R_VERSION=4.6.1
+            SOURCE_COMMIT=${{ github.sha }}
+            BACKEND_BASE_URL=https://github.com/${{ github.repository }}/releases/download/cuda-ml-backend-0.4.0
           push: true
           tags: ghcr.io/${{ github.repository }}-ci:${{ github.sha }}
 
@@ -106,7 +108,8 @@ jobs:
           library(cuda.ml)
           info <- cuda_ml_backend_info()
           stopifnot(
-            identical(info$backend, "full"),
+            identical(info$backend, "download"),
+            info$backend_available,
             !info$runtime_installed,
             !info$backend_loaded
           )

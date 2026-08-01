@@ -73,11 +73,14 @@ test_that("backend metadata does not provision or load the backend", {
       "package_version",
       "backend",
       "build_mode",
+      "backend_available",
+      "r_version",
       "cuda_version",
       "rapids_version",
       "nvforest_version",
       "treelite_version",
       "platform",
+      "minimum_glibc",
       "minimum_driver",
       "architectures",
       "runtime_installed",
@@ -86,31 +89,31 @@ test_that("backend metadata does not provision or load the backend", {
     ),
     ignore.order = FALSE
   )
-  expect_true(state$value$backend %in% c("full", "stub"))
-  if (state$value$backend == "full") {
-    expect_true(state$value$build_mode %in% c("managed", "local"))
-    expect_identical(state$value$cuda_version, "13.2.2")
-    expect_identical(state$value$rapids_version, "26.06")
-    expect_identical(state$value$nvforest_version, "26.06.0")
-    expect_identical(state$value$treelite_version, "4.7.0")
-    expect_identical(state$value$platform, "ubuntu-26.04-x86_64")
-    expect_identical(state$value$minimum_driver, 580L)
-    expect_identical(
-      state$value$architectures,
-      c(
-        "75-real",
-        "80-real",
-        "86-real",
-        "89-real",
-        "90-real",
-        "100-real",
-        "120-real",
-        "120-virtual"
-      )
+  expect_identical(state$value$backend, "download")
+  expect_identical(state$value$build_mode, "release")
+  expect_type(state$value$backend_available, "logical")
+  expect_length(state$value$backend_available, 1L)
+  expect_match(state$value$r_version, "^[0-9]+[.][0-9]+$")
+  expect_identical(state$value$cuda_version, "13.2.2")
+  expect_identical(state$value$rapids_version, "26.06")
+  expect_identical(state$value$nvforest_version, "26.06.0")
+  expect_identical(state$value$treelite_version, "4.7.0")
+  expect_identical(state$value$platform, "linux-x86_64-glibc2.28")
+  expect_identical(state$value$minimum_glibc, "2.28")
+  expect_identical(state$value$minimum_driver, 580L)
+  expect_identical(
+    state$value$architectures,
+    c(
+      "75-real",
+      "80-real",
+      "86-real",
+      "89-real",
+      "90-real",
+      "100-real",
+      "120-real",
+      "120-virtual"
     )
-  } else {
-    expect_identical(state$value$architectures, character())
-  }
+  )
   expect_false(state$cache_exists)
   expect_false(state$backend_dll_loaded)
   expect_false(state$value$backend_loaded)
@@ -119,68 +122,81 @@ test_that("backend metadata does not provision or load the backend", {
 test_that("cache cleanup is scoped to cuda.ml cache generations", {
   cache <- tempfile("cuda-ml-cache-")
   sentinel <- tempfile("cuda-ml-cache-sentinel-")
-  dir.create(file.path(cache, "runtime-v2"), recursive = TRUE)
-  dir.create(file.path(cache, "backends-v2"), recursive = TRUE)
+  generations <- c(
+    "runtime-v2",
+    "backends-v2",
+    "runtime-v3",
+    "backend-assets-v1",
+    "backends-v3"
+  )
+  for (generation in generations) {
+    dir.create(file.path(cache, generation), recursive = TRUE)
+  }
   dir.create(sentinel)
 
   state <- callr::r(
-    function(cache, sentinel) {
+    function(cache, sentinel, generations) {
       Sys.setenv(CUDA_ML_CACHE_DIR = cache)
       library(cuda.ml)
       cuda_ml_cache_clean()
       list(
         sentinel = dir.exists(sentinel),
-        generations = dir.exists(file.path(
-          cache,
-          c("runtime-v2", "backends-v2")
-        ))
+        generations = dir.exists(file.path(cache, generations))
       )
     },
-    args = list(cache = cache, sentinel = sentinel)
+    args = list(
+      cache = cache,
+      sentinel = sentinel,
+      generations = generations
+    )
   )
 
   expect_true(state$sentinel)
   expect_false(any(state$generations))
 })
 
-test_that("stub builds direct cuda_ml_install users to R-universe", {
-  skip_if(cuda_ml_backend_info()$backend == "full", "requires a stub build")
+test_that("an unpublished backend fails before downloading the runtime", {
+  skip_if(cuda_ml_backend_info()$backend_available, "backend is published")
   skip_if_not(
     identical(unname(Sys.info()[["sysname"]]), "Linux") &&
       unname(Sys.info()[["machine"]]) %in% c("x86_64", "amd64"),
     "requires the managed runtime platform"
   )
+  cache <- tempfile("cuda-ml-cache-")
+  Sys.setenv(CUDA_ML_CACHE_DIR = cache)
+  on.exit(Sys.unsetenv("CUDA_ML_CACHE_DIR"), add = TRUE)
   error <- expect_error(cuda_ml_install(), class = "error")
-  r_version <- paste(
-    R.version$major,
-    strsplit(R.version$minor, ".", fixed = TRUE)[[1L]][[1L]],
-    sep = "."
-  )
 
-  expect_match(conditionMessage(error), "R-universe", fixed = TRUE)
+  expect_match(conditionMessage(error), "No prebuilt cuda.ml backend")
   expect_match(
     conditionMessage(error),
-    "Ubuntu 26.04 (Resolute) x86_64",
+    paste0("R ", cuda_ml_backend_info()$r_version),
     fixed = TRUE
   )
   expect_match(
     conditionMessage(error),
-    paste0(
-      "https://mlverse.r-universe.dev/bin/linux/resolute-x86_64/",
-      r_version,
-      "/"
-    ),
+    "linux-x86_64-glibc2.28",
     fixed = TRUE
   )
+  expect_false(dir.exists(cache))
 })
 
-test_that("stub metadata has no functional backend versions", {
-  skip_if(cuda_ml_backend_info()$backend == "full", "requires a stub build")
+test_that("an uninstalled downloadable backend remains side-effect free", {
+  cache <- tempfile("cuda-ml-cache-")
+  old_cache <- Sys.getenv("CUDA_ML_CACHE_DIR", unset = NA_character_)
+  Sys.setenv(CUDA_ML_CACHE_DIR = cache)
+  on.exit({
+    if (is.na(old_cache)) {
+      Sys.unsetenv("CUDA_ML_CACHE_DIR")
+    } else {
+      Sys.setenv(CUDA_ML_CACHE_DIR = old_cache)
+    }
+  }, add = TRUE)
 
   before <- names(getLoadedDLLs())
   info <- cuda_ml_backend_info()
-  expect_identical(info$backend, "stub")
-  expect_identical(info$build_mode, "stub")
+  expect_identical(info$backend, "download")
+  expect_identical(info$build_mode, "release")
   expect_false(info$runtime_installed)
   expect_false(info$backend_loaded)
   expect_identical(setdiff(names(getLoadedDLLs()), before), character())

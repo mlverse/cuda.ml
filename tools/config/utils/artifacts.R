@@ -1,8 +1,12 @@
-cuml_artifact_lock_path <- function(platform = "ubuntu-26.04-x86_64") {
+cuml_artifact_lock_path <- function(
+  platform = "linux-x86_64-glibc2.28"
+) {
   file.path(pkg_root(), "inst", "artifacts", paste0(platform, ".tsv"))
 }
 
-cuml_artifact_metadata <- function(platform = "ubuntu-26.04-x86_64") {
+cuml_artifact_metadata <- function(
+  platform = "linux-x86_64-glibc2.28"
+) {
   path <- cuml_artifact_lock_path(platform)
   stopifnot(file.exists(path))
   lines <- readLines(path, warn = FALSE)
@@ -39,7 +43,9 @@ cuml_artifact_metadata <- function(platform = "ubuntu-26.04-x86_64") {
   metadata
 }
 
-cuml_artifact_lock <- function(platform = "ubuntu-26.04-x86_64") {
+cuml_artifact_lock <- function(
+  platform = "linux-x86_64-glibc2.28"
+) {
   path <- cuml_artifact_lock_path(platform)
   stopifnot(file.exists(path))
   artifacts <- utils::read.delim(
@@ -123,7 +129,7 @@ cuml_generate_runtime_lock <- function() {
     pkg_root(),
     "inst",
     "runtime",
-    "ubuntu-26.04-x86_64.tsv"
+    paste0(cuml_managed_platform(), ".tsv")
   )
   utils::write.table(
     runtime,

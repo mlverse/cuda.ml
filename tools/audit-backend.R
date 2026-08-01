@@ -1,13 +1,12 @@
 args <- commandArgs(trailingOnly = TRUE)
-stopifnot(length(args) == 1L, file.exists(args[[1L]]))
-
-cuobjdump <- normalizePath(args[[1L]], mustWork = TRUE)
-backend <- system.file(
-  "libs",
-  paste0("cuda.ml", .Platform$dynlib.ext),
-  package = "cuda.ml"
+stopifnot(
+  length(args) == 2L,
+  file.exists(args[[1L]]),
+  file.exists(args[[2L]])
 )
-stopifnot(nzchar(backend), file.exists(backend))
+
+backend <- normalizePath(args[[1L]], mustWork = TRUE)
+cuobjdump <- normalizePath(args[[2L]], mustWork = TRUE)
 
 library(Rcpp)
 stopifnot(!"cuda.ml" %in% names(getLoadedDLLs()))
@@ -27,15 +26,15 @@ registered_manifest <- registered_manifest[
 ]
 rownames(registered_manifest) <- NULL
 expected_manifest <- utils::read.delim(
-  system.file("native-symbols.txt", package = "cuda.ml"),
+  file.path("inst", "native-symbols.txt"),
   stringsAsFactors = FALSE,
   check.names = FALSE
 )
 stopifnot(identical(registered_manifest, expected_manifest))
 
 versions <- .Call("_cuda_ml_backend_versions", PACKAGE = "cuda.ml")
-metadata_path <- system.file("cuda-ml-backend.dcf", package = "cuda.ml")
-stopifnot(nzchar(metadata_path), file.exists(metadata_path))
+metadata_path <- file.path("inst", "cuda-ml-backend.dcf")
+stopifnot(file.exists(metadata_path))
 metadata <- read.dcf(metadata_path)
 stopifnot(
   nrow(metadata) == 1L,
@@ -161,7 +160,10 @@ stopifnot(
     needed[!system],
     c(
       "libcuml.so",
+      "libcublas.so.13",
+      "libcusolver.so.12",
       expected_cudart_soname,
+      "libcusparse.so.12",
       "libnvforest++.so"
     )
   )
@@ -185,6 +187,26 @@ treelite_symbols <- grepl(
 stopifnot(
   is.null(attr(dynamic_symbols, "status")),
   !any(treelite_symbols)
+)
+
+versions <- system2(
+  "readelf",
+  c("--version-info", shQuote(backend)),
+  stdout = TRUE,
+  stderr = TRUE
+)
+stopifnot(is.null(attr(versions, "status")))
+maximum_version <- function(prefix) {
+  pattern <- paste0(prefix, "_([0-9]+(?:[.][0-9]+)+)")
+  matches <- regmatches(versions, gregexpr(pattern, versions, perl = TRUE))
+  values <- unique(sub(paste0("^", prefix, "_"), "", unlist(matches)))
+  stopifnot(length(values) > 0L)
+  max(package_version(values))
+}
+stopifnot(
+  maximum_version("GLIBC") <= package_version("2.28"),
+  maximum_version("GLIBCXX") <= package_version("3.4.25"),
+  maximum_version("CXXABI") <= package_version("1.3.11")
 )
 
 message("cuda.ml backend audit passed")

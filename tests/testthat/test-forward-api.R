@@ -51,11 +51,17 @@ test_that("classification rejects unobserved outcome levels", {
 })
 
 test_that("KNN defaults select current cuML choices", {
-  skip_if(cuda_ml_backend_info()$backend == "full")
+  info <- cuda_ml_backend_info()
+  skip_if(info$runtime_installed)
+  error <- if (info$backend_available) {
+    "cuda_ml_install"
+  } else {
+    "No prebuilt cuda.ml backend"
+  }
 
   expect_error(
     cuda_ml_knn(mpg ~ ., mtcars),
-    "CRAN-compatible stub"
+    error
   )
 })
 
