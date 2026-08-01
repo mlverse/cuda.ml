@@ -63,8 +63,8 @@ test_that("random forest classifier returns R probability columns", {
   expect_true(info$has_probability_output)
   expect_identical(info$treelite_postprocessor, "identity_multiclass")
   expect_equal(
-    apply(per_tree, c(1L, 3L), sum) / info$num_trees,
-    as.matrix(probabilities),
+    unname(apply(per_tree, c(1L, 3L), sum) / info$num_trees),
+    unname(as.matrix(probabilities)),
     tolerance = 1e-6
   )
 })

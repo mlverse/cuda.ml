@@ -136,7 +136,7 @@ new_nvforest_model <- function(
   class_levels = NULL,
   inference,
   cls = "cuda_ml_nvforest",
-  blueprint = NULL
+  blueprint = hardhat::default_xy_blueprint()
 ) {
   info <- .nvforest_model_info(xptr)
   mode <- nvforest_task_mode(info$task_type)
@@ -300,7 +300,7 @@ nvforest_predict_matrix <- function(
 }
 
 nvforest_predictors <- function(object, new_data) {
-  if (is.null(object$blueprint)) {
+  if (is.null(object$blueprint$ptypes)) {
     x <- as.matrix(new_data)
   } else {
     processed <- hardhat::forge(new_data, object$blueprint)

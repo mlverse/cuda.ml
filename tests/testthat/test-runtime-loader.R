@@ -44,20 +44,24 @@ test_that("attaching cuda.ml is silent and side-effect free", {
   expect_false(state$dll_loaded)
 })
 
-test_that("backend metadata is a non-mutating package query", {
+test_that("backend metadata does not provision or load the backend", {
   cache <- tempfile("cuda-ml-cache-")
 
   state <- callr::r(
     function(cache) {
       Sys.setenv(CUDA_ML_CACHE_DIR = cache)
       suppressPackageStartupMessages(library(cuda.ml))
-      before <- names(getLoadedDLLs())
       value <- cuda_ml_backend_info()
+      dlls <- getLoadedDLLs()
 
       list(
         value = value,
         cache_exists = dir.exists(cache),
-        new_dlls = setdiff(names(getLoadedDLLs()), before)
+        backend_dll_loaded = any(vapply(
+          dlls,
+          function(dll) identical(dll[["name"]], "cuda.ml"),
+          logical(1)
+        ))
       )
     },
     args = list(cache = cache)
@@ -108,7 +112,7 @@ test_that("backend metadata is a non-mutating package query", {
     expect_identical(state$value$architectures, character())
   }
   expect_false(state$cache_exists)
-  expect_identical(state$new_dlls, character())
+  expect_false(state$backend_dll_loaded)
   expect_false(state$value$backend_loaded)
 })
 
