@@ -293,12 +293,25 @@ versions fail at configuration time.
 
 ### Development version
 
-Development installations build from source and therefore require the
-exact local toolchain described above. Install from
-[GitHub](https://github.com/) with:
+A bare development installation from [GitHub](https://github.com/)
+produces the same CRAN-compatible stub:
 
 ``` r
 # install.packages("devtools")
+devtools::install_github("mlverse/cuda.ml")
+```
+
+For a functional local build, set the exact toolchain and backend inputs
+described above before installing:
+
+``` r
+Sys.setenv(
+  CUDA_ML_BUILD_MODE = "local",
+  CUDA_HOME = "/opt/cuda-13.2.2",
+  CUML_PREFIX = "/opt/cuda-ml-backend",
+  CUML_CUDA_ARCHITECTURES = "75",
+  CUDA_ML_CXX = "g++-14"
+)
 devtools::install_github("mlverse/cuda.ml")
 ```
 
@@ -322,7 +335,7 @@ plot_mnist(1:64)
 - [`cuda_ml_agglomerative_clustering()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_agglomerative_clustering.md)
   : Perform Single-Linkage Agglomerative Clustering.
 - [`cuda_ml_backend_info()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_backend_info.md)
-  : Report the backend bundled with this cuda.ml installation
+  : Report backend and managed-runtime metadata
 - [`cuda_ml_cache_clean()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_cache_clean.md)
   : Remove managed cuda.ml runtime caches
 - [`cuda_ml_dbscan()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_dbscan.md)

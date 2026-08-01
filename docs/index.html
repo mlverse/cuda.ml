@@ -334,9 +334,19 @@
 <div class="section level3">
 <h3 id="development-version">Development version<a class="anchor" aria-label="anchor" href="#development-version"></a>
 </h3>
-<p>Development installations build from source and therefore require the exact local toolchain described above. Install from <a href="https://github.com/" class="external-link">GitHub</a> with:</p>
+<p>A bare development installation from <a href="https://github.com/" class="external-link">GitHub</a> produces the same CRAN-compatible stub:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/install-deprecated.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"mlverse/cuda.ml"</span><span class="op">)</span></span></code></pre></div>
+<p>For a functional local build, set the exact toolchain and backend inputs described above before installing:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span></span>
+<span>  CUDA_ML_BUILD_MODE <span class="op">=</span> <span class="st">"local"</span>,</span>
+<span>  CUDA_HOME <span class="op">=</span> <span class="st">"/opt/cuda-13.2.2"</span>,</span>
+<span>  CUML_PREFIX <span class="op">=</span> <span class="st">"/opt/cuda-ml-backend"</span>,</span>
+<span>  CUML_CUDA_ARCHITECTURES <span class="op">=</span> <span class="st">"75"</span>,</span>
+<span>  CUDA_ML_CXX <span class="op">=</span> <span class="st">"g++-14"</span></span>
+<span><span class="op">)</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/install-deprecated.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"mlverse/cuda.ml"</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
@@ -345,7 +355,7 @@
 </h2>
 <details><summary>
 Inspect MNIST images
-</summary><div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+</summary><div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">plot_mnist</span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">64</span><span class="op">)</span></span></code></pre></div>
 </details>
 </div>

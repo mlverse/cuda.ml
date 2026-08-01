@@ -10,7 +10,7 @@
 - [`cuda_ml_agglomerative_clustering()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_agglomerative_clustering.md)
   : Perform Single-Linkage Agglomerative Clustering.
 - [`cuda_ml_backend_info()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_backend_info.md)
-  : Report the backend bundled with this cuda.ml installation
+  : Report backend and managed-runtime metadata
 - [`cuda_ml_cache_clean()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_cache_clean.md)
   : Remove managed cuda.ml runtime caches
 - [`cuda_ml_dbscan()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_dbscan.md)

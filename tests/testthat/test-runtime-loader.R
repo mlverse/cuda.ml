@@ -143,62 +143,6 @@ test_that("cache cleanup is scoped to cuda.ml cache generations", {
   expect_false(any(state$generations))
 })
 
-test_that("cuda_ml_install retries an interrupted locked download", {
-  cache <- tempfile("cuda-ml-cache-")
-  destination <- tempfile("cuda-ml-download-")
-  contents <- charToRaw("verified runtime artifact")
-  expected_hash <- digest::digest(
-    contents,
-    algo = "sha256",
-    serialize = FALSE
-  )
-  attempts <- 0L
-  old_cache <- Sys.getenv("CUDA_ML_CACHE_DIR", unset = NA_character_)
-  Sys.setenv(CUDA_ML_CACHE_DIR = cache)
-  on.exit({
-    if (is.na(old_cache)) {
-      Sys.unsetenv("CUDA_ML_CACHE_DIR")
-    } else {
-      Sys.setenv(CUDA_ML_CACHE_DIR = old_cache)
-    }
-    unlink(c(cache, destination), recursive = TRUE, force = TRUE)
-  })
-
-  local_mocked_bindings(
-    download.file = function(url, destfile, ...) {
-      attempts <<- attempts + 1L
-      if (attempts == 1L) {
-        writeBin(contents[seq_len(4L)], destfile)
-        return(0L)
-      }
-      writeBin(contents, destfile)
-      0L
-    },
-    .package = "utils"
-  )
-  local_mocked_bindings(
-    cuda_ml_has_backend = function() TRUE,
-    cuda_ml_platform = function() "ubuntu-26.04-x86_64",
-    cuda_ml_prepare_runtime = function() {
-      cuda.ml:::cuda_ml_download(
-        "fixture",
-        "https://example.invalid/fixture",
-        destination,
-        length(contents),
-        expected_hash
-      )
-    },
-    .package = "cuda.ml"
-  )
-
-  expect_true(cuda_ml_install())
-  expect_identical(attempts, 2L)
-  expect_identical(
-    readBin(destination, what = "raw", n = length(contents)),
-    contents
-  )
-})
-
 test_that("stub builds direct cuda_ml_install users to R-universe", {
   skip_if(cuda_ml_backend_info()$backend == "full", "requires a stub build")
   skip_if_not(

@@ -303,11 +303,25 @@ versions fail at configuration time.
 
 ### Development version
 
-Development installations build from source and therefore require the exact
-local toolchain described above. Install from [GitHub](https://github.com/) with:
+A bare development installation from [GitHub](https://github.com/) produces
+the same CRAN-compatible stub:
 
 ``` r
 # install.packages("devtools")
+devtools::install_github("mlverse/cuda.ml")
+```
+
+For a functional local build, set the exact toolchain and backend inputs
+described above before installing:
+
+``` r
+Sys.setenv(
+  CUDA_ML_BUILD_MODE = "local",
+  CUDA_HOME = "/opt/cuda-13.2.2",
+  CUML_PREFIX = "/opt/cuda-ml-backend",
+  CUML_CUDA_ARCHITECTURES = "75",
+  CUDA_ML_CXX = "g++-14"
+)
 devtools::install_github("mlverse/cuda.ml")
 ```
 

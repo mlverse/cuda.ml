@@ -1,6 +1,6 @@
-# Report the backend bundled with this cuda.ml installation
+# Report backend and managed-runtime metadata
 
-Report the backend bundled with this cuda.ml installation
+Report backend and managed-runtime metadata
 
 ## Usage
 
@@ -10,6 +10,8 @@ cuda_ml_backend_info()
 
 ## Value
 
-A named list describing the packaged backend. This function reports
-package metadata only; it does not install or load the managed runtime
-and does not check for an NVIDIA GPU or driver.
+A named list describing the packaged backend and whether its exact
+managed-runtime cache is complete. This function performs read-only
+cache and inventory checks. It does not create or modify the cache,
+access the network, inspect an NVIDIA GPU or driver, or load the native
+backend.
