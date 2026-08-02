@@ -1,5 +1,31 @@
 backend_info <- cuda_ml_backend_info()
-run_gpu_tests <- identical(Sys.getenv("CUDA_ML_GPU_TESTS"), "true") &&
+nvidia_smi <- unname(Sys.which("nvidia-smi"))
+gpu_output <- character()
+if (nzchar(nvidia_smi)) {
+  gpu_output <- suppressWarnings(tryCatch(
+    system2(
+      nvidia_smi,
+      c("--query-gpu=compute_cap", "--format=csv,noheader"),
+      stdout = TRUE,
+      stderr = TRUE
+    ),
+    error = function(e) character()
+  ))
+}
+gpu_status <- attr(gpu_output, "status", exact = TRUE)
+visible_devices <- Sys.getenv("CUDA_VISIBLE_DEVICES", unset = NA_character_)
+gpu_visible <- (
+  is.na(visible_devices) ||
+    (
+      nzchar(trimws(visible_devices)) &&
+        !grepl("^-[0-9]+", trimws(visible_devices))
+    )
+) &&
+  length(gpu_output) > 0L &&
+  (is.null(gpu_status) || gpu_status == 0L) &&
+  all(grepl("^[0-9]+[.][0-9]+$", trimws(gpu_output)))
+run_gpu_tests <- !identical(Sys.getenv("CUDA_ML_GPU_TESTS"), "false") &&
+  gpu_visible &&
   backend_info$backend_available &&
   backend_info$runtime_installed
 
