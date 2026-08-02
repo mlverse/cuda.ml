@@ -21,7 +21,8 @@ find_cuda_ml_cxx <- function(path) {
   version <- numeric_version(output)
   if (version < cuda_ml_min_gnu_cxx_version) {
     stop2(
-      paste0("GNU C++ ", version, " is too old for nvForest 26.06."),
+      paste0("GNU C++ ", version, " cannot consume nvForest 26.06."),
+      "The pinned binary uses GCC 14 C++ symbol mangling.",
       "Use GCC 14 or newer."
     )
   }

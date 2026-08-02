@@ -158,10 +158,67 @@ cuda_ml_source_architectures <- function(value) {
   paste(architectures, collapse = ";")
 }
 
+cuda_ml_source_compiler_error <- function(path, version = NA_character_) {
+  stopifnot(
+    is.character(path),
+    length(path) == 1L,
+    !is.na(path),
+    is.character(version),
+    length(version) == 1L
+  )
+  message <- paste(
+    "A source installation requires GNU C++ 14 or newer.",
+    "The pinned nvForest 26.06 binary uses GCC 14 C++ symbol mangling."
+  )
+  if (!is.na(version)) {
+    message <- paste0(
+      message,
+      " Found ",
+      path,
+      " at version ",
+      version,
+      "."
+    )
+  }
+
+  cxx <- unname(Sys.which("g++-14"))
+  cxx_version <- cuda_ml_source_tool_version(
+    cxx,
+    "-dumpfullversion",
+    "^([0-9]+([.][0-9]+)*)$"
+  )
+  if (
+    nzchar(cxx) &&
+      !is.na(cxx_version) &&
+      base::package_version(cxx_version) >= base::package_version("14.0")
+  ) {
+    stop(
+      message,
+      " g++-14 is installed but not selected. In R, run ",
+      "`Sys.setenv(CUDA_ML_CXX = ",
+      encodeString(cxx, quote = '"'),
+      ")`, then retry.",
+      call. = FALSE
+    )
+  }
+
+  if (nzchar(Sys.which("apt"))) {
+    stop(
+      message,
+      " On Debian or Ubuntu, run ",
+      "`sudo apt update && sudo apt install g++-14`, then in R run ",
+      "`Sys.setenv(CUDA_ML_CXX = \"/usr/bin/g++-14\")`, then retry.",
+      call. = FALSE
+    )
+  }
+
+  stop(message, call. = FALSE)
+}
+
 cuda_ml_source_compiler <- function(path) {
   stopifnot(is.character(path), length(path) == 1L, !is.na(path))
   if (!nzchar(path) || !file.exists(path)) {
-    stop("A source installation requires GNU C++ 14 or newer.", call. = FALSE)
+    cuda_ml_source_compiler_error(path)
   }
   path <- normalizePath(path, mustWork = TRUE)
   cxx_version <- cuda_ml_source_tool_version(
@@ -173,7 +230,7 @@ cuda_ml_source_compiler <- function(path) {
     is.na(cxx_version) ||
       base::package_version(cxx_version) < base::package_version("14.0")
   ) {
-    stop("A source installation requires GNU C++ 14 or newer.", call. = FALSE)
+    cuda_ml_source_compiler_error(path, cxx_version)
   }
   list(path = path, version = cxx_version)
 }
