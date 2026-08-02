@@ -86,6 +86,152 @@ test_that("managed source installation identifies an unselected compiler", {
   expect_match(state, "Sys.setenv(CUDA_ML_CXX", fixed = TRUE)
 })
 
+test_that("managed source installation discovers GNU C++ 14", {
+  cache <- tempfile("cuda-ml-source-cache-")
+
+  error <- callr::r(
+    function(cache) {
+      bin <- tempfile("cuda-ml-source-bin-")
+      dir.create(bin)
+      file.symlink(Sys.which("getconf"), file.path(bin, "getconf"))
+      writeLines(c("#!/bin/sh", "echo 13.3.0"), file.path(bin, "g++"))
+      writeLines(c("#!/bin/sh", "echo 14.2.0"), file.path(bin, "g++-14"))
+      Sys.chmod(file.path(bin, c("g++", "g++-14")), mode = "0755")
+      Sys.setenv(
+        CUDA_ML_CACHE_DIR = cache,
+        CUML_BOOTSTRAP_CACHE = file.path(cache, "bootstrap"),
+        PATH = bin
+      )
+      Sys.unsetenv(
+        c(
+          "CUDA_HOME",
+          "CUML_PREFIX",
+          "CUML_CUDA_ARCHITECTURES",
+          "CUDA_ML_CXX"
+        )
+      )
+      suppressPackageStartupMessages(library(cuda.ml))
+      trace(
+        "download.file",
+        where = asNamespace("utils"),
+        tracer = quote(stop("download reached")),
+        print = FALSE
+      )
+
+      error <- tryCatch(
+        cuda_ml_install(source = TRUE),
+        error = identity
+      )
+      conditionMessage(error)
+    },
+    args = list(cache = cache)
+  )
+
+  expect_match(error, "Failed to download and verify", fixed = TRUE)
+  expect_false(grepl("GNU C[+][+] 14 or newer", error))
+})
+
+test_that("source installation detects native CUDA architectures", {
+  cache <- tempfile("cuda-ml-source-cache-")
+
+  state <- callr::r(
+    function(cache) {
+      bin <- tempfile("cuda-ml-source-bin-")
+      dir.create(bin)
+      file.symlink(Sys.which("getconf"), file.path(bin, "getconf"))
+      writeLines(c("#!/bin/sh", "echo 14.2.0"), file.path(bin, "g++-14"))
+      writeLines(
+        c("#!/bin/sh", "printf '8.6\\n7.5\\n8.6\\n'"),
+        file.path(bin, "nvidia-smi")
+      )
+      Sys.chmod(file.path(bin, c("g++-14", "nvidia-smi")), mode = "0755")
+      Sys.setenv(
+        CUDA_ML_CACHE_DIR = cache,
+        CUML_BOOTSTRAP_CACHE = file.path(cache, "bootstrap"),
+        PATH = bin
+      )
+      Sys.unsetenv(
+        c(
+          "CUDA_HOME",
+          "CUML_PREFIX",
+          "CUML_CUDA_ARCHITECTURES",
+          "CUDA_ML_CXX"
+        )
+      )
+      suppressPackageStartupMessages(library(cuda.ml))
+      trace(
+        "download.file",
+        where = asNamespace("utils"),
+        tracer = quote(stop("download reached")),
+        print = FALSE
+      )
+
+      messages <- character()
+      error <- withCallingHandlers(
+        tryCatch(
+          cuda_ml_install(source = TRUE, architectures = "native"),
+          error = identity
+        ),
+        message = function(condition) {
+          messages <<- c(messages, conditionMessage(condition))
+          invokeRestart("muffleMessage")
+        }
+      )
+      list(error = conditionMessage(error), messages = messages)
+    },
+    args = list(cache = cache)
+  )
+
+  expect_match(state$error, "Failed to download and verify", fixed = TRUE)
+  expect_true(any(grepl(
+    "Detected CUDA architectures: 75-real, 86-real.",
+    state$messages,
+    fixed = TRUE
+  )))
+})
+
+test_that("native source architecture requires a detectable GPU", {
+  cache <- tempfile("cuda-ml-source-cache-")
+
+  state <- callr::r(
+    function(cache) {
+      bin <- tempfile("cuda-ml-source-bin-")
+      dir.create(bin)
+      file.symlink(Sys.which("getconf"), file.path(bin, "getconf"))
+      writeLines(c("#!/bin/sh", "echo 14.2.0"), file.path(bin, "g++-14"))
+      Sys.chmod(file.path(bin, "g++-14"), mode = "0755")
+      Sys.setenv(CUDA_ML_CACHE_DIR = cache, PATH = bin)
+      Sys.unsetenv(
+        c(
+          "CUDA_HOME",
+          "CUML_PREFIX",
+          "CUML_CUDA_ARCHITECTURES",
+          "CUDA_ML_CXX"
+        )
+      )
+      suppressPackageStartupMessages(library(cuda.ml))
+
+      error <- tryCatch(
+        cuda_ml_install(source = TRUE, architectures = "native"),
+        error = identity
+      )
+      list(
+        error = conditionMessage(error),
+        cache_exists = dir.exists(cache)
+      )
+    },
+    args = list(cache = cache)
+  )
+
+  expect_match(
+    state$error,
+    'Unable to detect architectures = "native" with nvidia-smi.',
+    fixed = TRUE
+  )
+  expect_match(state$error, 'architectures = "86-real"', fixed = TRUE)
+  expect_false(state$cache_exists)
+})
+
 test_that("host source installation requires explicit build inputs", {
   cache <- tempfile("cuda-ml-source-cache-")
 

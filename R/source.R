@@ -143,6 +143,46 @@ cuda_ml_source_cuda_libdir <- function(cuda_home) {
 
 cuda_ml_source_architectures <- function(value) {
   stopifnot(is.character(value), length(value) == 1L, !is.na(value))
+  if (identical(value, "native")) {
+    nvidia_smi <- unname(Sys.which("nvidia-smi"))
+    output <- character()
+    if (nzchar(nvidia_smi)) {
+      output <- suppressWarnings(tryCatch(
+        system2(
+          nvidia_smi,
+          c("--query-gpu=compute_cap", "--format=csv,noheader"),
+          stdout = TRUE,
+          stderr = TRUE
+        ),
+        error = function(e) character()
+      ))
+    }
+    status <- attr(output, "status", exact = TRUE)
+    capabilities <- trimws(output)
+    if (
+      !nzchar(nvidia_smi) ||
+        (!is.null(status) && status != 0L) ||
+        !length(capabilities) ||
+        any(!grepl("^[0-9]+[.][0-9]+$", capabilities))
+    ) {
+      stop(
+        "Unable to detect architectures = \"native\" with nvidia-smi. ",
+        "Ensure an NVIDIA GPU and nvidia-smi are available, or supply an ",
+        "explicit target such as architectures = \"86-real\".",
+        call. = FALSE
+      )
+    }
+    architectures <- paste0(
+      sort(unique(as.integer(sub(".", "", capabilities, fixed = TRUE)))),
+      "-real"
+    )
+    message(
+      "Detected CUDA architectures: ",
+      paste(architectures, collapse = ", "),
+      "."
+    )
+    return(paste(architectures, collapse = ";"))
+  }
   architectures <- strsplit(value, ";", fixed = TRUE)[[1L]]
   if (
     !length(architectures) ||
@@ -287,7 +327,10 @@ cuda_ml_source_build_inputs <- function(dependencies, architectures = NULL) {
   if (identical(dependencies, "managed")) {
     cxx_path <- Sys.getenv("CUDA_ML_CXX", unset = "")
     if (!nzchar(cxx_path)) {
-      cxx_path <- unname(Sys.which("g++"))
+      cxx_path <- unname(Sys.which("g++-14"))
+      if (!nzchar(cxx_path)) {
+        cxx_path <- unname(Sys.which("g++"))
+      }
     }
     compiler <- cuda_ml_source_compiler(cxx_path)
     tools <- cuda_ml_source_build_tools()

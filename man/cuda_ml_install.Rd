@@ -15,10 +15,11 @@ sources included in the R package.}
 download and cache the exact locked build dependencies, or \code{"host"}
 to use explicit host installations.}
 
-\item{architectures}{For a source installation, an optional explicit
-semicolon-separated CMake CUDA architecture list. Managed source builds use
-the package's portable architecture list by default. Host source builds use
-\code{CUML_CUDA_ARCHITECTURES} by default.}
+\item{architectures}{For a source installation, either \code{"native"} to
+detect the compute capabilities reported by \code{nvidia-smi}, or an
+explicit semicolon-separated CMake CUDA architecture list. Managed source
+builds use the package's portable architecture list by default. Host source
+builds use \code{CUML_CUDA_ARCHITECTURES} by default.}
 }
 \value{
 Invisibly returns \code{TRUE}.
@@ -39,8 +40,15 @@ A managed source installation downloads no precompiled cuda.ml backend. It
 downloads and verifies the locked CUDA 13.2.2 and RAPIDS 26.06 development
 artifacts, CMake, and Ninja; builds Treelite 4.7.0 statically; and caches
 that toolchain. Only Linux x86_64 with glibc 2.28 or newer and GNU C++ 14 or
-newer are required on the host. Set \code{CUDA_ML_CXX} to override the
-\code{g++} found on \code{PATH}.
+newer are required on the host. When \code{CUDA_ML_CXX} is unset, the
+installer prefers \code{g++-14}, then \code{g++}, on \code{PATH}. Set
+\code{CUDA_ML_CXX} to override this discovery.
+
+Set \code{architectures = "native"} to compile only for the distinct GPU
+compute capabilities reported by \code{nvidia-smi}. This usually reduces
+build time and backend size, but the resulting backend supports only those
+GPU architectures. The portable default also supports GPU-free build hosts
+and reuse across every architecture in the package list.
 
 A host source installation makes no downloads. It requires CUDA Toolkit
 13.2.2 in \code{CUDA_HOME}; a \code{CUML_PREFIX} containing cuML and
@@ -54,6 +62,8 @@ nvForest 26.06, Treelite 4.7.0 headers, and
 cuda_ml_install()
 
 cuda_ml_install(source = TRUE)
+
+cuda_ml_install(source = TRUE, architectures = "native")
 
 Sys.setenv(
   CUDA_HOME = "/usr/local/cuda-13.2",

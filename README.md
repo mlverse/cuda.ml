@@ -250,7 +250,6 @@ To compile the native backend directly on the host without Docker or a
 prebuilt cuda.ml backend, install GNU C++ 14 or newer and run:
 
 ``` r
-Sys.setenv(CUDA_ML_CXX = "/usr/bin/g++-14") # omit when g++ 14+ is on PATH
 cuda.ml::cuda_ml_install(source = TRUE)
 ```
 
@@ -259,13 +258,25 @@ exact locked build artifacts from PyPI and GitHub. These provide CUDA
 Toolkit 13.2.2, cuML and nvForest 26.06, Treelite 4.7.0, CMake, and
 Ninja. Python, Conda, Docker, a system CUDA Toolkit, a system RAPIDS
 installation, and a GPU are not required for the build. Linux x86_64
-with glibc 2.28 or newer and GNU C++ 14 or newer are required.
+with glibc 2.28 or newer and GNU C++ 14 or newer are required. The
+installer prefers `g++-14`, then `g++`, on `PATH`; set `CUDA_ML_CXX` to
+override this discovery.
 
 The toolchain and compiled backend are cached under `CUDA_ML_CACHE_DIR`,
 or the default cuda.ml user cache. Calling the function again with the
-same inputs is a no-op. To target a smaller set of GPUs, supply an
-explicit semicolon-separated CMake CUDA architecture list, for example
-`architectures = "86-real;89-real"`.
+same inputs is a no-op. Managed builds use the package’s portable GPU
+architecture list by default, which permits GPU-free build hosts and
+reuse across supported GPUs. To compile only for the distinct compute
+capabilities reported by `nvidia-smi`, run:
+
+``` r
+cuda.ml::cuda_ml_install(source = TRUE, architectures = "native")
+```
+
+This usually reduces build time and backend size, but the resulting
+backend supports only the detected GPU architectures. You can instead
+supply an explicit semicolon-separated CMake CUDA architecture list, for
+example `architectures = "86-real;89-real"`.
 
 To use a native toolchain already installed on the host and make no
 downloads, provide every build input explicitly:

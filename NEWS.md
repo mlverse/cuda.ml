@@ -17,8 +17,9 @@ cuML and nvForest 26.06, and Treelite 4.7.0.
   prebuilt cuda.ml backend. By default it bootstraps exact locked CUDA, RAPIDS,
   Treelite, CMake, and Ninja build inputs, requiring only GNU C++ 14 or newer on
   a supported Linux host. `dependencies = "host"` uses explicit native build
-  inputs and makes no downloads. Source backend selection persists across R
-  sessions.
+  inputs and makes no downloads. `architectures = "native"` detects host GPU
+  compute capabilities with `nvidia-smi` and builds only their real targets.
+  Source backend selection persists across R sessions.
 
 - Package loading and `cuda_ml_backend_info()` are silent and side-effect free.
   They do not inspect the GPU, create a cache, contact the network, or load the

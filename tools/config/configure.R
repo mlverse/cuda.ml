@@ -18,7 +18,7 @@
 #'
 #' CUDA_ML_CXX: Path to the GNU C++ 14 or newer compiler used for both C++
 #'              sources and nvcc host compilation. Required for local builds;
-#'              managed builds use g++ from PATH when this is unset.
+#'              managed builds prefer g++-14, then g++, when this is unset.
 
 pkg_root <- function() {
   # devtools::load_all() might run the config script from the `src` directory.
@@ -197,7 +197,14 @@ if (identical(build_mode, "managed")) {
   if (!cuml_manylinux_2_28_x86_64()) {
     stop2("Managed cuda.ml builds require Linux x86_64 with glibc 2.28.")
   }
-  cxx <- find_cuda_ml_cxx(unname(Sys.which("g++")))
+  cxx_path <- Sys.getenv("CUDA_ML_CXX", unset = "")
+  if (!nzchar(cxx_path)) {
+    cxx_path <- unname(Sys.which("g++-14"))
+    if (!nzchar(cxx_path)) {
+      cxx_path <- unname(Sys.which("g++"))
+    }
+  }
+  cxx <- find_cuda_ml_cxx(cxx_path)
   managed_build <- bootstrap_managed_build_from_artifacts(cxx)
   nvcc <- managed_build$nvcc
   cuml_prefix <- managed_build$prefix
