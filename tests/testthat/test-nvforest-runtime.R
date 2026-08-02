@@ -1,8 +1,5 @@
 test_that("nvForest supports CPU-only inference and restoration", {
-  skip_if_not(
-    identical(Sys.getenv("CUDA_ML_RUNTIME_TESTS"), "true"),
-    "set CUDA_ML_RUNTIME_TESTS=true to exercise the managed runtime"
-  )
+  skip_if_not(cuda_ml_backend_info()$runtime_installed, "requires a runtime")
   skip_if_not_installed("xgboost")
 
   x <- matrix(

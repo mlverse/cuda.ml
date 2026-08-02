@@ -88,49 +88,33 @@ test_that("the managed runtime can be prewarmed without loading the backend", {
 })
 
 test_that("the installed runtime passes an explicit content audit", {
-  skip_if_not(
-    identical(Sys.getenv("CUDA_ML_RUNTIME_TESTS"), "true"),
-    "set CUDA_ML_RUNTIME_TESTS=true to exercise the managed runtime"
-  )
-  skip_if_not(
-    cuda_ml_backend_info()$backend_available,
-    "requires a published backend"
+  skip_if_not(cuda_ml_backend_info()$runtime_installed, "requires a runtime")
+
+  state <- callr::r(
+    function() {
+      library(cuda.ml)
+      list(
+        audited = cuda_ml_runtime_audit(),
+        info = cuda_ml_backend_info()
+      )
+    }
   )
 
-  expect_true(cuda_ml_runtime_audit())
-  info <- cuda_ml_backend_info()
-  expect_true(info$runtime_installed)
-  expect_true(dir.exists(info$runtime_path))
-  expect_false(info$backend_loaded)
+  expect_true(state$audited)
+  expect_true(state$info$runtime_installed)
+  expect_true(dir.exists(state$info$runtime_path))
+  expect_false(state$info$backend_loaded)
 })
 
 test_that("R CMD check can audit the functional backend", {
-  skip_if_not(
-    identical(Sys.getenv("CUDA_ML_RUNTIME_TESTS"), "true"),
-    "set CUDA_ML_RUNTIME_TESTS=true to exercise the managed runtime"
-  )
-  skip_if_not(
-    cuda_ml_backend_info()$backend_available,
-    "requires a published backend"
-  )
+  skip_if_not(cuda_ml_backend_info()$runtime_installed, "requires a runtime")
 
-  cache <- Sys.getenv(
-    "CUDA_ML_CACHE_DIR",
-    unset = tempfile("cuda-ml-functional-cache-")
-  )
   audited <- callr::r(
-    function(cache) {
-      do.call(
-        Sys.setenv,
-        setNames(
-          list(cache, "cuda.ml"),
-          c("CUDA_ML_CACHE_DIR", "_R_CHECK_PACKAGE_NAME_")
-        )
-      )
+    function() {
+      Sys.setenv("_R_CHECK_PACKAGE_NAME_" = "cuda.ml")
       library(cuda.ml)
       cuda_ml_runtime_audit()
-    },
-    args = list(cache = cache)
+    }
   )
 
   expect_true(audited)

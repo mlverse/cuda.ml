@@ -16,6 +16,16 @@ blobs_df <- blobs %>%
 
 test_blob_sz <- 10
 
+test_that("KNN defaults fit and predict", {
+  model <- cuda_ml_knn(mpg ~ ., mtcars)
+  new_data <- mtcars[1:2, names(mtcars) != "mpg", drop = FALSE]
+  predictions <- predict(model, new_data)
+
+  expect_s3_class(model, "cuda_ml_knn")
+  expect_named(predictions, ".pred")
+  expect_equal(nrow(predictions), nrow(new_data))
+})
+
 test_that("KNN classifier works as expected", {
   test_blobs_df <- gen_blobs(test_blob_sz, centers) %>%
     as.data.frame()

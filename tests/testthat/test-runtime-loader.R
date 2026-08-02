@@ -159,15 +159,24 @@ test_that("cache cleanup is scoped to cuda.ml cache generations", {
 })
 
 test_that("an unpublished backend fails before downloading the runtime", {
-  skip_if(cuda_ml_backend_info()$backend_available, "backend is published")
   skip_if_not(
     identical(unname(Sys.info()[["sysname"]]), "Linux") &&
       unname(Sys.info()[["machine"]]) %in% c("x86_64", "amd64"),
     "requires the managed runtime platform"
   )
+
   cache <- tempfile("cuda-ml-cache-")
+  old_cache <- Sys.getenv("CUDA_ML_CACHE_DIR", unset = NA_character_)
   Sys.setenv(CUDA_ML_CACHE_DIR = cache)
-  on.exit(Sys.unsetenv("CUDA_ML_CACHE_DIR"), add = TRUE)
+  on.exit({
+    if (is.na(old_cache)) {
+      Sys.unsetenv("CUDA_ML_CACHE_DIR")
+    } else {
+      Sys.setenv(CUDA_ML_CACHE_DIR = old_cache)
+    }
+  }, add = TRUE)
+
+  skip_if(cuda_ml_backend_info()$backend_available, "backend is published")
   error <- expect_error(cuda_ml_install(), class = "error")
 
   expect_match(conditionMessage(error), "No prebuilt cuda.ml backend")

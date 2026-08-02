@@ -50,7 +50,7 @@ test_that("classification rejects unobserved outcome levels", {
   )
 })
 
-test_that("KNN defaults select current cuML choices", {
+test_that("KNN defaults reach backend selection without a runtime", {
   info <- cuda_ml_backend_info()
   skip_if(info$runtime_installed)
   error <- if (info$backend_available) {
