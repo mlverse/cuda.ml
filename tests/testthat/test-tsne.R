@@ -11,8 +11,8 @@ verify_tsne_embedding <- function(embedding) {
   expect_gt(sum(apply(embedding, 2L, stats::sd)), 0)
 
   set.seed(0L)
-  k_clust <- kmeans(embedding, centers = embedding[c(1, 51, 101), ])
-  expect_gte(k_clust$betweenss / k_clust$totss, 0.5)
+  k_clust <- kmeans(unclass(embedding), centers = 3L, nstart = 25L)
+  expect_gte(k_clust$betweenss / k_clust$totss, 0.7)
 }
 
 test_that("cuda_ml_tsne() works as expected with 'exact' method", {
