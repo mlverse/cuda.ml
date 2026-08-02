@@ -269,18 +269,18 @@ required. The installer prefers `g++-14`, then `g++`, on `PATH`; set
 
 The toolchain and compiled backend are cached under `CUDA_ML_CACHE_DIR`, or the
 default cuda.ml user cache. Calling the function again with the same inputs is a
-no-op. Managed builds use the package's portable GPU architecture list by
-default, which permits GPU-free build hosts and reuse across supported GPUs. To
-compile only for the distinct compute capabilities reported by `nvidia-smi`,
-run:
-
-``` r
-cuda.ml::cuda_ml_install(source = TRUE, architectures = "native")
-```
+no-op. By default, a managed build detects the distinct CUDA-visible GPU
+compute capabilities reported by `nvidia-smi` and compiles their real targets.
+It honors `CUDA_VISIBLE_DEVICES`. If detection is unavailable, it uses the
+package's portable GPU architecture list, so GPU-free build hosts remain
+supported.
 
 This usually reduces build time and backend size, but the resulting backend
-supports only the detected GPU architectures. You can instead supply an
-explicit semicolon-separated CMake CUDA architecture list, for example
+supports only the detected GPU architectures. Use
+`architectures = "portable"` to force a relocatable build, or
+`architectures = "native"` to require successful detection. You can also
+supply an explicit semicolon-separated CMake CUDA architecture list, for
+example
 `architectures = "86-real;89-real"`.
 
 To use a native toolchain already installed on the host and make no downloads,

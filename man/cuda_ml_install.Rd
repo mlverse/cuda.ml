@@ -15,11 +15,13 @@ sources included in the R package.}
 download and cache the exact locked build dependencies, or \code{"host"}
 to use explicit host installations.}
 
-\item{architectures}{For a source installation, either \code{"native"} to
-detect the compute capabilities reported by \code{nvidia-smi}, or an
-explicit semicolon-separated CMake CUDA architecture list. Managed source
-builds use the package's portable architecture list by default. Host source
-builds use \code{CUML_CUDA_ARCHITECTURES} by default.}
+\item{architectures}{For a source installation, \code{NULL}, \code{"native"},
+\code{"portable"}, or an explicit semicolon-separated CMake CUDA
+architecture list. Managed source builds detect CUDA-visible GPUs by
+default and otherwise use the package's portable architecture list.
+\code{"native"} requires detection, and \code{"portable"} forces the
+package list. Host source builds use \code{CUML_CUDA_ARCHITECTURES} when
+this argument is \code{NULL}.}
 }
 \value{
 Invisibly returns \code{TRUE}.
@@ -44,11 +46,14 @@ newer are required on the host. When \code{CUDA_ML_CXX} is unset, the
 installer prefers \code{g++-14}, then \code{g++}, on \code{PATH}. Set
 \code{CUDA_ML_CXX} to override this discovery.
 
-Set \code{architectures = "native"} to compile only for the distinct GPU
-compute capabilities reported by \code{nvidia-smi}. This usually reduces
-build time and backend size, but the resulting backend supports only those
-GPU architectures. The portable default also supports GPU-free build hosts
-and reuse across every architecture in the package list.
+By default, a managed source build uses \code{nvidia-smi} to detect distinct
+CUDA-visible GPU compute capabilities and compiles their real targets. It
+honors \code{CUDA_VISIBLE_DEVICES}. If detection is unavailable, it uses the
+package's portable list, so GPU-free build hosts remain supported. Set
+\code{architectures = "native"} to require detection or
+\code{architectures = "portable"} to force the package list. Native targets
+usually reduce build time and backend size, but the resulting backend
+supports only those GPU architectures.
 
 A host source installation makes no downloads. It requires CUDA Toolkit
 13.2.2 in \code{CUDA_HOME}; a \code{CUML_PREFIX} containing cuML and
@@ -64,6 +69,8 @@ cuda_ml_install()
 cuda_ml_install(source = TRUE)
 
 cuda_ml_install(source = TRUE, architectures = "native")
+
+cuda_ml_install(source = TRUE, architectures = "portable")
 
 Sys.setenv(
   CUDA_HOME = "/usr/local/cuda-13.2",

@@ -141,47 +141,105 @@ cuda_ml_source_cuda_libdir <- function(cuda_home) {
   normalizePath(candidates[[1L]], mustWork = TRUE)
 }
 
-cuda_ml_source_architectures <- function(value) {
-  stopifnot(is.character(value), length(value) == 1L, !is.na(value))
-  if (identical(value, "native")) {
-    nvidia_smi <- unname(Sys.which("nvidia-smi"))
-    output <- character()
-    if (nzchar(nvidia_smi)) {
-      output <- suppressWarnings(tryCatch(
-        system2(
-          nvidia_smi,
-          c("--query-gpu=compute_cap", "--format=csv,noheader"),
-          stdout = TRUE,
-          stderr = TRUE
-        ),
-        error = function(e) character()
-      ))
-    }
-    status <- attr(output, "status", exact = TRUE)
-    capabilities <- trimws(output)
+cuda_ml_source_detect_architectures <- function() {
+  nvidia_smi <- unname(Sys.which("nvidia-smi"))
+  if (!nzchar(nvidia_smi)) {
+    return(character())
+  }
+  output <- suppressWarnings(tryCatch(
+    system2(
+      nvidia_smi,
+      c("--query-gpu=index,uuid,compute_cap", "--format=csv,noheader"),
+      stdout = TRUE,
+      stderr = TRUE
+    ),
+    error = function(e) character()
+  ))
+  status <- attr(output, "status", exact = TRUE)
+  fields <- strsplit(output, ",", fixed = TRUE)
+  if (
+    (!is.null(status) && status != 0L) ||
+      !length(fields) ||
+      any(lengths(fields) != 3L)
+  ) {
+    return(character())
+  }
+  indexes <- vapply(fields, function(x) trimws(x[[1L]]), character(1))
+  uuids <- vapply(fields, function(x) trimws(x[[2L]]), character(1))
+  capabilities <- vapply(fields, function(x) trimws(x[[3L]]), character(1))
+  if (
+    any(!grepl("^[0-9]+$", indexes)) ||
+      any(!nzchar(uuids)) ||
+      any(!grepl("^[0-9]+[.][0-9]+$", capabilities))
+  ) {
+    return(character())
+  }
+
+  visible <- Sys.getenv("CUDA_VISIBLE_DEVICES", unset = NA_character_)
+  if (!is.na(visible)) {
+    visible <- trimws(visible)
+    identifiers <- trimws(strsplit(visible, ",", fixed = TRUE)[[1L]])
     if (
-      !nzchar(nvidia_smi) ||
-        (!is.null(status) && status != 0L) ||
-        !length(capabilities) ||
-        any(!grepl("^[0-9]+[.][0-9]+$", capabilities))
+      !nzchar(visible) ||
+        !length(identifiers) ||
+        any(!nzchar(identifiers)) ||
+        any(grepl("^-[0-9]+$", identifiers))
     ) {
+      return(character())
+    }
+    selected <- lapply(
+      identifiers,
+      function(identifier) {
+        if (grepl("^[0-9]+$", identifier)) {
+          which(indexes == identifier)
+        } else {
+          which(startsWith(uuids, identifier))
+        }
+      }
+    )
+    if (any(lengths(selected) != 1L)) {
+      return(character())
+    }
+    capabilities <- capabilities[unlist(selected, use.names = FALSE)]
+  }
+
+  paste0(
+    sort(unique(as.integer(sub(".", "", capabilities, fixed = TRUE)))),
+    "-real"
+  )
+}
+
+cuda_ml_source_native_architectures <- function(required) {
+  stopifnot(is.logical(required), length(required) == 1L, !is.na(required))
+  architectures <- cuda_ml_source_detect_architectures()
+  if (!length(architectures)) {
+    if (required) {
       stop(
         "Unable to detect architectures = \"native\" with nvidia-smi. ",
-        "Ensure an NVIDIA GPU and nvidia-smi are available, or supply an ",
-        "explicit target such as architectures = \"86-real\".",
+        "Ensure a CUDA-visible NVIDIA GPU and nvidia-smi are available, or ",
+        "supply an explicit target such as architectures = \"86-real\".",
         call. = FALSE
       )
     }
-    architectures <- paste0(
-      sort(unique(as.integer(sub(".", "", capabilities, fixed = TRUE)))),
-      "-real"
-    )
-    message(
-      "Detected CUDA architectures: ",
-      paste(architectures, collapse = ", "),
-      "."
-    )
-    return(paste(architectures, collapse = ";"))
+    return(NULL)
+  }
+  message(
+    "Detected CUDA architectures: ",
+    paste(architectures, collapse = ", "),
+    ". Use architectures = \"portable\" for a relocatable or ",
+    "heterogeneous-GPU build."
+  )
+  paste(architectures, collapse = ";")
+}
+
+cuda_ml_source_architectures <- function(value) {
+  stopifnot(is.character(value), length(value) == 1L, !is.na(value))
+  if (identical(value, "native")) {
+    return(cuda_ml_source_native_architectures(required = TRUE))
+  }
+  if (identical(value, "portable")) {
+    message("Using portable CUDA architectures.")
+    value <- unname(.cuda_ml_state$metadata[["Architectures"]])
   }
   architectures <- strsplit(value, ";", fixed = TRUE)[[1L]]
   if (
@@ -190,8 +248,8 @@ cuda_ml_source_architectures <- function(value) {
       anyDuplicated(architectures) > 0L
   ) {
     stop(
-      "CUML_CUDA_ARCHITECTURES must be an explicit semicolon-separated ",
-      "CMake CUDA architecture list.",
+      "CUML_CUDA_ARCHITECTURES must be \"native\", \"portable\", or an ",
+      "explicit semicolon-separated CMake CUDA architecture list.",
       call. = FALSE
     )
   }
@@ -335,7 +393,14 @@ cuda_ml_source_build_inputs <- function(dependencies, architectures = NULL) {
     compiler <- cuda_ml_source_compiler(cxx_path)
     tools <- cuda_ml_source_build_tools()
     if (is.null(architectures)) {
-      architectures <- tools$cuml_managed_cuda_architectures()
+      architectures <- cuda_ml_source_native_architectures(required = FALSE)
+      if (is.null(architectures)) {
+        message(
+          "No CUDA-visible NVIDIA GPU was detected; using portable CUDA ",
+          "architectures."
+        )
+        architectures <- tools$cuml_managed_cuda_architectures()
+      }
     }
     architectures <- cuda_ml_source_architectures(architectures)
 
