@@ -4,7 +4,9 @@ context("K-Means")
 
 sklearn_kmeans_model <- sklearn$cluster$KMeans(
   n_clusters = 3L,
-  max_iter = 100L
+  max_iter = 100L,
+  n_init = 10L,
+  random_state = 0L
 )
 sklearn_kclust <- sklearn_kmeans_model$fit(sklearn_iris_dataset$data)
 
