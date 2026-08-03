@@ -1,30 +1,118 @@
+nvforest_fixture_data <- matrix(
+  c(0, 0, 0, 1, 1, 0, 1, 1, 2, 2, -1, -1),
+  ncol = 2,
+  byrow = TRUE
+)
+
+nvforest_format_cases <- list(
+  list(
+    label = "XGBoost UBJSON",
+    file = "xgboost.ubj",
+    model_type = "xgboost_ubj",
+    expected = c(0.5, 0.5, 1.5, 1.5, 4, -2)
+  ),
+  list(
+    label = "XGBoost JSON",
+    file = "xgboost.json",
+    model_type = "xgboost_json",
+    expected = c(0.5, 0.5, 1.5, 1.5, 4, -2)
+  ),
+  list(
+    label = "XGBoost legacy binary",
+    file = "xgboost.model",
+    model_type = "xgboost_legacy",
+    expected = c(0.5, 0.5, 1.5, 1.5, 4, -2)
+  ),
+  list(
+    label = "LightGBM",
+    file = "lightgbm.txt",
+    model_type = "lightgbm",
+    expected = c(0.5, 1, 1, 1.5, 4.5, -2.5)
+  ),
+  list(
+    label = "Treelite checkpoint",
+    file = "treelite.checkpoint",
+    model_type = "treelite_checkpoint",
+    expected = c(0.5, 0.5, 1.5, 1.5, 4, -2)
+  )
+)
+
+test_that("nvForest loads every advertised model format", {
+  skip_if_not(cuda_ml_backend_info()$runtime_installed, "requires a runtime")
+
+  for (case in nvforest_format_cases) {
+    model <- cuda_ml_nvforest_load_model(
+      test_path("fixtures", "nvforest", case$file),
+      model_type = case$model_type,
+      device = "cpu"
+    )
+
+    expect_identical(cuda_ml_nvforest_info(model)$task_type, "regression")
+    expect_equal(
+      predict(model, nvforest_fixture_data)$.pred,
+      case$expected,
+      tolerance = 1e-6,
+      scale = 1,
+      info = case$label
+    )
+  }
+})
+
+test_that("nvForest infers every documented model suffix", {
+  skip_if_not(cuda_ml_backend_info()$runtime_installed, "requires a runtime")
+
+  for (case in nvforest_format_cases[seq_len(4L)]) {
+    fixture <- test_path("fixtures", "nvforest", case$file)
+    model <- cuda_ml_nvforest_load_model(
+      fixture,
+      device = "cpu"
+    )
+
+    expect_equal(
+      predict(model, nvforest_fixture_data)$.pred,
+      case$expected,
+      tolerance = 1e-6,
+      scale = 1,
+      info = case$label
+    )
+
+    uppercase_path <- tempfile(
+      fileext = paste0(".", toupper(tools::file_ext(case$file)))
+    )
+    on.exit(unlink(uppercase_path), add = TRUE)
+    expect_true(file.copy(fixture, uppercase_path))
+    uppercase_model <- cuda_ml_nvforest_load_model(
+      uppercase_path,
+      device = "cpu"
+    )
+    expect_equal(
+      predict(uppercase_model, nvforest_fixture_data)$.pred,
+      case$expected,
+      tolerance = 1e-6,
+      scale = 1,
+      info = case$label
+    )
+  }
+
+  expect_error(
+    cuda_ml_nvforest_load_model(
+      test_path("fixtures", "nvforest", "treelite.checkpoint"),
+      device = "cpu"
+    ),
+    "Cannot infer nvForest model type"
+  )
+})
+
 test_that("nvForest supports CPU-only inference and restoration", {
   skip_if_not(cuda_ml_backend_info()$runtime_installed, "requires a runtime")
-  skip_if_not_installed("xgboost")
 
-  x <- matrix(
-    c(0, 0, 0, 1, 10, 10, 10, 11),
-    ncol = 2,
-    byrow = TRUE
-  )
-  y <- c(0, 0, 1, 1)
-  training <- xgboost::xgb.DMatrix(x, label = y)
-  xgb_model <- xgboost::xgb.train(
-    params = list(objective = "reg:squarederror", max_depth = 2L),
-    data = training,
-    nrounds = 2L,
-    verbose = 0L
-  )
-  path <- tempfile(fileext = ".ubj")
-  on.exit(unlink(path))
-  xgboost::xgb.save(xgb_model, path)
-
+  x <- nvforest_fixture_data
   model <- cuda_ml_nvforest_load_model(
-    path,
+    test_path("fixtures", "nvforest", "xgboost.ubj"),
     model_type = "xgboost_ubj",
     device = "cpu"
   )
-  expected <- as.numeric(predict(xgb_model, x))
+  expected <- nvforest_format_cases[[1L]]$expected
   predictions <- predict(model, x)
   info <- cuda_ml_nvforest_info(model)
   per_tree <- cuda_ml_nvforest_predict_per_tree(model, x)
