@@ -104,14 +104,6 @@ test_that("KNN parameters fail before backend execution", {
     cuda_ml_knn_algo_ivfpq(4, 2, 2, 9),
     "n_bits"
   )
-  expect_error(
-    cuda_ml_knn_algo_ivfpq(4, 2, 2, 4, NA),
-    "use_precomputed_tables"
-  )
-  expect_error(
-    cuda_ml_knn_algo_ivfpq(4, 2, 2, 4, TRUE),
-    "not supported"
-  )
 
   specification <- cuda_ml_knn_algo_ivfpq(4, 2, 3, 8)
   expect_s3_class(specification, "cuda_ml_knn_algo")

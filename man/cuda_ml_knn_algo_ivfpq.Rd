@@ -4,13 +4,7 @@
 \alias{cuda_ml_knn_algo_ivfpq}
 \title{Build a specification for the "ivfpq" KNN query algorithm.}
 \usage{
-cuda_ml_knn_algo_ivfpq(
-  nlist,
-  nprobe,
-  m,
-  n_bits,
-  use_precomputed_tables = FALSE
-)
+cuda_ml_knn_algo_ivfpq(nlist, nprobe, m, n_bits)
 }
 \arguments{
 \item{nlist}{Number of cells to partition dataset into.}
@@ -22,9 +16,6 @@ neighbor search.}
 
 \item{n_bits}{Bits allocated per subquantizer, from 4 to 8. The product of
 \code{m} and \code{n_bits} must be divisible by 8.}
-
-\item{use_precomputed_tables}{Must be \code{FALSE}; precomputed tables are
-not supported by the CUVS backend.}
 }
 \value{
 An object encapsulating all required parameters of the "ivfpq" KNN
