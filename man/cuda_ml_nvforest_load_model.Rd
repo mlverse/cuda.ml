@@ -19,15 +19,14 @@ cuda_ml_nvforest_load_model(
 \arguments{
 \item{model_file}{Path to a model file.}
 
-\item{model_type}{File format, or \code{NULL} to infer it. Supported values
-are \code{"xgboost_ubj"}, \code{"xgboost_json"},
-\code{"xgboost_legacy"}, \code{"lightgbm"}, and
-\code{"treelite_checkpoint"}.}
+\item{model_type}{File format, or \code{NULL} to infer it from a recognized
+filename suffix. See \strong{Model formats}.}
 
 \item{class_levels}{Optional class labels in model-output order. When omitted,
 classifiers use \code{"0"}, \code{"1"}, and so on.}
 
-\item{device}{Inference device: \code{"gpu"} or \code{"cpu"}.}
+\item{device}{Inference device: \code{"gpu"} or \code{"cpu"}. The default is
+\code{"gpu"}.}
 
 \item{device_id}{GPU device identifier, or \code{NULL} for the current device.}
 
@@ -47,4 +46,48 @@ An nvForest model for use with \code{predict()}.
 Loads an XGBoost, LightGBM, or Treelite model with the current nvForest API.
 The model's classification or regression task is read from Treelite
 metadata rather than supplied separately.
+}
+\section{Model formats}{
+
+The supported \code{model_type} values are:
+\itemize{
+  \item \code{"xgboost_ubj"} for XGBoost UBJSON;
+  \item \code{"xgboost_json"} for XGBoost JSON;
+  \item \code{"xgboost_legacy"} for the legacy XGBoost binary format;
+  \item \code{"lightgbm"} for LightGBM text models; and
+  \item \code{"treelite_checkpoint"} for Treelite checkpoints.
+}
+When \code{model_type = NULL}, the format is inferred only from the
+case-insensitive filename suffix: \file{.ubj}, \file{.json}, \file{.model},
+and \file{.txt} map to \code{"xgboost_ubj"}, \code{"xgboost_json"},
+\code{"xgboost_legacy"}, and \code{"lightgbm"}, respectively. Treelite
+checkpoints have no inferred suffix and require
+\code{model_type = "treelite_checkpoint"}. Inference does not inspect file
+contents; use an explicit type when the suffix does not identify the format.
+}
+
+\section{Runtime requirements}{
+
+Both CPU and GPU inference require \code{\link{cuda_ml_install}()} and the
+full managed CUDA and RAPIDS runtime, which is roughly 1.6 GiB. CPU
+inference does not require an NVIDIA GPU or driver. GPU inference requires a
+supported NVIDIA GPU and driver.
+}
+
+\section{Persistence}{
+
+Persist nvForest models with \code{\link{cuda_ml_serialize}()} and restore
+them with \code{\link{cuda_ml_unserialize}()}, or use
+\code{bundle::bundle()}. Schema 1 nvForest states require an exact Treelite
+version match. The recorded package, CUDA, RAPIDS, nvForest, and platform
+versions are provenance rather than compatibility gates. The restoring
+process must have prepared its runtime with
+\code{\link{cuda_ml_install}()}.
+}
+
+\seealso{
+\code{\link{cuda_ml_nvforest_info}()},
+  \code{\link{cuda_ml_nvforest_leaf_ids}()},
+  \code{\link{cuda_ml_nvforest_predict_per_tree}()}, and
+  \code{vignette("nvforest")}
 }

@@ -19,13 +19,23 @@
 \item{new_data}{Numeric predictor data.}
 
 \item{type}{Classification models support \code{"class"} and \code{"prob"};
-regression models support \code{"numeric"}.}
+regression models support \code{"numeric"}. Probability prediction is
+available only when
+\code{cuda_ml_nvforest_info(object)$has_probability_output} is true.
+Unsupported Treelite postprocessors fail explicitly.}
 
 \item{threshold}{Binary classification threshold, or \code{NULL} for 0.5.}
 
-\item{chunk_size}{Prediction chunk size, or \code{NULL} for the model default.}
+\item{chunk_size}{Native prediction chunk size, or \code{NULL} for the model
+default. It controls native batching and does not limit the size of the
+returned R object.}
 
 \item{...}{Unused.}
+}
+\value{
+A tibble with \code{.pred} for regression,
+  \code{.pred_class} for class prediction, or one probability column named
+  \code{.pred_<level>} for each class.
 }
 \description{
 Predict with an nvForest model

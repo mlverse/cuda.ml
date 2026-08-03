@@ -174,13 +174,12 @@ new_nvforest_model <- function(
 #' metadata rather than supplied separately.
 #'
 #' @param model_file Path to a model file.
-#' @param model_type File format, or \code{NULL} to infer it. Supported values
-#'   are \code{"xgboost_ubj"}, \code{"xgboost_json"},
-#'   \code{"xgboost_legacy"}, \code{"lightgbm"}, and
-#'   \code{"treelite_checkpoint"}.
+#' @param model_type File format, or \code{NULL} to infer it from a recognized
+#'   filename suffix. See \strong{Model formats}.
 #' @param class_levels Optional class labels in model-output order. When omitted,
 #'   classifiers use \code{"0"}, \code{"1"}, and so on.
-#' @param device Inference device: \code{"gpu"} or \code{"cpu"}.
+#' @param device Inference device: \code{"gpu"} or \code{"cpu"}. The default is
+#'   \code{"gpu"}.
 #' @param device_id GPU device identifier, or \code{NULL} for the current device.
 #' @param layout Tree layout.
 #' @param precision Native, single, or double precision.
@@ -189,6 +188,43 @@ new_nvforest_model <- function(
 #' @param align_bytes Memory alignment, or \code{NULL} for the device default.
 #'
 #' @return An nvForest model for use with \code{predict()}.
+#'
+#' @section Model formats:
+#' The supported \code{model_type} values are:
+#' \itemize{
+#'   \item \code{"xgboost_ubj"} for XGBoost UBJSON;
+#'   \item \code{"xgboost_json"} for XGBoost JSON;
+#'   \item \code{"xgboost_legacy"} for the legacy XGBoost binary format;
+#'   \item \code{"lightgbm"} for LightGBM text models; and
+#'   \item \code{"treelite_checkpoint"} for Treelite checkpoints.
+#' }
+#' When \code{model_type = NULL}, the format is inferred only from the
+#' case-insensitive filename suffix: \file{.ubj}, \file{.json}, \file{.model},
+#' and \file{.txt} map to \code{"xgboost_ubj"}, \code{"xgboost_json"},
+#' \code{"xgboost_legacy"}, and \code{"lightgbm"}, respectively. Treelite
+#' checkpoints have no inferred suffix and require
+#' \code{model_type = "treelite_checkpoint"}. Inference does not inspect file
+#' contents; use an explicit type when the suffix does not identify the format.
+#'
+#' @section Runtime requirements:
+#' Both CPU and GPU inference require \code{\link{cuda_ml_install}()} and the
+#' full managed CUDA and RAPIDS runtime, which is roughly 1.6 GiB. CPU
+#' inference does not require an NVIDIA GPU or driver. GPU inference requires a
+#' supported NVIDIA GPU and driver.
+#'
+#' @section Persistence:
+#' Persist nvForest models with \code{\link{cuda_ml_serialize}()} and restore
+#' them with \code{\link{cuda_ml_unserialize}()}, or use
+#' \code{bundle::bundle()}. Schema 1 nvForest states require an exact Treelite
+#' version match. The recorded package, CUDA, RAPIDS, nvForest, and platform
+#' versions are provenance rather than compatibility gates. The restoring
+#' process must have prepared its runtime with
+#' \code{\link{cuda_ml_install}()}.
+#'
+#' @seealso \code{\link{cuda_ml_nvforest_info}()},
+#'   \code{\link{cuda_ml_nvforest_leaf_ids}()},
+#'   \code{\link{cuda_ml_nvforest_predict_per_tree}()}, and
+#'   \code{vignette("nvforest")}
 #' @export
 cuda_ml_nvforest_load_model <- function(
   model_file,
@@ -325,10 +361,19 @@ nvforest_validate_model <- function(object) {
 #' @param object An nvForest-backed model.
 #' @param new_data Numeric predictor data.
 #' @param type Classification models support \code{"class"} and \code{"prob"};
-#'   regression models support \code{"numeric"}.
+#'   regression models support \code{"numeric"}. Probability prediction is
+#'   available only when
+#'   \code{cuda_ml_nvforest_info(object)$has_probability_output} is true.
+#'   Unsupported Treelite postprocessors fail explicitly.
 #' @param threshold Binary classification threshold, or \code{NULL} for 0.5.
-#' @param chunk_size Prediction chunk size, or \code{NULL} for the model default.
+#' @param chunk_size Native prediction chunk size, or \code{NULL} for the model
+#'   default. It controls native batching and does not limit the size of the
+#'   returned R object.
 #' @param ... Unused.
+#'
+#' @return A tibble with \code{.pred} for regression,
+#'   \code{.pred_class} for class prediction, or one probability column named
+#'   \code{.pred_<level>} for each class.
 #'
 #' @importFrom ellipsis check_dots_used
 #' @export
@@ -349,7 +394,21 @@ predict.cuda_ml_nvforest <- function(
 #'
 #' @param object An nvForest-backed model.
 #'
-#' @return A named list of current nvForest model properties.
+#' @return A named list with:
+#' \describe{
+#'   \item{\code{task_type}}{One of \code{"binary_classification"},
+#'     \code{"multiclass_classification"}, or \code{"regression"}.}
+#'   \item{\code{num_classes}, \code{num_features}, \code{num_outputs}, and
+#'     \code{num_trees}}{Model dimensions.}
+#'   \item{\code{has_vector_leaves}, \code{average_tree_output}, and
+#'     \code{has_probability_output}}{Logical model properties.}
+#'   \item{\code{device}, \code{device_id}, \code{layout}, and
+#'     \code{precision}}{Resolved inference configuration.}
+#'   \item{\code{default_chunk_size} and \code{align_bytes}}{Native chunk and
+#'     memory-alignment settings.}
+#'   \item{\code{treelite_postprocessor}}{The model's Treelite
+#'     postprocessor.}
+#' }
 #' @export
 cuda_ml_nvforest_info <- function(object) {
   nvforest_validate_model(object)
@@ -396,7 +455,9 @@ nvforest_chunk_size <- function(info, chunk_size) {
 #'
 #' @param object An nvForest-backed model.
 #' @param new_data Numeric predictor data.
-#' @param chunk_size Prediction chunk size, or \code{NULL} for the model default.
+#' @param chunk_size Native prediction chunk size, or \code{NULL} for the model
+#'   default. It controls native batching and does not limit the size of the
+#'   returned R object.
 #'
 #' @return An integer matrix with one row per observation and one column per
 #'   tree.
@@ -425,6 +486,14 @@ cuda_ml_nvforest_leaf_ids <- function(object, new_data, chunk_size = NULL) {
 #' @return For scalar-leaf models, a numeric matrix with one column per tree.
 #'   For vector-leaf models, a numeric array indexed by observation, tree, and
 #'   output.
+#'
+#' @section Memory use:
+#' The complete result is materialized in R: rows by trees for scalar-leaf
+#' models and rows by trees by outputs for vector-leaf models. The
+#' \code{chunk_size} argument controls native prediction work but does not bound
+#' the memory required by the R result.
+#'
+#' @seealso \code{\link{cuda_ml_nvforest_leaf_ids}()}
 #' @export
 cuda_ml_nvforest_predict_per_tree <- function(
   object,

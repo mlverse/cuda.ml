@@ -11,7 +11,9 @@ cuda_ml_nvforest_leaf_ids(object, new_data, chunk_size = NULL)
 
 \item{new_data}{Numeric predictor data.}
 
-\item{chunk_size}{Prediction chunk size, or \code{NULL} for the model default.}
+\item{chunk_size}{Native prediction chunk size, or \code{NULL} for the model
+default. It controls native batching and does not limit the size of the
+returned R object.}
 }
 \value{
 An integer matrix with one row per observation and one column per

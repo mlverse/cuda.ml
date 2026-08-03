@@ -18,11 +18,14 @@
 #' cache, or contact the network. Call \code{\link{cuda_ml_install}()} to
 #' download the exact backend from GitHub Releases and the pinned CUDA 13.2.2
 #' and RAPIDS cuML and nvForest 26.06 runtime from upstream wheel hosts.
-#' Treelite 4.7.0 is linked statically into the backend. Native operations fail
-#' with an installation instruction until setup is complete. GPU operations
-#' then require a supported NVIDIA GPU and driver 580 or newer; nvForest CPU
-#' inference does not. Set \code{CUDA_ML_CACHE_DIR} to override the default
-#' cache and \code{CUDA_ML_BACKEND_MIRROR} to use an exact backend mirror.
+#' The managed CUDA and RAPIDS runtime is roughly 1.6 GiB. Treelite 4.7.0 is
+#' linked statically into the backend. Native operations fail with an
+#' installation instruction until setup is complete. GPU operations then
+#' require a supported NVIDIA GPU and driver 580 or newer. nvForest CPU
+#' inference does not require a GPU or NVIDIA driver, but it still requires
+#' \code{cuda_ml_install()} and the full managed runtime. Set
+#' \code{CUDA_ML_CACHE_DIR} to override the default cache and
+#' \code{CUDA_ML_BACKEND_MIRROR} to use an exact backend mirror.
 #'
 #' To compile cuda.ml itself on the host without a prebuilt cuda.ml backend,
 #' call \code{cuda_ml_install(source = TRUE)}. The default managed source build

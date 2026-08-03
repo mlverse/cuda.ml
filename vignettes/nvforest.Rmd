@@ -1,0 +1,255 @@
+---
+title: "nvForest inference"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{nvForest inference}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+nvForest runs inference for tree ensembles exported by XGBoost, LightGBM, or
+Treelite. The examples in this vignette are not evaluated when the vignette is
+built. Building it therefore does not require model files, a GPU, the managed
+runtime, network access, or a runtime download.
+
+## Prepare the runtime
+
+Install the native backend and its managed runtime before loading a model:
+
+```{r install}
+library(cuda.ml)
+cuda_ml_install()
+```
+
+CPU inference does not require an NVIDIA GPU or driver. It still requires
+`cuda_ml_install()` and the full, roughly 1.6 GiB managed CUDA/RAPIDS runtime.
+Provision that runtime while preparing the deployment environment, not while
+handling a prediction request. A completed managed cache is reused by later R
+processes.
+
+## Load exported models
+
+`cuda_ml_nvforest_load_model()` accepts exactly five `model_type` values:
+
+| `model_type` | Exported model format |
+|:---|:---|
+| `"xgboost_ubj"` | XGBoost UBJSON |
+| `"xgboost_json"` | XGBoost JSON |
+| `"xgboost_legacy"` | XGBoost legacy binary |
+| `"lightgbm"` | LightGBM text |
+| `"treelite_checkpoint"` | Treelite checkpoint |
+
+The format can always be selected explicitly:
+
+```{r explicit-formats}
+xgb_ubjson <- cuda_ml_nvforest_load_model(
+  "xgboost-model.ubj",
+  model_type = "xgboost_ubj",
+  device = "cpu"
+)
+xgb_json <- cuda_ml_nvforest_load_model(
+  "xgboost-model.json",
+  model_type = "xgboost_json",
+  device = "cpu"
+)
+xgb_legacy <- cuda_ml_nvforest_load_model(
+  "xgboost-model.model",
+  model_type = "xgboost_legacy",
+  device = "cpu"
+)
+lightgbm_model <- cuda_ml_nvforest_load_model(
+  "lightgbm-model.txt",
+  model_type = "lightgbm",
+  device = "cpu"
+)
+treelite_model <- cuda_ml_nvforest_load_model(
+  "treelite-model.checkpoint",
+  model_type = "treelite_checkpoint",
+  device = "cpu"
+)
+```
+
+With `model_type = NULL`, the default, the loader infers four formats from a
+case-insensitive file suffix:
+
+| Suffix | Inferred format |
+|:---|:---|
+| `.ubj` | XGBoost UBJSON |
+| `.json` | XGBoost JSON |
+| `.model` | XGBoost legacy binary |
+| `.txt` | LightGBM text |
+
+```{r inferred-formats}
+xgb_model <- cuda_ml_nvforest_load_model("xgboost-model.ubj", device = "cpu")
+lightgbm_model <- cuda_ml_nvforest_load_model(
+  "lightgbm-model.txt",
+  class_levels = c("no", "yes"),
+  device = "cpu"
+)
+```
+
+Treelite checkpoint filenames are not inferred. Supply
+`model_type = "treelite_checkpoint"` for every checkpoint filename.
+
+## Select CPU or GPU inference
+
+Select the device when loading the model. The default is GPU, so set the device
+explicitly for CPU deployment.
+
+```{r devices}
+cpu_model <- cuda_ml_nvforest_load_model(
+  "model.ubj",
+  device = "cpu"
+)
+
+gpu_model <- cuda_ml_nvforest_load_model(
+  "model.ubj",
+  device = "gpu",
+  device_id = 0
+)
+```
+
+`device_id` applies only to GPU models. Omitting it uses the current CUDA
+device. CPU and GPU models otherwise use the same prediction and inspection
+APIs.
+
+## Predict regression and classification results
+
+Regression prediction returns a data frame with a `.pred` column:
+
+```{r regression}
+regression_model <- cuda_ml_nvforest_load_model(
+  "regression.ubj",
+  device = "cpu"
+)
+
+new_data <- data.frame(
+  feature_1 = c(0.2, 0.8),
+  feature_2 = c(1.5, 0.4)
+)
+
+regression_predictions <- predict(regression_model, new_data)
+```
+
+For a classifier, `class_levels` supplies labels in model-output order.
+Class prediction returns `.pred_class`. Probability prediction returns one
+`.pred_<level>` column for each class.
+
+```{r classification}
+classifier <- cuda_ml_nvforest_load_model(
+  "classifier.txt",
+  model_type = "lightgbm",
+  class_levels = c("no", "yes"),
+  device = "cpu"
+)
+
+class_predictions <- predict(classifier, new_data, type = "class")
+probability_predictions <- predict(classifier, new_data, type = "prob")
+```
+
+Probability prediction is available only when the model's Treelite
+postprocessor produces probabilities.
+
+## Inspect a model
+
+Use `cuda_ml_nvforest_info()` to inspect the task, model dimensions, output
+representation, inference device, layout, precision, and chunk settings.
+
+```{r inspect}
+info <- cuda_ml_nvforest_info(classifier)
+info$task_type
+info$num_features
+info$num_trees
+info$device
+info$has_probability_output
+```
+
+## Inspect leaves and individual trees
+
+Leaf identifiers form an integer matrix with one row per observation and one
+column per tree.
+
+```{r leaves}
+leaf_ids <- cuda_ml_nvforest_leaf_ids(classifier, new_data)
+```
+
+Individual-tree predictions form a numeric `rows × trees` matrix for
+scalar-leaf models. Vector-leaf models return a numeric
+`rows × trees × outputs` array.
+
+```{r per-tree}
+per_tree <- cuda_ml_nvforest_predict_per_tree(classifier, new_data)
+```
+
+Per-tree prediction fully materializes the logical
+`rows × trees × outputs` result in R; scalar-leaf models omit the singleton
+output dimension. `chunk_size` changes native inference batching, but it does
+not bound the R result's memory. Account for the complete result when choosing
+the number of rows and trees for this operation.
+
+## Persist and restore a model
+
+Use `cuda_ml_serialize()` rather than saving the live model object. It creates
+an explicit schema 1 model state containing the nvForest payload and its
+compatibility metadata.
+
+```{r save-state}
+state <- cuda_ml_serialize(classifier)
+saveRDS(state, "classifier.cuda-ml-state.rds")
+```
+
+Restore the state with `cuda_ml_unserialize()` in a fresh R process. Prepare the
+managed runtime on that host before restoration.
+
+```{r restore-state}
+library(cuda.ml)
+cuda_ml_install()
+
+state <- readRDS("classifier.cuda-ml-state.rds")
+classifier <- cuda_ml_unserialize(state)
+predict(classifier, new_data, type = "prob")
+```
+
+Schema 1 restoration requires the installed package to support the saved state
+class and model ABI. An nvForest state contains serialized Treelite model bytes,
+so its recorded `treelite_version` must exactly match the target backend.
+The package version and other recorded backend fields are provenance rather
+than compatibility gates for schema 1. States are not migrated implicitly, and
+native pointers are not used as a persistence fallback.
+
+## Serve predictions with Plumber
+
+The following Plumber-annotated file restores one model when the serving process
+starts and uses that model for every request. The request body is JSON with a
+column-oriented `predictors` object, such as
+`{"predictors":{"feature_1":[0.2],"feature_2":[1.5]}}`.
+
+```{r plumber}
+# plumber.R
+library(cuda.ml)
+
+cuda_ml_install()
+classifier <- cuda_ml_unserialize(
+  readRDS("classifier.cuda-ml-state.rds")
+)
+
+#* Return class probabilities
+#* @post /predict
+#* @serializer unboxedJSON
+function(req) {
+  new_data <- as.data.frame(req$body$predictors)
+  predict(classifier, new_data, type = "prob")
+}
+```
+
+The route uses only the public cuda.ml persistence and prediction APIs. Prepare
+the managed cache before starting the service so `cuda_ml_install()` reuses the
+completed installation without downloading files.
