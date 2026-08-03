@@ -44,6 +44,14 @@
   .cuda_ml_state$native_symbols <- symbols
   .cuda_ml_state$dll <- NULL
 
+  register <- function(...) register_parsnip_models(pkgname)
+  if (isNamespaceLoaded("parsnip")) {
+    register()
+  }
+  setHook(packageEvent("parsnip", "onLoad"), register, action = "append")
+}
+
+register_parsnip_models <- function(pkgname) {
   register_rand_forest_model(pkgname)
   register_svm_model(pkgname)
   register_knn_model(pkgname)

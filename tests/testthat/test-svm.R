@@ -104,7 +104,8 @@ test_that("cuda_ml_svm() works as expected for regression tasks", {
 })
 
 test_that("cuda_ml_svm() classification works as expected through parsnip", {
-  require("parsnip")
+  skip_if_not_installed("parsnip")
+  library(parsnip)
 
   cuda_ml_multiclass_svc_input <- iris[, names(iris) != "Species"]
 
@@ -135,7 +136,8 @@ test_that("cuda_ml_svm() classification works as expected through parsnip", {
 })
 
 test_that("cuda_ml_svm() regression works as expected through parsnip", {
-  require("parsnip")
+  skip_if_not_installed("parsnip")
+  library(parsnip)
 
   cuda_ml_svr_model <- cuda_ml_svm(
     formula = mpg ~ .,

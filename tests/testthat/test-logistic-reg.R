@@ -132,6 +132,8 @@ test_that("logistic regression works as expected with elasticnet regularization"
 })
 
 test_that("logistic_reg uses the cuda.ml engine", {
+  skip_if_not_installed("parsnip")
+
   data <- iris[iris$Species != "virginica", ]
   data$Species <- droplevels(data$Species)
   specification <- parsnip::set_engine(
@@ -148,6 +150,8 @@ test_that("logistic_reg uses the cuda.ml engine", {
 })
 
 test_that("multinom_reg uses the cuda.ml engine", {
+  skip_if_not_installed("parsnip")
+
   specification <- parsnip::set_engine(
     parsnip::multinom_reg(penalty = 0.01, mixture = 0.5),
     "cuda.ml"

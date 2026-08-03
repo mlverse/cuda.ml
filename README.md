@@ -46,6 +46,7 @@ cuML](https://github.com/rapidsai/cuml#supported-algorithms)).
 {cuda.ml} provides {parsnip} bindings for supervised ML algorithms such
 as `linear_reg`, `logistic_reg`, `multinom_reg`, `rand_forest`,
 `nearest_neighbor`, `svm_rbf`, `svm_poly`, and `svm_linear`.
+Install {parsnip} separately to use these optional bindings.
 
 Regularized models follow tidymodels conventions for `penalty` and
 `mixture`. When predictors need scaling, learn and apply it explicitly

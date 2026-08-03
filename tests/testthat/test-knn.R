@@ -138,7 +138,8 @@ test_that("KNN regressor works as expected", {
 })
 
 test_that("KNN classifier works as expected through parsnip", {
-  require("parsnip")
+  skip_if_not_installed("parsnip")
+  library(parsnip)
 
   test_blobs_df <- gen_blobs(test_blob_sz, centers) %>%
     as.data.frame()
@@ -160,7 +161,8 @@ test_that("KNN classifier works as expected through parsnip", {
 })
 
 test_that("KNN regressor works as expected through parsnip", {
-  require("parsnip")
+  skip_if_not_installed("parsnip")
+  library(parsnip)
 
   resps <- seq_along(centers) %>%
     sapply(function(x) rep(exp(-x), blob_sz)) %>%

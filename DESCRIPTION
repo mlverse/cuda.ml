@@ -33,7 +33,6 @@ Imports:
     ellipsis,
     filelock,
     hardhat,
-    parsnip,
     Rcpp (>= 1.0.6),
     rlang (>= 0.1.4)
 Suggests:
@@ -41,6 +40,7 @@ Suggests:
     glmnet,
     MASS,
     magrittr,
+    parsnip,
     purrr,
     recipes,
     reticulate,

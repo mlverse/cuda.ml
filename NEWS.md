@@ -27,6 +27,9 @@ cuML and nvForest 26.06, and Treelite 4.7.0.
   They do not inspect the GPU, create a cache, contact the network, or load the
   native backend. CRAN checks use an explicit network-free stub backend.
 
+- Parsnip is now optional. Loading cuda.ml does not load parsnip, ggplot2, or
+  S7; cuda.ml registers its engines when parsnip is loaded.
+
 - Replaced the removed cuML FIL interface with current nvForest loading,
   prediction, model inspection, leaf-ID, per-tree, and persistence APIs.
   Random-forest inference and persistence now use the same nvForest backend.

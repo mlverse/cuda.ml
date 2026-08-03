@@ -1,6 +1,8 @@
 skip_if_not(run_gpu_tests, "requires the GPU test environment")
 
 test_that("linear_reg uses cuda.ml penalty and mixture semantics", {
+  skip_if_not_installed("parsnip")
+
   specification <- parsnip::set_engine(
     parsnip::linear_reg(penalty = 1e-3, mixture = 0.5),
     "cuda.ml"

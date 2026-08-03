@@ -85,7 +85,8 @@ test_that("random forest binary classes honor the probability threshold", {
 })
 
 test_that("random forest classifier works as expected through parsnip", {
-  require("parsnip")
+  skip_if_not_installed("parsnip")
+  library(parsnip)
 
   cuda_ml_rf_model <- rand_forest(trees = 200, mode = "classification") %>%
     set_engine("cuda.ml", bootstrap = FALSE) %>%
@@ -114,7 +115,8 @@ test_that("random forest classifier works as expected through parsnip", {
 })
 
 test_that("random forest regressor works as expected through parsnip", {
-  require("parsnip")
+  skip_if_not_installed("parsnip")
+  library(parsnip)
 
   cuda_ml_rf_model <- rand_forest(trees = 200, mode = "regression") %>%
     set_engine("cuda.ml", bootstrap = FALSE) %>%
