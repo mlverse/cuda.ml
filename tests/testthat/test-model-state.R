@@ -7,6 +7,84 @@ test_that("unversioned model states are rejected", {
   )
 })
 
+linear_state_fixture <- function() {
+  readRDS(test_path("fixtures", "linear-model-state-schema-1.rds"))
+}
+
+current_linear_state <- function() {
+  state <- unserialize(linear_state_fixture())
+  state$package_version <- as.character(utils::packageVersion("cuda.ml"))
+  state
+}
+
+test_that("a frozen compatible state restores across package versions", {
+  serialized <- linear_state_fixture()
+  state <- unserialize(serialized)
+
+  expect_false(identical(
+    state$package_version,
+    as.character(utils::packageVersion("cuda.ml"))
+  ))
+
+  model <- cuda_ml_unserialize(serialized)
+  expect_s3_class(model, "cuda_ml_ols")
+
+  skip_if_not(run_gpu_tests, "requires the GPU test environment")
+  expected <- unname(stats::predict(stats::lm(mpg ~ wt, mtcars), mtcars))
+
+  expect_equal(predict(model, mtcars)$.pred, expected, tolerance = 1e-6)
+})
+
+test_that("schema, ABI, provenance, and payload errors are actionable", {
+  state <- current_linear_state()
+  state$schema <- 2L
+  expect_error(
+    cuda_ml_unserialize(serialize(state, NULL)),
+    "schema 2.*supports schema 1"
+  )
+
+  state <- current_linear_state()
+  state$model_abi <- "cuda_ml_linear_model_state_v2"
+  expect_error(
+    cuda_ml_unserialize(serialize(state, NULL)),
+    "ABI.*cuda_ml_linear_model_state_v2.*not supported"
+  )
+
+  state <- current_linear_state()
+  state$model_abi <- "cuda_ml_logistic_reg_model_state"
+  expect_error(
+    cuda_ml_unserialize(serialize(state, NULL)),
+    "incompatible.*expected `cuda_ml_linear_model_state`"
+  )
+
+  state <- current_linear_state()
+  state$package_version <- NULL
+  expect_error(
+    cuda_ml_unserialize(serialize(state, NULL)),
+    "package-version provenance is missing"
+  )
+
+  state <- current_linear_state()
+  state$payload <- NULL
+  expect_error(
+    cuda_ml_unserialize(serialize(state, NULL)),
+    "payload is missing"
+  )
+})
+
+test_that("pure-R states do not require a matching backend identity", {
+  state <- unserialize(linear_state_fixture())
+  state$backend[] <- "different provenance"
+
+  model <- cuda_ml_unserialize(serialize(state, NULL))
+  expect_s3_class(model, "cuda_ml_ols")
+
+  skip_if_not(run_gpu_tests, "requires the GPU test environment")
+  expected <- unname(stats::predict(stats::lm(mpg ~ wt, mtcars), mtcars))
+
+  expect_equal(predict(model, mtcars)$.pred, expected, tolerance = 1e-6)
+})
+
 test_that("duplicate serialization aliases are not exported", {
   exports <- getNamespaceExports("cuda.ml")
 
@@ -24,8 +102,11 @@ test_that("linear and logistic models use explicit portable states", {
 
   restored_linear <- cuda_ml_unserialize(cuda_ml_serialize(linear))
   restored_logistic <- cuda_ml_unserialize(cuda_ml_serialize(logistic))
+  saved_linear <- predict_saved_models_in_sub_proc(linear, mtcars)
 
   expect_equal(predict(restored_linear, mtcars), predict(linear, mtcars))
+  expect_equal(saved_linear$restored, predict(linear, mtcars))
+  expect_equal(saved_linear$unbundled, predict(linear, mtcars))
   expect_equal(
     predict(restored_logistic, binary, type = "prob"),
     predict(logistic, binary, type = "prob")
