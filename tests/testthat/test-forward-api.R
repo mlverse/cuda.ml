@@ -50,7 +50,21 @@ test_that("classification rejects unobserved outcome levels", {
   )
 })
 
+test_that("native operations fail clearly on unsupported platforms", {
+  skip_if(native_platform_supported, "requires an unsupported platform")
+
+  expect_error(
+    cuda_ml_knn(mpg ~ ., mtcars),
+    "requires Linux x86_64 with glibc 2.28 or newer",
+    fixed = TRUE
+  )
+})
+
 test_that("KNN defaults reach backend selection without a runtime", {
+  skip_if_not(
+    native_platform_supported,
+    "requires the native backend platform"
+  )
   info <- cuda_ml_backend_info()
   skip_if(info$runtime_installed)
   error <- if (info$backend_available) {

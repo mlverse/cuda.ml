@@ -1,3 +1,8 @@
+skip_if_not(
+  native_platform_supported,
+  "requires the native backend platform"
+)
+
 test_that("managed source installation only requires a host compiler", {
   cache <- tempfile("cuda-ml-source-cache-")
 

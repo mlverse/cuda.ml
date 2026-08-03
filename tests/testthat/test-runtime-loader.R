@@ -160,8 +160,7 @@ test_that("cache cleanup is scoped to cuda.ml cache generations", {
 
 test_that("an unpublished backend fails before downloading the runtime", {
   skip_if_not(
-    identical(unname(Sys.info()[["sysname"]]), "Linux") &&
-      unname(Sys.info()[["machine"]]) %in% c("x86_64", "amd64"),
+    native_platform_supported,
     "requires the managed runtime platform"
   )
 

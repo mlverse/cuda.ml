@@ -1,4 +1,5 @@
 backend_info <- cuda_ml_backend_info()
+native_platform_supported <- cuda_ml_supported_platform()
 nvidia_smi <- unname(Sys.which("nvidia-smi"))
 gpu_output <- character()
 if (nzchar(nvidia_smi)) {
