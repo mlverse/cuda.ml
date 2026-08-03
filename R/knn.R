@@ -89,8 +89,7 @@ knn_validate_ivfpq_params <- function(
   nlist,
   nprobe,
   m,
-  n_bits,
-  use_precomputed_tables
+  n_bits
 ) {
   stopifnot(
     "`nlist` must be one positive whole number" = is.numeric(nlist) &&
@@ -117,13 +116,7 @@ knn_validate_ivfpq_params <- function(
       n_bits >= 4L &&
       n_bits <= 8L &&
       n_bits == as.integer(n_bits),
-    "`m * n_bits` must be divisible by 8" = (m * n_bits) %% 8L == 0L,
-    "`use_precomputed_tables` must be TRUE or FALSE" = is.logical(
-      use_precomputed_tables
-    ) &&
-      length(use_precomputed_tables) == 1L &&
-      !is.na(use_precomputed_tables),
-    "`use_precomputed_tables = TRUE` is not supported" = !use_precomputed_tables
+    "`m * n_bits` must be divisible by 8" = (m * n_bits) %% 8L == 0L
   )
   invisible(TRUE)
 }
@@ -144,15 +137,13 @@ cuda_ml_knn_algo_ivfpq <- function(
   nlist,
   nprobe,
   m,
-  n_bits,
-  use_precomputed_tables = FALSE
+  n_bits
 ) {
   knn_validate_ivfpq_params(
     nlist,
     nprobe,
     m,
-    n_bits,
-    use_precomputed_tables
+    n_bits
   )
   structure(
     list(
@@ -162,7 +153,7 @@ cuda_ml_knn_algo_ivfpq <- function(
         nprobe = as.integer(nprobe),
         M = as.integer(m),
         n_bits = as.integer(n_bits),
-        usePrecomputedTables = as.logical(use_precomputed_tables)
+        usePrecomputedTables = FALSE
       )
     ),
     class = "cuda_ml_knn_algo"
