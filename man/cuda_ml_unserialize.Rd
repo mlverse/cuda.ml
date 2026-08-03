@@ -17,6 +17,44 @@ A unserialized CuML model.
 \description{
 Unserialize a CuML model state into a CuML model object.
 }
+\section{Persistence contract}{
+
+cuda.ml schema 1 model states contain a schema number, the cuda.ml package
+version that created the state, backend provenance, a model ABI identifier,
+and a payload. The package version is provenance only: a difference from the
+installed cuda.ml version does not prevent restoration.
+
+Compatibility is determined before the payload is restored:
+\itemize{
+  \item The schema must be the integer \code{1}. Unknown and unversioned
+    schemas are rejected.
+  \item The state class and model ABI must identify a restoration method
+    supported by the installed package. A change to a model's payload layout
+    requires a new model ABI.
+  \item Linear-model and logistic-regression states have portable R payloads
+    and do not require matching backend identity fields.
+  \item PCA, SVC, one-vs-rest SVC, SVR, and UMAP states require an exact
+    \code{rapids_version} match because their payloads reconstruct RAPIDS
+    native state.
+  \item Random-forest and nvForest states require an exact
+    \code{treelite_version} match because their payloads contain serialized
+    Treelite model bytes.
+}
+The remaining recorded backend fields---\code{cuda_version},
+\code{nvforest_version}, and \code{platform}---are provenance for schema 1,
+not compatibility gates. A missing payload, unsupported ABI, or missing or
+unequal required backend field is rejected. cuda.ml does not implicitly
+migrate a state or fall back to serializing native pointers.
+
+Saving a state to a file connection and restoring it in another R process
+uses this same contract. The target process must have a compatible cuda.ml
+installation and must prepare the required runtime with
+\code{cuda_ml_install()} before prediction. \code{bundle::bundle()} stores
+the same explicit state, so saving a bundle with \code{saveRDS()} and
+restoring it with \code{readRDS()} and \code{bundle::unbundle()} has the
+same compatibility requirements.
+}
+
 \seealso{
 \code{\link[base]{unserialize}}
 }

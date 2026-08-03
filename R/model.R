@@ -46,6 +46,30 @@ cuda_ml_state_backend_identity <- function() {
   )]
 }
 
+cuda_ml_state_backend_requirements <- function(model_abi) {
+  requirements <- list(
+    cuda_ml_linear_model_state = character(),
+    cuda_ml_logistic_reg_model_state = character(),
+    cuda_ml_pca_model_state = "rapids_version",
+    cuda_ml_svc_model_state = "rapids_version",
+    cuda_ml_svc_ovr_model_state = "rapids_version",
+    cuda_ml_svr_model_state = "rapids_version",
+    cuda_ml_umap_model_state = "rapids_version",
+    cuda_ml_nvforest_model_state = "treelite_version",
+    cuda_ml_rand_forest_model_state = "treelite_version"
+  )
+  required <- requirements[[model_abi]]
+  if (is.null(required)) {
+    stop(
+      "The cuda.ml model-state ABI `",
+      model_abi,
+      "` is not supported by this cuda.ml version.",
+      call. = FALSE
+    )
+  }
+  required
+}
+
 new_model_state <- function(payload, cls) {
   stopifnot(
     "A concrete model-state class is required" = is.character(cls) &&
@@ -66,36 +90,97 @@ new_model_state <- function(payload, cls) {
 }
 
 cuda_ml_validate_model_state <- function(model_state) {
-  stopifnot(
-    "Unversioned cuda.ml model states are unsupported" = is.list(model_state) &&
-      identical(model_state$schema, 1L),
-    "The cuda.ml model-state package version is incompatible" = identical(
-      model_state$package_version,
-      as.character(utils::packageVersion("cuda.ml"))
-    ),
-    "The cuda.ml model-state backend is incompatible" = identical(
-      model_state$backend,
-      cuda_ml_state_backend_identity()
-    ),
-    "The cuda.ml model-state ABI is missing" = is.character(
-      model_state$model_abi
-    ) &&
-      length(model_state$model_abi) == 1L &&
-      nzchar(model_state$model_abi),
-    "The cuda.ml model-state payload is missing" = "payload" %in%
-      names(model_state)
-  )
+  if (!is.list(model_state)) {
+    stop("A cuda.ml model state must be a list.", call. = FALSE)
+  }
+  if (is.null(model_state$schema)) {
+    stop("Unversioned cuda.ml model states are unsupported.", call. = FALSE)
+  }
+  if (!identical(model_state$schema, 1L)) {
+    stop(
+      "cuda.ml model-state schema ",
+      paste(model_state$schema, collapse = ", "),
+      " is unsupported; this cuda.ml version supports schema 1.",
+      call. = FALSE
+    )
+  }
+  if (
+    !is.character(model_state$package_version) ||
+      length(model_state$package_version) != 1L ||
+      !nzchar(model_state$package_version)
+  ) {
+    stop(
+      "The cuda.ml model-state package-version provenance is missing.",
+      call. = FALSE
+    )
+  }
+  if (
+    !is.character(model_state$model_abi) ||
+      length(model_state$model_abi) != 1L ||
+      !nzchar(model_state$model_abi)
+  ) {
+    stop("The cuda.ml model-state ABI is missing.", call. = FALSE)
+  }
+  if (!"payload" %in% names(model_state)) {
+    stop("The cuda.ml model-state payload is missing.", call. = FALSE)
+  }
+
+  required <- cuda_ml_state_backend_requirements(model_state$model_abi)
+  if (length(required) > 0L && !is.list(model_state$backend)) {
+    stop(
+      "The cuda.ml model-state ABI `",
+      model_state$model_abi,
+      "` is missing its required backend identity.",
+      call. = FALSE
+    )
+  }
+  installed <- if (length(required) > 0L) {
+    cuda_ml_state_backend_identity()
+  } else {
+    list()
+  }
+  for (field in required) {
+    state_value <- model_state$backend[[field]]
+    if (is.null(state_value)) {
+      stop(
+        "The cuda.ml model-state ABI `",
+        model_state$model_abi,
+        "` is missing required backend identity `",
+        field,
+        "`.",
+        call. = FALSE
+      )
+    }
+    if (!identical(state_value, installed[[field]])) {
+      stop(
+        "The cuda.ml model-state ABI `",
+        model_state$model_abi,
+        "` requires backend `",
+        field,
+        "` `",
+        paste(state_value, collapse = ", "),
+        "`, but this installation provides `",
+        paste(installed[[field]], collapse = ", "),
+        "`.",
+        call. = FALSE
+      )
+    }
+  }
 
   invisible(model_state)
 }
 
 cuda_ml_state_payload <- function(model_state, model_abi) {
-  stopifnot(
-    "The cuda.ml model-state ABI is incompatible" = identical(
+  if (!identical(model_state$model_abi, model_abi)) {
+    stop(
+      "The cuda.ml model-state ABI `",
       model_state$model_abi,
-      model_abi
+      "` is incompatible with this model; expected `",
+      model_abi,
+      "`.",
+      call. = FALSE
     )
-  )
+  }
   model_state$payload
 }
 
@@ -175,6 +260,42 @@ cuda_ml_inverse_transform <- function(model, x, ...) {
 #' @return \code{NULL} unless \code{connection} is \code{NULL}, in which case
 #'   the serialized model state is returned as a raw vector.
 #'
+#' @section Persistence contract:
+#' cuda.ml schema 1 model states contain a schema number, the cuda.ml package
+#' version that created the state, backend provenance, a model ABI identifier,
+#' and a payload. The package version is provenance only: a difference from the
+#' installed cuda.ml version does not prevent restoration.
+#'
+#' Compatibility is determined before the payload is restored:
+#' \itemize{
+#'   \item The schema must be the integer \code{1}. Unknown and unversioned
+#'     schemas are rejected.
+#'   \item The state class and model ABI must identify a restoration method
+#'     supported by the installed package. A change to a model's payload layout
+#'     requires a new model ABI.
+#'   \item Linear-model and logistic-regression states have portable R payloads
+#'     and do not require matching backend identity fields.
+#'   \item PCA, SVC, one-vs-rest SVC, SVR, and UMAP states require an exact
+#'     \code{rapids_version} match because their payloads reconstruct RAPIDS
+#'     native state.
+#'   \item Random-forest and nvForest states require an exact
+#'     \code{treelite_version} match because their payloads contain serialized
+#'     Treelite model bytes.
+#' }
+#' The remaining recorded backend fields---\code{cuda_version},
+#' \code{nvforest_version}, and \code{platform}---are provenance for schema 1,
+#' not compatibility gates. A missing payload, unsupported ABI, or missing or
+#' unequal required backend field is rejected. cuda.ml does not implicitly
+#' migrate a state or fall back to serializing native pointers.
+#'
+#' Saving a state to a file connection and restoring it in another R process
+#' uses this same contract. The target process must have a compatible cuda.ml
+#' installation and must prepare the required runtime with
+#' \code{cuda_ml_install()} before prediction. \code{bundle::bundle()} stores
+#' the same explicit state, so saving a bundle with \code{saveRDS()} and
+#' restoring it with \code{readRDS()} and \code{bundle::unbundle()} has the
+#' same compatibility requirements.
+#'
 #' @seealso \code{\link[base]{serialize}}
 #'
 #' @export
@@ -217,6 +338,8 @@ cuda_ml_get_state.default <- function(model) {
 #'
 #' @return A unserialized CuML model.
 #'
+#' @inheritSection cuda_ml_serialize Persistence contract
+#'
 #' @seealso \code{\link[base]{unserialize}}
 #'
 #' @export
@@ -248,6 +371,11 @@ cuda_ml_set_state.default <- function(model_state) {
 #'
 #' @param x A fitted cuda.ml model.
 #' @param ... Unused.
+#'
+#' @inheritSection cuda_ml_serialize Persistence contract
+#'
+#' @seealso \code{\link{cuda_ml_serialize}},
+#'   \code{\link{cuda_ml_unserialize}}
 #'
 #' @exportS3Method bundle::bundle
 bundle.cuda_ml_model <- function(x, ...) {
