@@ -102,6 +102,51 @@ predict_in_sub_proc <- function(
   )
 }
 
+predict_saved_models_in_sub_proc <- function(
+  model,
+  data,
+  additional_predict_args = list()
+) {
+  state_path <- tempfile(fileext = ".cuda-ml-state")
+  bundle_path <- tempfile(fileext = ".rds")
+  on.exit(unlink(c(state_path, bundle_path)))
+
+  connection <- file(state_path, open = "wb")
+  cuda_ml_serialize(model, connection)
+  close(connection)
+  saveRDS(bundle::bundle(model), bundle_path)
+
+  callr::r(
+    function(state_path, bundle_path, data, additional_predict_args) {
+      suppressPackageStartupMessages(library(cuda.ml))
+
+      connection <- file(state_path, open = "rb")
+      restored <- cuda_ml_unserialize(connection)
+      close(connection)
+      unbundled <- bundle::unbundle(readRDS(bundle_path))
+
+      list(
+        restored = do.call(
+          predict,
+          c(list(restored, data), additional_predict_args)
+        ),
+        unbundled = do.call(
+          predict,
+          c(list(unbundled, data), additional_predict_args)
+        )
+      )
+    },
+    args = list(
+      state_path = state_path,
+      bundle_path = bundle_path,
+      data = data,
+      additional_predict_args = additional_predict_args
+    ),
+    stdout = "",
+    stderr = ""
+  )
+}
+
 gen_blobs <- function(blob_sz = 10, centers = NULL) {
   centers <- centers %||% list(c(1000, 1000), c(-1000, -1000), c(-1000, 1000))
   pts <- centers %>%

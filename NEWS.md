@@ -49,10 +49,15 @@ cuML and nvForest 26.06, and Treelite 4.7.0.
   cuML version queries. `cuda_ml_backend_info()` is the single backend metadata
   interface.
 
-- Model persistence now requires an explicit portable representation and
-  records the package, schema, model ABI, and backend identity. Unversioned or
-  incompatible states fail instead of attempting migration. Added
-  `bundle::bundle()` support for models with a portable state.
+- Model persistence now stores explicit versioned state through
+  `cuda_ml_serialize()` and `bundle::bundle()`. The package version is recorded
+  as provenance and does not by itself prevent restoration. Schema 1
+  compatibility is defined by the model ABI: linear and logistic-regression
+  states require no backend identity match; PCA, SVC, one-vs-rest SVC, SVR,
+  and UMAP states require the recorded RAPIDS version; and random-forest and
+  nvForest states require the recorded Treelite version. Unknown schemas or
+  ABIs, missing payloads, and missing or incompatible required backend fields
+  fail without implicit migration or native-pointer fallback behavior.
 
 - Added GPU-less fat-binary compilation for compute capabilities 7.5, 8.0, 8.6,
   8.9, 9.0, 10.0, and 12.0, with PTX forward compatibility from 12.0.
