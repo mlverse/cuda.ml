@@ -11,7 +11,13 @@ rows <- list.files(
 stopifnot(length(rows) > 0L)
 catalog <- do.call(
   rbind,
-  lapply(rows, utils::read.delim, stringsAsFactors = FALSE, check.names = FALSE)
+  lapply(
+    rows,
+    utils::read.delim,
+    stringsAsFactors = FALSE,
+    check.names = FALSE,
+    colClasses = c(r_version = "character")
+  )
 )
 required <- c(
   "r_version",
