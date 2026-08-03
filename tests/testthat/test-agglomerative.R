@@ -1,3 +1,5 @@
+skip_if_not(run_gpu_tests, "requires the GPU test environment")
+
 context("Agglomerative Clustering")
 
 test_that("cuda_ml_agglomerative_clustering() works as expected", {

@@ -1,52 +1,43 @@
-context("(de)serialization of Random Forest models")
+skip_if_not(run_gpu_tests, "requires the GPU test environment")
 
-test_that("random forest classifier can be serialized and unserialized correctly", {
-  model <- cuda_ml_rand_forest(formula = Species ~ ., data = iris, trees = 200)
-  model_state <- cuda_ml_serialize(model)
+test_that("random forest classifier state preserves classes and probabilities", {
+  model <- cuda_ml_rand_forest(Species ~ ., iris, trees = 200L)
+  state <- cuda_ml_serialize(model)
+  data <- iris[names(iris) != "Species"]
 
-  data <- iris[-which(names(iris) == "Species")]
-
-  expected_preds <- predict(model, data)
-  actual_preds <- predict_in_sub_proc(
-    model_state,
-    data = data,
+  expected_class <- predict(model, data, type = "class")
+  expected_prob <- predict(model, data, type = "prob")
+  restored_class <- predict_in_sub_proc(
+    state,
+    data,
     expected_mode = "classification",
-    expected_model_cls = "cuda_ml_rand_forest"
+    expected_model_cls = "cuda_ml_rand_forest",
+    additional_predict_args = list(type = "class")
+  )
+  restored_prob <- predict_in_sub_proc(
+    state,
+    data,
+    expected_mode = "classification",
+    expected_model_cls = "cuda_ml_rand_forest",
+    additional_predict_args = list(type = "prob")
   )
 
-  expect_equal(expected_preds, actual_preds)
-
-  if (as.integer(cuML_minor_version()) >= 8) {
-    # class probabilities output was not supported in earlier versions of RAPIDS
-    # cuML
-    expected_cls_probs <- predict(
-      model, data,
-      output_class_probabilities = TRUE
-    )
-    actual_cls_probs <- predict_in_sub_proc(
-      model_state,
-      data = data,
-      expected_mode = "classification",
-      expected_model_cls = "cuda_ml_rand_forest",
-      additional_predict_args = list(output_class_probabilities = TRUE)
-    )
-    expect_equal(expected_cls_probs, actual_cls_probs, tolerance = 1e-3, scale = 1)
-  }
+  expect_equal(restored_class, expected_class)
+  expect_equal(restored_prob, expected_prob, tolerance = 1e-3, scale = 1)
 })
 
-test_that("random forest regressor can be serialized and unserialized correctly", {
-  model <- cuda_ml_rand_forest(formula = mpg ~ ., data = mtcars, trees = 200)
-  model_state <- cuda_ml_serialize(model)
+test_that("random forest regressor state preserves predictions", {
+  model <- cuda_ml_rand_forest(mpg ~ ., mtcars, trees = 200L)
+  state <- cuda_ml_serialize(model)
+  data <- mtcars[names(mtcars) != "mpg"]
 
-  data <- mtcars[-which(names(mtcars) == "mpg")]
-
-  expected_preds <- predict(model, data)
-  actual_preds <- predict_in_sub_proc(
-    model_state,
-    data = data,
+  expected <- predict(model, data)
+  restored <- predict_in_sub_proc(
+    state,
+    data,
     expected_mode = "regression",
     expected_model_cls = "cuda_ml_rand_forest"
   )
 
-  expect_equal(expected_preds, actual_preds, tolerance = 1e-4, scale = 1)
+  expect_equal(restored, expected, tolerance = 1e-4, scale = 1)
 })

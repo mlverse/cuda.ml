@@ -10,10 +10,7 @@ kmeans_match_init_method <- function(m = c("kmeans++", "random")) {
     }
   } else {
     m <- match.arg(m)
-    switch(m,
-      `kmeans++` = 0L,
-      random = 1L
-    )
+    switch(m, `kmeans++` = 0L, random = 1L)
   }
 }
 
@@ -22,7 +19,6 @@ kmeans_match_init_method <- function(m = c("kmeans++", "random")) {
 #' Run the K means clustering algorithm.
 #'
 #' @template model-with-numeric-input
-#' @template cuML-log-level
 #' @param k The number of clusters.
 #' @param max_iters Maximum number of iterations. Default: 300.
 #' @param tol Relative tolerance with regards to inertia to declare convergence.
@@ -39,17 +35,23 @@ kmeans_match_init_method <- function(m = c("kmeans++", "random")) {
 #'
 #' library(cuda.ml)
 #'
-#' kclust <- cuda_ml_kmeans(
-#'   iris[names(iris) != "Species"],
-#'   k = 3, max_iters = 100
-#' )
+#' if (interactive() && cuda_ml_backend_info()$runtime_installed) {
+#'   kclust <- cuda_ml_kmeans(
+#'     iris[names(iris) != "Species"],
+#'     k = 3, max_iters = 100
+#'   )
 #'
-#' print(kclust)
+#'   print(kclust)
+#' }
 #' @export
-cuda_ml_kmeans <- function(x, k, max_iters = 300, tol = 0,
-                           init_method = c("kmeans++", "random"),
-                           seed = 0L,
-                           cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
+cuda_ml_kmeans <- function(
+  x,
+  k,
+  max_iters = 300,
+  tol = 0,
+  init_method = c("kmeans++", "random"),
+  seed = 0L
+) {
   init_method_enum <- kmeans_match_init_method(init_method)
   centroids <- matrix(numeric(0))
   if (is.matrix(init_method)) {
@@ -63,8 +65,6 @@ cuda_ml_kmeans <- function(x, k, max_iters = 300, tol = 0,
       centroids <- init_method
     }
   }
-  cuML_log_level <- match_cuML_log_level(cuML_log_level)
-
   .kmeans(
     x = as.matrix(x),
     k = as.integer(k),
@@ -73,6 +73,6 @@ cuda_ml_kmeans <- function(x, k, max_iters = 300, tol = 0,
     init_method = init_method_enum,
     centroids = centroids,
     seed = as.integer(seed),
-    verbosity = cuML_log_level
+    verbosity = 6L
   )
 }

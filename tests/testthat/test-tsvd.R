@@ -1,7 +1,10 @@
+skip_if_not(run_gpu_tests, "requires the GPU test environment")
+
 context("Truncated SVD")
 
 tsvd_model <- sklearn$decomposition$TruncatedSVD(
-  n_components = 2L, algorithm = "arpack"
+  n_components = 2L,
+  algorithm = "arpack"
 )
 sklearn_tsvd_model <- tsvd_model$fit(sklearn_iris_dataset$data)
 
@@ -21,26 +24,34 @@ align_svd_signs <- function(a, b) {
 
 test_that("cuda_ml_tsvd() works as expected", {
   sklearn_components <- sklearn_tsvd_model$components_
-  aligned_components <- align_svd_signs(cuda_ml_tsvd_model$components, sklearn_components)
+  aligned_components <- align_svd_signs(
+    cuda_ml_tsvd_model$components,
+    sklearn_components
+  )
 
   expect_equal(
-    aligned_components, sklearn_components,
-    tolerance = 1e-8, scale = 1
+    aligned_components,
+    sklearn_components,
+    tolerance = 1e-8,
+    scale = 1
   )
   expect_equal(
     cuda_ml_tsvd_model$explained_variance,
     as.numeric(sklearn_tsvd_model$explained_variance_),
-    tolerance = 1e-8, scale = 1
+    tolerance = 1e-8,
+    scale = 1
   )
   expect_equal(
     cuda_ml_tsvd_model$explained_variance_ratio,
     as.numeric(sklearn_tsvd_model$explained_variance_ratio_),
-    tolerance = 1e-8, scale = 1
+    tolerance = 1e-8,
+    scale = 1
   )
   expect_equal(
     cuda_ml_tsvd_model$singular_values,
     as.numeric(sklearn_tsvd_model$singular_values_),
-    tolerance = 1e-8, scale = 1
+    tolerance = 1e-8,
+    scale = 1
   )
 
   # Transformed data columns also have sign ambiguity matching the components
@@ -51,16 +62,27 @@ test_that("cuda_ml_tsvd() works as expected", {
       cuda_transformed[, j] <- -cuda_transformed[, j]
     }
   }
-  expect_equal(cuda_transformed, sklearn_transformed, tolerance = 1e-8, scale = 1)
+  expect_equal(
+    cuda_transformed,
+    sklearn_transformed,
+    tolerance = 1e-8,
+    scale = 1
+  )
 })
 
 test_that("cuda_ml_inverse_transform() works as expected for TSVD models", {
   # inverse_transform recovers the original data regardless of sign convention
   cuda_ml_reconstructed <- cuda_ml_inverse_transform(
-    cuda_ml_tsvd_model, cuda_ml_tsvd_model$transformed_data
+    cuda_ml_tsvd_model,
+    cuda_ml_tsvd_model$transformed_data
   )
   sklearn_reconstructed <- sklearn_tsvd_model$inverse_transform(
     sklearn_tsvd_model$transform(sklearn_iris_dataset$data)
   )
-  expect_equal(cuda_ml_reconstructed, sklearn_reconstructed, tolerance = 1e-2, scale = 1)
+  expect_equal(
+    cuda_ml_reconstructed,
+    sklearn_reconstructed,
+    tolerance = 1e-2,
+    scale = 1
+  )
 })

@@ -1,3 +1,5 @@
+skip_if_not(run_gpu_tests, "requires the GPU test environment")
+
 context("Density-Based Spatial Clustering of Applications with Noise")
 
 test_that("cuda_ml_dbscan() works as expected", {

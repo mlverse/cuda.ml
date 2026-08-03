@@ -2,12 +2,9 @@
 % Please edit documentation in R/model.R
 \name{cuda_ml_serialize}
 \alias{cuda_ml_serialize}
-\alias{cuda_ml_serialise}
 \title{Serialize a CuML model}
 \usage{
 cuda_ml_serialize(model, connection = NULL, ...)
-
-cuda_ml_serialise(model, connection = NULL, ...)
 }
 \arguments{
 \item{model}{The model object.}

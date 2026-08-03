@@ -37,10 +37,14 @@ jobs:
       - name: Build
         run: R CMD build .
 
-      - name: Check
-        run: R CMD check --no-manual --as-cran cuda.ml_*.tar.gz
+      # The CRAN package is a pure-R installer and must remain fully network
+      # free during installation and checking.
+      - name: Check without network access
+        run: sudo -E unshare --net -- R CMD check --no-manual --as-cran cuda.ml_*.tar.gz
         env:
           _R_CHECK_CRAN_INCOMING_: false
+          # --as-cran otherwise verifies the clock against an external service.
+          _R_CHECK_SYSTEM_CLOCK_: false
 
   build-image:
     runs-on: ubuntu-latest
@@ -66,17 +70,18 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: .github/docker/Dockerfile
+          context: "."
+          file: .github/docker/backend.Dockerfile
+          target: runtime
+          build-args: |
+            R_VERSION=4.6.1
+            SOURCE_COMMIT=${{ github.sha }}
+            BACKEND_BASE_URL=https://github.com/${{ github.repository }}/releases/download/cuda-ml-backend-0.4.0
           push: true
           tags: ghcr.io/${{ github.repository }}-ci:${{ github.sha }}
-          build-args: |
-            CUML_VERSION=21.12
-            CMAKE_CUDA_ARCHITECTURES=75
 
   test-gpu:
     needs: build-image
-    if: ${{ always() && needs.build-image.result == 'success' }}
     concurrency:
       group: gpu-tests
     runs-on:
@@ -87,19 +92,135 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
       options: --gpus all --runtime=nvidia
-    timeout-minutes: 60
+    timeout-minutes: 120
     env:
-      NOT_CRAN: true
+      CUDA_ML_GPU_TESTS: true
+      CUDA_ML_CACHE_DIR: /tmp/cuda-ml-runtime
 
     steps:
       - name: Verify GPU access
         run: nvidia-smi
 
-      - name: Session info
+      - name: Install the managed runtime
+        shell: Rscript {0}
+        # fmt: r
         run: |
-          Rscript -e "sessionInfo()"
-          Rscript -e "library(cuda.ml)"
+          library(cuda.ml)
+          info <- cuda_ml_backend_info()
+          stopifnot(
+            identical(info$backend, "download"),
+            info$backend_available,
+            !info$runtime_installed,
+            !info$backend_loaded
+          )
+          cuda_ml_install()
+
+      - name: Exercise a GPU algorithm
+        shell: Rscript {0}
+        # fmt: r
+        run: |
+          library(cuda.ml)
+          x <- matrix(
+            c(0, 0, 0, 1, 10, 10, 10, 11),
+            ncol = 2,
+            byrow = TRUE
+          )
+          fit <- cuda_ml_kmeans(x, k = 2)
+          stopifnot(length(fit$labels) == 4L)
+
+      - name: Session info
+        shell: Rscript {0}
+        # fmt: r
+        run: |
+          sessionInfo()
+          library(cuda.ml)
 
       - name: Run tests
+        shell: Rscript {0}
+        # fmt: r
         run: |
-          Rscript -e "testthat::test_package('cuda.ml', reporter = 'progress')"
+          testthat::test_package("cuda.ml", reporter = "progress")
+
+  # The image contains the functional R package but neither a CUDA toolkit nor
+  # a prepared runtime cache. This job validates the CPU-only setup path.
+  test-runtime-cpu:
+    needs: build-image
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ needs.build-image.outputs.image }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    timeout-minutes: 180
+    env:
+      CUDA_ML_RUNTIME_TESTS: true
+      CUDA_ML_CACHE_DIR: /tmp/cuda-ml-runtime
+
+    steps:
+      - name: Install the managed runtime once
+        shell: Rscript {0}
+        # fmt: r
+        run: |
+          library(cuda.ml)
+          stopifnot(!cuda_ml_backend_info()$runtime_installed)
+          cuda_ml_install()
+
+      # This fresh R process validates explicit installation, fast reuse, the
+      # content audit, and backend loading without a CUDA toolkit or GPU.
+      - name: Validate the managed runtime without a GPU
+        shell: Rscript {0}
+        # fmt: r
+        run: |
+          testthat::test_package(
+            "cuda.ml",
+            filter = "runtime-functional",
+            reporter = "progress"
+          )
+
+      # nvForest loads and retains the backend, so run it in a separate R
+      # process from the side-effect and lazy-loading assertions above.
+      - name: Exercise CPU-only nvForest inference
+        shell: Rscript {0}
+        # fmt: r
+        run: |
+          testthat::test_package(
+            "cuda.ml",
+            filter = "nvforest-runtime",
+            reporter = "progress"
+          )
+
+      # Poison the proxy settings and make download.file() fail immediately.
+      # A completed cache must be reusable without any network access.
+      - name: Reuse the prepared runtime without downloads
+        env:
+          http_proxy: http://127.0.0.1:9
+          https_proxy: http://127.0.0.1:9
+          all_proxy: http://127.0.0.1:9
+          no_proxy: ""
+        shell: Rscript {0}
+        # fmt: r
+        run: |
+          library(cuda.ml)
+          trace(
+            "download.file",
+            where = asNamespace("utils"),
+            tracer = quote(stop("unexpected runtime download")),
+            print = FALSE
+          )
+          cuda_ml_install()
+          info <- cuda_ml_backend_info()
+          stopifnot(
+            info$runtime_installed,
+            identical(info$cuda_version, "13.2.2"),
+            identical(info$rapids_version, "26.06"),
+            identical(info$nvforest_version, "26.06.0"),
+            identical(info$treelite_version, "4.7.0")
+          )
+
+      # NVRTC is part of the managed cache. Compile PTX to prove it works
+      # without a GPU or a system CUDA installation.
+      - name: Compile an NVRTC kernel without a GPU
+        run: |
+          runtime_lib="$(Rscript -e 'library(cuda.ml); cat(file.path(cuda_ml_backend_info()$runtime_path, "lib"))')"
+          test -d "$runtime_lib"
+          LD_LIBRARY_PATH="$runtime_lib" /usr/local/bin/nvrtc-probe

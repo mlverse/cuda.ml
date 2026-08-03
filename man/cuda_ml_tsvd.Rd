@@ -10,8 +10,7 @@ cuda_ml_tsvd(
   eig_algo = c("dq", "jacobi"),
   tol = 1e-07,
   n_iters = 15L,
-  transform_input = TRUE,
-  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")
+  transform_input = TRUE
 )
 }
 \arguments{
@@ -35,10 +34,6 @@ Default: 15.}
 
 \item{transform_input}{If TRUE, then compute an approximate representation
 of the input data. Default: TRUE.}
-
-\item{cuML_log_level}{Log level within cuML library functions. Must be one of
-\{"off", "critical", "error", "warn", "info", "debug", "trace"\}.
-Default: off.}
 }
 \value{
 A TSVD model object with the following attributes:
@@ -61,6 +56,8 @@ Dimensionality reduction using Truncated Singular Value Decomposition.
 \examples{
 library(cuda.ml)
 
-iris.tsvd <- cuda_ml_tsvd(iris[1:4], n_components = 2)
-print(iris.tsvd)
+if (interactive() && cuda_ml_backend_info()$runtime_installed) {
+  iris.tsvd <- cuda_ml_tsvd(iris[1:4], n_components = 2)
+  print(iris.tsvd)
+}
 }

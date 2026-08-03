@@ -27,7 +27,6 @@ cuda_ml_svm(x, ...)
   cache_size = 1024,
   epsilon = 0.1,
   sample_weights = NULL,
-  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
   ...
 )
 
@@ -45,7 +44,6 @@ cuda_ml_svm(x, ...)
   cache_size = 1024,
   epsilon = 0.1,
   sample_weights = NULL,
-  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
   ...
 )
 
@@ -63,7 +61,6 @@ cuda_ml_svm(x, ...)
   cache_size = 1024,
   epsilon = 0.1,
   sample_weights = NULL,
-  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
   ...
 )
 
@@ -81,7 +78,6 @@ cuda_ml_svm(x, ...)
   cache_size = 1024,
   epsilon = 0.1,
   sample_weights = NULL,
-  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
   ...
 )
 }
@@ -153,10 +149,6 @@ tasks. Default: 0.1.}
 
 \item{sample_weights}{Optional weight assigned to each input data point.}
 
-\item{cuML_log_level}{Log level within cuML library functions. Must be one of
-\{"off", "critical", "error", "warn", "info", "debug", "trace"\}.
-Default: off.}
-
 \item{formula}{A formula specifying the outcome terms on the left-hand side,
 and the predictor terms on the right-hand side.}
 
@@ -175,23 +167,25 @@ Train a Support Vector Machine model for classification or regression tasks.
 
 library(cuda.ml)
 
-# Classification
+if (interactive() && cuda_ml_backend_info()$runtime_installed) {
+  # Classification
 
-model <- cuda_ml_svm(
-  formula = Species ~ .,
-  data = iris,
-  kernel = "rbf"
-)
+  model <- cuda_ml_svm(
+    formula = Species ~ .,
+    data = iris,
+    kernel = "rbf"
+  )
 
-predictions <- predict(model, iris[names(iris) != "Species"])
+  predictions <- predict(model, iris[names(iris) != "Species"])
 
-# Regression
+  # Regression
 
-model <- cuda_ml_svm(
-  formula = mpg ~ .,
-  data = mtcars,
-  kernel = "rbf"
-)
+  model <- cuda_ml_svm(
+    formula = mpg ~ .,
+    data = mtcars,
+    kernel = "rbf"
+  )
 
-predictions <- predict(model, mtcars)
+  predictions <- predict(model, mtcars)
+}
 }

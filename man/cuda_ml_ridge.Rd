@@ -13,41 +13,13 @@ cuda_ml_ridge(x, ...)
 
 \method{cuda_ml_ridge}{default}(x, ...)
 
-\method{cuda_ml_ridge}{data.frame}(
-  x,
-  y,
-  alpha = 1,
-  fit_intercept = TRUE,
-  normalize_input = FALSE,
-  ...
-)
+\method{cuda_ml_ridge}{data.frame}(x, y, alpha = 1, fit_intercept = TRUE, ...)
 
-\method{cuda_ml_ridge}{matrix}(
-  x,
-  y,
-  alpha = 1,
-  fit_intercept = TRUE,
-  normalize_input = FALSE,
-  ...
-)
+\method{cuda_ml_ridge}{matrix}(x, y, alpha = 1, fit_intercept = TRUE, ...)
 
-\method{cuda_ml_ridge}{formula}(
-  formula,
-  data,
-  alpha = 1,
-  fit_intercept = TRUE,
-  normalize_input = FALSE,
-  ...
-)
+\method{cuda_ml_ridge}{formula}(formula, data, alpha = 1, fit_intercept = TRUE, ...)
 
-\method{cuda_ml_ridge}{recipe}(
-  x,
-  data,
-  alpha = 1,
-  fit_intercept = TRUE,
-  normalize_input = FALSE,
-  ...
-)
+\method{cuda_ml_ridge}{recipe}(x, data, alpha = 1, fit_intercept = TRUE, ...)
 }
 \arguments{
 \item{x}{Depending on the context:
@@ -63,16 +35,12 @@ cuda_ml_ridge(x, ...)
 \item{y}{A numeric vector (for regression) or factor (for classification) of
 desired responses.}
 
-\item{alpha}{Multiplier of the L2 penalty term (i.e., the result would become
-and Ordinary Least Square model if \code{alpha} were set to 0). Default: 1.}
+\item{alpha}{Positive multiplier of the L2 penalty term. Use
+\code{cuda_ml_ols()} for an unpenalized linear model. Default: 1.}
 
 \item{fit_intercept}{If TRUE, then the model tries to correct for the global
 mean of the response variable. If FALSE, then the model expects data to be
 centered. Default: TRUE.}
-
-\item{normalize_input}{Ignored when \code{fit_intercept} is FALSE. If TRUE,
-then the predictors will be normalized to have a L2 norm of 1.
-Default: FALSE.}
 
 \item{formula}{A formula specifying the outcome terms on the left-hand side,
 and the predictor terms on the right-hand side.}
@@ -92,31 +60,33 @@ Train a linear model with L2 regularization.
 
 library(cuda.ml)
 
-model <- cuda_ml_ridge(formula = mpg ~ ., data = mtcars, alpha = 1e-3)
-cuda_ml_predictions <- predict(model, mtcars[names(mtcars) != "mpg"])
+if (interactive() && cuda_ml_backend_info()$runtime_installed) {
+  model <- cuda_ml_ridge(formula = mpg ~ ., data = mtcars, alpha = 1e-3)
+  cuda_ml_predictions <- predict(model, mtcars[names(mtcars) != "mpg"])
 
-# predictions will be comparable to those from a `glmnet` model with `lambda`
-# set to 2e-3 and `alpha` set to 0
-# (in `glmnet`, `lambda` is the weight of the penalty term, and `alpha` is
-#  the elastic mixing parameter between L1 and L2 penalties.
+  # predictions will be comparable to those from a `glmnet` model with
+  # `lambda` set to 2e-3 and `alpha` set to 0
+  # (in `glmnet`, `lambda` is the weight of the penalty term, and `alpha` is
+  #  the elastic mixing parameter between L1 and L2 penalties.
 
-library(glmnet)
+  if (requireNamespace("glmnet", quietly = TRUE)) {
+    glmnet_model <- glmnet::glmnet(
+      x = as.matrix(mtcars[names(mtcars) != "mpg"]), y = mtcars$mpg,
+      alpha = 0, lambda = 2e-3, nlambda = 1, standardize = FALSE
+    )
 
-glmnet_model <- glmnet(
-  x = as.matrix(mtcars[names(mtcars) != "mpg"]), y = mtcars$mpg,
-  alpha = 0, lambda = 2e-3, nlambda = 1, standardize = FALSE
-)
+    glmnet_predictions <- predict(
+      glmnet_model, as.matrix(mtcars[names(mtcars) != "mpg"]),
+      s = 0
+    )
 
-glmnet_predictions <- predict(
-  glmnet_model, as.matrix(mtcars[names(mtcars) != "mpg"]),
-  s = 0
-)
-
-print(
-  all.equal(
-    as.numeric(glmnet_predictions),
-    cuda_ml_predictions$.pred,
-    tolerance = 1e-3
-  )
-)
+    print(
+      all.equal(
+        as.numeric(glmnet_predictions),
+        cuda_ml_predictions$.pred,
+        tolerance = 1e-3
+      )
+    )
+  }
+}
 }

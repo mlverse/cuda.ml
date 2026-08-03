@@ -4,15 +4,15 @@ NULL
 match_eig_algo <- function(eig_algo = c("dq", "jacobi")) {
   eig_algo <- match.arg(eig_algo)
 
-  switch(eig_algo,
-    dq = 0L,
-    jacobi = 1L
-  )
+  switch(eig_algo, dq = 0L, jacobi = 1L)
 }
 
-new_model <- function(cls,
-                      mode = c("classification", "regression"),
-                      xptr = NULL, ...) {
+new_model <- function(
+  cls,
+  mode = c("classification", "regression"),
+  xptr = NULL,
+  ...
+) {
   mode <- match.arg(mode)
   do.call(
     hardhat::new_model,
@@ -23,13 +23,87 @@ new_model <- function(cls,
   )
 }
 
-new_model_state <- function(model_state, cls) {
-  class(model_state) <- c(cls, "cuda_ml_model_state", class(model_state))
+validate_classification_outcome <- function(outcome) {
+  stopifnot(
+    "The classification outcome must be a factor" = is.factor(outcome),
+    "The outcome must contain at least two factor levels" = nlevels(outcome) >=
+      2L,
+    "Every outcome factor level must be represented in the training data" = all(
+      tabulate(as.integer(outcome), nbins = nlevels(outcome)) > 0L
+    )
+  )
+  invisible(outcome)
+}
 
-  model_state
+cuda_ml_state_backend_identity <- function() {
+  info <- cuda_ml_backend_info()
+  info[c(
+    "cuda_version",
+    "rapids_version",
+    "nvforest_version",
+    "treelite_version",
+    "platform"
+  )]
+}
+
+new_model_state <- function(payload, cls) {
+  stopifnot(
+    "A concrete model-state class is required" = is.character(cls) &&
+      length(cls) == 1L &&
+      nzchar(cls)
+  )
+
+  structure(
+    list(
+      schema = 1L,
+      package_version = as.character(utils::packageVersion("cuda.ml")),
+      backend = cuda_ml_state_backend_identity(),
+      model_abi = cls,
+      payload = payload
+    ),
+    class = c(cls, "cuda_ml_model_state")
+  )
+}
+
+cuda_ml_validate_model_state <- function(model_state) {
+  stopifnot(
+    "Unversioned cuda.ml model states are unsupported" = is.list(model_state) &&
+      identical(model_state$schema, 1L),
+    "The cuda.ml model-state package version is incompatible" = identical(
+      model_state$package_version,
+      as.character(utils::packageVersion("cuda.ml"))
+    ),
+    "The cuda.ml model-state backend is incompatible" = identical(
+      model_state$backend,
+      cuda_ml_state_backend_identity()
+    ),
+    "The cuda.ml model-state ABI is missing" = is.character(
+      model_state$model_abi
+    ) &&
+      length(model_state$model_abi) == 1L &&
+      nzchar(model_state$model_abi),
+    "The cuda.ml model-state payload is missing" = "payload" %in%
+      names(model_state)
+  )
+
+  invisible(model_state)
+}
+
+cuda_ml_state_payload <- function(model_state, model_abi) {
+  stopifnot(
+    "The cuda.ml model-state ABI is incompatible" = identical(
+      model_state$model_abi,
+      model_abi
+    )
+  )
+  model_state$payload
 }
 
 get_pred_levels <- function(model) {
+  if (!is.null(model$class_levels)) {
+    return(model$class_levels)
+  }
+
   levels(model$blueprint$ptypes$outcomes[[1]])
 }
 
@@ -54,7 +128,9 @@ postprocess_regression_results <- function(predictions) {
 
 report_undefined_fn <- function(fn_name, x) {
   stop(
-    "`", fn_name, "()` is undefined for object of class ",
+    "`",
+    fn_name,
+    "()` is undefined for object of class ",
     paste(class(x), sep = " "),
     call. = FALSE
   )
@@ -87,72 +163,6 @@ cuda_ml_inverse_transform <- function(model, x, ...) {
   UseMethod("cuda_ml_inverse_transform")
 }
 
-#' Determine whether a CuML model is a classifier.
-#'
-#' Given a trained CuML model, return \code{TRUE} if the model is a classifier,
-#' otherwise \code{FALSE} (e.g., if the model is a regressor).
-#'
-#' @param model A trained CuML model.
-#'
-#' @return A logical value indicating whether the model is a classifier.
-#'
-#' @export
-cuda_ml_is_classifier <- function(model) {
-  UseMethod("cuda_ml_is_classifier")
-}
-
-#' @export
-cuda_ml_is_classifier.default <- function(model) {
-  report_undefined_fn("cuda_ml_is_classifier", model)
-}
-
-#' @export
-cuda_ml_is_classifier.cuda_ml_model <- function(model) {
-  identical(model$mode, "classification")
-}
-
-#' Determine whether a CuML model can predict class probabilities.
-#'
-#' Given a trained CuML model, return \code{TRUE} if the model is a classifier
-#' and is capable of outputting class probabilities as prediction results (e.g.,
-#' if the model is a KNN or an ensemble classifier), otherwise return
-#' \code{FALSE}.
-#'
-#' @param model A trained CuML model.
-#'
-#' @return A logical value indicating whether the model supports outputting
-#'   class probabilities.
-#'
-#' @export
-cuda_ml_can_predict_class_probabilities <- function(model) {
-  UseMethod("cuda_ml_can_predict_class_probabilities")
-}
-
-#' @export
-cuda_ml_can_predict_class_probabilities.default <- function(model) {
-  report_undefined_fn("cuda_ml_can_predict_class_probabilities", model)
-}
-
-#' @export
-cuda_ml_can_predict_class_probabilities.cuda_ml_model <- function(model) {
-  FALSE
-}
-
-#' @export
-cuda_ml_can_predict_class_probabilities.cuda_ml_fil <- function(model) {
-  cuda_ml_is_classifier(model)
-}
-
-#' @export
-cuda_ml_can_predict_class_probabilities.cuda_ml_knn <- function(model) {
-  cuda_ml_is_classifier(model)
-}
-
-#' @export
-cuda_ml_can_predict_class_probabilities.cuda_ml_rand_forest <- function(model) {
-  cuda_ml_is_classifier(model)
-}
-
 #' Serialize a CuML model
 #'
 #' Given a CuML model, serialize its state into a connection.
@@ -171,11 +181,6 @@ cuda_ml_can_predict_class_probabilities.cuda_ml_rand_forest <- function(model) {
 cuda_ml_serialize <- function(model, connection = NULL, ...) {
   UseMethod("cuda_ml_serialize")
 }
-
-#' @rdname cuda_ml_serialize
-#'
-#' @export
-cuda_ml_serialise <- cuda_ml_serialize
 
 #' @export
 cuda_ml_serialize.default <- function(model, connection = NULL, ...) {
@@ -196,25 +201,11 @@ cuda_ml_get_state <- function(model) {
 #' @export
 cuda_ml_get_state.default <- function(model) {
   stop(
-    "Model of type '", paste(class(model), collapse = " "), "' does not ",
+    "Model of type '",
+    paste(class(model), collapse = " "),
+    "' does not ",
     "support serialization."
   )
-}
-
-#' @export
-cuda_ml_get_state.cuda_ml_model <- function(model) {
-  # Default implementation: assume the entire model object can be serializabled
-  # by `base::serialize()`.
-  model_state <- list(model = model)
-
-  new_model_state(model_state, cls = NULL)
-}
-
-#' @export
-cuda_ml_set_state.cuda_ml_model_state <- function(model_state) {
-  # Default implementation: assume the entire model state can be unserialized by
-  # `base::unserialize()`.
-  model_state$model
 }
 
 #' Unserialize a CuML model state
@@ -235,13 +226,8 @@ cuda_ml_unserialize <- function(connection, ...) {
   cuda_ml_set_state(model_state)
 }
 
-#' @rdname cuda_ml_unserialize
-#'
-#' @export
-cuda_ml_unserialise <- cuda_ml_unserialize
-
-
 cuda_ml_set_state <- function(model_state) {
+  cuda_ml_validate_model_state(model_state)
   UseMethod("cuda_ml_set_state")
 }
 
@@ -249,6 +235,29 @@ cuda_ml_set_state <- function(model_state) {
 cuda_ml_set_state.default <- function(model_state) {
   stop(
     "No unserialization routine found for model state of type '",
-    paste(class(model_state), collapse = " "), "'"
+    paste(class(model_state), collapse = " "),
+    "'"
+  )
+}
+
+#' Bundle a cuda.ml model
+#'
+#' Converts a model with an explicit portable state into a
+#' \code{bundle::bundle()} object. Models without an explicit state fail rather
+#' than serializing native pointers.
+#'
+#' @param x A fitted cuda.ml model.
+#' @param ... Unused.
+#'
+#' @exportS3Method bundle::bundle
+bundle.cuda_ml_model <- function(x, ...) {
+  ellipsis::check_dots_empty()
+
+  bundle::bundle_constr(
+    object = cuda_ml_serialize(x),
+    situate = bundle::situate_constr(function(object) {
+      cuda.ml::cuda_ml_unserialize(object)
+    }),
+    desc_class = class(x)[[1L]]
   )
 }

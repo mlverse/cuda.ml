@@ -1,32 +1,24 @@
 #' Options:
 #'
-#' CUML_VERSION: Specifies the version of the `libcuml` library to be downloaded
-#'               and installed. This version must be present in the
-#'               `libcuml_versions` list below.
+#' CUML_PREFIX: Required for a functional local source build. Set this to the
+#'              explicit prefix containing the compatible RAPIDS cuML headers
+#'              and libraries. Local builds never provision dependencies.
 #'
-#' CUML_URL: Override the URL to download `libcuml` from. If specified, then no
-#'           checks for CUDA version will be performed.
+#' CUML_BOOTSTRAP_CACHE: Override the temporary build-toolchain cache used by
+#'                       the managed build.
 #'
-#' CUML_PREFIX: If you have a copy of `libcuml` installed already, you can
-#'              specify this environment variable to link {cuda.ml} with an
-#'              existing installation of `libcuml`.
-#'              If a valid copy of `libcuml` is found in '/usr' or in
-#'              "${CUML_PREFIX}/", then no pre-built copy of `libcuml` will be
-#'              downloaded.
+#' CUML_CUDA_ARCHITECTURES: Required for a local build. Set this to the explicit
+#'                          CMAKE_CUDA_ARCHITECTURES list. Managed builds use the
+#'                          package's fixed portable architecture list.
 #'
-#' DOWNLOAD_CUML: The default is to automatically download a pre-built copy of
-#'                `libcuml` if no existing `libcuml` is specified with the
-#'                'CUML_PREFIX' env variable. Set DOWNLOAD_CUML=0 to disable
-#'                this default behavior.
+#' CUDA_ML_BUILD_MODE: Select "managed", "local", or "stub". Managed builds
+#'                     provision the pinned CUDA 13.2.2 / RAPIDS 26.06
+#'                     toolchain. Local builds require all inputs explicitly.
+#'                     Stub builds contain no native backend.
 #'
-#' DISABLE_PARALLEL_BUILD: Parallel build using max($(nproc) - 1, 1) cores is
-#'                         enabled by default but can be disabled by setting
-#'                         this env variable.
-#'
-#' CUML4R_CMAKE_PARALLEL_LEVEL: If not set and parallel build is enabled, then
-#'                              max($(nproc) - 1, 1) cores will be used by the
-#'                              build process. If set, then the number of cores
-#'                              specified will be used.
+#' CUDA_ML_CXX: Path to the GNU C++ 14 or newer compiler used for both C++
+#'              sources and nvcc host compilation. Required for local builds;
+#'              managed builds prefer g++-14, then g++, when this is unset.
 
 pkg_root <- function() {
   # devtools::load_all() might run the config script from the `src` directory.
@@ -40,105 +32,241 @@ pkg_root <- function() {
   pkg_root <- normalizePath(".")
   warning(
     "Unable to locate 'DESCRIPTION' file! Assuming pkg root is '",
-    pkg_root, "'."
+    pkg_root,
+    "'."
   )
   return(pkg_root)
 }
 
-load_libcuml_versions <- function() {
-  wd <- file.path(pkg_root(), "tools", "config")
-
-  source(file.path(wd, "libcuml_versions.R"))
+cuml_artifact_root <- function() {
+  file.path(pkg_root(), "inst", "artifacts")
 }
 
 load_util_fns <- function() {
-  wd <- file.path(pkg_root(), "tools", "config", "utils")
-
-  for (f in c("cuml.R", "cmake.R", "logging.R", "nvcc.R", "platform.R")) {
+  wd <- file.path(pkg_root(), "inst", "build-tools")
+  for (f in c(
+    "logging.R",
+    "platform.R",
+    "nvcc.R",
+    "artifacts.R",
+    "bootstrap.R",
+    "cuml.R",
+    "cmake.R"
+  )) {
     source(file.path(wd, f))
+  }
+  source(file.path(
+    pkg_root(),
+    "tools",
+    "config",
+    "utils",
+    "native-symbols.R"
+  ))
+}
+
+load_util_fns()
+
+clear_build_artifacts <- function() {
+  paths <- c(
+    "Makevars",
+    "Makefile",
+    "_deps",
+    ".cmake-build",
+    "CMakeCache.txt",
+    "CMakeFiles",
+    "cmake_install.cmake",
+    "CMakeLists.txt",
+    "symbols.rds",
+    "*.o",
+    "*.so"
+  )
+  for (path in paths) {
+    unlink(
+      file.path(pkg_root(), "inst", "backend-src", path),
+      recursive = TRUE,
+      expand = TRUE
+    )
   }
 }
 
-load_libcuml_versions()
-load_util_fns()
+clear_build_artifacts()
+generate_cuda_ml_native_symbol_manifest()
+cuml_generate_runtime_lock()
 
-run_cmake <- function() {
+run_cmake <- function(
+  nvcc,
+  cuml_prefix,
+  cuda_architectures,
+  cxx,
+  cmake_bin,
+  ninja = NULL
+) {
+  stopifnot(
+    is.list(nvcc),
+    is.character(cuml_prefix),
+    length(cuml_prefix) == 1L,
+    is.character(cuda_architectures),
+    length(cuda_architectures) == 1L,
+    is.character(cxx),
+    length(cxx) == 1L,
+    nzchar(cxx),
+    is.character(cmake_bin),
+    length(cmake_bin) == 1L,
+    nzchar(cmake_bin),
+    is.null(ninja) ||
+      (is.character(ninja) && length(ninja) == 1L && nzchar(ninja))
+  )
+
   wd <- getwd()
   on.exit(setwd(wd))
   setwd(pkg_root())
 
   define(R_INCLUDE_DIR = R.home("include"))
   define(RCPP_INCLUDE_DIR = system.file("include", package = "Rcpp"))
-  configure_file(file.path("src", "CMakeLists.txt.in"))
+  configure_file(file.path("inst", "backend-src", "CMakeLists.txt.in"))
 
-  cuml_prefix <- get_cuml_prefix()
-  bundle_libcuml <- FALSE
-  if (is.na(cuml_prefix)) {
-    download_libcuml()
-    cuml_prefix <- normalizePath(file.path(pkg_root(), "libcuml"))
-    dir.create("inst")
-    file.rename(file.path("libcuml", "lib"), file.path("inst", "libs"))
-    file.symlink(file.path("..", "inst", "libs"), file.path("libcuml", "lib"))
-    libs <- c("libtreelite", "libtreelite_runtime", "libcuml++")
-    bundle_libcuml <- TRUE
-  }
-  cmake_prefix_path <- paste0(
-    c(Sys.getenv("CMAKE_PREFIX_PATH", unset = ""), cuml_prefix),
+  src_dir <- normalizePath(
+    file.path(pkg_root(), "inst", "backend-src")
+  )
+  build_dir <- file.path(src_dir, ".cmake-build")
+  dir.create(build_dir, recursive = TRUE, showWarnings = FALSE)
+
+  define(
+    CMAKE_BIN = shQuote(cmake_bin),
+    CMAKE_BUILD_DIR = shQuote(build_dir),
+    CMAKE_BUILD_OUTPUT = shQuote(file.path(build_dir, "cuda.ml.so")),
+    RSCRIPT_BIN = shQuote(file.path(R.home("bin"), "Rscript"))
+  )
+  configure_file(
+    file.path("tools", "config", "Makefile.cmake.in"),
+    target = file.path("inst", "backend-src", "Makefile")
+  )
+
+  stopifnot(!is.na(cuml_prefix), nzchar(cuml_prefix))
+  cmake_prefix_path <- c(
+    Sys.getenv("CMAKE_PREFIX_PATH", unset = ""),
+    cuml_prefix
+  )
+  cmake_prefix_path <- paste(
+    cmake_prefix_path[nzchar(cmake_prefix_path)],
     collapse = ":"
   )
   Sys.setenv(CMAKE_PREFIX_PATH = cmake_prefix_path)
 
-  setwd(file.path(pkg_root(), "src"))
-
+  generator_args <- if (is.null(ninja)) {
+    character()
+  } else {
+    c("-G", "Ninja", paste0("-DCMAKE_MAKE_PROGRAM=", ninja))
+  }
   cmake_args <- c(
-    ".",
-    paste0("-DCMAKE_CUDA_ARCHITECTURES=", Sys.getenv("CMAKE_CUDA_ARCHITECTURES", unset = "NATIVE")),
+    generator_args,
+    "-S",
+    src_dir,
+    "-B",
+    build_dir,
+    paste0("-DCMAKE_CUDA_ARCHITECTURES=", cuda_architectures),
     paste0("-DCUML_INCLUDE_DIR=", file.path(cuml_prefix, "include")),
     paste0("-DCUML_LIB_DIR=", file.path(cuml_prefix, "lib")),
-    paste0(
-      "-DCUML_STUB_HEADERS_DIR=", normalizePath(file.path(getwd(), "stubs"))
-    ),
-    paste0("-DCMAKE_CUDA_COMPILER=", find_nvcc()$path),
+    paste0("-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=", build_dir),
+    paste0("-DCMAKE_CUDA_COMPILER=", nvcc$path),
+    paste0("-DCMAKE_CUDA_HOST_COMPILER=", cxx),
+    paste0("-DCMAKE_CXX_COMPILER=", cxx),
     "-DCMAKE_VERBOSE_MAKEFILE:BOOL=TRUE"
   )
-  if (bundle_libcuml) {
-    cmake_args <- c(
-      cmake_args,
-      "-DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=TRUE",
-      "-DCMAKE_INSTALL_RPATH:STRING='$ORIGIN'"
-    )
-  }
-  cmake_bin <- find_or_download_cmake(
-    min_version = cuda_ml_min_cmake_version,
-    exdir = file.path(pkg_root(), "tools")
+  cmake_args <- c(
+    cmake_args,
+    "-DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=TRUE",
+    "-DCMAKE_INSTALL_RPATH:STRING=$ORIGIN",
+    "-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=FALSE"
   )
-  rc <- system2(cmake_bin, args = cmake_args)
+  rc <- system2(cmake_bin, args = shQuote(cmake_args))
 
   if (rc != 0) {
     stop("Failed to run 'cmake'!")
   }
 }
 
-if (is.null(find_nvcc(stop_if_missing = FALSE)) || !has_libcuml()) {
-  wd <- getwd()
-  on.exit(setwd(wd))
-  setwd(pkg_root())
-  define(STUBS_HEADERS_DIR = normalizePath(file.path(getwd(), "src", "stubs")))
-  define(CUSTOMIZED_MAKEFLAGS = "")
-} else {
-  define(STUBS_HEADERS_DIR = "")
-  n_jobs <- (
-    if (!is.na(Sys.getenv("DISABLE_PARALLEL_BUILD", unset = NA))) {
-      1L
-    } else {
-      user_specified_parallel_level <- Sys.getenv("CUML4R_CMAKE_PARALLEL_LEVEL", unset = NA)
-      if (!is.na(user_specified_parallel_level)) {
-        as.integer(user_specified_parallel_level)
-      } else {
-        max(nproc() - 1L, 1L)
-      }
-    })
-  define(CUSTOMIZED_MAKEFLAGS = paste0("MAKEFLAGS += '-j", n_jobs, "'"))
+nvcc <- NULL
+cuml_prefix <- NA_character_
+cuda_architectures <- NA_character_
+cmake_bin <- NA_character_
+ninja <- NULL
+build_mode <- cuml_build_mode()
 
-  run_cmake()
+if (identical(build_mode, "managed")) {
+  if (!cuml_manylinux_2_28_x86_64()) {
+    stop2("Managed cuda.ml builds require Linux x86_64 with glibc 2.28.")
+  }
+  cxx_path <- Sys.getenv("CUDA_ML_CXX", unset = "")
+  if (!nzchar(cxx_path)) {
+    cxx_path <- unname(Sys.which("g++-14"))
+    if (!nzchar(cxx_path)) {
+      cxx_path <- unname(Sys.which("g++"))
+    }
+  }
+  cxx <- find_cuda_ml_cxx(cxx_path)
+  managed_build <- bootstrap_managed_build_from_artifacts(cxx)
+  nvcc <- managed_build$nvcc
+  cuml_prefix <- managed_build$prefix
+  cuda_architectures <- cuml_managed_cuda_architectures()
+  cmake_bin <- managed_build$cmake
+  ninja <- managed_build$ninja
+} else if (identical(build_mode, "local")) {
+  if (!cuml_supported_local_platform()) {
+    stop2(
+      "Functional local cuda.ml builds require Linux x86_64 with glibc ",
+      "2.28 or newer."
+    )
+  }
+  cuda_home <- Sys.getenv("CUDA_HOME", unset = "")
+  cuml_prefix <- Sys.getenv("CUML_PREFIX", unset = "")
+  cuda_architectures <- Sys.getenv("CUML_CUDA_ARCHITECTURES", unset = "")
+  cxx_path <- Sys.getenv("CUDA_ML_CXX", unset = "")
+  if (
+    !nzchar(cuda_home) ||
+      !nzchar(cuml_prefix) ||
+      !nzchar(cuda_architectures) ||
+      !nzchar(cxx_path)
+  ) {
+    stop2(
+      "A local functional build requires explicit build inputs.",
+      paste0(
+        "Set CUDA_HOME, CUML_PREFIX, CUML_CUDA_ARCHITECTURES, ",
+        "and CUDA_ML_CXX."
+      )
+    )
+  }
+  cuda_home <- normalizePath(cuda_home, mustWork = TRUE)
+  cuml_prefix <- normalizePath(cuml_prefix, mustWork = TRUE)
+  nvcc_path <- file.path(cuda_home, "bin", "nvcc")
+  nvcc_version <- nvcc_version_from_path(nvcc_path)
+  if (is.null(nvcc_version)) {
+    stop2("CUDA_HOME does not contain a working bin/nvcc.")
+  }
+  nvcc <- list(path = nvcc_path, version = nvcc_version)
+  cxx <- find_cuda_ml_cxx(cxx_path)
+  if (!check_functional_prefix(cuml_prefix)) {
+    stop2(
+      "CUML_PREFIX does not contain the exact cuML, nvForest, and Treelite prefix.",
+      paste0(
+        "Use CUDA 13.2.2, RAPIDS 26.06, nvForest 26.06.0, and the ",
+        "Treelite 4.7.0 static library."
+      )
+    )
+  }
+  cmake_bin <- find_cmake()
+}
+
+full_build <- !identical(build_mode, "stub")
+
+if (full_build) {
+  validate_managed_build_versions(nvcc, cuml_prefix)
+  run_cmake(
+    nvcc,
+    cuml_prefix,
+    cuda_architectures,
+    cxx,
+    cmake_bin,
+    ninja
+  )
 }

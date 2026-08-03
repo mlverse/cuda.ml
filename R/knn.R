@@ -1,18 +1,33 @@
-knn_match_algo <- function(algo = c("brute", "ivfflat", "ivfpq", "ivfsq")) {
-  algo <- match.arg(algo)
+knn_match_algo <- function(algo) {
+  algo <- match.arg(algo, c("brute", "ivfflat", "ivfpq"))
 
-  switch(algo,
-    brute = 0L,
-    ivfflat = 1L,
-    ivfpq = 2L,
-    ivfsq = 3L
-  )
+  switch(algo, brute = 0L, ivfflat = 1L, ivfpq = 2L)
 }
 
-knn_match_metric <- function(metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis", "canberra", "minkowski", "lp", "chebyshev", "linf", "jensenshannon", "cosine", "correlation")) {
-  metric <- match.arg(metric)
+knn_match_metric <- function(metric) {
+  metric <- match.arg(
+    metric,
+    c(
+      "euclidean",
+      "l2",
+      "l1",
+      "cityblock",
+      "taxicab",
+      "manhattan",
+      "braycurtis",
+      "canberra",
+      "minkowski",
+      "lp",
+      "chebyshev",
+      "linf",
+      "jensenshannon",
+      "cosine",
+      "correlation"
+    )
+  )
 
-  switch(metric,
+  switch(
+    metric,
     euclidean = 1L,
     l2 = 1L,
     l1 = 3L,
@@ -43,13 +58,74 @@ knn_match_metric <- function(metric = c("euclidean", "l2", "l1", "cityblock", "t
 #'
 #' @export
 cuda_ml_knn_algo_ivfflat <- function(nlist, nprobe) {
-  list(
-    type = 1L,
-    params = list(
-      nlist = as.integer(nlist),
-      nprobe = as.integer(nprobe)
-    )
+  stopifnot(
+    "`nlist` must be one positive whole number" = is.numeric(nlist) &&
+      length(nlist) == 1L &&
+      is.finite(nlist) &&
+      nlist >= 1L &&
+      nlist == as.integer(nlist),
+    "`nprobe` must be one positive whole number no greater than `nlist`" = is.numeric(
+      nprobe
+    ) &&
+      length(nprobe) == 1L &&
+      is.finite(nprobe) &&
+      nprobe >= 1L &&
+      nprobe == as.integer(nprobe) &&
+      nprobe <= nlist
   )
+  structure(
+    list(
+      type = 1L,
+      params = list(
+        nlist = as.integer(nlist),
+        nprobe = as.integer(nprobe)
+      )
+    ),
+    class = "cuda_ml_knn_algo"
+  )
+}
+
+knn_validate_ivfpq_params <- function(
+  nlist,
+  nprobe,
+  m,
+  n_bits,
+  use_precomputed_tables
+) {
+  stopifnot(
+    "`nlist` must be one positive whole number" = is.numeric(nlist) &&
+      length(nlist) == 1L &&
+      is.finite(nlist) &&
+      nlist >= 1L &&
+      nlist == as.integer(nlist),
+    "`nprobe` must be one positive whole number no greater than `nlist`" = is.numeric(
+      nprobe
+    ) &&
+      length(nprobe) == 1L &&
+      is.finite(nprobe) &&
+      nprobe >= 1L &&
+      nprobe == as.integer(nprobe) &&
+      nprobe <= nlist,
+    "`m` must be one positive whole number" = is.numeric(m) &&
+      length(m) == 1L &&
+      is.finite(m) &&
+      m >= 1L &&
+      m == as.integer(m),
+    "`n_bits` must be one whole number between 4 and 8" = is.numeric(n_bits) &&
+      length(n_bits) == 1L &&
+      is.finite(n_bits) &&
+      n_bits >= 4L &&
+      n_bits <= 8L &&
+      n_bits == as.integer(n_bits),
+    "`m * n_bits` must be divisible by 8" = (m * n_bits) %% 8L == 0L,
+    "`use_precomputed_tables` must be TRUE or FALSE" = is.logical(
+      use_precomputed_tables
+    ) &&
+      length(use_precomputed_tables) == 1L &&
+      !is.na(use_precomputed_tables),
+    "`use_precomputed_tables = TRUE` is not supported" = !use_precomputed_tables
+  )
+  invisible(TRUE)
 }
 
 #' Build a specification for the "ivfpq" KNN query algorithm.
@@ -64,42 +140,32 @@ cuda_ml_knn_algo_ivfflat <- function(nlist, nprobe) {
 #'   query algorithm.
 #'
 #' @export
-cuda_ml_knn_algo_ivfpq <- function(nlist, nprobe, m, n_bits,
-                                   use_precomputed_tables = FALSE) {
-  list(
-    type = 2L,
-    params = list(
-      nlist = as.integer(nlist),
-      nprobe = as.integer(nprobe),
-      M = as.integer(m),
-      usePrecomputedTables = as.logical(use_precomputed_tables)
-    )
+cuda_ml_knn_algo_ivfpq <- function(
+  nlist,
+  nprobe,
+  m,
+  n_bits,
+  use_precomputed_tables = FALSE
+) {
+  knn_validate_ivfpq_params(
+    nlist,
+    nprobe,
+    m,
+    n_bits,
+    use_precomputed_tables
   )
-}
-
-#' Build a specification for the "ivfsq" KNN query algorithm.
-#'
-#' Build a specification of the inverted-file-scalar-quantization KNN query
-#' algorithm, with all required parameters specified explicitly.
-#'
-#' @template knn-algo-common
-#' @template knn-algo-ivfsq
-#'
-#' @return An object encapsulating all required parameters of the "ivfsq" KNN
-#'   query algorithm.
-#'
-#' @export
-cuda_ml_knn_algo_ivfsq <- function(nlist, nprobe,
-                                   qtype = c("QT_8bit", "QT_4bit", "QT_8bit_uniform", "QT_4bit_uniform", "QT_fp16", "QT_8bit_direct", "QT_6bit"),
-                                   encode_residual = FALSE) {
-  list(
-    type = 3L,
-    params = list(
-      nlist = as.integer(nlist),
-      nprobe = as.integer(nprobe),
-      qtype = match.arg(qtype),
-      encodeResidual = as.logical(encode_residual)
-    )
+  structure(
+    list(
+      type = 2L,
+      params = list(
+        nlist = as.integer(nlist),
+        nprobe = as.integer(nprobe),
+        M = as.integer(m),
+        n_bits = as.integer(n_bits),
+        usePrecomputedTables = as.logical(use_precomputed_tables)
+      )
+    ),
+    class = "cuda_ml_knn_algo"
   )
 }
 
@@ -111,7 +177,7 @@ cuda_ml_knn_algo_ivfsq <- function(nlist, nprobe,
 #' @template supervised-model-output
 #' @template ellipsis-unused
 #' @param algo The query algorithm to use. Must be one of
-#'   \{"brute", "ivfflat", "ivfpq", "ivfsq"\} or a KNN algorithm specification
+#'   \{"brute", "ivfflat", "ivfpq"\} or a KNN algorithm specification
 #'   constructed using the \code{cuda_ml_knn_algo_*} family of functions.
 #'   If the algorithm is specified by one of the \code{cuda_ml_knn_algo_*}
 #'   functions, then values of all required parameters of the algorithm will
@@ -127,15 +193,13 @@ cuda_ml_knn_algo_ivfsq <- function(nlist, nprobe,
 #'                are divided into sub-vectors, and each sub-vector is encoded
 #'                using intermediary k-means clusterings to provide partial
 #'                information).
-#'     - "ivfsq": for inverted file and scalar quantization (vectors components
-#'                are quantized into reduced binary representation allowing
-#'                faster distances calculations).
-#'
 #'   Default: "brute".
 #' @param metric Distance metric to use. Must be one of \{"euclidean", "l2",
 #'   "l1", "cityblock", "taxicab", "manhattan", "braycurtis", "canberra",
 #'   "minkowski", "lp", "chebyshev", "linf", "jensenshannon", "cosine",
 #'   "correlation"\}.
+#'   The approximate algorithms support only "euclidean", "l2", "cosine", and
+#'   "correlation".
 #'   Default: "euclidean".
 #' @param p Parameter for the Minkowski metric. If p = 1, then the metric is
 #'   equivalent to manhattan distance (l1). If p = 2, the metric is equivalent
@@ -155,44 +219,48 @@ cuda_ml_knn_algo_ivfsq <- function(nlist, nprobe,
 #' @examples
 #'
 #' library(cuda.ml)
-#' library(MASS)
-#' library(magrittr)
-#' library(purrr)
 #'
-#' set.seed(0L)
+#' if (interactive() && cuda_ml_backend_info()$runtime_installed) {
+#'   library(MASS)
+#'   library(magrittr)
+#'   library(purrr)
 #'
-#' centers <- list(c(3, 3), c(-3, -3), c(-3, 3))
+#'   set.seed(0L)
 #'
-#' gen_pts <- function(cluster_sz) {
-#'   pts <- centers %>%
-#'     map(~ mvrnorm(cluster_sz, mu = .x, Sigma = diag(2)))
+#'   centers <- list(c(3, 3), c(-3, -3), c(-3, 3))
 #'
-#'   rlang::exec(rbind, !!!pts) %>% as.matrix()
+#'   gen_pts <- function(cluster_sz) {
+#'     pts <- centers %>%
+#'       map(~ mvrnorm(cluster_sz, mu = .x, Sigma = diag(2)))
+#'
+#'     rlang::exec(rbind, !!!pts) %>% as.matrix()
+#'   }
+#'
+#'   gen_labels <- function(cluster_sz) {
+#'     seq_along(centers) %>%
+#'       sapply(function(x) rep(x, cluster_sz)) %>%
+#'       factor()
+#'   }
+#'
+#'   sample_cluster_sz <- 1000
+#'   sample_pts <- cbind(
+#'     gen_pts(sample_cluster_sz) %>% as.data.frame(),
+#'     label = gen_labels(sample_cluster_sz)
+#'   )
+#'
+#'   model <- cuda_ml_knn(
+#'     label ~ ., sample_pts, algo = "ivfflat", metric = "euclidean"
+#'   )
+#'
+#'   test_cluster_sz <- 10
+#'   test_pts <- gen_pts(test_cluster_sz) %>% as.data.frame()
+#'
+#'   predictions <- predict(model, test_pts)
+#'   print(predictions, n = 30)
 #' }
-#'
-#' gen_labels <- function(cluster_sz) {
-#'   seq_along(centers) %>%
-#'     sapply(function(x) rep(x, cluster_sz)) %>%
-#'     factor()
-#' }
-#'
-#' sample_cluster_sz <- 1000
-#' sample_pts <- cbind(
-#'   gen_pts(sample_cluster_sz) %>% as.data.frame(),
-#'   label = gen_labels(sample_cluster_sz)
-#' )
-#'
-#' model <- cuda_ml_knn(label ~ ., sample_pts, algo = "ivfflat", metric = "euclidean")
-#'
-#' test_cluster_sz <- 10
-#' test_pts <- gen_pts(test_cluster_sz) %>% as.data.frame()
-#'
-#' predictions <- predict(model, test_pts)
-#' print(predictions, n = 30)
 #' @importFrom ellipsis check_dots_used
 #' @export
 cuda_ml_knn <- function(x, ...) {
-  check_dots_used()
   UseMethod("cuda_ml_knn")
 }
 
@@ -204,12 +272,32 @@ cuda_ml_knn.default <- function(x, ...) {
 
 #' @rdname cuda_ml_knn
 #' @export
-cuda_ml_knn.data.frame <- function(x, y,
-                                   algo = c("brute", "ivfflat", "ivfpq", "ivfsq"),
-                                   metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis", "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine", "correlation"),
-                                   p = 2.0,
-                                   neighbors = 5L,
-                                   ...) {
+cuda_ml_knn.data.frame <- function(
+  x,
+  y,
+  algo = c("brute", "ivfflat", "ivfpq"),
+  metric = c(
+    "euclidean",
+    "l2",
+    "l1",
+    "cityblock",
+    "taxicab",
+    "manhattan",
+    "braycurtis",
+    "canberra",
+    "minkowski",
+    "lp",
+    "chebyshev",
+    "linf",
+    "jensenshannon",
+    "cosine",
+    "correlation"
+  ),
+  p = 2.0,
+  neighbors = 5L,
+  ...
+) {
+  check_dots_used()
   processed <- hardhat::mold(x, y)
 
   cuda_ml_knn_bridge(
@@ -223,12 +311,32 @@ cuda_ml_knn.data.frame <- function(x, y,
 
 #' @rdname cuda_ml_knn
 #' @export
-cuda_ml_knn.matrix <- function(x, y,
-                               algo = c("brute", "ivfflat", "ivfpq", "ivfsq"),
-                               metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis", "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine", "correlation"),
-                               p = 2.0,
-                               neighbors = 5L,
-                               ...) {
+cuda_ml_knn.matrix <- function(
+  x,
+  y,
+  algo = c("brute", "ivfflat", "ivfpq"),
+  metric = c(
+    "euclidean",
+    "l2",
+    "l1",
+    "cityblock",
+    "taxicab",
+    "manhattan",
+    "braycurtis",
+    "canberra",
+    "minkowski",
+    "lp",
+    "chebyshev",
+    "linf",
+    "jensenshannon",
+    "cosine",
+    "correlation"
+  ),
+  p = 2.0,
+  neighbors = 5L,
+  ...
+) {
+  check_dots_used()
   processed <- hardhat::mold(x, y)
 
   cuda_ml_knn_bridge(
@@ -242,12 +350,32 @@ cuda_ml_knn.matrix <- function(x, y,
 
 #' @rdname cuda_ml_knn
 #' @export
-cuda_ml_knn.formula <- function(formula, data,
-                                algo = c("brute", "ivfflat", "ivfpq", "ivfsq"),
-                                metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis", "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine", "correlation"),
-                                p = 2.0,
-                                neighbors = 5L,
-                                ...) {
+cuda_ml_knn.formula <- function(
+  formula,
+  data,
+  algo = c("brute", "ivfflat", "ivfpq"),
+  metric = c(
+    "euclidean",
+    "l2",
+    "l1",
+    "cityblock",
+    "taxicab",
+    "manhattan",
+    "braycurtis",
+    "canberra",
+    "minkowski",
+    "lp",
+    "chebyshev",
+    "linf",
+    "jensenshannon",
+    "cosine",
+    "correlation"
+  ),
+  p = 2.0,
+  neighbors = 5L,
+  ...
+) {
+  check_dots_used()
   processed <- hardhat::mold(formula, data)
 
   cuda_ml_knn_bridge(
@@ -261,12 +389,32 @@ cuda_ml_knn.formula <- function(formula, data,
 
 #' @rdname cuda_ml_knn
 #' @export
-cuda_ml_knn.recipe <- function(x, data,
-                               algo = c("brute", "ivfflat", "ivfpq", "ivfsq"),
-                               metric = c("euclidean", "l2", "l1", "cityblock", "taxicab", "manhattan", "braycurtis", "canberra", "minkowski", "chebyshev", "jensenshannon", "cosine", "correlation"),
-                               p = 2.0,
-                               neighbors = 5L,
-                               ...) {
+cuda_ml_knn.recipe <- function(
+  x,
+  data,
+  algo = c("brute", "ivfflat", "ivfpq"),
+  metric = c(
+    "euclidean",
+    "l2",
+    "l1",
+    "cityblock",
+    "taxicab",
+    "manhattan",
+    "braycurtis",
+    "canberra",
+    "minkowski",
+    "lp",
+    "chebyshev",
+    "linf",
+    "jensenshannon",
+    "cosine",
+    "correlation"
+  ),
+  p = 2.0,
+  neighbors = 5L,
+  ...
+) {
+  check_dots_used()
   processed <- hardhat::mold(x, data)
 
   cuda_ml_knn_bridge(
@@ -284,14 +432,64 @@ cuda_ml_knn_bridge <- function(processed, algo, metric, p, neighbors) {
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
 
+  if (is.factor(y)) {
+    validate_classification_outcome(y)
+  }
+  stopifnot(
+    "`p` must be one positive finite number" = is.numeric(p) &&
+      length(p) == 1L &&
+      is.finite(p) &&
+      p > 0,
+    "`neighbors` must be one positive whole number no greater than the number of training rows" = is.numeric(
+      neighbors
+    ) &&
+      length(neighbors) == 1L &&
+      is.finite(neighbors) &&
+      neighbors >= 1L &&
+      neighbors == as.integer(neighbors) &&
+      neighbors <= nrow(x)
+  )
+
   if (is.character(algo)) {
     algo_type <- knn_match_algo(algo)
     algo_params <- list()
   } else {
+    stopifnot(
+      "`algo` must be a KNN algorithm specification" = inherits(
+        algo,
+        "cuda_ml_knn_algo"
+      ) &&
+        is.list(algo) &&
+        identical(names(algo), c("type", "params")) &&
+        is.integer(algo$type) &&
+        length(algo$type) == 1L &&
+        algo$type %in% c(1L, 2L) &&
+        is.list(algo$params)
+    )
     algo_type <- algo$type
     algo_params <- algo$params
+    expected_params <- if (algo_type == 1L) {
+      c("nlist", "nprobe")
+    } else {
+      c("nlist", "nprobe", "M", "n_bits", "usePrecomputedTables")
+    }
+    stopifnot(
+      "The KNN algorithm specification has invalid parameters" = identical(
+        names(algo_params),
+        expected_params
+      ),
+      "`nlist` must not exceed the number of training rows" = algo_params$nlist <=
+        nrow(x),
+      "`m` must divide the number of predictors for IVFPQ" = algo_type != 2L ||
+        ncol(x) %% algo_params$M == 0L
+    )
   }
   metric <- knn_match_metric(metric)
+  stopifnot(
+    "Approximate KNN algorithms support only `euclidean`, `l2`, `cosine`, and `correlation` metrics" = algo_type ==
+      0L ||
+      metric %in% c(1L, 2L, 10L)
+  )
 
   if (is.factor(y)) {
     # classification
@@ -330,38 +528,42 @@ cuda_ml_knn_bridge <- function(processed, algo, metric, p, neighbors) {
 #' Make predictions on new data points using a CuML KNN model.
 #'
 #' @template predict
-#' @template output-class-probabilities
+#' @param type Type of prediction. Classification models support
+#'   \code{"class"} and \code{"prob"}; regression models support
+#'   \code{"numeric"}. The default is \code{"class"} for classification and
+#'   \code{"numeric"} for regression.
 #'
 #' @importFrom ellipsis check_dots_used
 #' @export
-predict.cuda_ml_knn <- function(object, x, output_class_probabilities = NULL, ...) {
+predict.cuda_ml_knn <- function(object, new_data, type = NULL, ...) {
   check_dots_used()
 
-  processed <- hardhat::forge(x, object$blueprint)
+  processed <- hardhat::forge(new_data, object$blueprint)
 
   predict_cuda_ml_knn_bridge(
     model = object,
     processed = processed,
-    output_class_probabilities = output_class_probabilities
+    type = type
   )
 }
 
-predict_cuda_ml_knn_bridge <- function(model, processed, output_class_probabilities) {
-  out <- switch(model$mode,
+predict_cuda_ml_knn_bridge <- function(model, processed, type) {
+  out <- switch(
+    model$mode,
     classification = {
+      type <- match.arg(type %||% "class", c("class", "prob"))
       predict_cuda_ml_knn_classification_impl(
         model = model,
         processed = processed,
-        output_class_probabilities = output_class_probabilities %||% FALSE
+        type = type
       )
     },
     regression = {
-      if (!is.null(output_class_probabilities)) {
-        stop("'output_class_probabilities' is not applicable for regression tasks!")
-      }
+      type <- match.arg(type %||% "numeric", "numeric")
 
       predict_cuda_ml_knn_regression_impl(
-        model = model, processed = processed
+        model = model,
+        processed = processed
       )
     }
   )
@@ -370,8 +572,8 @@ predict_cuda_ml_knn_bridge <- function(model, processed, output_class_probabilit
   out
 }
 
-predict_cuda_ml_knn_classification_impl <- function(model, processed, output_class_probabilities) {
-  if (output_class_probabilities) {
+predict_cuda_ml_knn_classification_impl <- function(model, processed, type) {
+  if (identical(type, "prob")) {
     preds <- .knn_classifier_predict_probabilities(
       model = model$xptr,
       x = as.matrix(processed$predictors),
@@ -404,11 +606,17 @@ predict_cuda_ml_knn_regression_impl <- function(model, processed) {
 register_knn_model <- function(pkgname) {
   for (mode in c("classification", "regression")) {
     parsnip::set_model_engine(
-      model = "nearest_neighbor", mode = mode, eng = pkgname
+      model = "nearest_neighbor",
+      mode = mode,
+      eng = pkgname
     )
   }
 
-  parsnip::set_dependency(model = "nearest_neighbor", eng = pkgname, pkg = pkgname)
+  parsnip::set_dependency(
+    model = "nearest_neighbor",
+    eng = pkgname,
+    pkg = pkgname
+  )
 
   parsnip::set_model_arg(
     model = "nearest_neighbor",
@@ -449,7 +657,7 @@ register_knn_model <- function(pkgname) {
         predictor_indicators = "none",
         compute_intercept = FALSE,
         remove_intercept = FALSE,
-        allow_sparse_x = TRUE
+        allow_sparse_x = FALSE
       )
     )
   }
@@ -465,9 +673,9 @@ register_knn_model <- function(pkgname) {
         post = NULL,
         func = c(fun = "predict"),
         args = list(
-          quote(object$fit),
-          quote(new_data),
-          identical(type, "prob") # output_class_probabilities
+          object = quote(object$fit),
+          new_data = quote(new_data),
+          type = type
         )
       )
     )

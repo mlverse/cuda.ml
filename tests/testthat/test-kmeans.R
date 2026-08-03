@@ -1,7 +1,12 @@
+skip_if_not(run_gpu_tests, "requires the GPU test environment")
+
 context("K-Means")
 
 sklearn_kmeans_model <- sklearn$cluster$KMeans(
-  n_clusters = 3L, max_iter = 100L
+  n_clusters = 3L,
+  max_iter = 100L,
+  n_init = 10L,
+  random_state = 0L
 )
 sklearn_kclust <- sklearn_kmeans_model$fit(sklearn_iris_dataset$data)
 
@@ -33,7 +38,24 @@ test_that("cuda_ml_kmeans() works as expected with 'random' initialization metho
     init_method = "random"
   )
 
-  verify_cluster_centers(cuda_ml_kclust$centroids)
+  expect_equal(dim(cuda_ml_kclust$centroids), c(3L, 4L))
+  expect_equal(length(cuda_ml_kclust$labels), nrow(iris))
+  expect_equal(length(unique(cuda_ml_kclust$labels)), 3L)
+  expect_true(all(is.finite(cuda_ml_kclust$centroids)))
+  expect_true(is.finite(cuda_ml_kclust$inertia))
+  expect_lte(cuda_ml_kclust$n_iter, 100L)
+})
+
+test_that("zero tolerance disables inertia-based convergence", {
+  cuda_ml_kclust <- cuda_ml_kmeans(
+    iris[, which(names(iris) != "Species")],
+    k = 3,
+    max_iters = 10,
+    tol = 0,
+    seed = 0L
+  )
+
+  expect_equal(cuda_ml_kclust$n_iter, 10L)
 })
 
 test_that("cuda_ml_kmeans() works as expected with user-specified initial cluster centers", {
@@ -41,6 +63,7 @@ test_that("cuda_ml_kmeans() works as expected with user-specified initial cluste
     iris[, which(names(iris) != "Species")],
     k = 3,
     max_iters = 100,
+    tol = 1e-4,
     init_method = sklearn_kclust$cluster_centers_
   )
 

@@ -1,32 +1,15 @@
-sgd_match_loss <- function(loss = c("squared_loss", "log", "hinge")) {
-  loss <- match.arg(loss)
-
-  switch(loss,
-    squared_loss = 0L,
-    log = 1L,
-    hinge = 2L
-  )
-}
-
 sgd_match_penalty <- function(penalty = c("none", "l1", "l2", "elasticnet")) {
   penalty <- match.arg(penalty)
 
-  switch(penalty,
-    none = 0L,
-    l1 = 1L,
-    l2 = 2L,
-    elasticnet = 3L
-  )
+  switch(penalty, none = 0L, l1 = 1L, l2 = 2L, elasticnet = 3L)
 }
 
-sgd_match_learning_rate <- function(learning_rate = c("constant", "invscaling", "adaptive")) {
+sgd_match_learning_rate <- function(
+  learning_rate = c("constant", "invscaling", "adaptive")
+) {
   learning_rate <- match.arg(learning_rate)
 
-  switch(learning_rate,
-    constant = 1L,
-    invscaling = 2L,
-    adaptive = 3L
-  )
+  switch(learning_rate, constant = 1L, invscaling = 2L, adaptive = 3L)
 }
 
 #' Train a MBSGD linear model.
@@ -38,7 +21,6 @@ sgd_match_learning_rate <- function(learning_rate = c("constant", "invscaling", 
 #' @template ellipsis-unused
 #' @template fit-intercept
 #' @template l1_ratio
-#' @param loss Loss function, must be one of \{"squared_loss", "log", "hinge"\}.
 #' @param penalty Type of regularization to perform, must be one of
 #'   \{"none", "l1", "l2", "elasticnet"\}.
 #'
@@ -78,7 +60,7 @@ sgd_match_learning_rate <- function(learning_rate = c("constant", "invscaling", 
 #' @param eta0 The initial learning rate. Default: 1e-3.
 #' @param power_t The exponent used in the invscaling learning rate
 #'   calculations.
-#' @param n_iters_no_change The maximum number of epochs to train if there is no
+#' @param n_iter_no_change The maximum number of epochs to train if there is no
 #'   imporvement in the model. Default: 5.
 #'
 #' @return A linear model that can be used with the 'predict' S3 generic to make
@@ -88,20 +70,21 @@ sgd_match_learning_rate <- function(learning_rate = c("constant", "invscaling", 
 #'
 #' library(cuda.ml)
 #'
-#' model <- cuda_ml_sgd(
-#'   mpg ~ ., mtcars,
-#'   batch_size = 4L, epochs = 50000L,
-#'   learning_rate = "adaptive", eta0 = 1e-5,
-#'   penalty = "l2", alpha = 1e-5, tol = 1e-6,
-#'   n_iters_no_change = 10L
-#' )
+#' if (interactive() && cuda_ml_backend_info()$runtime_installed) {
+#'   model <- cuda_ml_sgd(
+#'     mpg ~ ., mtcars,
+#'     batch_size = 4L, epochs = 50000L,
+#'     learning_rate = "adaptive", eta0 = 1e-5,
+#'     penalty = "l2", alpha = 1e-5, tol = 1e-6,
+#'     n_iter_no_change = 10L
+#'   )
 #'
-#' preds <- predict(model, mtcars[names(mtcars) != "mpg"])
-#' print(all.equal(preds$.pred, mtcars$mpg, tolerance = 0.09))
+#'   preds <- predict(model, mtcars[names(mtcars) != "mpg"])
+#'   print(all.equal(preds$.pred, mtcars$mpg, tolerance = 0.09))
+#' }
 #' @importFrom ellipsis check_dots_used
 #' @export
 cuda_ml_sgd <- function(x, ...) {
-  check_dots_used()
   UseMethod("cuda_ml_sgd")
 }
 
@@ -113,22 +96,29 @@ cuda_ml_sgd.default <- function(x, ...) {
 
 #' @rdname cuda_ml_sgd
 #' @export
-cuda_ml_sgd.data.frame <- function(x, y,
-                                   fit_intercept = TRUE,
-                                   loss = c("squared_loss", "log", "hinge"),
-                                   penalty = c("none", "l1", "l2", "elasticnet"),
-                                   alpha = 1e-4, l1_ratio = 0.5,
-                                   epochs = 1000L, tol = 1e-3, shuffle = TRUE,
-                                   learning_rate = c("constant", "invscaling", "adaptive"),
-                                   eta0 = 1e-3, power_t = 0.5, batch_size = 32L,
-                                   n_iters_no_change = 5L,
-                                   ...) {
+cuda_ml_sgd.data.frame <- function(
+  x,
+  y,
+  fit_intercept = TRUE,
+  penalty = c("none", "l1", "l2", "elasticnet"),
+  alpha = 1e-4,
+  l1_ratio = 0.5,
+  epochs = 1000L,
+  tol = 1e-3,
+  shuffle = TRUE,
+  learning_rate = c("constant", "invscaling", "adaptive"),
+  eta0 = 1e-3,
+  power_t = 0.5,
+  batch_size = 32L,
+  n_iter_no_change = 5L,
+  ...
+) {
+  check_dots_used()
   processed <- hardhat::mold(x, y)
 
   cuda_ml_sgd_bridge(
     processed = processed,
     fit_intercept = fit_intercept,
-    loss = loss,
     penalty = penalty,
     alpha = alpha,
     l1_ratio = l1_ratio,
@@ -139,28 +129,35 @@ cuda_ml_sgd.data.frame <- function(x, y,
     eta0 = eta0,
     power_t = power_t,
     batch_size = batch_size,
-    n_iters_no_change = n_iters_no_change
+    n_iter_no_change = n_iter_no_change
   )
 }
 
 #' @rdname cuda_ml_sgd
 #' @export
-cuda_ml_sgd.matrix <- function(x, y,
-                               fit_intercept = TRUE,
-                               loss = c("squared_loss", "log", "hinge"),
-                               penalty = c("none", "l1", "l2", "elasticnet"),
-                               alpha = 1e-4, l1_ratio = 0.5,
-                               epochs = 1000L, tol = 1e-3, shuffle = TRUE,
-                               learning_rate = c("constant", "invscaling", "adaptive"),
-                               eta0 = 1e-3, power_t = 0.5, batch_size = 32L,
-                               n_iters_no_change = 5L,
-                               ...) {
+cuda_ml_sgd.matrix <- function(
+  x,
+  y,
+  fit_intercept = TRUE,
+  penalty = c("none", "l1", "l2", "elasticnet"),
+  alpha = 1e-4,
+  l1_ratio = 0.5,
+  epochs = 1000L,
+  tol = 1e-3,
+  shuffle = TRUE,
+  learning_rate = c("constant", "invscaling", "adaptive"),
+  eta0 = 1e-3,
+  power_t = 0.5,
+  batch_size = 32L,
+  n_iter_no_change = 5L,
+  ...
+) {
+  check_dots_used()
   processed <- hardhat::mold(x, y)
 
   cuda_ml_sgd_bridge(
     processed = processed,
     fit_intercept = fit_intercept,
-    loss = loss,
     penalty = penalty,
     alpha = alpha,
     l1_ratio = l1_ratio,
@@ -171,28 +168,35 @@ cuda_ml_sgd.matrix <- function(x, y,
     eta0 = eta0,
     power_t = power_t,
     batch_size = batch_size,
-    n_iters_no_change = n_iters_no_change
+    n_iter_no_change = n_iter_no_change
   )
 }
 
 #' @rdname cuda_ml_sgd
 #' @export
-cuda_ml_sgd.formula <- function(formula, data,
-                                fit_intercept = TRUE,
-                                loss = c("squared_loss", "log", "hinge"),
-                                penalty = c("none", "l1", "l2", "elasticnet"),
-                                alpha = 1e-4, l1_ratio = 0.5,
-                                epochs = 1000L, tol = 1e-3, shuffle = TRUE,
-                                learning_rate = c("constant", "invscaling", "adaptive"),
-                                eta0 = 1e-3, power_t = 0.5, batch_size = 32L,
-                                n_iters_no_change = 5L,
-                                ...) {
+cuda_ml_sgd.formula <- function(
+  formula,
+  data,
+  fit_intercept = TRUE,
+  penalty = c("none", "l1", "l2", "elasticnet"),
+  alpha = 1e-4,
+  l1_ratio = 0.5,
+  epochs = 1000L,
+  tol = 1e-3,
+  shuffle = TRUE,
+  learning_rate = c("constant", "invscaling", "adaptive"),
+  eta0 = 1e-3,
+  power_t = 0.5,
+  batch_size = 32L,
+  n_iter_no_change = 5L,
+  ...
+) {
+  check_dots_used()
   processed <- hardhat::mold(formula, data)
 
   cuda_ml_sgd_bridge(
     processed = processed,
     fit_intercept = fit_intercept,
-    loss = loss,
     penalty = penalty,
     alpha = alpha,
     l1_ratio = l1_ratio,
@@ -203,28 +207,35 @@ cuda_ml_sgd.formula <- function(formula, data,
     eta0 = eta0,
     power_t = power_t,
     batch_size = batch_size,
-    n_iters_no_change = n_iters_no_change
+    n_iter_no_change = n_iter_no_change
   )
 }
 
 #' @rdname cuda_ml_sgd
 #' @export
-cuda_ml_sgd.recipe <- function(x, data,
-                               fit_intercept = TRUE,
-                               loss = c("squared_loss", "log", "hinge"),
-                               penalty = c("none", "l1", "l2", "elasticnet"),
-                               alpha = 1e-4, l1_ratio = 0.5,
-                               epochs = 1000L, tol = 1e-3, shuffle = TRUE,
-                               learning_rate = c("constant", "invscaling", "adaptive"),
-                               eta0 = 1e-3, power_t = 0.5, batch_size = 32L,
-                               n_iters_no_change = 5L,
-                               ...) {
+cuda_ml_sgd.recipe <- function(
+  x,
+  data,
+  fit_intercept = TRUE,
+  penalty = c("none", "l1", "l2", "elasticnet"),
+  alpha = 1e-4,
+  l1_ratio = 0.5,
+  epochs = 1000L,
+  tol = 1e-3,
+  shuffle = TRUE,
+  learning_rate = c("constant", "invscaling", "adaptive"),
+  eta0 = 1e-3,
+  power_t = 0.5,
+  batch_size = 32L,
+  n_iter_no_change = 5L,
+  ...
+) {
+  check_dots_used()
   processed <- hardhat::mold(x, data)
 
   cuda_ml_sgd_bridge(
     processed = processed,
     fit_intercept = fit_intercept,
-    loss = loss,
     penalty = penalty,
     alpha = alpha,
     l1_ratio = l1_ratio,
@@ -235,21 +246,26 @@ cuda_ml_sgd.recipe <- function(x, data,
     eta0 = eta0,
     power_t = power_t,
     batch_size = batch_size,
-    n_iters_no_change = n_iters_no_change
+    n_iter_no_change = n_iter_no_change
   )
 }
 
-cuda_ml_sgd_bridge <- function(processed,
-                               fit_intercept,
-                               loss,
-                               penalty,
-                               alpha, l1_ratio,
-                               epochs, tol, shuffle,
-                               learning_rate,
-                               eta0, power_t, batch_size,
-                               n_iters_no_change) {
+cuda_ml_sgd_bridge <- function(
+  processed,
+  fit_intercept,
+  penalty,
+  alpha,
+  l1_ratio,
+  epochs,
+  tol,
+  shuffle,
+  learning_rate,
+  eta0,
+  power_t,
+  batch_size,
+  n_iter_no_change
+) {
   validate_lm_input(processed)
-  loss <- sgd_match_loss(loss)
   penalty <- sgd_match_penalty(penalty)
 
   learning_rate <- sgd_match_learning_rate(learning_rate)
@@ -269,13 +285,13 @@ cuda_ml_sgd_bridge <- function(processed,
     lr_type = learning_rate,
     eta0 = as.numeric(eta0),
     power_t = as.numeric(power_t),
-    loss = loss,
+    loss = 0L,
     penalty = penalty,
     alpha = as.numeric(alpha),
     l1_ratio = as.numeric(l1_ratio),
     shuffle = shuffle,
     tol = as.numeric(tol),
-    n_iter_no_change = as.integer(n_iters_no_change)
+    n_iter_no_change = as.integer(n_iter_no_change)
   )
 
   new_linear_model(

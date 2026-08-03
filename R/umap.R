@@ -1,19 +1,15 @@
 umap_match_init_mode <- function(init = c("spectral", "random")) {
   init <- match.arg(init)
 
-  switch(init,
-    spectral = 1L,
-    random = 0L
-  )
+  switch(init, spectral = 1L, random = 0L)
 }
 
-umap_match_metric_type <- function(metric_type = c("categorical", "euclidean")) {
+umap_match_metric_type <- function(
+  metric_type = c("categorical", "euclidean")
+) {
   metric_type <- match.arg(metric_type)
 
-  switch(metric_type,
-    categorical = 1L,
-    euclidean = 0L
-  )
+  switch(metric_type, categorical = 1L, euclidean = 0L)
 }
 
 new_umap_model <- function(model) {
@@ -30,7 +26,6 @@ new_umap_model <- function(model) {
 #'
 #' @template model-with-numeric-input
 #' @template transform-input
-#' @template cuML-log-level
 #' @param y An optional numeric vector of target values for supervised dimension
 #'   reduction. Default: NULL.
 #' @param n_components The dimension of the space to embed into. Default: 2.
@@ -92,30 +87,44 @@ new_umap_model <- function(model) {
 #' @examples
 #' library(cuda.ml)
 #'
-#' model <- cuda_ml_umap(
-#'   x = iris[1:4],
-#'   y = iris[[5]],
-#'   n_components = 2,
-#'   n_epochs = 200,
-#'   transform_input = TRUE
-#' )
+#' if (interactive() && cuda_ml_backend_info()$runtime_installed) {
+#'   model <- cuda_ml_umap(
+#'     x = iris[1:4],
+#'     y = iris[[5]],
+#'     n_components = 2,
+#'     n_epochs = 200,
+#'     transform_input = TRUE
+#'   )
 #'
-#' set.seed(0L)
-#' print(kmeans(model$transformed, iter.max = 100, centers = 3))
+#'   set.seed(0L)
+#'   print(kmeans(model$transformed, iter.max = 100, centers = 3))
+#' }
 #' @export
-cuda_ml_umap <- function(x, y = NULL, n_components = 2L, n_neighbors = 15L,
-                         n_epochs = 500L, learning_rate = 1.0,
-                         init = c("spectral", "random"), min_dist = 0.1,
-                         spread = 1.0, set_op_mix_ratio = 1.0,
-                         local_connectivity = 1L, repulsion_strength = 1.0,
-                         negative_sample_rate = 5L, transform_queue_size = 4.0,
-                         a = NULL, b = NULL, target_n_neighbors = n_neighbors,
-                         target_metric = c("categorical", "euclidean"),
-                         target_weight = 0.5, transform_input = TRUE, seed = NULL,
-                         cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
+cuda_ml_umap <- function(
+  x,
+  y = NULL,
+  n_components = 2L,
+  n_neighbors = 15L,
+  n_epochs = 500L,
+  learning_rate = 1.0,
+  init = c("spectral", "random"),
+  min_dist = 0.1,
+  spread = 1.0,
+  set_op_mix_ratio = 1.0,
+  local_connectivity = 1L,
+  repulsion_strength = 1.0,
+  negative_sample_rate = 5L,
+  transform_queue_size = 4.0,
+  a = NULL,
+  b = NULL,
+  target_n_neighbors = n_neighbors,
+  target_metric = c("categorical", "euclidean"),
+  target_weight = 0.5,
+  transform_input = TRUE,
+  seed = NULL
+) {
   init <- umap_match_init_mode(init)
   target_metric <- umap_match_metric_type(target_metric)
-  cuML_log_level <- match_cuML_log_level(cuML_log_level)
 
   model_obj <- .umap_fit(
     x = as.matrix(x),
@@ -139,7 +148,7 @@ cuda_ml_umap <- function(x, y = NULL, n_components = 2L, n_neighbors = 15L,
     target_weight = as.numeric(target_weight),
     random_state = as.integer(seed %||% 0L),
     deterministic = !is.null(seed),
-    verbosity = cuML_log_level
+    verbosity = 6L
   )
   model <- new_umap_model(model_obj)
 
@@ -159,7 +168,8 @@ cuda_ml_get_state.cuda_ml_umap <- function(model) {
 
 #' @export
 cuda_ml_set_state.cuda_ml_umap_model_state <- function(model_state) {
-  model_obj <- .umap_set_state(model_state)
+  payload <- cuda_ml_state_payload(model_state, "cuda_ml_umap_model_state")
+  model_obj <- .umap_set_state(payload)
 
   new_umap_model(model_obj)
 }

@@ -1,12 +1,9 @@
-svm_match_kernel_type <- function(kernel = c("rbf", "tanh", "polynomial", "linear")) {
+svm_match_kernel_type <- function(
+  kernel = c("rbf", "tanh", "polynomial", "linear")
+) {
   kernel <- match.arg(kernel)
 
-  switch(kernel,
-    linear = 0L,
-    polynomial = 1L,
-    rbf = 2L,
-    tanh = 3L
-  )
+  switch(kernel, linear = 0L, polynomial = 1L, rbf = 2L, tanh = 3L)
 }
 
 #' Train a SVM model.
@@ -15,7 +12,6 @@ svm_match_kernel_type <- function(kernel = c("rbf", "tanh", "polynomial", "linea
 #'
 #' @template supervised-model-inputs
 #' @template supervised-model-output
-#' @template cuML-log-level
 #' @template ellipsis-unused
 #' @param cost A positive number for the cost of predicting a sample within or
 #'   on the wrong side of the margin. Default: 1.
@@ -68,29 +64,30 @@ svm_match_kernel_type <- function(kernel = c("rbf", "tanh", "polynomial", "linea
 #'
 #' library(cuda.ml)
 #'
-#' # Classification
+#' if (interactive() && cuda_ml_backend_info()$runtime_installed) {
+#'   # Classification
 #'
-#' model <- cuda_ml_svm(
-#'   formula = Species ~ .,
-#'   data = iris,
-#'   kernel = "rbf"
-#' )
+#'   model <- cuda_ml_svm(
+#'     formula = Species ~ .,
+#'     data = iris,
+#'     kernel = "rbf"
+#'   )
 #'
-#' predictions <- predict(model, iris[names(iris) != "Species"])
+#'   predictions <- predict(model, iris[names(iris) != "Species"])
 #'
-#' # Regression
+#'   # Regression
 #'
-#' model <- cuda_ml_svm(
-#'   formula = mpg ~ .,
-#'   data = mtcars,
-#'   kernel = "rbf"
-#' )
+#'   model <- cuda_ml_svm(
+#'     formula = mpg ~ .,
+#'     data = mtcars,
+#'     kernel = "rbf"
+#'   )
 #'
-#' predictions <- predict(model, mtcars)
+#'   predictions <- predict(model, mtcars)
+#' }
 #' @importFrom ellipsis check_dots_used
 #' @export
 cuda_ml_svm <- function(x, ...) {
-  check_dots_used()
   UseMethod("cuda_ml_svm")
 }
 
@@ -102,14 +99,23 @@ cuda_ml_svm.default <- function(x, ...) {
 
 #' @rdname cuda_ml_svm
 #' @export
-cuda_ml_svm.data.frame <- function(x, y, cost = 1,
-                                   kernel = c("rbf", "tanh", "polynomial", "linear"),
-                                   gamma = NULL, coef0 = 0, degree = 3L,
-                                   tol = 1e-3, max_iter = NULL,
-                                   nochange_steps = 1000L, cache_size = 1024,
-                                   epsilon = 0.1, sample_weights = NULL,
-                                   cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
-                                   ...) {
+cuda_ml_svm.data.frame <- function(
+  x,
+  y,
+  cost = 1,
+  kernel = c("rbf", "tanh", "polynomial", "linear"),
+  gamma = NULL,
+  coef0 = 0,
+  degree = 3L,
+  tol = 1e-3,
+  max_iter = NULL,
+  nochange_steps = 1000L,
+  cache_size = 1024,
+  epsilon = 0.1,
+  sample_weights = NULL,
+  ...
+) {
+  check_dots_used()
   processed <- hardhat::mold(x, y)
 
   cuda_ml_svm_bridge(
@@ -124,21 +130,29 @@ cuda_ml_svm.data.frame <- function(x, y, cost = 1,
     nochange_steps = nochange_steps,
     cache_size = cache_size,
     epsilon = epsilon,
-    sample_weights = sample_weights,
-    cuML_log_level = cuML_log_level
+    sample_weights = sample_weights
   )
 }
 
 #' @rdname cuda_ml_svm
 #' @export
-cuda_ml_svm.matrix <- function(x, y, cost = 1,
-                               kernel = c("rbf", "tanh", "polynomial", "linear"),
-                               gamma = NULL, coef0 = 0, degree = 3L, tol = 1e-3,
-                               max_iter = NULL, nochange_steps = 1000L,
-                               cache_size = 1024, epsilon = 0.1,
-                               sample_weights = NULL,
-                               cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
-                               ...) {
+cuda_ml_svm.matrix <- function(
+  x,
+  y,
+  cost = 1,
+  kernel = c("rbf", "tanh", "polynomial", "linear"),
+  gamma = NULL,
+  coef0 = 0,
+  degree = 3L,
+  tol = 1e-3,
+  max_iter = NULL,
+  nochange_steps = 1000L,
+  cache_size = 1024,
+  epsilon = 0.1,
+  sample_weights = NULL,
+  ...
+) {
+  check_dots_used()
   processed <- hardhat::mold(x, y)
 
   cuda_ml_svm_bridge(
@@ -153,21 +167,29 @@ cuda_ml_svm.matrix <- function(x, y, cost = 1,
     nochange_steps = nochange_steps,
     cache_size = cache_size,
     epsilon = epsilon,
-    sample_weights = sample_weights,
-    cuML_log_level = cuML_log_level
+    sample_weights = sample_weights
   )
 }
 
 #' @rdname cuda_ml_svm
 #' @export
-cuda_ml_svm.formula <- function(formula, data, cost = 1,
-                                kernel = c("rbf", "tanh", "polynomial", "linear"),
-                                gamma = NULL, coef0 = 0, degree = 3L, tol = 1e-3,
-                                max_iter = NULL, nochange_steps = 1000L,
-                                cache_size = 1024, epsilon = 0.1,
-                                sample_weights = NULL,
-                                cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
-                                ...) {
+cuda_ml_svm.formula <- function(
+  formula,
+  data,
+  cost = 1,
+  kernel = c("rbf", "tanh", "polynomial", "linear"),
+  gamma = NULL,
+  coef0 = 0,
+  degree = 3L,
+  tol = 1e-3,
+  max_iter = NULL,
+  nochange_steps = 1000L,
+  cache_size = 1024,
+  epsilon = 0.1,
+  sample_weights = NULL,
+  ...
+) {
+  check_dots_used()
   processed <- hardhat::mold(formula, data)
 
   cuda_ml_svm_bridge(
@@ -182,21 +204,29 @@ cuda_ml_svm.formula <- function(formula, data, cost = 1,
     nochange_steps = nochange_steps,
     cache_size = cache_size,
     epsilon = epsilon,
-    sample_weights = sample_weights,
-    cuML_log_level = cuML_log_level
+    sample_weights = sample_weights
   )
 }
 
 #' @rdname cuda_ml_svm
 #' @export
-cuda_ml_svm.recipe <- function(x, data, cost = 1,
-                               kernel = c("rbf", "tanh", "polynomial", "linear"),
-                               gamma = NULL, coef0 = 0, degree = 3L, tol = 1e-3,
-                               max_iter = NULL, nochange_steps = 1000L,
-                               cache_size = 1024, epsilon = 0.1,
-                               sample_weights = NULL,
-                               cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace"),
-                               ...) {
+cuda_ml_svm.recipe <- function(
+  x,
+  data,
+  cost = 1,
+  kernel = c("rbf", "tanh", "polynomial", "linear"),
+  gamma = NULL,
+  coef0 = 0,
+  degree = 3L,
+  tol = 1e-3,
+  max_iter = NULL,
+  nochange_steps = 1000L,
+  cache_size = 1024,
+  epsilon = 0.1,
+  sample_weights = NULL,
+  ...
+) {
+  check_dots_used()
   processed <- hardhat::mold(x, data)
 
   cuda_ml_svm_bridge(
@@ -211,36 +241,48 @@ cuda_ml_svm.recipe <- function(x, data, cost = 1,
     nochange_steps = nochange_steps,
     cache_size = cache_size,
     epsilon = epsilon,
-    sample_weights = sample_weights,
-    cuML_log_level = cuML_log_level
+    sample_weights = sample_weights
   )
 }
 
-cuda_ml_svm_bridge <- function(processed, cost, kernel, gamma, coef0, degree, tol,
-                               max_iter, nochange_steps, cache_size, epsilon,
-                               sample_weights, cuML_log_level) {
+cuda_ml_svm_bridge <- function(
+  processed,
+  cost,
+  kernel,
+  gamma,
+  coef0,
+  degree,
+  tol,
+  max_iter,
+  nochange_steps,
+  cache_size,
+  epsilon,
+  sample_weights
+) {
   hardhat::validate_predictors_are_numeric(processed$predictors)
   hardhat::validate_outcomes_are_univariate(processed$outcomes)
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
 
+  if (is.factor(y)) {
+    validate_classification_outcome(y)
+  }
+
   gamma <- gamma %||% 1.0 / ncol(x)
   max_iter <- max_iter %||% 100L * nrow(x)
   kernel <- svm_match_kernel_type(kernel)
-  cuML_log_level <- match_cuML_log_level(cuML_log_level)
 
-  svm_fit_impl <- (
-    if (is.factor(y)) {
-      # classification
-      ylevels <- levels(y)
-      if (length(ylevels) > 2) {
-        cuda_ml_svm_classification_multiclass_impl
-      } else {
-        cuda_ml_svm_classification_binary_impl
-      }
+  svm_fit_impl <- (if (is.factor(y)) {
+    # classification
+    ylevels <- levels(y)
+    if (length(ylevels) > 2) {
+      cuda_ml_svm_classification_multiclass_impl
     } else {
-      cuda_ml_svm_regression_impl
-    })
+      cuda_ml_svm_classification_binary_impl
+    }
+  } else {
+    cuda_ml_svm_regression_impl
+  })
 
   svm_fit_impl(
     processed = processed,
@@ -254,16 +296,24 @@ cuda_ml_svm_bridge <- function(processed, cost, kernel, gamma, coef0, degree, to
     nochange_steps = nochange_steps,
     cache_size = cache_size,
     epsilon = epsilon,
-    sample_weights = sample_weights,
-    cuML_log_level = cuML_log_level
+    sample_weights = sample_weights
   )
 }
 
-cuda_ml_svm_classification_multiclass_impl <- function(processed, cost, kernel,
-                                                       gamma, coef0, degree, tol,
-                                                       max_iter, nochange_steps,
-                                                       cache_size, epsilon,
-                                                       sample_weights, cuML_log_level) {
+cuda_ml_svm_classification_multiclass_impl <- function(
+  processed,
+  cost,
+  kernel,
+  gamma,
+  coef0,
+  degree,
+  tol,
+  max_iter,
+  nochange_steps,
+  cache_size,
+  epsilon,
+  sample_weights
+) {
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
   ylevels <- levels(y)
@@ -272,34 +322,26 @@ cuda_ml_svm_classification_multiclass_impl <- function(processed, cost, kernel,
   models <- list()
   for (idx in seq_along(ylevels)) {
     ovr_labels <- as.integer(y == ylevels[[idx]])
-
-    model <- (
-      if (!any(ovr_labels)) {
-        # None of the training data points had the current label.
-        NULL
-      } else {
-        model_xptr <- .svc_fit(
-          input = x,
-          labels = ovr_labels,
-          cost = as.numeric(cost),
-          kernel = kernel,
-          gamma = as.numeric(gamma),
-          coef0 = as.numeric(coef0),
-          degree = as.integer(degree),
-          tol = as.numeric(tol),
-          max_iter = as.integer(max_iter),
-          nochange_steps = as.integer(nochange_steps),
-          cache_size = as.numeric(cache_size),
-          sample_weights = as.numeric(sample_weights),
-          verbosity = cuML_log_level
-        )
-
-        new_model(
-          cls = c("cuda_ml_svc", "cuda_ml_svm"),
-          mode = "classification",
-          xptr <- model_xptr
-        )
-      })
+    model_xptr <- .svc_fit(
+      input = x,
+      labels = ovr_labels,
+      cost = as.numeric(cost),
+      kernel = kernel,
+      gamma = as.numeric(gamma),
+      coef0 = as.numeric(coef0),
+      degree = as.integer(degree),
+      tol = as.numeric(tol),
+      max_iter = as.integer(max_iter),
+      nochange_steps = as.integer(nochange_steps),
+      cache_size = as.numeric(cache_size),
+      sample_weights = as.numeric(sample_weights),
+      verbosity = 6L
+    )
+    model <- new_model(
+      cls = c("cuda_ml_svc", "cuda_ml_svm"),
+      mode = "classification",
+      xptr = model_xptr
+    )
 
     models <- append(models, list(model))
   }
@@ -325,20 +367,30 @@ cuda_ml_get_state.cuda_ml_svc_ovr <- function(model) {
 
 #' @export
 cuda_ml_set_state.cuda_ml_svc_ovr_model_state <- function(model_state) {
+  payload <- cuda_ml_state_payload(model_state, "cuda_ml_svc_ovr_model_state")
   new_model(
     cls = c("cuda_ml_svc_ovr", "cuda_ml_svm"),
     mode = "classification",
-    xptr = lapply(model_state$ovr_model_states, function(x) cuda_ml_set_state(x)),
+    xptr = lapply(payload$ovr_model_states, function(x) cuda_ml_set_state(x)),
     multiclass = TRUE,
-    blueprint = model_state$blueprint
+    blueprint = payload$blueprint
   )
 }
 
-cuda_ml_svm_classification_binary_impl <- function(processed, cost, kernel, gamma,
-                                                   coef0, degree, tol, max_iter,
-                                                   nochange_steps, cache_size,
-                                                   epsilon, sample_weights,
-                                                   cuML_log_level) {
+cuda_ml_svm_classification_binary_impl <- function(
+  processed,
+  cost,
+  kernel,
+  gamma,
+  coef0,
+  degree,
+  tol,
+  max_iter,
+  nochange_steps,
+  cache_size,
+  epsilon,
+  sample_weights
+) {
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
 
@@ -355,7 +407,7 @@ cuda_ml_svm_classification_binary_impl <- function(processed, cost, kernel, gamm
     nochange_steps = as.integer(nochange_steps),
     cache_size = as.numeric(cache_size),
     sample_weights = as.numeric(sample_weights),
-    verbosity = cuML_log_level
+    verbosity = 6L
   )
 
   new_model(
@@ -379,19 +431,30 @@ cuda_ml_get_state.cuda_ml_svc <- function(model) {
 
 #' @export
 cuda_ml_set_state.cuda_ml_svc_model_state <- function(model_state) {
+  payload <- cuda_ml_state_payload(model_state, "cuda_ml_svc_model_state")
   new_model(
     cls = c("cuda_ml_svc", "cuda_ml_svm"),
     mode = "classification",
-    xptr = .svc_set_state(model_state$model_state),
+    xptr = .svc_set_state(payload$model_state),
     multiclass = FALSE,
-    blueprint = model_state$blueprint
+    blueprint = payload$blueprint
   )
 }
 
-cuda_ml_svm_regression_impl <- function(processed, cost, kernel, gamma, coef0,
-                                        degree, tol, max_iter, nochange_steps,
-                                        cache_size, epsilon, sample_weights,
-                                        cuML_log_level) {
+cuda_ml_svm_regression_impl <- function(
+  processed,
+  cost,
+  kernel,
+  gamma,
+  coef0,
+  degree,
+  tol,
+  max_iter,
+  nochange_steps,
+  cache_size,
+  epsilon,
+  sample_weights
+) {
   x <- as.matrix(processed$predictors)
   y <- processed$outcomes[[1]]
 
@@ -409,7 +472,7 @@ cuda_ml_svm_regression_impl <- function(processed, cost, kernel, gamma, coef0,
     cache_size = as.numeric(cache_size),
     epsilon = as.numeric(epsilon),
     sample_weights = as.numeric(sample_weights),
-    verbosity = cuML_log_level
+    verbosity = 6L
   )
 
   new_model(
@@ -432,11 +495,12 @@ cuda_ml_get_state.cuda_ml_svr <- function(model) {
 
 #' @export
 cuda_ml_set_state.cuda_ml_svr_model_state <- function(model_state) {
+  payload <- cuda_ml_state_payload(model_state, "cuda_ml_svr_model_state")
   new_model(
     cls = c("cuda_ml_svr", "cuda_ml_svm"),
     mode = "regression",
-    xptr = .svr_set_state(model_state$model_state),
-    blueprint = model_state$blueprint
+    xptr = .svr_set_state(payload$model_state),
+    blueprint = payload$blueprint
   )
 }
 
@@ -448,25 +512,23 @@ cuda_ml_set_state.cuda_ml_svr_model_state <- function(model_state) {
 #'
 #' @importFrom ellipsis check_dots_used
 #' @export
-predict.cuda_ml_svm <- function(object, x, ...) {
+predict.cuda_ml_svm <- function(object, new_data, ...) {
   check_dots_used()
 
-  processed <- hardhat::forge(x, object$blueprint)
+  processed <- hardhat::forge(new_data, object$blueprint)
 
   predict_cuda_ml_svm_bridge(model = object, processed = processed)
 }
 
 predict_cuda_ml_svm_bridge <- function(model, processed) {
-  svm_predict_impl <- switch(model$mode,
-    classification = (
-      if (model$multiclass) {
-        predict_cuda_ml_svm_classification_multiclass_impl
-      } else {
-        predict_cuda_ml_svm_classification_binary_impl
-      }),
-    regression = (
-      predict_cuda_ml_svm_regression_impl
-    )
+  svm_predict_impl <- switch(
+    model$mode,
+    classification = (if (model$multiclass) {
+      predict_cuda_ml_svm_classification_multiclass_impl
+    } else {
+      predict_cuda_ml_svm_classification_binary_impl
+    }),
+    regression = (predict_cuda_ml_svm_regression_impl)
   )
 
   out <- svm_predict_impl(model = model, processed = processed)
@@ -475,22 +537,20 @@ predict_cuda_ml_svm_bridge <- function(model, processed) {
   out
 }
 
-predict_cuda_ml_svm_classification_multiclass_impl <- function(model, processed) {
+predict_cuda_ml_svm_classification_multiclass_impl <- function(
+  model,
+  processed
+) {
   pred_levels <- get_pred_levels(model)
 
   scores <- lapply(
     seq_along(pred_levels),
     function(label_idx) {
-      if (is.null(model$xptr[[label_idx]])) {
-        # None of the training data points had the current label.
-        rep(-Inf, nrow(processed$predictors))
-      } else {
-        .svc_predict(
-          model_xptr = model$xptr[[label_idx]]$xptr,
-          input = as.matrix(processed$predictors),
-          predict_class = FALSE
-        )
-      }
+      .svc_predict(
+        model_xptr = model$xptr[[label_idx]]$xptr,
+        input = as.matrix(processed$predictors),
+        predict_class = FALSE
+      )
     }
   )
 

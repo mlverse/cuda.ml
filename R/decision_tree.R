@@ -1,16 +1,21 @@
-decision_tree_match_split_criterion <- function(criterion = c("gini", "entropy", "mse", "mae"),
-                                                classification = TRUE) {
-  criterion <- criterion %||% ifelse(classification, "gini", "mse")
-  criterion <- match.arg(criterion)
-
-  if (classification && criterion %in% c("mse", "mae")) {
-    stop("'", criterion, "' is not a valid criterion for classification.")
+decision_tree_match_split_criterion <- function(
+  criterion = NULL,
+  classification = TRUE
+) {
+  choices <- if (classification) {
+    c("gini", "entropy")
+  } else {
+    c("mse", "poisson", "gamma", "inverse_gaussian")
   }
+  criterion <- match.arg(criterion %||% choices[[1L]], choices)
 
-  switch(criterion,
+  switch(
+    criterion,
     gini = 0L,
     entropy = 1L,
     mse = 2L,
-    mae = 3L
+    poisson = 4L,
+    gamma = 5L,
+    inverse_gaussian = 6L
   )
 }

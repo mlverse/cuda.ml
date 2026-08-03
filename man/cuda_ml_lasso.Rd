@@ -20,7 +20,6 @@ cuda_ml_lasso(x, ...)
   max_iter = 1000L,
   tol = 0.001,
   fit_intercept = TRUE,
-  normalize_input = FALSE,
   selection = c("cyclic", "random"),
   ...
 )
@@ -32,7 +31,6 @@ cuda_ml_lasso(x, ...)
   max_iter = 1000L,
   tol = 0.001,
   fit_intercept = TRUE,
-  normalize_input = FALSE,
   selection = c("cyclic", "random"),
   ...
 )
@@ -44,7 +42,6 @@ cuda_ml_lasso(x, ...)
   max_iter = 1000L,
   tol = 0.001,
   fit_intercept = TRUE,
-  normalize_input = FALSE,
   selection = c("cyclic", "random"),
   ...
 )
@@ -56,7 +53,6 @@ cuda_ml_lasso(x, ...)
   max_iter = 1000L,
   tol = 0.001,
   fit_intercept = TRUE,
-  normalize_input = FALSE,
   selection = c("cyclic", "random"),
   ...
 )
@@ -75,8 +71,8 @@ cuda_ml_lasso(x, ...)
 \item{y}{A numeric vector (for regression) or factor (for classification) of
 desired responses.}
 
-\item{alpha}{Multiplier of the L1 penalty term (i.e., the result would become
-and Ordinary Least Square model if \code{alpha} were set to 0). Default: 1.}
+\item{alpha}{Positive multiplier of the L1 penalty term. Use
+\code{cuda_ml_ols()} for an unpenalized linear model. Default: 1.}
 
 \item{max_iter}{The maximum number of coordinate descent iterations.
 Default: 1000L.}
@@ -87,10 +83,6 @@ threshold. Default: 1e-3.}
 \item{fit_intercept}{If TRUE, then the model tries to correct for the global
 mean of the response variable. If FALSE, then the model expects data to be
 centered. Default: TRUE.}
-
-\item{normalize_input}{Ignored when \code{fit_intercept} is FALSE. If TRUE,
-then the predictors will be normalized to have a L2 norm of 1.
-Default: FALSE.}
 
 \item{selection}{If "random", then instead of updating coefficients in cyclic
 order, a random coefficient is updated in each iteration. Default: "cyclic".}
@@ -114,31 +106,33 @@ Operator) regression.
 
 library(cuda.ml)
 
-model <- cuda_ml_lasso(formula = mpg ~ ., data = mtcars, alpha = 1e-3)
-cuda_ml_predictions <- predict(model, mtcars)
+if (interactive() && cuda_ml_backend_info()$runtime_installed) {
+  model <- cuda_ml_lasso(formula = mpg ~ ., data = mtcars, alpha = 1e-3)
+  cuda_ml_predictions <- predict(model, mtcars)
 
-# predictions will be comparable to those from a `glmnet` model with `lambda`
-# set to 1e-3 and `alpha` set to 1
-# (in `glmnet`, `lambda` is the weight of the penalty term, and `alpha` is
-#  the elastic mixing parameter between L1 and L2 penalties.
+  # predictions will be comparable to those from a `glmnet` model with
+  # `lambda` set to 1e-3 and `alpha` set to 1
+  # (in `glmnet`, `lambda` is the weight of the penalty term, and `alpha` is
+  #  the elastic mixing parameter between L1 and L2 penalties.
 
-library(glmnet)
+  if (requireNamespace("glmnet", quietly = TRUE)) {
+    glmnet_model <- glmnet::glmnet(
+      x = as.matrix(mtcars[names(mtcars) != "mpg"]), y = mtcars$mpg,
+      alpha = 1, lambda = 1e-3, nlambda = 1, standardize = FALSE
+    )
 
-glmnet_model <- glmnet(
-  x = as.matrix(mtcars[names(mtcars) != "mpg"]), y = mtcars$mpg,
-  alpha = 1, lambda = 1e-3, nlambda = 1, standardize = FALSE
-)
+    glm_predictions <- predict(
+      glmnet_model, as.matrix(mtcars[names(mtcars) != "mpg"]),
+      s = 0
+    )
 
-glm_predictions <- predict(
-  glmnet_model, as.matrix(mtcars[names(mtcars) != "mpg"]),
-  s = 0
-)
-
-print(
-  all.equal(
-    as.numeric(glm_predictions),
-    cuda_ml_predictions$.pred,
-    tolerance = 1e-2
-  )
-)
+    print(
+      all.equal(
+        as.numeric(glm_predictions),
+        cuda_ml_predictions$.pred,
+        tolerance = 1e-2
+      )
+    )
+  }
+}
 }

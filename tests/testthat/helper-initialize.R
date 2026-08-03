@@ -1,35 +1,58 @@
-library(magrittr, warn.conflicts = FALSE)
-library(reticulate)
-library(rlang, warn.conflicts = FALSE)
-
-expect_libcuml <- function() {
-  if (!has_cuML()) {
-    stop(
-      "The current installation of {cuda.ml} is not linked with a valid copy of",
-      " the RAPIDS cuML shared library!\n",
-      ".libPaths:\n",
-      paste(.libPaths(), collapse = "\n")
+backend_info <- cuda_ml_backend_info()
+native_platform_supported <- cuda_ml_supported_platform()
+nvidia_smi <- unname(Sys.which("nvidia-smi"))
+gpu_output <- character()
+if (nzchar(nvidia_smi)) {
+  gpu_output <- suppressWarnings(tryCatch(
+    system2(
+      nvidia_smi,
+      c("--query-gpu=compute_cap", "--format=csv,noheader"),
+      stdout = TRUE,
+      stderr = TRUE
+    ),
+    error = function(e) character()
+  ))
+}
+gpu_status <- attr(gpu_output, "status", exact = TRUE)
+visible_devices <- Sys.getenv("CUDA_VISIBLE_DEVICES", unset = NA_character_)
+gpu_visible <- (
+  is.na(visible_devices) ||
+    (
+      nzchar(trimws(visible_devices)) &&
+        !grepl("^-[0-9]+", trimws(visible_devices))
     )
-  }
+) &&
+  length(gpu_output) > 0L &&
+  (is.null(gpu_status) || gpu_status == 0L) &&
+  all(grepl("^[0-9]+[.][0-9]+$", trimws(gpu_output)))
+run_gpu_tests <- !identical(Sys.getenv("CUDA_ML_GPU_TESTS"), "false") &&
+  gpu_visible &&
+  backend_info$backend_available &&
+  backend_info$runtime_installed
+
+if (run_gpu_tests) {
+  library(magrittr, warn.conflicts = FALSE)
+  library(reticulate)
+  library(rlang, warn.conflicts = FALSE)
 }
 
-expect_libcuml()
-
-reticulate::py_require("scikit-learn")
-sklearn <- reticulate::import("sklearn")
-sklearn_iris_dataset <- list(
-  data = iris[, names(iris) != "Species"] %>%
-    unname() %>%
-    as.matrix(),
-  target = as.integer(iris[["Species"]])
-)
-sklearn_mtcars_dataset <- list(
-  data = mtcars[, names(mtcars) != "mpg"] %>%
-    data.frame(row.names = NULL) %>%
-    unname() %>%
-    as.matrix(),
-  target = mtcars[["mpg"]]
-)
+if (run_gpu_tests) {
+  reticulate::py_require("scikit-learn")
+  sklearn <- reticulate::import("sklearn")
+  sklearn_iris_dataset <- list(
+    data = iris[, names(iris) != "Species"] %>%
+      unname() %>%
+      as.matrix(),
+    target = as.integer(iris[["Species"]])
+  )
+  sklearn_mtcars_dataset <- list(
+    data = mtcars[, names(mtcars) != "mpg"] %>%
+      data.frame(row.names = NULL) %>%
+      unname() %>%
+      as.matrix(),
+    target = mtcars[["mpg"]]
+  )
+}
 
 #' Sort matrix rows by all columns or by a subset of columns.
 #'
@@ -40,13 +63,21 @@ sort_mat <- function(m, cols = seq(ncol(m))) {
 
 #' Attempt to unserialize a CuML model within a sub-process and use the
 #' unserialized model to make predictions.
-predict_in_sub_proc <- function(model_state, data, expected_mode,
-                                expected_model_cls = NULL,
-                                additional_predict_args = list()) {
-  impl <- function(expect_libcuda_ml_impl, model_state, data, expected_mode,
-                   expected_model_cls, additional_predict_args) {
-    library(cuda.ml)
-    expect_libcuda_ml_impl()
+predict_in_sub_proc <- function(
+  model_state,
+  data,
+  expected_mode,
+  expected_model_cls = NULL,
+  additional_predict_args = list()
+) {
+  impl <- function(
+    model_state,
+    data,
+    expected_mode,
+    expected_model_cls,
+    additional_predict_args
+  ) {
+    suppressPackageStartupMessages(library(cuda.ml))
 
     model <- cuda_ml_unserialize(model_state)
     for (cls in expected_model_cls) {
@@ -60,14 +91,14 @@ predict_in_sub_proc <- function(model_state, data, expected_mode,
   callr::r(
     impl,
     args = list(
-      expect_libcuda_ml_impl = expect_libcuml,
       model_state = model_state,
       data = data,
       expected_mode = expected_mode,
       expected_model_cls = expected_model_cls,
       additional_predict_args = additional_predict_args
     ),
-    stdout = "", stderr = ""
+    stdout = "",
+    stderr = ""
   )
 }
 
@@ -94,7 +125,8 @@ verify_iris_embedding <- function(embedding) {
   # different clusters in the resulting clustering.
   expect_gte(
     sklearn$metrics$adjusted_rand_score(
-      labels_true = iris$Species, labels_pred = k_clust$cluster
+      labels_true = iris$Species,
+      labels_pred = k_clust$cluster
     ),
     0.7
   )

@@ -1,3 +1,5 @@
+skip_if_not(run_gpu_tests, "requires the GPU test environment")
+
 context("Mini-batch Stochastic Gradient Descent")
 
 set.seed(0L)
@@ -20,19 +22,22 @@ test_that("MBSGD works as expected for training linear regressors", {
 
   for (learning_rate in c("constant", "adaptive", "invscaling")) {
     for (penalty in c("l1", "l2", "elasticnet")) {
-      for (loss in c("squared_loss", "log", "hinge")) {
-        model <- cuda_ml_sgd(
-          y ~ ., train_df,
-          fit_intercept = TRUE,
-          loss = loss, penalty = penalty,
-          batch_size = 16,
-          learning_rate = learning_rate, eta0 = 1e-5,
-          tol = 1e-5
-        )
-        preds <- predict(model, test_df[names(test_df) != "y"])
+      model <- cuda_ml_sgd(
+        y ~ .,
+        train_df,
+        fit_intercept = TRUE,
+        penalty = penalty,
+        batch_size = 16,
+        learning_rate = learning_rate,
+        eta0 = 1e-5,
+        tol = 1e-5
+      )
+      preds <- predict(model, test_df[names(test_df) != "y"])
 
-        expect_lte(sum(sign(preds$.pred) != sign(test_df$y)) / nrow(test_df), 0.01)
-      }
+      expect_lte(
+        sum(sign(preds$.pred) != sign(test_df$y)) / nrow(test_df),
+        0.01
+      )
     }
   }
 })

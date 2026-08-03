@@ -17,7 +17,6 @@ cuda_ml_sgd(x, ...)
   x,
   y,
   fit_intercept = TRUE,
-  loss = c("squared_loss", "log", "hinge"),
   penalty = c("none", "l1", "l2", "elasticnet"),
   alpha = 1e-04,
   l1_ratio = 0.5,
@@ -28,7 +27,7 @@ cuda_ml_sgd(x, ...)
   eta0 = 0.001,
   power_t = 0.5,
   batch_size = 32L,
-  n_iters_no_change = 5L,
+  n_iter_no_change = 5L,
   ...
 )
 
@@ -36,7 +35,6 @@ cuda_ml_sgd(x, ...)
   x,
   y,
   fit_intercept = TRUE,
-  loss = c("squared_loss", "log", "hinge"),
   penalty = c("none", "l1", "l2", "elasticnet"),
   alpha = 1e-04,
   l1_ratio = 0.5,
@@ -47,7 +45,7 @@ cuda_ml_sgd(x, ...)
   eta0 = 0.001,
   power_t = 0.5,
   batch_size = 32L,
-  n_iters_no_change = 5L,
+  n_iter_no_change = 5L,
   ...
 )
 
@@ -55,7 +53,6 @@ cuda_ml_sgd(x, ...)
   formula,
   data,
   fit_intercept = TRUE,
-  loss = c("squared_loss", "log", "hinge"),
   penalty = c("none", "l1", "l2", "elasticnet"),
   alpha = 1e-04,
   l1_ratio = 0.5,
@@ -66,7 +63,7 @@ cuda_ml_sgd(x, ...)
   eta0 = 0.001,
   power_t = 0.5,
   batch_size = 32L,
-  n_iters_no_change = 5L,
+  n_iter_no_change = 5L,
   ...
 )
 
@@ -74,7 +71,6 @@ cuda_ml_sgd(x, ...)
   x,
   data,
   fit_intercept = TRUE,
-  loss = c("squared_loss", "log", "hinge"),
   penalty = c("none", "l1", "l2", "elasticnet"),
   alpha = 1e-04,
   l1_ratio = 0.5,
@@ -85,7 +81,7 @@ cuda_ml_sgd(x, ...)
   eta0 = 0.001,
   power_t = 0.5,
   batch_size = 32L,
-  n_iters_no_change = 5L,
+  n_iter_no_change = 5L,
   ...
 )
 }
@@ -106,8 +102,6 @@ desired responses.}
 \item{fit_intercept}{If TRUE, then the model tries to correct for the global
 mean of the response variable. If FALSE, then the model expects data to be
 centered. Default: TRUE.}
-
-\item{loss}{Loss function, must be one of \{"squared_loss", "log", "hinge"\}.}
 
 \item{penalty}{Type of regularization to perform, must be one of
   \{"none", "l1", "l2", "elasticnet"\}.
@@ -164,7 +158,7 @@ calculations.}
 \item{batch_size}{The number of samples that will be included in each batch.
 Default: 32L.}
 
-\item{n_iters_no_change}{The maximum number of epochs to train if there is no
+\item{n_iter_no_change}{The maximum number of epochs to train if there is no
 imporvement in the model. Default: 5.}
 
 \item{formula}{A formula specifying the outcome terms on the left-hand side,
@@ -185,14 +179,16 @@ Train a linear model using mini-batch stochastic gradient descent.
 
 library(cuda.ml)
 
-model <- cuda_ml_sgd(
-  mpg ~ ., mtcars,
-  batch_size = 4L, epochs = 50000L,
-  learning_rate = "adaptive", eta0 = 1e-5,
-  penalty = "l2", alpha = 1e-5, tol = 1e-6,
-  n_iters_no_change = 10L
-)
+if (interactive() && cuda_ml_backend_info()$runtime_installed) {
+  model <- cuda_ml_sgd(
+    mpg ~ ., mtcars,
+    batch_size = 4L, epochs = 50000L,
+    learning_rate = "adaptive", eta0 = 1e-5,
+    penalty = "l2", alpha = 1e-5, tol = 1e-6,
+    n_iter_no_change = 10L
+  )
 
-preds <- predict(model, mtcars[names(mtcars) != "mpg"])
-print(all.equal(preds$.pred, mtcars$mpg, tolerance = 0.09))
+  preds <- predict(model, mtcars[names(mtcars) != "mpg"])
+  print(all.equal(preds$.pred, mtcars$mpg, tolerance = 0.09))
+}
 }

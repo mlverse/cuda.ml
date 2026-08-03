@@ -1,0 +1,256 @@
+#include "async_utils.cuh"
+#include "cuda_utils.h"
+#include "handle_utils.h"
+#include "matrix_utils.h"
+#include "pinned_host_vector.h"
+#include "preprocessor.h"
+#include "qn_constants.h"
+#include "stream_allocator.h"
+
+#include <thrust/device_vector.h>
+#include <cuml/linear_model/glm.hpp>
+#include <rapids_logger/logger.hpp>
+#include <Rcpp.h>
+
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <vector>
+
+namespace cuml4r {
+
+__host__ Rcpp::List qn_fit(Rcpp::NumericMatrix const& X,
+                           Rcpp::IntegerVector const& y, int const n_classes,
+                           int const loss_type, bool const fit_intercept,
+                           double const l1, double const l2,
+                           int const max_iters, double const tol,
+                           double const delta, int const linesearch_max_iters,
+                           int const lbfgs_memory,
+                           bool const penalty_normalized,
+                           Rcpp::NumericVector const& sample_weight) {
+  auto const m = Matrix<>(X, /*transpose=*/true);
+  auto const n_samples = m.numCols;
+  auto const n_features = m.numRows;
+
+  auto stream_view = stream_allocator::getOrCreateStream();
+  auto handle = std::make_unique<raft::handle_t>();
+  handle_utils::initializeHandle(*handle, stream_view.value());
+
+  // QN input
+  auto const& h_X = m.values;
+  thrust::device_vector<double> d_X(h_X.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(X_h2d) =
+    async_copy(stream_view.value(), h_X.cbegin(), h_X.cend(), d_X.begin());
+
+  auto h_y(Rcpp::as<pinned_host_vector<double>>(y));
+  thrust::device_vector<double> d_y(h_y.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(y_h2d) =
+    async_copy(stream_view.value(), h_y.cbegin(), h_y.cend(), d_y.begin());
+
+  thrust::device_vector<double> d_sample_weight;
+  CUML4R_MAYBE_UNUSED AsyncCopyCtx sample_weight_h2d;
+  if (sample_weight.size() > 0) {
+    d_sample_weight.resize(sample_weight.size());
+    auto h_sample_weight(Rcpp::as<pinned_host_vector<double>>(sample_weight));
+    sample_weight_h2d =
+      async_copy(stream_view.value(), h_sample_weight.cbegin(),
+                 h_sample_weight.cend(), d_sample_weight.begin());
+  }
+
+  auto const n_classes_dim = (n_classes - (loss_type == 0 ? 1 : 0));
+  int const n_coefs_per_class = (fit_intercept ? n_features + 1 : n_features);
+  thrust::device_vector<double> d_coefs(n_coefs_per_class * n_classes_dim);
+  double objective = std::numeric_limits<double>::infinity();
+  int n_iters = 0;
+
+  ML::GLM::qn_params params;
+  params.loss = static_cast<ML::GLM::qn_loss_type>(loss_type);
+  params.penalty_l1 = l1;
+  params.penalty_l2 = l2;
+  params.grad_tol = tol;
+  params.change_tol = delta;
+  params.max_iter = max_iters;
+  params.linesearch_max_iter = linesearch_max_iters;
+  params.lbfgs_memory = lbfgs_memory;
+  params.verbose = static_cast<int>(rapids_logger::level_enum::off);
+  params.fit_intercept = fit_intercept;
+  params.penalty_normalized = penalty_normalized;
+
+  ML::GLM::qnFit(
+    /*cuml_handle=*/*handle, params, /*X=*/d_X.data().get(),
+    /*X_col_major=*/true,
+    /*y=*/d_y.data().get(), /*N=*/static_cast<int>(n_samples),
+    /*D=*/static_cast<int>(n_features), /*C=*/n_classes,
+    /*w0=*/d_coefs.data().get(),
+    /*f=*/&objective, /*num_iters=*/&n_iters,
+    /*sample_weight=*/d_sample_weight.empty() ? nullptr
+                                              : d_sample_weight.data().get());
+
+  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
+
+  pinned_host_vector<double> h_coefs(d_coefs.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(coefs_d2h) = async_copy(
+    stream_view.value(), d_coefs.cbegin(), d_coefs.cend(), h_coefs.begin());
+
+  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
+
+  Rcpp::List model;
+  model[qn::kCoefs] =
+    Rcpp::NumericMatrix(n_classes_dim, n_coefs_per_class, h_coefs.cbegin());
+  model[qn::kFitIntercept] = fit_intercept;
+  model[qn::kLossType] = loss_type;
+  model[qn::kNumClasses] = n_classes;
+  model[qn::kObjective] = objective;
+  model[qn::kNumIters] = n_iters;
+
+  return model;
+}
+
+Rcpp::NumericVector qn_predict(Rcpp::NumericMatrix const& X,
+                               int const n_classes,
+                               Rcpp::NumericMatrix const& coefs,
+                               int const loss_type, bool const fit_intercept) {
+  auto const m_X = Matrix<>(X, /*transpose=*/true);
+  auto const n_samples = m_X.numCols;
+  auto const n_features = m_X.numRows;
+  auto const expected_rows = loss_type == ML::GLM::QN_LOSS_LOGISTIC
+                               ? 1
+                               : n_classes;
+  auto const expected_columns =
+    static_cast<int>(n_features) + static_cast<int>(fit_intercept);
+  if (coefs.nrow() != expected_rows ||
+      coefs.ncol() != expected_columns) {
+    Rcpp::stop("Coefficient dimensions do not match the QN model.");
+  }
+
+  auto stream_view = stream_allocator::getOrCreateStream();
+  auto handle = std::make_unique<raft::handle_t>();
+  handle_utils::initializeHandle(*handle, stream_view.value());
+
+  // QN input
+  auto const& h_X = m_X.values;
+  thrust::device_vector<double> d_X(h_X.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(X_h2d) =
+    async_copy(stream_view.value(), h_X.cbegin(), h_X.cend(), d_X.begin());
+
+  auto const m_coefs = Matrix<>(coefs, /*transpose=*/true);
+  auto const& h_coefs = m_coefs.values;
+  thrust::device_vector<double> d_coefs(h_coefs.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(coefs_h2d) = async_copy(
+    stream_view.value(), h_coefs.cbegin(), h_coefs.cend(), d_coefs.begin());
+
+  // QN output
+  thrust::device_vector<double> d_preds(n_samples);
+
+  ML::GLM::qn_params params;
+  params.loss = static_cast<ML::GLM::qn_loss_type>(loss_type);
+  params.verbose = static_cast<int>(rapids_logger::level_enum::off);
+  params.fit_intercept = fit_intercept;
+
+  ML::GLM::qnPredict(
+    /*cuml_handle=*/*handle, params,
+    /*X=*/d_X.data().get(),
+    /*X_col_major=*/true,
+    /*N=*/static_cast<int>(n_samples),
+    /*D=*/static_cast<int>(n_features),
+    /*C=*/n_classes,
+    /*coefs=*/d_coefs.data().get(),
+    /*preds=*/d_preds.data().get());
+
+  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
+
+  pinned_host_vector<double> h_preds(n_samples);
+  auto CUML4R_ANONYMOUS_VARIABLE(preds_d2h) = async_copy(
+    stream_view.value(), d_preds.cbegin(), d_preds.cend(), h_preds.begin());
+
+  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
+
+  return Rcpp::NumericVector(h_preds.begin(), h_preds.end());
+}
+
+Rcpp::NumericMatrix qn_predict_probabilities(
+  Rcpp::NumericMatrix const& X, int const n_classes,
+  Rcpp::NumericMatrix const& coefs, int const loss_type,
+  bool const fit_intercept) {
+  auto const m_X = Matrix<>(X, /*transpose=*/true);
+  auto const n_samples = m_X.numCols;
+  auto const n_features = m_X.numRows;
+  auto const expected_rows = loss_type == ML::GLM::QN_LOSS_LOGISTIC
+                               ? 1
+                               : n_classes;
+  auto const expected_columns =
+    static_cast<int>(n_features) + static_cast<int>(fit_intercept);
+  if (n_classes < 2 ||
+      (loss_type != ML::GLM::QN_LOSS_LOGISTIC &&
+       loss_type != ML::GLM::QN_LOSS_SOFTMAX)) {
+    Rcpp::stop("Probability prediction requires a logistic or softmax model.");
+  }
+  if (coefs.nrow() != expected_rows ||
+      coefs.ncol() != expected_columns) {
+    Rcpp::stop("Coefficient dimensions do not match the QN model.");
+  }
+
+  auto const stream_view = stream_allocator::getOrCreateStream();
+  auto handle = std::make_unique<raft::handle_t>();
+  handle_utils::initializeHandle(*handle, stream_view.value());
+
+  auto const& h_X = m_X.values;
+  thrust::device_vector<double> d_X(h_X.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(X_h2d) =
+    async_copy(stream_view.value(), h_X.cbegin(), h_X.cend(), d_X.begin());
+
+  auto const m_coefs = Matrix<>(coefs, /*transpose=*/true);
+  auto const& h_coefs = m_coefs.values;
+  thrust::device_vector<double> d_coefs(h_coefs.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(coefs_h2d) = async_copy(
+    stream_view.value(), h_coefs.cbegin(), h_coefs.cend(), d_coefs.begin());
+
+  thrust::device_vector<double> d_scores(n_samples * expected_rows);
+  ML::GLM::qn_params params;
+  params.loss = static_cast<ML::GLM::qn_loss_type>(loss_type);
+  params.verbose = static_cast<int>(rapids_logger::level_enum::off);
+  params.fit_intercept = fit_intercept;
+  ML::GLM::qnDecisionFunction(
+    /*cuml_handle=*/*handle, params,
+    /*X=*/d_X.data().get(),
+    /*X_col_major=*/true,
+    /*N=*/static_cast<int>(n_samples),
+    /*D=*/static_cast<int>(n_features),
+    /*C=*/n_classes,
+    /*coefs=*/d_coefs.data().get(),
+    /*scores=*/d_scores.data().get());
+
+  pinned_host_vector<double> h_scores(d_scores.size());
+  auto CUML4R_ANONYMOUS_VARIABLE(scores_d2h) = async_copy(
+    stream_view.value(), d_scores.cbegin(), d_scores.cend(), h_scores.begin());
+  CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
+
+  Rcpp::NumericMatrix probabilities(n_samples, n_classes);
+  for (int row = 0; row < static_cast<int>(n_samples); ++row) {
+
+    if (loss_type == ML::GLM::QN_LOSS_LOGISTIC) {
+      auto const value = h_scores[static_cast<std::size_t>(row)];
+      auto const positive = value >= 0.0
+                              ? 1.0 / (1.0 + std::exp(-value))
+                              : std::exp(value) / (1.0 + std::exp(value));
+      probabilities(row, 0) = 1.0 - positive;
+      probabilities(row, 1) = positive;
+      continue;
+    }
+
+    auto const first = h_scores.cbegin() + row * n_classes;
+    auto const maximum = *std::max_element(first, first + n_classes);
+    double denominator = 0.0;
+    for (int cls = 0; cls < n_classes; ++cls) {
+      auto const value = std::exp(first[cls] - maximum);
+      probabilities(row, cls) = value;
+      denominator += value;
+    }
+    for (int cls = 0; cls < n_classes; ++cls) {
+      probabilities(row, cls) /= denominator;
+    }
+  }
+  return probabilities;
+}
+
+}  // namespace cuml4r

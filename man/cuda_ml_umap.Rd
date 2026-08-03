@@ -25,8 +25,7 @@ cuda_ml_umap(
   target_metric = c("categorical", "euclidean"),
   target_weight = 0.5,
   transform_input = TRUE,
-  seed = NULL,
-  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")
+  seed = NULL
 )
 }
 \arguments{
@@ -104,10 +103,6 @@ for reproducible results to 3 digits of precision, but at the expense of
 potentially slower training and increased memory usage.
 If the PRNG seed is not set, then the trained embeddings will not be
 deterministic.}
-
-\item{cuML_log_level}{Log level within cuML library functions. Must be one of
-\{"off", "critical", "error", "warn", "info", "debug", "trace"\}.
-Default: off.}
 }
 \value{
 A UMAP model object that can be used as input to the
@@ -124,14 +119,16 @@ underlying manifold.
 \examples{
 library(cuda.ml)
 
-model <- cuda_ml_umap(
-  x = iris[1:4],
-  y = iris[[5]],
-  n_components = 2,
-  n_epochs = 200,
-  transform_input = TRUE
-)
+if (interactive() && cuda_ml_backend_info()$runtime_installed) {
+  model <- cuda_ml_umap(
+    x = iris[1:4],
+    y = iris[[5]],
+    n_components = 2,
+    n_epochs = 200,
+    transform_input = TRUE
+  )
 
-set.seed(0L)
-print(kmeans(model$transformed, iter.max = 100, centers = 3))
+  set.seed(0L)
+  print(kmeans(model$transformed, iter.max = 100, centers = 3))
+}
 }

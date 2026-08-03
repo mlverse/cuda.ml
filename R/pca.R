@@ -13,7 +13,6 @@ new_pca_model <- function(model) {
 #' @template model-with-numeric-input
 #' @template eigen-decomposition
 #' @template transform-input
-#' @template cuML-log-level
 #' @param n_components Number of principal component(s) to keep. Default:
 #'   min(nrow(x), ncol(x)).
 #' @param whiten If TRUE, then de-correlate all components, making each
@@ -45,19 +44,22 @@ new_pca_model <- function(model) {
 #'
 #' library(cuda.ml)
 #'
-#' iris.pca <- cuda_ml_pca(iris[1:4], n_components = 3)
-#' print(iris.pca)
+#' if (interactive() && cuda_ml_backend_info()$runtime_installed) {
+#'   iris.pca <- cuda_ml_pca(iris[1:4], n_components = 3)
+#'   print(iris.pca)
+#' }
 #' @export
-cuda_ml_pca <- function(x,
-                        n_components = NULL,
-                        eig_algo = c("dq", "jacobi"),
-                        tol = 1e-7, n_iters = 15L,
-                        whiten = FALSE,
-                        transform_input = TRUE,
-                        cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")) {
+cuda_ml_pca <- function(
+  x,
+  n_components = NULL,
+  eig_algo = c("dq", "jacobi"),
+  tol = 1e-7,
+  n_iters = 15L,
+  whiten = FALSE,
+  transform_input = TRUE
+) {
   n_components <- n_components %||% min(nrow(x), ncol(x))
   eig_algo <- match_eig_algo(eig_algo)
-  cuML_log_level <- match_cuML_log_level(cuML_log_level)
 
   model_obj <- .pca_fit_transform(
     x = as.matrix(x),
@@ -67,7 +69,7 @@ cuda_ml_pca <- function(x,
     n_iters = as.integer(n_iters),
     whiten = whiten,
     transform_input = transform_input,
-    verbosity = cuML_log_level
+    verbosity = 0L
   )
 
   new_pca_model(model_obj)
@@ -87,7 +89,8 @@ cuda_ml_get_state.cuda_ml_pca <- function(model) {
 
 #' @export
 cuda_ml_set_state.cuda_ml_pca_model_state <- function(model_state) {
-  model_state <- .pca_set_state(model_state)
+  payload <- cuda_ml_state_payload(model_state, "cuda_ml_pca_model_state")
+  model_state <- .pca_set_state(payload)
 
   new_pca_model(model_state)
 }

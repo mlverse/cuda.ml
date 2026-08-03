@@ -2,20 +2,19 @@
 % Please edit documentation in R/logistic_reg.R
 \name{predict.cuda_ml_logistic_reg}
 \alias{predict.cuda_ml_logistic_reg}
-\title{Make predictions on new data points.}
+\title{Predict from a logistic or multinomial regression model}
 \usage{
-\method{predict}{cuda_ml_logistic_reg}(object, x, ...)
+\method{predict}{cuda_ml_logistic_reg}(object, new_data, type = c("class", "prob"), ...)
 }
 \arguments{
-\item{object}{A trained CuML model.}
+\item{object}{A fitted \code{cuda_ml_logistic_reg} model.}
 
-\item{x}{A matrix or dataframe containing new data points.}
+\item{new_data}{New predictor data.}
 
-\item{...}{Additional arguments to \code{predict()}. Currently unused.}
-}
-\value{
-Predictions on new data points.
+\item{type}{Either \code{"class"} or \code{"prob"}.}
+
+\item{...}{Unused.}
 }
 \description{
-Make predictions on new data points using a CuML logistic regression model.
+Predict from a logistic or multinomial regression model
 }

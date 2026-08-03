@@ -11,8 +11,7 @@ cuda_ml_pca(
   tol = 1e-07,
   n_iters = 15L,
   whiten = FALSE,
-  transform_input = TRUE,
-  cuML_log_level = c("off", "critical", "error", "warn", "info", "debug", "trace")
+  transform_input = TRUE
 )
 }
 \arguments{
@@ -39,10 +38,6 @@ Default: FALSE.}
 
 \item{transform_input}{If TRUE, then compute an approximate representation
 of the input data. Default: TRUE.}
-
-\item{cuML_log_level}{Log level within cuML library functions. Must be one of
-\{"off", "critical", "error", "warn", "info", "debug", "trace"\}.
-Default: off.}
 }
 \value{
 A PCA model object with the following attributes:
@@ -75,6 +70,8 @@ place.
 
 library(cuda.ml)
 
-iris.pca <- cuda_ml_pca(iris[1:4], n_components = 3)
-print(iris.pca)
+if (interactive() && cuda_ml_backend_info()$runtime_installed) {
+  iris.pca <- cuda_ml_pca(iris[1:4], n_components = 3)
+  print(iris.pca)
+}
 }
