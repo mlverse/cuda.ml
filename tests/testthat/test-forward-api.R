@@ -6,6 +6,16 @@ test_that("only current KNN algorithms are exposed", {
   expect_false("cuda_ml_knn_algo_ivfsq" %in% exports)
 })
 
+test_that("IVFPQ exposes only supported parameters", {
+  expect_identical(
+    names(formals(cuda_ml_knn_algo_ivfpq)),
+    c("nlist", "nprobe", "m", "n_bits")
+  )
+
+  specification <- cuda_ml_knn_algo_ivfpq(4, 2, 2, 4)
+  expect_identical(specification$params$usePrecomputedTables, FALSE)
+})
+
 test_that("obsolete random projection and FIL interfaces are absent", {
   exports <- getNamespaceExports("cuda.ml")
 
