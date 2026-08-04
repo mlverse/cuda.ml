@@ -45,8 +45,8 @@ cuML](https://github.com/rapidsai/cuml#supported-algorithms)).
 
 {cuda.ml} provides {parsnip} bindings for supervised ML algorithms such
 as `linear_reg`, `logistic_reg`, `multinom_reg`, `rand_forest`,
-`nearest_neighbor`, `svm_rbf`, `svm_poly`, and `svm_linear`.
-Install {parsnip} separately to use these optional bindings.
+`nearest_neighbor`, `svm_rbf`, `svm_poly`, and `svm_linear`. Install
+{parsnip} separately to use these optional bindings.
 
 Regularized models follow tidymodels conventions for `penalty` and
 `mixture`. When predictors need scaling, learn and apply it explicitly
@@ -77,9 +77,15 @@ model <- svm_rbf(mode = "classification", rbf_sigma = 10, cost = 50) %>%
 preds <- predict(model, test_data)
 
 cat("Confusion matrix:\n\n")
+#> Confusion matrix:
 preds %>%
   bind_cols(test_data %>% select(Species)) %>%
   yardstick::conf_mat(truth = Species, estimate = .pred_class)
+#>             Truth
+#> Prediction   setosa versicolor virginica
+#>   setosa         15          0         0
+#>   versicolor      0         12         1
+#>   virginica       0          3        14
 ```
 
 ## Using {cuda.ml} for unsupervised ML tasks
@@ -92,16 +98,30 @@ library(cuda.ml)
 
 clustering <- cuda_ml_kmeans(
   iris[, which(names(iris) != "Species")],
-  k = 3, max_iters = 100
+  k = 3, max_iters = 100, seed = 0L
 )
 
 # Expected outcome: there is strong correlation
 # between cluster labels and `iris$Species`
-print(clustering)
+str(clustering)
+#> List of 4
+#>  $ labels   : int [1:150] 1 1 1 1 1 1 1 1 1 1 ...
+#>  $ centroids: num [1:3, 1:4] 5.9 5.01 6.85 2.75 3.43 ...
+#>  $ inertia  : num 78.9
+#>  $ n_iter   : int 100
 
 library(dplyr, warn.conflicts = FALSE)
 tibble(cluster_id = clustering$labels, species = iris$Species) %>%
   group_by(cluster_id) %>% count(species)
+#> # A tibble: 5 × 3
+#> # Groups:   cluster_id [3]
+#>   cluster_id species        n
+#>        <int> <fct>      <int>
+#> 1          0 versicolor    48
+#> 2          0 virginica     14
+#> 3          1 setosa        50
+#> 4          2 versicolor     2
+#> 5          2 virginica     36
 ```
 
 ## Using {cuda.ml} for visualizations
@@ -122,10 +142,32 @@ library(cuda.ml)
 library(ggplot2)
 library(magrittr)
 
-# load mnist
+# Load checksum-matched local MNIST inputs. Rendering never downloads data.
+mnist_files <- file.path(
+  "data-raw",
+  c("train-images-idx3-ubyte.gz", "train-labels-idx1-ubyte.gz")
+)
+stopifnot(
+  all(file.exists(mnist_files)),
+  identical(
+    unname(vapply(
+      mnist_files,
+      digest::digest,
+      character(1),
+      algo = "sha256",
+      file = TRUE
+    )),
+    c(
+      "440fcabf73cc546fa21475e81ea370265605f56be210a4024d2ca8f203523609",
+      "3552534a0a558bbed6aed32b30c495cca23d567ec52cac8be1a0730e8010255c"
+    )
+  )
+)
 source("data-raw/load-mnist.R")
 str(mnist_images)
+#>  int [1:28, 1:28, 1:60000] 0 0 0 0 0 0 0 0 0 0 ...
 str(mnist_labels)
+#>  int [1:60000(1d)] 5 0 4 1 9 2 1 3 1 4 ...
 
 
 # flatten each image to a 1d array, combine into a matrix with 1 row per image
@@ -140,10 +182,11 @@ flattened_mnist_images <-
 # embed
 embedding <- cuda_ml_umap(
   flattened_mnist_images, n_components = 2, n_neighbors = 50,
-  local_connectivity = 15, repulsion_strength = 10
+  local_connectivity = 15, repulsion_strength = 10, seed = 0L
 )
 
 str(embedding$transformed_data)
+#>  num [1:60000, 1:2] -7.08 -32.55 9.61 20.65 12.25 ...
 
 # visualize
 embedding$transformed_data %>%
@@ -154,6 +197,8 @@ embedding$transformed_data %>%
   labs(title = "UMAP: Uniform Manifold Approximation and Projection",
        subtitle = "Two Dimensional Embedding of MNIST")
 ```
+
+<img src="man/figures/README-umap-example-1.png" alt="" width="100%" />
 
 From this type of visualization, we can qualitatively understand the
 following about the MNIST dataset:
@@ -335,4 +380,5 @@ Inspect MNIST images
 plot_mnist(1:64)
 ```
 
+<img src="man/figures/README-mnist-1.png" alt="" width="100%" />
 </details>

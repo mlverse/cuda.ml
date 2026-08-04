@@ -11,6 +11,19 @@ knitr::opts_chunk$set(
   fig.path = "man/figures/README-",
   out.width = "100%"
 )
+
+library(cuda.ml)
+backend_info <- cuda_ml_backend_info()
+stopifnot(
+  identical(backend_info$backend, "download"),
+  identical(backend_info$build_mode, "release"),
+  backend_info$backend_available,
+  backend_info$runtime_installed,
+  identical(backend_info$cuda_version, "13.2.2"),
+  identical(backend_info$rapids_version, "26.06"),
+  identical(backend_info$nvforest_version, "26.06.0"),
+  identical(backend_info$treelite_version, "4.7.0")
+)
 ```
 
 # cuda.ml
@@ -66,7 +79,7 @@ step such as `step_normalize(all_numeric_predictors())`.
 The following example shows how {cuda.ml} can be used as a {parsnip} engine to
 build a SVM classifier.
 
-```{r svm-example, eval = FALSE}
+```{r svm-example}
 library(dplyr, warn.conflicts = FALSE)
 library(parsnip)
 library(cuda.ml)
@@ -97,17 +110,17 @@ preds %>%
 The following example shows how {cuda.ml} can be used for unsupervised ML tasks
 such as k-means clustering.
 
-```{r kmeans-example, eval = FALSE}
+```{r kmeans-example}
 library(cuda.ml)
 
 clustering <- cuda_ml_kmeans(
   iris[, which(names(iris) != "Species")],
-  k = 3, max_iters = 100
+  k = 3, max_iters = 100, seed = 0L
 )
 
 # Expected outcome: there is strong correlation
 # between cluster labels and `iris$Species`
-print(clustering)
+str(clustering)
 
 library(dplyr, warn.conflicts = FALSE)
 tibble(cluster_id = clustering$labels, species = iris$Species) %>%
@@ -127,12 +140,32 @@ the true label of each sample demonstrates how well the UMAP algorithm
 transforms different hand writings of the same digit into nearby points in a 2D
 embedding:
 
-```{r umap-example, eval = FALSE}
+```{r umap-example}
 library(cuda.ml)
 library(ggplot2)
 library(magrittr)
 
-# load mnist
+# Load checksum-matched local MNIST inputs. Rendering never downloads data.
+mnist_files <- file.path(
+  "data-raw",
+  c("train-images-idx3-ubyte.gz", "train-labels-idx1-ubyte.gz")
+)
+stopifnot(
+  all(file.exists(mnist_files)),
+  identical(
+    unname(vapply(
+      mnist_files,
+      digest::digest,
+      character(1),
+      algo = "sha256",
+      file = TRUE
+    )),
+    c(
+      "440fcabf73cc546fa21475e81ea370265605f56be210a4024d2ca8f203523609",
+      "3552534a0a558bbed6aed32b30c495cca23d567ec52cac8be1a0730e8010255c"
+    )
+  )
+)
 source("data-raw/load-mnist.R")
 str(mnist_images)
 str(mnist_labels)
@@ -150,7 +183,7 @@ flattened_mnist_images <-
 # embed
 embedding <- cuda_ml_umap(
   flattened_mnist_images, n_components = 2, n_neighbors = 50,
-  local_connectivity = 15, repulsion_strength = 10
+  local_connectivity = 15, repulsion_strength = 10, seed = 0L
 )
 
 str(embedding$transformed_data)
@@ -334,7 +367,7 @@ cuda.ml::cuda_ml_install()
 
 <details>
 <summary>Inspect MNIST images</summary>
-```{r mnist, eval = FALSE}
+```{r mnist}
 plot_mnist(1:64)
 ```
 </details>
