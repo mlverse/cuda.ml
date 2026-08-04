@@ -1,6 +1,6 @@
-# Run the K means clustering algorithm.
+# Run the k-means clustering algorithm.
 
-Run the K means clustering algorithm.
+Run the k-means clustering algorithm.
 
 ## Usage
 

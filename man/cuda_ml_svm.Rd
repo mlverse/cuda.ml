@@ -142,7 +142,7 @@ Default: 1000.}
 
 \item{cache_size}{Size of kernel cache (MiB) in device memory. Default: 1024.}
 
-\item{epsilon}{Espsilon parameter of the epsilon-SVR model. There is no
+\item{epsilon}{Epsilon parameter of the epsilon-SVR model. There is no
 penalty for points that are predicted within the epsilon-tube around the
 target values. Please note this parameter is only relevant for regression
 tasks. Default: 0.1.}

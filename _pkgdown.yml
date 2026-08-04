@@ -1,3 +1,81 @@
 url: https://mlverse.github.io/cuda.ml/
+home:
+  title: "cuda.ml: R interface for RAPIDS cuML"
+  description: >
+    An R interface to GPU-accelerated machine learning algorithms from RAPIDS
+    cuML, powered by CUDA.
 template:
   bootstrap: 5
+
+articles:
+- title: Guides
+  navbar: ~
+  contents:
+  - install-manage
+  - tidymodels
+  - model-persistence
+  - nvforest
+
+reference:
+- title: Install and manage the backend
+  contents:
+  - cuda_ml_install
+  - cuda_ml_backend_info
+  - cuda_ml_runtime_audit
+  - cuda_ml_cache_clean
+
+- title: Linear models
+  contents:
+  - cuda_ml_linear_reg
+  - cuda_ml_logistic_reg
+  - cuda_ml_ols
+  - cuda_ml_ridge
+  - cuda_ml_lasso
+  - cuda_ml_elastic_net
+  - cuda_ml_sgd
+  - predict.cuda_ml_linear_model
+  - predict.cuda_ml_logistic_reg
+
+- title: Nonlinear models
+  contents:
+  - cuda_ml_knn
+  - cuda_ml_knn_algo_ivfflat
+  - cuda_ml_knn_algo_ivfpq
+  - cuda_ml_rand_forest
+  - cuda_ml_svm
+  - predict.cuda_ml_knn
+  - predict.cuda_ml_svm
+
+- title: Clustering
+  contents:
+  - cuda_ml_agglomerative_clustering
+  - cuda_ml_dbscan
+  - cuda_ml_kmeans
+
+- title: Dimensionality reduction
+  contents:
+  - cuda_ml_pca
+  - cuda_ml_tsvd
+  - cuda_ml_umap
+  - cuda_ml_tsne
+  - cuda_ml_transform
+  - cuda_ml_inverse_transform
+
+- title: nvForest inference
+  contents:
+  - cuda_ml_nvforest_load_model
+  - predict.cuda_ml_nvforest
+  - cuda_ml_nvforest_info
+  - cuda_ml_nvforest_leaf_ids
+  - cuda_ml_nvforest_predict_per_tree
+
+- title: Model persistence
+  contents:
+  - cuda_ml_serialize
+  - cuda_ml_unserialize
+  - bundle.cuda_ml_model
+  - cuda_ml_nvforest_export
+
+- title: Package overview
+  contents:
+  - cuda.ml-package

@@ -7,7 +7,7 @@
 \alias{cuda_ml_ols.matrix}
 \alias{cuda_ml_ols.formula}
 \alias{cuda_ml_ols.recipe}
-\title{Train a OLS model.}
+\title{Train an OLS model.}
 \usage{
 cuda_ml_ols(x, ...)
 
@@ -65,11 +65,11 @@ specified as a  __data frame__ containing the predictors and (if
 applicable) the outcome.}
 }
 \value{
-A OLS regressor that can be used with the 'predict' S3 generic to
+An OLS regressor that can be used with the 'predict' S3 generic to
   make predictions on new data points.
 }
 \description{
-Train an Ordinary Least Square (OLS) model for regression tasks.
+Train an ordinary least squares (OLS) model for regression tasks.
 }
 \examples{
 

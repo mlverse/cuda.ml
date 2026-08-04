@@ -12,7 +12,7 @@ sgd_match_learning_rate <- function(
   switch(learning_rate, constant = 1L, invscaling = 2L, adaptive = 3L)
 }
 
-#' Train a MBSGD linear model.
+#' Train a linear model using mini-batch stochastic gradient descent.
 #'
 #' Train a linear model using mini-batch stochastic gradient descent.
 #'
@@ -30,7 +30,7 @@ sgd_match_learning_rate <- function(
 #'   - "l2": perform regularization based on the L2 norm (Ridge) which tries to
 #'           minimize the sum of the square of the coefficients.
 #'   - "elasticnet": perform the Elastic Net regularization which is based on
-#'                   the weighted averable of L1 and L2 norms.
+#'                   the weighted average of L1 and L2 norms.
 #'   Default: "none".
 #' @param alpha Multiplier of the penalty term. Default: 1e-4.
 #' @param batch_size The number of samples that will be included in each batch.
@@ -40,8 +40,8 @@ sgd_match_learning_rate <- function(
 #' @param tol Threshold for stopping training. Training will stop if
 #'   (loss in current epoch) > (loss in previous epoch) - \code{tol}.
 #'   Default: 1e-3.
-#' @param shuffle Whether to shuffles the training data after each epoch.
-#'   Default: True.
+#' @param shuffle Whether to shuffle the training data after each epoch.
+#'   Default: TRUE.
 #' @param eta0 The initial learning rate. Default: 1e-3.
 #' @param power_t The exponent used for calculating the invscaling learning
 #'   rate. Default: 0.5.
@@ -57,11 +57,8 @@ sgd_match_learning_rate <- function(
 #'                 the training loss by \code{tol}, the current learning rate is
 #'                 divided by 5.
 #'   Default: "constant".
-#' @param eta0 The initial learning rate. Default: 1e-3.
-#' @param power_t The exponent used in the invscaling learning rate
-#'   calculations.
 #' @param n_iter_no_change The maximum number of epochs to train if there is no
-#'   imporvement in the model. Default: 5.
+#'   improvement in the model. Default: 5.
 #'
 #' @return A linear model that can be used with the 'predict' S3 generic to make
 #'   predictions on new data points.

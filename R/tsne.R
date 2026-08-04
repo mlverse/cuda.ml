@@ -10,9 +10,9 @@ new_tsne_model <- function(embedding) {
   embedding
 }
 
-#' t-distributed Stochastic Neighbor Embedding.
+#' Perform t-distributed stochastic neighbor embedding.
 #'
-#' t-distributed Stochastic Neighbor Embedding (TSNE) for visualizing high-
+#' t-distributed stochastic neighbor embedding (t-SNE) for visualizing high-
 #' dimensional data.
 #'
 #' @template model-with-numeric-input
@@ -41,7 +41,7 @@ new_tsne_model <- function(embedding) {
 #'   found for. Default: 100L.
 #' @param perplexity_tol Stop optimizing the Gaussian bands when the conditional
 #'   distribution's perplexity is within this desired tolerance compared to its
-#'   taget value. Default: 1e-5.
+#'   target value. Default: 1e-5.
 #' @param early_exaggeration Controls the space between clusters. Not critical
 #'   to tune this. Default: 12.0.
 #' @param late_exaggeration Controls the space between clusters. It may be
@@ -55,7 +55,7 @@ new_tsne_model <- function(embedding) {
 #' @param post_momentum During the late phases, less forcefully apply gradients.
 #'   Default: 0.8.
 #' @param square_distances Whether TSNE should square the distance values.
-#' @param seed Seed to the psuedorandom number generator. Setting this can make
+#' @param seed Seed to the pseudorandom number generator. Setting this can make
 #'   repeated runs look more similar. Note, however, that this highly
 #'   parallelized t-SNE implementation is not completely deterministic between
 #'   runs, even with the same \code{seed} being used for each run.

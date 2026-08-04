@@ -64,13 +64,14 @@ matrix of `n_components` rows containing the top principal components. -
 by each component. - "explained_variance_ratio": fraction of variance
 within the input data explained by each component. - "singular_values":
 singular values (non-negative) corresponding to the top principal
-components. - "mean": the column wise mean of `x` which was used to
+components. - "mean": the column-wise mean of `x` which was used to
 mean-center `x` first. - "transformed_data": (only present if
 "transform_input" is set to TRUE) an approximate representation of input
 data based on principal components. - "pca_params": opaque pointer to
 PCA parameters which will be used for performing inverse transforms.
 
-The model object can be used as input to the inverse_transform()
+The model object can be used as input to the
+[`cuda_ml_inverse_transform()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_inverse_transform.md)
 function to map a representation based on principal components back to
 the original feature space.
 

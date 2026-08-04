@@ -1,8 +1,13 @@
 pandoc: 3.1.11
 pkgdown: 2.2.1
 pkgdown_sha: ~
-articles: {}
-last_built: 2026-08-01T00:53Z
+articles:
+  cuda-ml: cuda-ml.html
+  install-manage: install-manage.html
+  model-persistence: model-persistence.html
+  nvforest: nvforest.html
+  tidymodels: tidymodels.html
+last_built: 2026-08-04T21:14Z
 urls:
   reference: https://mlverse.github.io/cuda.ml/reference
   article: https://mlverse.github.io/cuda.ml/articles

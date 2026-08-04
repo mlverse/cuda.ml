@@ -29,7 +29,9 @@ predict(
 - type:
 
   Classification models support `"class"` and `"prob"`; regression
-  models support `"numeric"`.
+  models support `"numeric"`. Probability prediction is available only
+  when `cuda_ml_nvforest_info(object)$has_probability_output` is true.
+  Unsupported Treelite postprocessors fail explicitly.
 
 - threshold:
 
@@ -37,8 +39,16 @@ predict(
 
 - chunk_size:
 
-  Prediction chunk size, or `NULL` for the model default.
+  Native prediction chunk size, or `NULL` for the model default. It
+  controls native batching and does not limit the size of the returned R
+  object.
 
 - ...:
 
   Unused.
+
+## Value
+
+A tibble with `.pred` for regression, `.pred_class` for class
+prediction, or one probability column named `.pred_<level>` for each
+class.

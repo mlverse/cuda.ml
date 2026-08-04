@@ -16,7 +16,7 @@ new_pca_model <- function(model) {
 #' @param n_components Number of principal component(s) to keep. Default:
 #'   min(nrow(x), ncol(x)).
 #' @param whiten If TRUE, then de-correlate all components, making each
-#'   component have unit variance  and removing multi-collinearity.
+#'   component have unit variance and removing multi-collinearity.
 #'   Default: FALSE.
 #'
 #' @return A PCA model object with the following attributes:
@@ -28,7 +28,7 @@ new_pca_model <- function(model) {
 #'      explained by each component.
 #'    - "singular_values": singular values (non-negative) corresponding to the
 #'      top principal components.
-#'    - "mean": the column wise mean of \code{x} which was used to mean-center
+#'    - "mean": the column-wise mean of \code{x} which was used to mean-center
 #'      \code{x} first.
 #'    - "transformed_data": (only present if "transform_input" is set to TRUE)
 #'      an approximate representation of input data based on principal
@@ -36,9 +36,9 @@ new_pca_model <- function(model) {
 #'    - "pca_params": opaque pointer to PCA parameters which will be used for
 #'      performing inverse transforms.
 #'
-#'  The model object can be used as input to the inverse_transform() function to
-#'  map a representation based on principal components back to the original
-#'  feature space.
+#'  The model object can be used as input to the
+#'  \code{cuda_ml_inverse_transform()} function to map a representation based
+#'  on principal components back to the original feature space.
 #'
 #' @examples
 #'

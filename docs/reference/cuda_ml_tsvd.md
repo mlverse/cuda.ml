@@ -51,8 +51,8 @@ cuda_ml_tsvd(
 ## Value
 
 A TSVD model object with the following attributes: - "components": a
-matrix of `n_components` rows to be used for dimensionalitiy reduction
-on new data points. - "explained_variance": (only present if
+matrix of `n_components` rows to be used for dimensionality reduction on
+new data points. - "explained_variance": (only present if
 "transform_input" is set to TRUE) amount of variance within the input
 data explained by each component. - "explained_variance_ratio": (only
 present if "transform_input" is set to TRUE) fraction of variance within

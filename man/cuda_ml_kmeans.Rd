@@ -2,7 +2,7 @@
 % Please edit documentation in R/kmeans.R
 \name{cuda_ml_kmeans}
 \alias{cuda_ml_kmeans}
-\title{Run the K means clustering algorithm.}
+\title{Run the k-means clustering algorithm.}
 \usage{
 cuda_ml_kmeans(
   x,
@@ -35,7 +35,7 @@ A list containing the cluster assignments and the centroid of each
   cluster. Each centroid will be a column within the `centroids` matrix.
 }
 \description{
-Run the K means clustering algorithm.
+Run the k-means clustering algorithm.
 }
 \examples{
 

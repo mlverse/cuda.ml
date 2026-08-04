@@ -250,9 +250,9 @@ cuda_ml_inverse_transform <- function(model, x, ...) {
   UseMethod("cuda_ml_inverse_transform")
 }
 
-#' Serialize a CuML model
+#' Serialize a cuML model
 #'
-#' Given a CuML model, serialize its state into a connection.
+#' Given a cuML model, serialize its state into a connection.
 #'
 #' @param model The model object.
 #' @param connection An open connection or \code{NULL}. If \code{NULL}, then the
@@ -344,9 +344,9 @@ cuda_ml_get_state.default <- function(model) {
   )
 }
 
-#' Unserialize a CuML model state
+#' Unserialize a cuML model state
 #'
-#' Unserialize a CuML model state into a CuML model object.
+#' Unserialize a cuML model state into a cuML model object.
 #'
 #' @param connection An open connection or a raw vector.
 #' @param ... Additional arguments to \code{base::unserialize()}.
@@ -357,7 +357,7 @@ cuda_ml_get_state.default <- function(model) {
 #'   precision recorded in the state is used. The remaining omitted options use
 #'   nvForest defaults.
 #'
-#' @return A unserialized CuML model.
+#' @return An unserialized cuML model.
 #'
 #' @inheritSection cuda_ml_serialize Persistence contract
 #'

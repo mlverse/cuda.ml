@@ -2,7 +2,7 @@
 % Please edit documentation in R/tsne.R
 \name{cuda_ml_tsne}
 \alias{cuda_ml_tsne}
-\title{t-distributed Stochastic Neighbor Embedding.}
+\title{Perform t-distributed stochastic neighbor embedding.}
 \usage{
 cuda_ml_tsne(
   x,
@@ -64,7 +64,7 @@ found for. Default: 100L.}
 
 \item{perplexity_tol}{Stop optimizing the Gaussian bands when the conditional
 distribution's perplexity is within this desired tolerance compared to its
-taget value. Default: 1e-5.}
+target value. Default: 1e-5.}
 
 \item{early_exaggeration}{Controls the space between clusters. Not critical
 to tune this. Default: 12.0.}
@@ -86,7 +86,7 @@ Default: 0.8.}
 
 \item{square_distances}{Whether TSNE should square the distance values.}
 
-\item{seed}{Seed to the psuedorandom number generator. Setting this can make
+\item{seed}{Seed to the pseudorandom number generator. Setting this can make
 repeated runs look more similar. Note, however, that this highly
 parallelized t-SNE implementation is not completely deterministic between
 runs, even with the same \code{seed} being used for each run.
@@ -97,7 +97,7 @@ A matrix containing the embedding of the input data in a low-
   dimensional space, with each row representing an embedded data point.
 }
 \description{
-t-distributed Stochastic Neighbor Embedding (TSNE) for visualizing high-
+t-distributed stochastic neighbor embedding (t-SNE) for visualizing high-
 dimensional data.
 }
 \examples{

@@ -2,7 +2,7 @@
 % Please edit documentation in R/model.R
 \name{cuda_ml_serialize}
 \alias{cuda_ml_serialize}
-\title{Serialize a CuML model}
+\title{Serialize a cuML model}
 \usage{
 cuda_ml_serialize(model, connection = NULL, ...)
 }
@@ -19,7 +19,7 @@ model state is serialized to a raw vector. Default: NULL.}
   the serialized model state is returned as a raw vector.
 }
 \description{
-Given a CuML model, serialize its state into a connection.
+Given a cuML model, serialize its state into a connection.
 }
 \section{Persistence contract}{
 

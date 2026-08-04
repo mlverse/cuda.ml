@@ -20,7 +20,9 @@ cuda_ml_nvforest_leaf_ids(object, new_data, chunk_size = NULL)
 
 - chunk_size:
 
-  Prediction chunk size, or `NULL` for the model default.
+  Native prediction chunk size, or `NULL` for the model default. It
+  controls native batching and does not limit the size of the returned R
+  object.
 
 ## Value
 

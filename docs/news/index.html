@@ -15,7 +15,15 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/cuda-ml.html">Get started</a></li>
+<li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/install-manage.html">Install and manage cuda.ml</a></li>
+    <li><a class="dropdown-item" href="../articles/tidymodels.html">Use cuda.ml with tidymodels</a></li>
+    <li><a class="dropdown-item" href="../articles/model-persistence.html">Save and restore models</a></li>
+    <li><a class="dropdown-item" href="../articles/nvforest.html">nvForest inference and deployment</a></li>
+  </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -35,15 +43,18 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.0" id="cudaml-040">cuda.ml 0.4.0<a class="anchor" aria-label="anchor" href="#cudaml-040"></a></h2>
 <p>This is a breaking release targeting one backend: CUDA Toolkit 13.2.2, RAPIDS cuML and nvForest 26.06, and Treelite 4.7.0.</p>
-<ul><li><p>Added an Ubuntu 26.04 x86_64 backend distributed through R-universe. The package contains the compiled cuda.ml backend with Treelite 4.7.0 linked statically, but not the approximately 1.6 GiB CUDA and RAPIDS runtime.</p></li>
+<ul><li><p>Added Linux x86_64 backends targeting glibc 2.28 or newer and hosted as GitHub Release assets. The CRAN package remains a portable R installer and loader; it contains neither compiled code nor the approximately 1.6 GiB CUDA and RAPIDS runtime.</p></li>
 <li><p>Added explicit <code><a href="../reference/cuda_ml_install.html">cuda_ml_install()</a></code> runtime preparation. Model operations no longer download libraries implicitly; they direct users to run the installer when the managed runtime is absent. <code><a href="../reference/cuda_ml_runtime_audit.html">cuda_ml_runtime_audit()</a></code> performs a full content audit, and <code><a href="../reference/cuda_ml_cache_clean.html">cuda_ml_cache_clean()</a></code> removes cuda.ml cache generations.</p></li>
+<li><p>Added <code>cuda_ml_install(source = TRUE)</code> for host builds without Docker or a prebuilt cuda.ml backend. By default it bootstraps exact locked CUDA, RAPIDS, Treelite, CMake, and Ninja build inputs, requiring only GNU C++ 14 or newer on a supported Linux host. <code>dependencies = "host"</code> uses explicit native build inputs and makes no downloads. Managed builds detect CUDA-visible GPU architectures by default and otherwise use the portable package list. <code>architectures = "native"</code> requires detection, while <code>architectures = "portable"</code> forces the package list. Source backend selection persists across R sessions.</p></li>
 <li><p>Package loading and <code><a href="../reference/cuda_ml_backend_info.html">cuda_ml_backend_info()</a></code> are silent and side-effect free. They do not inspect the GPU, create a cache, contact the network, or load the native backend. CRAN checks use an explicit network-free stub backend.</p></li>
+<li><p>Parsnip is now optional. Loading cuda.ml does not load parsnip, ggplot2, or S7; cuda.ml registers its engines when parsnip is loaded.</p></li>
 <li><p>Replaced the removed cuML FIL interface with current nvForest loading, prediction, model inspection, leaf-ID, per-tree, and persistence APIs. Random-forest inference and persistence now use the same nvForest backend.</p></li>
 <li><p>Corrected random-forest arguments: <code>mtry</code> now controls sampled predictors, <code>sample_fraction</code> controls sampled rows, <code>trees</code> defaults to 100, and <code>seed</code> is forwarded to cuML. Classification uses <code>predict(..., type = "class")</code> and <code>predict(..., type = "prob")</code>.</p></li>
 <li><p>Added parsnip engines for <code><a href="https://parsnip.tidymodels.org/reference/linear_reg.html" class="external-link">linear_reg()</a></code>, <code><a href="https://parsnip.tidymodels.org/reference/logistic_reg.html" class="external-link">logistic_reg()</a></code>, and <code><a href="https://parsnip.tidymodels.org/reference/multinom_reg.html" class="external-link">multinom_reg()</a></code> using the customary <code>penalty</code> and <code>mixture</code> arguments. Normalization is no longer emulated inside regularized linear models; use a recipe preprocessing step when scaling is required.</p></li>
 <li><p>Removed interfaces that the supported backend cannot implement: FIL, random projection, KNN IVFSQ, cuML log-level controls, <code>has_cuML()</code>, and the split cuML version queries. <code><a href="../reference/cuda_ml_backend_info.html">cuda_ml_backend_info()</a></code> is the single backend metadata interface.</p></li>
-<li><p>Model persistence now requires an explicit portable representation and records the package, schema, model ABI, and backend identity. Unversioned or incompatible states fail instead of attempting migration. Added <code><a href="https://rstudio.github.io/bundle/reference/bundle.html" class="external-link">bundle::bundle()</a></code> support for models with a portable state.</p></li>
+<li><p>Model persistence now stores explicit versioned state through <code><a href="../reference/cuda_ml_serialize.html">cuda_ml_serialize()</a></code> and <code><a href="https://rstudio.github.io/bundle/reference/bundle.html" class="external-link">bundle::bundle()</a></code>. The package version is recorded as provenance and does not by itself prevent restoration. Schema 1 compatibility is defined by the model ABI: linear and logistic-regression states require no backend identity match; PCA, SVC, one-vs-rest SVC, SVR, and UMAP states require the recorded RAPIDS version; and random-forest and nvForest states require the recorded Treelite version. Unknown schemas or ABIs, missing payloads, and missing or incompatible required backend fields fail without implicit migration or native-pointer fallback behavior.</p></li>
 <li><p>Added GPU-less fat-binary compilation for compute capabilities 7.5, 8.0, 8.6, 8.9, 9.0, 10.0, and 12.0, with PTX forward compatibility from 12.0.</p></li>
+<li><p>Organized the function reference and added guides for getting started, runtime installation and management, tidymodels, model persistence, and nvForest inference and deployment.</p></li>
 <li><p>Removed native compatibility branches for historical cuML releases and the implicit bootstrap fallbacks for Python, pip, CMake, wheel layouts, CUDA architectures, and missing local toolchains.</p></li>
 </ul></div>
   </main></div>
@@ -64,3 +75,4 @@
 
 
   </body></html>
+

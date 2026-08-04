@@ -1,6 +1,7 @@
-# Remove managed cuda.ml runtime caches
+# Remove cuda.ml native-backend caches
 
-Removes cuda.ml runtime and backend cache generations. Restart R before
+Removes downloaded and source-built runtime and backend cache
+generations, including the selected-backend record. Restart R before
 calling this function if the native backend has been loaded in this
 process.
 

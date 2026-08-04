@@ -164,7 +164,7 @@ cuda_ml_svm(
 
 - epsilon:
 
-  Espsilon parameter of the epsilon-SVR model. There is no penalty for
+  Epsilon parameter of the epsilon-SVR model. There is no penalty for
   points that are predicted within the epsilon-tube around the target
   values. Please note this parameter is only relevant for regression
   tasks. Default: 0.1.

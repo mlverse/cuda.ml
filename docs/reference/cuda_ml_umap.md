@@ -105,8 +105,8 @@ cuda_ml_umap(
 
 - transform_queue_size:
 
-  For transform operations (embedding new points using a trained model
-  this will control how aggressively to search for nearest neighbors.
+  For transform operations (embedding new points using a trained model),
+  this controls how aggressively to search for nearest neighbors.
   Default: 4.0.
 
 - a, b:
@@ -118,13 +118,13 @@ cuda_ml_umap(
 - target_n_neighbors:
 
   The number of nearest neighbors to use to construct the target
-  simplcial set. Default: n_neighbors.
+  simplicial set. Default: n_neighbors.
 
 - target_metric:
 
-  The metric for measuring distance between the actual and and the
-  target values (`y`) if using supervised dimension reduction. Must be
-  one of {"categorical", "euclidean"}. Default: "categorical".
+  The metric for measuring distance between the actual and the target
+  values (`y`) if using supervised dimension reduction. Must be one of
+  {"categorical", "euclidean"}. Default: "categorical".
 
 - target_weight:
 
@@ -170,6 +170,6 @@ if (interactive() && cuda_ml_backend_info()$runtime_installed) {
   )
 
   set.seed(0L)
-  print(kmeans(model$transformed, iter.max = 100, centers = 3))
+  print(kmeans(model$transformed_data, iter.max = 100, centers = 3))
 }
 ```

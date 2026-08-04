@@ -5,14 +5,16 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>R Interface for the RAPIDS cuML Suite of Libraries • cuda.ml</title>
+<title>cuda.ml: R interface for RAPIDS cuML • cuda.ml</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="R Interface for the RAPIDS cuML Suite of Libraries">
-<meta name="description" content="R interface for RAPIDS cuML (&lt;https://github.com/rapidsai/cuml&gt;), a suite of GPU-accelerated machine learning libraries powered by CUDA (&lt;https://en.wikipedia.org/wiki/CUDA&gt;).">
-<meta property="og:description" content="R interface for RAPIDS cuML (&lt;https://github.com/rapidsai/cuml&gt;), a suite of GPU-accelerated machine learning libraries powered by CUDA (&lt;https://en.wikipedia.org/wiki/CUDA&gt;).">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="cuda.ml: R interface for RAPIDS cuML">
+<meta name="description" content="An R interface to GPU-accelerated machine learning algorithms from RAPIDS cuML, powered by CUDA.
+">
+<meta property="og:description" content="An R interface to GPU-accelerated machine learning algorithms from RAPIDS cuML, powered by CUDA.
+">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -31,7 +33,17 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
+<li class="nav-item"><a class="nav-link" href="articles/cuda-ml.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
+<li><a class="dropdown-item" href="articles/install-manage.html">Install and manage cuda.ml</a></li>
+    <li><a class="dropdown-item" href="articles/tidymodels.html">Use cuda.ml with tidymodels</a></li>
+    <li><a class="dropdown-item" href="articles/model-persistence.html">Save and restore models</a></li>
+    <li><a class="dropdown-item" href="articles/nvforest.html">nvForest inference and deployment</a></li>
+  </ul>
+</li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
@@ -52,9 +64,9 @@
 <!-- badges: start -->
 
 <p>The goal of {cuda.ml} is to provide a simple and intuitive R interface for <a href="https://github.com/rapidsai/cuml" class="external-link">RAPIDS cuML</a>. RAPIDS cuML is a suite of GPU-accelerated machine learning libraries powered by <a href="https://en.wikipedia.org/wiki/CUDA" class="external-link">CUDA</a>. {cuda.ml} is under active development, and currently implements R interfaces for the algorithms listed below (which is a subset of <a href="https://github.com/rapidsai/cuml#supported-algorithms" class="external-link">algorithms supported by RAPIDS cuML</a>).</p>
-<div class="section level3">
-<h3 id="supported-algorithms">Supported Algorithms<a class="anchor" aria-label="anchor" href="#supported-algorithms"></a>
-</h3>
+<div class="section level2">
+<h2 id="supported-algorithms">Supported Algorithms<a class="anchor" aria-label="anchor" href="#supported-algorithms"></a>
+</h2>
 <table class="table">
 <colgroup>
 <col width="29%">
@@ -155,14 +167,24 @@
 </tbody>
 </table>
 </div>
-</div>
-<div class="section level1">
-<h1 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a>
-</h1>
 <div class="section level2">
-<h2 id="using-cudaml-for-supervised-ml-tasks-through-parsnip">Using {cuda.ml} for supervised ML tasks through {parsnip}<a class="anchor" aria-label="anchor" href="#using-cudaml-for-supervised-ml-tasks-through-parsnip"></a>
+<h2 id="guides">Guides<a class="anchor" aria-label="anchor" href="#guides"></a>
 </h2>
-<p>{cuda.ml} provides {parsnip} bindings for supervised ML algorithms such as <code>linear_reg</code>, <code>logistic_reg</code>, <code>multinom_reg</code>, <code>rand_forest</code>, <code>nearest_neighbor</code>, <code>svm_rbf</code>, <code>svm_poly</code>, and <code>svm_linear</code>.</p>
+<ul>
+<li><a href="https://mlverse.github.io/cuda.ml/articles/cuda-ml.html">Get started with cuda.ml</a></li>
+<li><a href="https://mlverse.github.io/cuda.ml/articles/install-manage.html">Install and manage cuda.ml</a></li>
+<li><a href="https://mlverse.github.io/cuda.ml/articles/tidymodels.html">Use cuda.ml with tidymodels</a></li>
+<li><a href="https://mlverse.github.io/cuda.ml/articles/model-persistence.html">Save and restore models</a></li>
+<li><a href="https://mlverse.github.io/cuda.ml/articles/nvforest.html">nvForest inference and deployment</a></li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a>
+</h2>
+<div class="section level3">
+<h3 id="using-cudaml-for-supervised-ml-tasks-through-parsnip">Using {cuda.ml} for supervised ML tasks through {parsnip}<a class="anchor" aria-label="anchor" href="#using-cudaml-for-supervised-ml-tasks-through-parsnip"></a>
+</h3>
+<p>{cuda.ml} provides {parsnip} bindings for supervised ML algorithms such as <code>linear_reg</code>, <code>logistic_reg</code>, <code>multinom_reg</code>, <code>rand_forest</code>, <code>nearest_neighbor</code>, <code>svm_rbf</code>, <code>svm_poly</code>, and <code>svm_linear</code>. Install {parsnip} separately to use these optional bindings.</p>
 <p>Regularized models follow tidymodels conventions for <code>penalty</code> and <code>mixture</code>. When predictors need scaling, learn and apply it explicitly with a {recipes} step such as <code>step_normalize(all_numeric_predictors())</code>.</p>
 <p>The following example shows how {cuda.ml} can be used as a {parsnip} engine to build a SVM classifier.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
@@ -186,33 +208,53 @@
 <span><span class="va">preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">test_data</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Confusion matrix:\n\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Confusion matrix:</span></span>
 <span><span class="va">preds</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_cols.html" class="external-link">bind_cols</a></span><span class="op">(</span><span class="va">test_data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">Species</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu">yardstick</span><span class="fu">::</span><span class="fu">conf_mat</span><span class="op">(</span>truth <span class="op">=</span> <span class="va">Species</span>, estimate <span class="op">=</span> <span class="va">.pred_class</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu">yardstick</span><span class="fu">::</span><span class="fu"><a href="https://yardstick.tidymodels.org/reference/conf_mat.html" class="external-link">conf_mat</a></span><span class="op">(</span>truth <span class="op">=</span> <span class="va">Species</span>, estimate <span class="op">=</span> <span class="va">.pred_class</span><span class="op">)</span></span>
+<span><span class="co">#&gt;             Truth</span></span>
+<span><span class="co">#&gt; Prediction   setosa versicolor virginica</span></span>
+<span><span class="co">#&gt;   setosa         15          0         0</span></span>
+<span><span class="co">#&gt;   versicolor      0         12         1</span></span>
+<span><span class="co">#&gt;   virginica       0          3        14</span></span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="using-cudaml-for-unsupervised-ml-tasks">Using {cuda.ml} for unsupervised ML tasks<a class="anchor" aria-label="anchor" href="#using-cudaml-for-unsupervised-ml-tasks"></a>
-</h2>
+<div class="section level3">
+<h3 id="using-cudaml-for-unsupervised-ml-tasks">Using {cuda.ml} for unsupervised ML tasks<a class="anchor" aria-label="anchor" href="#using-cudaml-for-unsupervised-ml-tasks"></a>
+</h3>
 <p>The following example shows how {cuda.ml} can be used for unsupervised ML tasks such as k-means clustering.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">clustering</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cuda_ml_kmeans.html">cuda_ml_kmeans</a></span><span class="op">(</span></span>
 <span>  <span class="va">iris</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">iris</span><span class="op">)</span> <span class="op">!=</span> <span class="st">"Species"</span><span class="op">)</span><span class="op">]</span>,</span>
-<span>  k <span class="op">=</span> <span class="fl">3</span>, max_iters <span class="op">=</span> <span class="fl">100</span></span>
+<span>  k <span class="op">=</span> <span class="fl">3</span>, max_iters <span class="op">=</span> <span class="fl">100</span>, seed <span class="op">=</span> <span class="fl">0L</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Expected outcome: there is strong correlation</span></span>
 <span><span class="co"># between cluster labels and `iris$Species`</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">clustering</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">clustering</span><span class="op">)</span></span>
+<span><span class="co">#&gt; List of 4</span></span>
+<span><span class="co">#&gt;  $ labels   : int [1:150] 1 1 1 1 1 1 1 1 1 1 ...</span></span>
+<span><span class="co">#&gt;  $ centroids: num [1:3, 1:4] 5.9 5.01 6.85 2.75 3.43 ...</span></span>
+<span><span class="co">#&gt;  $ inertia  : num 78.9</span></span>
+<span><span class="co">#&gt;  $ n_iter   : int 100</span></span>
 <span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span>, warn.conflicts <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>cluster_id <span class="op">=</span> <span class="va">clustering</span><span class="op">$</span><span class="va">labels</span>, species <span class="op">=</span> <span class="va">iris</span><span class="op">$</span><span class="va">Species</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">cluster_id</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">species</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">cluster_id</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">species</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 5 × 3</span></span>
+<span><span class="co">#&gt; # Groups:   cluster_id [3]</span></span>
+<span><span class="co">#&gt;   cluster_id species        n</span></span>
+<span><span class="co">#&gt;        &lt;int&gt; &lt;fct&gt;      &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1          0 versicolor    48</span></span>
+<span><span class="co">#&gt; 2          0 virginica     14</span></span>
+<span><span class="co">#&gt; 3          1 setosa        50</span></span>
+<span><span class="co">#&gt; 4          2 versicolor     2</span></span>
+<span><span class="co">#&gt; 5          2 virginica     36</span></span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="using-cudaml-for-visualizations">Using {cuda.ml} for visualizations<a class="anchor" aria-label="anchor" href="#using-cudaml-for-visualizations"></a>
-</h2>
+<div class="section level3">
+<h3 id="using-cudaml-for-visualizations">Using {cuda.ml} for visualizations<a class="anchor" aria-label="anchor" href="#using-cudaml-for-visualizations"></a>
+</h3>
 <p>{cuda.ml} also features R interfaces for algorithms such as UMAP and t-SNE, which are useful when one needs to visualize clusters of high-dimensional data points by embedding them onto low-dimensional manifolds (i.e., 4 dimensions or fewer).</p>
 <p>For example, the code snippet below shows how <code><a href="reference/cuda_ml_umap.html">cuda_ml_umap()</a></code> can be used to visualize the MNIST hand-written digits dataset, and also, the coloring based on the true label of each sample demonstrates how well the UMAP algorithm transforms different hand writings of the same digit into nearby points in a 2D embedding:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -223,7 +265,9 @@
 <span><span class="co"># load mnist</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="st">"data-raw/load-mnist.R"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">mnist_images</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  int [1:28, 1:28, 1:60000] 0 0 0 0 0 0 0 0 0 0 ...</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">mnist_labels</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  int [1:60000(1d)] 5 0 4 1 9 2 1 3 1 4 ...</span></span>
 <span></span>
 <span></span>
 <span><span class="co"># flatten each image to a 1d array, combine into a matrix with 1 row per image</span></span>
@@ -238,10 +282,11 @@
 <span><span class="co"># embed</span></span>
 <span><span class="va">embedding</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cuda_ml_umap.html">cuda_ml_umap</a></span><span class="op">(</span></span>
 <span>  <span class="va">flattened_mnist_images</span>, n_components <span class="op">=</span> <span class="fl">2</span>, n_neighbors <span class="op">=</span> <span class="fl">50</span>,</span>
-<span>  local_connectivity <span class="op">=</span> <span class="fl">15</span>, repulsion_strength <span class="op">=</span> <span class="fl">10</span></span>
+<span>  local_connectivity <span class="op">=</span> <span class="fl">15</span>, repulsion_strength <span class="op">=</span> <span class="fl">10</span>, seed <span class="op">=</span> <span class="fl">0L</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">embedding</span><span class="op">$</span><span class="va">transformed_data</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  num [1:60000, 1:2] -7.08 -32.55 9.61 20.65 12.25 ...</span></span>
 <span></span>
 <span><span class="co"># visualize</span></span>
 <span><span class="va">embedding</span><span class="op">$</span><span class="va">transformed_data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -251,6 +296,7 @@
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>alpha <span class="op">=</span> <span class="fl">.5</span>, size <span class="op">=</span> <span class="fl">.5</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"UMAP: Uniform Manifold Approximation and Projection"</span>,</span>
 <span>       subtitle <span class="op">=</span> <span class="st">"Two Dimensional Embedding of MNIST"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-umap-example-1.png" alt="A two-dimensional UMAP embedding of MNIST digits colored by digit label." width="100%"></p>
 <p>From this type of visualization, we can qualitatively understand the following about the MNIST dataset:</p>
 <ul>
 <li>The dataset can be reasonably classified into some number of categories.</li>
@@ -260,94 +306,74 @@
 <li>Most data points belonging to the same digit category are clustered together in the UMAP output</li>
 </ul>
 </div>
+</div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<div class="section level3">
-<h3 id="r-universe-binary">R-universe binary<a class="anchor" aria-label="anchor" href="#r-universe-binary"></a>
-</h3>
-<p>The R-universe binary is the supported no-compiler installation for its current Linux target: Ubuntu 26.04 (Resolute) x86_64, including WSL2 running that distribution. Use <a href="https://docs.r-universe.dev/install/binaries.html" class="external-link">R-universe’s Linux binary repository</a> rather than its source-package repository:</p>
+<p>Install the R package from CRAN, then prepare its native backend and runtime:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">linux_binary_repo</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">universe</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">r_version</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span></span>
-<span>    <span class="va">R.version</span><span class="op">$</span><span class="va">major</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="va">R.version</span><span class="op">$</span><span class="va">minor</span>, <span class="st">"."</span>, fixed <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">[[</span><span class="fl">1L</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1L</span><span class="op">]</span>,</span>
-<span>    sep <span class="op">=</span> <span class="st">"."</span></span>
-<span>  <span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span></span>
-<span>    <span class="st">"https://%s.r-universe.dev/bin/linux/resolute-%s/%s/"</span>,</span>
-<span>    <span class="va">universe</span>,</span>
-<span>    <span class="va">R.version</span><span class="op">$</span><span class="va">arch</span>,</span>
-<span>    <span class="va">r_version</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="op">}</span></span>
-<span></span>
-<span><span class="va">repos</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>  mlverse <span class="op">=</span> <span class="fu">linux_binary_repo</span><span class="op">(</span><span class="st">"mlverse"</span><span class="op">)</span>,</span>
-<span>  CRAN <span class="op">=</span> <span class="fu">linux_binary_repo</span><span class="op">(</span><span class="st">"cran"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.info.html" class="external-link">Sys.info</a></span><span class="op">(</span><span class="op">)</span><span class="op">[[</span><span class="st">"sysname"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>, <span class="st">"Linux"</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">R.version</span><span class="op">$</span><span class="va">arch</span>, <span class="st">"x86_64"</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span></span>
-<span>    <span class="st">"/bin/linux/resolute-x86_64/[0-9]+[.][0-9]+/$"</span>,</span>
-<span>    <span class="va">repos</span><span class="op">[[</span><span class="st">"mlverse"</span><span class="op">]</span><span class="op">]</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span></span>
-<span>  <span class="st">"cuda.ml"</span>,</span>
-<span>  repos <span class="op">=</span> <span class="va">repos</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>The binary repository path selects the prebuilt tarball. Stock Linux R does not support <code>type = "binary"</code>, so leave <code>type</code> at its default. The <code><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot()</a></code> check prevents accidentally installing from the source endpoint or an unsupported architecture.</p>
-<p>The binary contains a precompiled {cuda.ml} backend with Treelite 4.7.0 linked statically, but not the CUDA and RAPIDS runtime libraries. Loading the package is silent and side-effect free:</p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"cuda.ml"</span><span class="op">)</span></span>
+<span><span class="fu">cuda.ml</span><span class="fu">::</span><span class="fu"><a href="reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>The CRAN package is a portable R installer and loader. It contains no compiled code, so <code>install.packages("cuda.ml")</code> does not need a compiler, CUDA, RAPIDS, Python, or conda. Loading it is silent and side-effect free:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span></span>
 <span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cuda_ml_backend_info.html">cuda_ml_backend_info</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">info</span><span class="op">$</span><span class="va">backend</span>, <span class="st">"full"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><code><a href="https://mlverse.github.io/cuda.ml/">library(cuda.ml)</a></code> does not inspect the GPU, create a cache, contact the network, or load the native backend. <code><a href="reference/cuda_ml_backend_info.html">cuda_ml_backend_info()</a></code> reports the packaged backend, its exact library versions, and whether its runtime has been installed; it does not report whether a GPU can execute a model. The assertion also catches an unavailable binary that fell back to the CRAN-compatible source stub.</p>
-</div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">info</span><span class="op">$</span><span class="va">backend</span>, <span class="st">"download"</span><span class="op">)</span>,</span>
+<span>  <span class="va">info</span><span class="op">$</span><span class="va">backend_available</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="https://mlverse.github.io/cuda.ml/">library(cuda.ml)</a></code> does not inspect the GPU, create a cache, contact the network, or load native code. <code><a href="reference/cuda_ml_backend_info.html">cuda_ml_backend_info()</a></code> reports the selected platform and R-version backend, its exact library versions, and whether the managed cache is complete. It does not report whether a GPU can execute a model.</p>
 <div class="section level3">
 <h3 id="runtime-provisioning">Runtime provisioning<a class="anchor" aria-label="anchor" href="#runtime-provisioning"></a>
 </h3>
-<p>Prepare the exact CUDA 13.2.2 and RAPIDS cuML and nvForest 26.06 runtime required by the binary before fitting or predicting. The current runtime lock downloads about 1.6 GiB, so installation can take several minutes:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">cuda.ml</span><span class="fu">::</span><span class="fu"><a href="reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><code><a href="reference/cuda_ml_install.html">cuda_ml_install()</a></code> does not require a GPU or NVIDIA driver, and repeated calls reuse the completed cache. It does not load the backend or initialize CUDA. Model operations do not provision the runtime implicitly; when the cache is absent, they report the installation command. After provisioning, GPU-backed operations require only a supported NVIDIA GPU and driver. nvForest CPU inference does not require a GPU or driver.</p>
+<p><code><a href="reference/cuda_ml_install.html">cuda_ml_install()</a></code> first downloads the small backend archive for the current R minor version from the package’s GitHub Releases. It verifies the archive and native library against hashes shipped in the R package. It then downloads the locked CUDA 13.2.2 and RAPIDS cuML and nvForest 26.06 wheels directly from their upstream Python package hosts. The current runtime is about 1.6 GiB, so this step can take several minutes. Treelite 4.7.0 is linked into the backend and is not a runtime download.</p>
+<p>For CPU-only nvForest inference, use <code>cuda_ml_install(device = "cpu")</code>. This installs a separate backend that is roughly 1 MiB to download and 3 MiB when installed. It does not include cuML or any CUDA runtime libraries, and it requires neither an NVIDIA GPU nor an NVIDIA driver. Random forests trained on a GPU by <code><a href="reference/cuda_ml_rand_forest.html">cuda_ml_rand_forest()</a></code> can be serialized and restored with <code>device = "cpu"</code> on this smaller deployment backend. An existing complete backend installation can also execute nvForest models on CPU; the smaller backend avoids that runtime for CPU-only deployments.</p>
+<p><code><a href="reference/cuda_ml_install.html">cuda_ml_install()</a></code> does not require a GPU or NVIDIA driver, and repeated calls reuse the completed cache. It does not load the backend or initialize CUDA. Model operations do not provision the runtime implicitly; when the cache is absent, they report the installation command. After provisioning, GPU-backed operations require only a supported NVIDIA GPU and driver.</p>
 <p>The default cache is <code>tools::R_user_dir("cuda.ml", "cache")</code>. Set <code>CUDA_ML_CACHE_DIR</code> to use a different location:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span>CUDA_ML_CACHE_DIR <span class="op">=</span> <span class="st">"/opt/cuda-ml-cache"</span><span class="op">)</span></span>
 <span><span class="fu">cuda.ml</span><span class="fu">::</span><span class="fu"><a href="reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>For an internal or offline mirror, set <code>CUDA_ML_BACKEND_MIRROR</code> to an <code>https://</code> or <code>file://</code> directory containing the exact locked backend archive. Hash verification remains enabled.</p>
 </div>
 <div class="section level3">
 <h3 id="supported-systems">Supported systems<a class="anchor" aria-label="anchor" href="#supported-systems"></a>
 </h3>
-<p>R-universe currently publishes the managed binary for Ubuntu 26.04 (Resolute) x86_64. This includes WSL2 when its Linux distribution is Ubuntu 26.04. Following the <a href="https://docs.rapids.ai/platform-support/" class="external-link">RAPIDS 26.06 platform requirements</a>, the binary requires an NVIDIA driver version 580 or newer and supports GPU compute capabilities 7.5, 8.0, 8.6, 8.9, 9.0, 10.0, and 12.0. The compute capability 12.0 PTX image also provides forward compatibility for newer GPUs supported by CUDA, following <a href="https://docs.nvidia.com/cuda/archive/13.2.0/cuda-compiler-driver-nvcc/index.html" class="external-link">CUDA’s forward-compatibility model</a>.</p>
-<p>Other Linux distributions, native Windows, macOS, and Linux ARM64 are not yet supported by the managed binary.</p>
+<p>Prebuilt backends target Linux x86_64 with glibc 2.28 or newer rather than a specific distribution. This includes current Ubuntu, Debian, RHEL-compatible, and WSL2 Linux distributions that meet the glibc requirement. Following the <a href="https://docs.rapids.ai/platform-support/" class="external-link">RAPIDS 26.06 platform requirements</a>, the binary requires an NVIDIA driver version 580 or newer and supports GPU compute capabilities 7.5, 8.0, 8.6, 8.9, 9.0, 10.0, and 12.0. The compute capability 12.0 PTX image also provides forward compatibility for newer GPUs supported by CUDA, following <a href="https://docs.nvidia.com/cuda/archive/13.2.0/cuda-compiler-driver-nvcc/index.html" class="external-link">CUDA’s forward-compatibility model</a>.</p>
+<p>Native Windows, macOS, Linux ARM64, musl-based Linux distributions, and glibc versions older than 2.28 are not currently supported.</p>
 </div>
 <div class="section level3">
-<h3 id="cran-and-source-builds">CRAN and source builds<a class="anchor" aria-label="anchor" href="#cran-and-source-builds"></a>
+<h3 id="build-the-backend-from-source">Build the backend from source<a class="anchor" aria-label="anchor" href="#build-the-backend-from-source"></a>
 </h3>
-<p>CRAN checks are network-free and install an explicit stub backend. <code><a href="reference/cuda_ml_backend_info.html">cuda_ml_backend_info()</a></code> reports <code>backend = "stub"</code> for that build, and <code><a href="reference/cuda_ml_install.html">cuda_ml_install()</a></code> directs users to the R-universe binary. Install from R-universe when a functional binary without local compilation is required.</p>
-<p>Advanced local source builds remain available. Set <code>CUDA_ML_BUILD_MODE=local</code>, supply CUDA Toolkit 13.2.2 through <code>CUDA_HOME</code>, and supply a prefix through <code>CUML_PREFIX</code> containing cuML and nvForest 26.06, Treelite 4.7.0 headers, and <code>lib/libtreelite_static.a</code>. Build Treelite as position-independent code with its default libstdc++ ABI and with OpenMP disabled. Local builds never download or provision Treelite. Set <code>CUML_CUDA_ARCHITECTURES</code> explicitly to the CMake CUDA architectures to compile, and set <code>CUDA_ML_CXX</code> to GNU C++ 14 or newer. The same compiler is used for C++ sources and nvcc host compilation. Missing inputs and other library versions fail at configuration time.</p>
+<p>To compile the native backend directly on the host without Docker or a prebuilt cuda.ml backend, install GNU C++ 14 or newer and run:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">cuda.ml</span><span class="fu">::</span><span class="fu"><a href="reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span>source <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p>The default managed source build downloads and verifies about 1.7 GiB of exact locked build artifacts from PyPI and GitHub. These provide CUDA Toolkit 13.2.2, cuML and nvForest 26.06, Treelite 4.7.0, CMake, and Ninja. Python, Conda, Docker, a system CUDA Toolkit, a system RAPIDS installation, and a GPU are not required for the build. Linux x86_64 with glibc 2.28 or newer and GNU C++ 14 or newer are required. The installer prefers <code>g++-14</code>, then <code>g++</code>, on <code>PATH</code>; set <code>CUDA_ML_CXX</code> to override this discovery.</p>
+<p>The toolchain and compiled backend are cached under <code>CUDA_ML_CACHE_DIR</code>, or the default cuda.ml user cache. Calling the function again with the same inputs is a no-op. By default, a managed build detects the distinct CUDA-visible GPU compute capabilities reported by <code>nvidia-smi</code> and compiles their real targets. It honors <code>CUDA_VISIBLE_DEVICES</code>. If detection is unavailable, it uses the package’s portable GPU architecture list, so GPU-free build hosts remain supported.</p>
+<p>This usually reduces build time and backend size, but the resulting backend supports only the detected GPU architectures. Use <code>architectures = "portable"</code> to force a relocatable build, or <code>architectures = "native"</code> to require successful detection. You can also supply an explicit semicolon-separated CMake CUDA architecture list, for example <code>architectures = "86-real;89-real"</code>.</p>
+<p>To use a native toolchain already installed on the host and make no downloads, provide every build input explicitly:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span></span>
+<span>  CUDA_HOME <span class="op">=</span> <span class="st">"/usr/local/cuda-13.2"</span>,</span>
+<span>  CUML_PREFIX <span class="op">=</span> <span class="st">"/opt/rapids-26.06"</span>,</span>
+<span>  CUML_CUDA_ARCHITECTURES <span class="op">=</span> <span class="st">"86-real"</span>,</span>
+<span>  CUDA_ML_CXX <span class="op">=</span> <span class="st">"/usr/bin/g++-14"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu">cuda.ml</span><span class="fu">::</span><span class="fu"><a href="reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span>source <span class="op">=</span> <span class="cn">TRUE</span>, dependencies <span class="op">=</span> <span class="st">"host"</span><span class="op">)</span></span></code></pre></div>
+<p>This host pathway requires CUDA Toolkit 13.2.2; a <code>CUML_PREFIX</code> containing cuML and nvForest 26.06, Treelite 4.7.0 headers, and <code>lib/libtreelite_static.a</code>; GNU C++ 14 or newer; and CMake 3.21.1 or newer. The CUDA, RAPIDS, and Treelite prefixes must remain in place because the compiled backend links to their libraries.</p>
+</div>
+<div class="section level3">
+<h3 id="packaging">Packaging<a class="anchor" aria-label="anchor" href="#packaging"></a>
+</h3>
+<p>CRAN installation and checks are network-free. The package contacts the network only when <code><a href="reference/cuda_ml_install.html">cuda_ml_install()</a></code> is called explicitly. Native backend archives are built in a pinned manylinux 2.28 container, audited for their glibc and libstdc++ requirements, and hosted as GitHub Release assets. One archive is published for each supported R minor version.</p>
 </div>
 <div class="section level3">
 <h3 id="development-version">Development version<a class="anchor" aria-label="anchor" href="#development-version"></a>
 </h3>
-<p>A bare development installation from <a href="https://github.com/" class="external-link">GitHub</a> produces the same CRAN-compatible stub:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/install-deprecated.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"mlverse/cuda.ml"</span><span class="op">)</span></span></code></pre></div>
-<p>For a functional local build, set the exact toolchain and backend inputs described above before installing:</p>
+<p>A development installation uses the same downloaded backend pathway:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span></span>
-<span>  CUDA_ML_BUILD_MODE <span class="op">=</span> <span class="st">"local"</span>,</span>
-<span>  CUDA_HOME <span class="op">=</span> <span class="st">"/opt/cuda-13.2.2"</span>,</span>
-<span>  CUML_PREFIX <span class="op">=</span> <span class="st">"/opt/cuda-ml-backend"</span>,</span>
-<span>  CUML_CUDA_ARCHITECTURES <span class="op">=</span> <span class="st">"75"</span>,</span>
-<span>  CUDA_ML_CXX <span class="op">=</span> <span class="st">"g++-14"</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/install-deprecated.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"mlverse/cuda.ml"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/install-deprecated.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"mlverse/cuda.ml"</span><span class="op">)</span></span>
+<span><span class="fu">cuda.ml</span><span class="fu">::</span><span class="fu"><a href="reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -357,10 +383,9 @@
 Inspect MNIST images
 </summary><div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">plot_mnist</span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">64</span><span class="op">)</span></span></code></pre></div>
-</details>
+<img src="reference/figures/README-mnist-1.png" alt="A grid of 64 MNIST handwritten digit images." width="100%"></details>
 </div>
 </div>
-
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
@@ -400,7 +425,7 @@ Inspect MNIST images
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
 <li><a href="https://cran.r-project.org/package=cuda.ml" class="external-link"><img src="https://www.r-pkg.org/badges/version/cuda.ml" alt="CRAN_Status_Badge"></a></li>
-<li><a href="https://www.r-pkg.org/pkg/cuda.ml" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/cuda.ml?color=brightgreen" style=""></a></li>
+<li><a href="https://www.r-pkg.org/pkg/cuda.ml" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/cuda.ml?color=brightgreen" alt="CRAN downloads"></a></li>
 </ul>
 </div>
 

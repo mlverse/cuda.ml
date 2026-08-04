@@ -2,7 +2,7 @@
 % Please edit documentation in R/agglomerative.R
 \name{cuda_ml_agglomerative_clustering}
 \alias{cuda_ml_agglomerative_clustering}
-\title{Perform Single-Linkage Agglomerative Clustering.}
+\title{Perform single-linkage agglomerative clustering.}
 \usage{
 cuda_ml_agglomerative_clustering(
   x,

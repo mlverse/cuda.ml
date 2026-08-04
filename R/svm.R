@@ -51,7 +51,7 @@ svm_match_kernel_type <- function(
 #' @param nochange_steps Number of steps with no change w.r.t convergence.
 #'   Default: 1000.
 #' @param cache_size Size of kernel cache (MiB) in device memory. Default: 1024.
-#' @param epsilon Espsilon parameter of the epsilon-SVR model. There is no
+#' @param epsilon Epsilon parameter of the epsilon-SVR model. There is no
 #'   penalty for points that are predicted within the epsilon-tube around the
 #'   target values. Please note this parameter is only relevant for regression
 #'   tasks. Default: 0.1.
@@ -506,7 +506,7 @@ cuda_ml_set_state.cuda_ml_svr_model_state <- function(model_state) {
 
 #' Make predictions on new data points.
 #'
-#' Make predictions on new data points using a CuML SVM model.
+#' Make predictions on new data points using a cuML SVM model.
 #'
 #' @template predict
 #'

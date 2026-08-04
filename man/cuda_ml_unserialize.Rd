@@ -2,7 +2,7 @@
 % Please edit documentation in R/model.R
 \name{cuda_ml_unserialize}
 \alias{cuda_ml_unserialize}
-\title{Unserialize a CuML model state}
+\title{Unserialize a cuML model state}
 \usage{
 cuda_ml_unserialize(
   connection,
@@ -28,10 +28,10 @@ precision recorded in the state is used. The remaining omitted options use
 nvForest defaults.}
 }
 \value{
-A unserialized CuML model.
+An unserialized cuML model.
 }
 \description{
-Unserialize a CuML model state into a CuML model object.
+Unserialize a cuML model state into a cuML model object.
 }
 \section{Persistence contract}{
 

@@ -15,7 +15,15 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/cuda-ml.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/install-manage.html">Install and manage cuda.ml</a></li>
+    <li><a class="dropdown-item" href="../articles/tidymodels.html">Use cuda.ml with tidymodels</a></li>
+    <li><a class="dropdown-item" href="../articles/model-persistence.html">Save and restore models</a></li>
+    <li><a class="dropdown-item" href="../articles/nvforest.html">nvForest inference and deployment</a></li>
+  </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -55,7 +63,9 @@
 
 
 <dt id="arg-chunk-size">chunk_size<a class="anchor" aria-label="anchor" href="#arg-chunk-size"></a></dt>
-<dd><p>Prediction chunk size, or <code>NULL</code> for the model default.</p></dd>
+<dd><p>Native prediction chunk size, or <code>NULL</code> for the model
+default. It controls native batching and does not limit the size of the
+returned R object.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -63,6 +73,19 @@
     <p>For scalar-leaf models, a numeric matrix with one column per tree.
   For vector-leaf models, a numeric array indexed by observation, tree, and
   output.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="memory-use">Memory use<a class="anchor" aria-label="anchor" href="#memory-use"></a></h2>
+
+
+<p>The complete result is materialized in R: rows by trees for scalar-leaf
+models and rows by trees by outputs for vector-leaf models. The
+<code>chunk_size</code> argument controls native prediction work but does not bound
+the memory required by the R result.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="cuda_ml_nvforest_leaf_ids.html">cuda_ml_nvforest_leaf_ids()</a></code></p></div>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
@@ -84,3 +107,4 @@
 
 
   </body></html>
+

@@ -1,4 +1,4 @@
-# Perform Single-Linkage Agglomerative Clustering.
+# Perform single-linkage agglomerative clustering.
 
 Recursively merge the pair of clusters that minimally increases a given
 linkage distance.

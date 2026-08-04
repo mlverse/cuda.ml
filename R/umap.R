@@ -57,15 +57,15 @@ new_umap_model <- function(model) {
 #' @param negative_sample_rate The number of negative samples to select per
 #'   positive sample in the optimization process. Default: 5.
 #' @param transform_queue_size For transform operations (embedding new points
-#'   using a trained model this will control how aggressively to search for
+#'   using a trained model), this controls how aggressively to search for
 #'   nearest neighbors. Default: 4.0.
 #' @param a,b More specific parameters controlling the embedding. If not set,
 #'   then these values are set automatically as determined by \code{min_dist}
 #'   and \code{spread}. Default: NULL.
 #' @param target_n_neighbors The number of nearest neighbors to use to construct
-#'   the target simplcial set. Default: n_neighbors.
+#'   the target simplicial set. Default: n_neighbors.
 #' @param target_metric The metric for measuring distance between the actual and
-#'   and the target values (\code{y}) if using supervised dimension reduction.
+#'   the target values (\code{y}) if using supervised dimension reduction.
 #'   Must be one of \{"categorical", "euclidean"\}. Default: "categorical".
 #' @param target_weight Weighting factor between data topology and target
 #'   topology. A value of 0.0 weights entirely on data, a value of 1.0 weights
@@ -97,7 +97,7 @@ new_umap_model <- function(model) {
 #'   )
 #'
 #'   set.seed(0L)
-#'   print(kmeans(model$transformed, iter.max = 100, centers = 3))
+#'   print(kmeans(model$transformed_data, iter.max = 100, centers = 3))
 #' }
 #' @export
 cuda_ml_umap <- function(

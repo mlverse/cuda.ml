@@ -19,7 +19,7 @@ elastic_net_validate_l1_ratio <- function(l1_ratio) {
   )
 }
 
-#' Train a linear model using elastic regression.
+#' Train a linear model using elastic net regression.
 #'
 #' Train a linear model with combined L1 and L2 priors as the regularizer.
 #'

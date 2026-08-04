@@ -127,7 +127,7 @@ A KNN model that can be used with the 'predict' S3 generic to make
     - "n_dims": dimension of each input data point.
 }
 \description{
-Build a k-nearest-model for classification or regression tasks.
+Build a k-nearest-neighbor model for classification or regression tasks.
 }
 \examples{
 

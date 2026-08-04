@@ -6,7 +6,7 @@
 \alias{cuda.ml-package}
 \title{cuda.ml}
 \description{
-This package provides a R interface for the RAPIDS cuML library.
+This package provides an R interface for the RAPIDS cuML library.
 }
 \section{Installation}{
 
