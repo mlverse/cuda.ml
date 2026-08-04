@@ -81,6 +81,10 @@ RAPIDS cuML and nvForest 26.06, and Treelite 4.7.0.
   8.0, 8.6, 8.9, 9.0, 10.0, and 12.0, with PTX forward compatibility
   from 12.0.
 
+- Organized the function reference and added guides for getting started,
+  runtime installation and management, tidymodels, model persistence,
+  and nvForest inference and deployment.
+
 - Removed native compatibility branches for historical cuML releases and
   the implicit bootstrap fallbacks for Python, pip, CMake, wheel
   layouts, CUDA architectures, and missing local toolchains.

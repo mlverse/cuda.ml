@@ -5,12 +5,12 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>nvForest inference • cuda.ml</title>
+<title>nvForest inference and deployment • cuda.ml</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="nvForest inference">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="nvForest inference and deployment">
 <meta name="description" content="Train random forests on a GPU, import tree ensembles, and deploy nvForest inference on a CPU or GPU.
 ">
 <meta property="og:description" content="Train random forests on a GPU, import tree ensembles, and deploy nvForest inference on a CPU or GPU.
@@ -33,11 +33,15 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
+<li class="nav-item"><a class="nav-link" href="../articles/cuda-ml.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/nvforest.html">nvForest inference</a></li>
+<li><a class="dropdown-item" href="../articles/install-manage.html">Install and manage cuda.ml</a></li>
+    <li><a class="dropdown-item" href="../articles/tidymodels.html">Use cuda.ml with tidymodels</a></li>
+    <li><a class="dropdown-item" href="../articles/model-persistence.html">Save and restore models</a></li>
+    <li><a class="dropdown-item" href="../articles/nvforest.html">nvForest inference and deployment</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -60,7 +64,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>nvForest inference</h1>
+      <h1>nvForest inference and deployment</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/mlverse/cuda.ml/blob/HEAD/vignettes/nvforest.Rmd" class="external-link"><code>vignettes/nvforest.Rmd</code></a></small>
@@ -88,27 +92,21 @@ native backend, network access, or a runtime download.</p>
 <div class="section level2">
 <h2 id="prepare-the-runtime">Prepare the runtime<a class="anchor" aria-label="anchor" href="#prepare-the-runtime"></a>
 </h2>
-<p>Install the complete backend before training with cuML or running GPU
-inference:</p>
+<p>Install the complete backend for cuML training or GPU inference.
+Install the smaller CPU backend on a host used only for nvForest CPU
+inference.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>That installation is roughly 1.6 GiB and contains the managed CUDA,
-RAPIDS cuML, and nvForest runtime. For CPU-only nvForest inference,
-install the separate backend instead:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span>device <span class="op">=</span> <span class="st">"cpu"</span><span class="op">)</span></span></code></pre></div>
-<p>The CPU backend is roughly 1 MiB to download and 3 MiB when
-installed. It does not include cuML, CUDA runtime libraries, or the
-complete managed CUDA/RAPIDS runtime. It requires neither an NVIDIA GPU
-nor an NVIDIA driver, and cuda.ml selects nvForest’s CPU execution
-path.</p>
-<p>An environment that already has the complete backend can continue to
-execute nvForest models on CPU. The separate backend removes the
-complete runtime from CPU-only deployments.</p>
+<span></span>
+<span><span class="co"># Complete backend for training and GPU inference.</span></span>
+<span><span class="fu"><a href="../reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Smaller backend on a CPU-only inference host.</span></span>
+<span><span class="fu"><a href="../reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span>device <span class="op">=</span> <span class="st">"cpu"</span><span class="op">)</span></span></code></pre></div>
 <p>Installation never occurs while loading or predicting. Provision the
-required backend while preparing each environment. A completed cache is
-reused by later R processes.</p>
+required backend while preparing each environment. See the <a href="install-manage.html">installation and runtime guide</a> for system
+requirements, runtime sizes, cache management, mirrors, and source
+builds.</p>
 </div>
 <div class="section level2">
 <h2 id="train-on-gpu-and-deploy-on-cpu">Train on GPU and deploy on CPU<a class="anchor" aria-label="anchor" href="#train-on-gpu-and-deploy-on-cpu"></a>
@@ -116,7 +114,7 @@ reused by later R processes.</p>
 <p><code><a href="../reference/cuda_ml_rand_forest.html">cuda_ml_rand_forest()</a></code> trains a cuML random forest on a
 GPU. Its fitted object uses nvForest for inference and supports the same
 prediction and inspection functions as imported models.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
@@ -136,7 +134,7 @@ prediction and inspection functions as imported models.</p>
 <p>This writes <code>model.treelite.checkpoint</code> and
 <code>model.cuda-ml.json</code>. Copy both files to a CPU host. That
 host needs only the CPU inference backend:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span>device <span class="op">=</span> <span class="st">"cpu"</span><span class="op">)</span></span>
 <span></span>
@@ -200,7 +198,7 @@ authenticity.</p>
 </tbody>
 </table>
 <p>The format can always be selected explicitly:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">xgb_ubjson</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_ml_nvforest_load_model.html">cuda_ml_nvforest_load_model</a></span><span class="op">(</span></span>
 <span>  <span class="st">"xgboost-model.ubj"</span>,</span>
 <span>  model_type <span class="op">=</span> <span class="st">"xgboost_ubj"</span>,</span>
@@ -252,7 +250,7 @@ four formats from a case-insensitive file suffix:</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">xgb_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_ml_nvforest_load_model.html">cuda_ml_nvforest_load_model</a></span><span class="op">(</span><span class="st">"xgboost-model.ubj"</span>, device <span class="op">=</span> <span class="st">"cpu"</span><span class="op">)</span></span>
 <span><span class="va">lightgbm_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_ml_nvforest_load_model.html">cuda_ml_nvforest_load_model</a></span><span class="op">(</span></span>
 <span>  <span class="st">"lightgbm-model.txt"</span>,</span>
@@ -268,7 +266,7 @@ filename.</p>
 </h2>
 <p>Select the device when loading the model. The default is GPU, so set
 the device explicitly for CPU deployment.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cpu_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_ml_nvforest_load_model.html">cuda_ml_nvforest_load_model</a></span><span class="op">(</span></span>
 <span>  <span class="st">"model.ubj"</span>,</span>
 <span>  device <span class="op">=</span> <span class="st">"cpu"</span></span>
@@ -286,9 +284,13 @@ prediction and inspection APIs.</p>
 <div class="section level2">
 <h2 id="predict-regression-and-classification-results">Predict regression and classification results<a class="anchor" aria-label="anchor" href="#predict-regression-and-classification-results"></a>
 </h2>
+<p>Models loaded directly from XGBoost, LightGBM, or Treelite files do
+not contain a cuda.ml preprocessing blueprint or feature-name mapping.
+Supply numeric predictors in exactly the column order used to train and
+export the model; column names are not used to reorder them.</p>
 <p>Regression prediction returns a data frame with a <code>.pred</code>
 column:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">regression_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_ml_nvforest_load_model.html">cuda_ml_nvforest_load_model</a></span><span class="op">(</span></span>
 <span>  <span class="st">"regression.ubj"</span>,</span>
 <span>  device <span class="op">=</span> <span class="st">"cpu"</span></span>
@@ -304,7 +306,7 @@ column:</p>
 model-output order. Class prediction returns <code>.pred_class</code>.
 Probability prediction returns one <code>.pred_&lt;level&gt;</code>
 column for each class.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">classifier</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_ml_nvforest_load_model.html">cuda_ml_nvforest_load_model</a></span><span class="op">(</span></span>
 <span>  <span class="st">"classifier.txt"</span>,</span>
 <span>  model_type <span class="op">=</span> <span class="st">"lightgbm"</span>,</span>
@@ -323,7 +325,7 @@ postprocessor produces probabilities.</p>
 <p>Use <code><a href="../reference/cuda_ml_nvforest_info.html">cuda_ml_nvforest_info()</a></code> to inspect the task, model
 dimensions, output representation, inference device, layout, precision,
 and chunk settings.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_ml_nvforest_info.html">cuda_ml_nvforest_info</a></span><span class="op">(</span><span class="va">classifier</span><span class="op">)</span></span>
 <span><span class="va">info</span><span class="op">$</span><span class="va">task_type</span></span>
 <span><span class="va">info</span><span class="op">$</span><span class="va">num_features</span></span>
@@ -336,12 +338,12 @@ and chunk settings.</p>
 </h2>
 <p>Leaf identifiers form an integer matrix with one row per observation
 and one column per tree.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">leaf_ids</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_ml_nvforest_leaf_ids.html">cuda_ml_nvforest_leaf_ids</a></span><span class="op">(</span><span class="va">classifier</span>, <span class="va">new_data</span><span class="op">)</span></span></code></pre></div>
 <p>Individual-tree predictions form a numeric <code>rows × trees</code>
 matrix for scalar-leaf models. Vector-leaf models return a numeric
 <code>rows × trees × outputs</code> array.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">per_tree</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_ml_nvforest_predict_per_tree.html">cuda_ml_nvforest_predict_per_tree</a></span><span class="op">(</span><span class="va">classifier</span>, <span class="va">new_data</span><span class="op">)</span></span></code></pre></div>
 <p>Per-tree prediction fully materializes the logical
 <code>rows × trees × outputs</code> result in R; scalar-leaf models omit
@@ -358,67 +360,16 @@ this operation.</p>
 preferable. Use <code><a href="../reference/cuda_ml_nvforest_export.html">cuda_ml_nvforest_export()</a></code> and
 <code><a href="../reference/cuda_ml_nvforest_export.html">cuda_ml_nvforest_import()</a></code> when the Treelite checkpoint must
 also be available independently. Do not save the live model object.</p>
-<p><code><a href="../reference/cuda_ml_serialize.html">cuda_ml_serialize()</a></code> creates an explicit schema 1 model
-state containing the nvForest payload and its compatibility
-metadata.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">state</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_ml_serialize.html">cuda_ml_serialize</a></span><span class="op">(</span><span class="va">classifier</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">state</span>, <span class="st">"classifier.cuda-ml-state.rds"</span><span class="op">)</span></span></code></pre></div>
-<p>Restore the state with <code><a href="../reference/cuda_ml_unserialize.html">cuda_ml_unserialize()</a></code> in a fresh
-R process. Select the deployment device during restoration and prepare
-its backend first.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span>device <span class="op">=</span> <span class="st">"cpu"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">state</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">"classifier.cuda-ml-state.rds"</span><span class="op">)</span></span>
-<span><span class="va">classifier</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_ml_unserialize.html">cuda_ml_unserialize</a></span><span class="op">(</span><span class="va">state</span>, device <span class="op">=</span> <span class="st">"cpu"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">classifier</span>, <span class="va">new_data</span>, type <span class="op">=</span> <span class="st">"prob"</span><span class="op">)</span></span></code></pre></div>
-<p>Schema 1 restoration requires the installed package to support the
-saved state class and model ABI. Current nvForest and random-forest
-states are device neutral. They retain prediction precision unless it is
-overridden during restoration; other device-specific settings use
-nvForest defaults unless they are supplied to
-<code><a href="../reference/cuda_ml_unserialize.html">cuda_ml_unserialize()</a></code>. An nvForest state contains
-serialized Treelite model bytes, so its recorded
-<code>treelite_version</code> must exactly match the target backend. The
-package version and other recorded backend fields are provenance rather
-than compatibility gates for schema 1. States are not migrated
-implicitly, and native pointers are not used as a persistence fallback.
-Legacy nvForest states retain their recorded inference settings.</p>
-<p><code>bundle</code> is optional packaging around the same cuda.ml
-state. It is not required for either persistence workflow and does not
-remove the target backend requirement.</p>
-</div>
-<div class="section level2">
-<h2 id="serve-predictions-with-plumber">Serve predictions with Plumber<a class="anchor" aria-label="anchor" href="#serve-predictions-with-plumber"></a>
-</h2>
-<p>The following Plumber-annotated file restores one model when the
-serving process starts and uses that model for every request. The
-request body is JSON with a column-oriented <code>predictors</code>
-object, such as
-<code>{"predictors":{"feature_1":[0.2],"feature_2":[1.5]}}</code>.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># plumber.R</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">classifier</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_ml_nvforest_export.html">cuda_ml_nvforest_import</a></span><span class="op">(</span></span>
-<span>  directory <span class="op">=</span> <span class="st">"models"</span>,</span>
-<span>  prefix <span class="op">=</span> <span class="st">"classifier"</span>,</span>
-<span>  device <span class="op">=</span> <span class="st">"cpu"</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="co">#* Return class probabilities</span></span>
-<span><span class="co">#* @post /predict</span></span>
-<span><span class="co">#* @serializer unboxedJSON</span></span>
-<span><span class="kw">function</span><span class="op">(</span><span class="va">req</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">new_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">req</span><span class="op">$</span><span class="va">body</span><span class="op">$</span><span class="va">predictors</span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">classifier</span>, <span class="va">new_data</span>, type <span class="op">=</span> <span class="st">"prob"</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div>
-<p>The route uses only public cuda.ml persistence and prediction APIs.
-Run the installer while building or provisioning the service image,
-before starting Plumber, so service startup and requests need no network
-access.</p>
+<span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">state</span>, <span class="st">"classifier.cuda-ml-state.rds"</span><span class="op">)</span></span>
+<span><span class="va">classifier</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_ml_unserialize.html">cuda_ml_unserialize</a></span><span class="op">(</span><span class="va">state</span>, device <span class="op">=</span> <span class="st">"cpu"</span><span class="op">)</span></span></code></pre></div>
+<p>Current nvForest and random-forest states are device neutral and
+require the target backend’s Treelite version to match the recorded
+version. Select the deployment device while restoring and prepare that
+backend first. The <a href="model-persistence.html">model persistence
+guide</a> compares state, bundle, and checkpoint workflows and documents
+the compatibility contract.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

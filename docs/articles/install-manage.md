@@ -1,0 +1,265 @@
+# Install and manage cuda.ml
+
+The cuda.ml R package contains no compiled code. Installing or loading
+the R package does not download a native backend, inspect a GPU, create
+a cache, or initialize CUDA. Provision the backend explicitly for each
+environment before running native operations.
+
+The examples in this vignette are not evaluated when it is built, so
+building the package does not require a network connection, a native
+backend, or a GPU.
+
+## Choose a backend
+
+cuda.ml provides two prebuilt deployment paths:
+
+| Need                                   | Install                                                                               | Contents and requirements                                                                                           |
+|----------------------------------------|---------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------|
+| Train cuML models or run GPU inference | [`cuda_ml_install()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_install.md) | Complete managed CUDA, RAPIDS cuML, and nvForest runtime; GPU operations require a supported NVIDIA GPU and driver. |
+| Run nvForest inference only on CPU     | `cuda_ml_install(device = "cpu")`                                                     | Separate CPU backend with no cuML or CUDA runtime libraries; no NVIDIA GPU or driver is required.                   |
+
+The complete backend is currently about 1.6 GiB. The CPU-only nvForest
+backend is roughly 1 MiB to download and 3 MiB when installed. It can
+load, restore, and run nvForest models, including random forests trained
+on a GPU with
+[`cuda_ml_rand_forest()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_rand_forest.md),
+but it cannot train cuML models or run GPU inference.
+
+An installation of the complete backend can also execute nvForest models
+on CPU. The smaller backend is intended for deployments that do not
+otherwise need the managed CUDA and RAPIDS runtime. See [nvForest
+inference and
+deployment](https://mlverse.github.io/cuda.ml/articles/nvforest.md) for
+training, import, persistence, and deployment workflows.
+
+## Install the default prebuilt backend
+
+Install the R package, then provision the complete backend:
+
+``` r
+install.packages("cuda.ml")
+
+library(cuda.ml)
+cuda_ml_install()
+```
+
+[`cuda_ml_install()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_install.md)
+downloads the prebuilt backend selected for the current R minor version
+and its exact locked runtime libraries. The installer verifies the
+downloaded files and stores the completed installation in the cuda.ml
+user cache. It does not require a GPU or NVIDIA driver, load the
+backend, or initialize CUDA.
+
+Calls with the same inputs reuse the completed cache and are a no-op.
+Model loading and prediction never install a missing backend implicitly;
+their error messages identify the required installation call.
+
+For a first model workflow after installation, continue with [Getting
+started with
+cuda.ml](https://mlverse.github.io/cuda.ml/articles/cuda-ml.md).
+
+## Install CPU-only nvForest inference
+
+On a host that will only run nvForest models on CPU, install the
+separate backend:
+
+``` r
+library(cuda.ml)
+cuda_ml_install(device = "cpu")
+```
+
+CPU-only installation is prebuilt only. `source = TRUE`, `dependencies`,
+and `architectures` do not apply to this path. Installation remains
+explicit: a CPU prediction does not download this backend when it is
+absent.
+
+## Supported systems
+
+The native backends require Linux x86_64 with glibc 2.28 or newer. This
+covers current Ubuntu, Debian, RHEL-compatible, and WSL2 Linux
+distributions that meet the glibc requirement. Native Windows, macOS,
+Linux ARM64, musl-based Linux, and systems with an older glibc are not
+supported.
+
+Installing the complete backend does not require a GPU. GPU-backed
+operations require NVIDIA driver 580 or newer and a supported GPU. The
+prebuilt backend contains real targets for compute capabilities 7.5,
+8.0, 8.6, 8.9, 9.0, 10.0, and 12.0, plus the compute capability 12.0 PTX
+image for CUDA forward compatibility. CPU-only nvForest inference has
+the same operating-system requirement but requires neither an NVIDIA GPU
+nor an NVIDIA driver.
+
+## Place or mirror the cache
+
+By default, cuda.ml uses:
+
+``` r
+tools::R_user_dir("cuda.ml", "cache")
+```
+
+Set `CUDA_ML_CACHE_DIR` before installation to put managed files
+elsewhere:
+
+``` r
+Sys.setenv(CUDA_ML_CACHE_DIR = "/opt/cuda-ml-cache")
+cuda_ml_install()
+```
+
+Set `CUDA_ML_BACKEND_MIRROR` to an `https://` or `file://` directory
+that contains the exact locked backend archive:
+
+``` r
+Sys.setenv(
+  CUDA_ML_BACKEND_MIRROR = "file:///srv/cuda-ml-backends"
+)
+cuda_ml_install()
+```
+
+The installer appends the locked archive filename to that directory and
+keeps hash verification enabled. Other URL schemes are rejected.
+
+For the complete backend, this setting mirrors only the cuda.ml backend
+archive. Managed CUDA and RAPIDS runtime artifacts still use the locked
+upstream URLs recorded in the package manifest.
+
+## Inspect the selected backend
+
+[`cuda_ml_backend_info()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_backend_info.md)
+performs read-only cache and inventory checks:
+
+``` r
+info <- cuda_ml_backend_info()
+
+info[c(
+  "backend",
+  "build_mode",
+  "runtime_installed",
+  "runtime_path",
+  "backend_loaded"
+)]
+
+info[c(
+  "nvforest_cpu_runtime_installed",
+  "nvforest_cpu_runtime_path",
+  "nvforest_cpu_backend_loaded"
+)]
+```
+
+It reports the selected backend, locked library versions, supported
+architectures, cache status, and the separate CPU-only nvForest status.
+It does not create or change the cache, use the network, inspect an
+NVIDIA GPU or driver, or load native code. Consequently, it reports
+whether the exact cache is complete, not whether a GPU can execute a
+model.
+
+## Audit or remove cached backends
+
+Ordinary cache reuse checks markers, inventories, sizes, and links. Run
+an explicit audit when you need to recompute the recorded hashes and
+validate native registration:
+
+``` r
+cuda_ml_runtime_audit()
+cuda_ml_runtime_audit(device = "cpu")
+```
+
+For the complete downloaded backend, the audit also validates the
+managed runtime dependency closure. The default audits the selected
+complete backend; if a source build is selected, it audits that
+source-built backend.
+
+To remove downloaded, source-built, and CPU-only backend cache
+generations, including the selected-backend record, start a fresh R
+session and run:
+
+``` r
+library(cuda.ml)
+cuda_ml_cache_clean()
+```
+
+Restart R first if either native backend has been loaded. After
+cleaning, provision the backend needed by the environment again.
+
+## Build the complete backend from source
+
+Source installation builds the complete GPU-capable backend. It does not
+build the separate CPU-only backend.
+
+### Managed dependencies
+
+The default source path downloads no prebuilt cuda.ml backend. It
+downloads and verifies the locked CUDA 13.2.2 and RAPIDS 26.06
+development artifacts, CMake, and Ninja, builds Treelite 4.7.0
+statically, and caches the toolchain:
+
+``` r
+cuda_ml_install(source = TRUE)
+```
+
+The managed build requires Linux x86_64 with glibc 2.28 or newer and GNU
+C++ 14 or newer. It does not require Python, Conda, Docker, a system
+CUDA Toolkit, a system RAPIDS installation, or a GPU. If `CUDA_ML_CXX`
+is unset, the installer prefers `g++-14` and then `g++` on `PATH`.
+
+By default, the build uses `nvidia-smi` to detect distinct CUDA-visible
+compute capabilities and compiles their real targets. It honors
+`CUDA_VISIBLE_DEVICES`. If detection is unavailable, it uses cuda.ml’s
+portable architecture list. Choose the target policy explicitly when
+needed:
+
+``` r
+# Require successful detection from a CUDA-visible GPU.
+cuda_ml_install(source = TRUE, architectures = "native")
+
+# Build the package's relocatable architecture set.
+cuda_ml_install(source = TRUE, architectures = "portable")
+
+# Build explicit CMake CUDA targets.
+cuda_ml_install(
+  source = TRUE,
+  architectures = "86-real;89-real"
+)
+```
+
+A native-target build usually takes less time and space, but the
+resulting backend supports only the selected architectures. Repeated
+calls with the same build inputs reuse the cached toolchain and backend.
+Restart R before changing the selected prebuilt or source-built backend,
+or source-build inputs, after a native backend has been loaded in that
+process.
+
+### Host dependencies
+
+The host path makes no downloads and requires every build input
+explicitly:
+
+``` r
+Sys.setenv(
+  CUDA_HOME = "/usr/local/cuda-13.2",
+  CUML_PREFIX = "/opt/rapids-26.06",
+  CUML_CUDA_ARCHITECTURES = "86-real",
+  CUDA_ML_CXX = "/usr/bin/g++-14"
+)
+
+cuda_ml_install(source = TRUE, dependencies = "host")
+```
+
+`CUDA_HOME` must contain the locked CUDA Toolkit 13.2.2. `CUML_PREFIX`
+must contain cuML and nvForest 26.06, Treelite 4.7.0 headers, and
+`lib/libtreelite_static.a`. GNU C++ 14 or newer is required, and CMake
+3.21.1 or newer must be on `PATH`. The CUDA, RAPIDS, and Treelite
+prefixes must remain in place because the compiled backend links to
+their libraries.
+
+## Troubleshooting
+
+| Symptom                                                                   | Action                                                                                                                                                                       |
+|---------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| A native model operation says the managed runtime is not installed.       | Run [`cuda_ml_install()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_install.md) once in that environment.                                                          |
+| CPU inference says the CPU-only nvForest backend is not installed.        | Run `cuda_ml_install(device = "cpu")`.                                                                                                                                       |
+| An operation says cuda.ml requires Linux x86_64 with glibc 2.28 or newer. | Move the native operation to a supported system; the CPU-only backend has the same platform requirement.                                                                     |
+| An audit reports failed content validation.                               | Start a fresh R session, run [`cuda_ml_cache_clean()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_cache_clean.md), then reinstall the complete or CPU-only backend. |
+| Cleaning the cache or changing the selected backend asks for a restart.   | Restart R so no backend is loaded, then repeat the operation.                                                                                                                |
+| A managed source build cannot find a suitable compiler.                   | Install GNU C++ 14 or newer and, if needed, set `CUDA_ML_CXX` to its executable.                                                                                             |
+| `architectures = "native"` cannot detect a GPU.                           | Make a GPU and `nvidia-smi` visible, use `architectures = "portable"`, or supply explicit targets such as `"86-real"`.                                                       |
+| A host source build reports missing inputs.                               | Set `CUDA_HOME`, `CUML_PREFIX`, `CUML_CUDA_ARCHITECTURES`, and `CUDA_ML_CXX` to installations with the locked versions.                                                      |

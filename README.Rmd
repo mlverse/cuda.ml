@@ -63,6 +63,14 @@ the algorithms listed below
 |  | Support Vector Machine Classifier (SVC) | |
 |  | Epsilon-Support Vector Regression (SVR) | |
 
+## Guides
+
+- [Get started with cuda.ml](https://mlverse.github.io/cuda.ml/articles/cuda-ml.html)
+- [Install and manage cuda.ml](https://mlverse.github.io/cuda.ml/articles/install-manage.html)
+- [Use cuda.ml with tidymodels](https://mlverse.github.io/cuda.ml/articles/tidymodels.html)
+- [Save and restore models](https://mlverse.github.io/cuda.ml/articles/model-persistence.html)
+- [nvForest inference and deployment](https://mlverse.github.io/cuda.ml/articles/nvforest.html)
+
 ## Examples
 
 ### Using {cuda.ml} for supervised ML tasks through {parsnip}

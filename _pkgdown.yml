@@ -11,6 +11,9 @@ articles:
 - title: Guides
   navbar: ~
   contents:
+  - install-manage
+  - tidymodels
+  - model-persistence
   - nvforest
 
 reference:

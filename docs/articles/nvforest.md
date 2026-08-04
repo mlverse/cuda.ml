@@ -1,4 +1,4 @@
-# nvForest inference
+# nvForest inference and deployment
 
 nvForest is the inference layer for random forests trained by cuda.ml
 and for tree ensembles exported by XGBoost, LightGBM, or Treelite.
@@ -22,34 +22,25 @@ native backend, network access, or a runtime download.
 
 ## Prepare the runtime
 
-Install the complete backend before training with cuML or running GPU
-inference:
+Install the complete backend for cuML training or GPU inference. Install
+the smaller CPU backend on a host used only for nvForest CPU inference.
 
 ``` r
 library(cuda.ml)
+
+# Complete backend for training and GPU inference.
 cuda_ml_install()
-```
 
-That installation is roughly 1.6 GiB and contains the managed CUDA,
-RAPIDS cuML, and nvForest runtime. For CPU-only nvForest inference,
-install the separate backend instead:
-
-``` r
+# Smaller backend on a CPU-only inference host.
 cuda_ml_install(device = "cpu")
 ```
 
-The CPU backend is roughly 1 MiB to download and 3 MiB when installed.
-It does not include cuML, CUDA runtime libraries, or the complete
-managed CUDA/RAPIDS runtime. It requires neither an NVIDIA GPU nor an
-NVIDIA driver, and cuda.ml selects nvForest’s CPU execution path.
-
-An environment that already has the complete backend can continue to
-execute nvForest models on CPU. The separate backend removes the
-complete runtime from CPU-only deployments.
-
 Installation never occurs while loading or predicting. Provision the
-required backend while preparing each environment. A completed cache is
-reused by later R processes.
+required backend while preparing each environment. See the [installation
+and runtime
+guide](https://mlverse.github.io/cuda.ml/articles/install-manage.md) for
+system requirements, runtime sizes, cache management, mirrors, and
+source builds.
 
 ## Train on GPU and deploy on CPU
 
@@ -203,6 +194,11 @@ inspection APIs.
 
 ## Predict regression and classification results
 
+Models loaded directly from XGBoost, LightGBM, or Treelite files do not
+contain a cuda.ml preprocessing blueprint or feature-name mapping.
+Supply numeric predictors in exactly the column order used to train and
+export the model; column names are not used to reorder them.
+
 Regression prediction returns a data frame with a `.pred` column:
 
 ``` r
@@ -291,73 +287,16 @@ and
 when the Treelite checkpoint must also be available independently. Do
 not save the live model object.
 
-[`cuda_ml_serialize()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_serialize.md)
-creates an explicit schema 1 model state containing the nvForest payload
-and its compatibility metadata.
-
 ``` r
 state <- cuda_ml_serialize(classifier)
 saveRDS(state, "classifier.cuda-ml-state.rds")
-```
-
-Restore the state with
-[`cuda_ml_unserialize()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_unserialize.md)
-in a fresh R process. Select the deployment device during restoration
-and prepare its backend first.
-
-``` r
-library(cuda.ml)
-cuda_ml_install(device = "cpu")
-
-state <- readRDS("classifier.cuda-ml-state.rds")
 classifier <- cuda_ml_unserialize(state, device = "cpu")
-predict(classifier, new_data, type = "prob")
 ```
 
-Schema 1 restoration requires the installed package to support the saved
-state class and model ABI. Current nvForest and random-forest states are
-device neutral. They retain prediction precision unless it is overridden
-during restoration; other device-specific settings use nvForest defaults
-unless they are supplied to
-[`cuda_ml_unserialize()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_unserialize.md).
-An nvForest state contains serialized Treelite model bytes, so its
-recorded `treelite_version` must exactly match the target backend. The
-package version and other recorded backend fields are provenance rather
-than compatibility gates for schema 1. States are not migrated
-implicitly, and native pointers are not used as a persistence fallback.
-Legacy nvForest states retain their recorded inference settings.
-
-`bundle` is optional packaging around the same cuda.ml state. It is not
-required for either persistence workflow and does not remove the target
-backend requirement.
-
-## Serve predictions with Plumber
-
-The following Plumber-annotated file restores one model when the serving
-process starts and uses that model for every request. The request body
-is JSON with a column-oriented `predictors` object, such as
-`{"predictors":{"feature_1":[0.2],"feature_2":[1.5]}}`.
-
-``` r
-# plumber.R
-library(cuda.ml)
-
-classifier <- cuda_ml_nvforest_import(
-  directory = "models",
-  prefix = "classifier",
-  device = "cpu"
-)
-
-#* Return class probabilities
-#* @post /predict
-#* @serializer unboxedJSON
-function(req) {
-  new_data <- as.data.frame(req$body$predictors)
-  predict(classifier, new_data, type = "prob")
-}
-```
-
-The route uses only public cuda.ml persistence and prediction APIs. Run
-the installer while building or provisioning the service image, before
-starting Plumber, so service startup and requests need no network
-access.
+Current nvForest and random-forest states are device neutral and require
+the target backend’s Treelite version to match the recorded version.
+Select the deployment device while restoring and prepare that backend
+first. The [model persistence
+guide](https://mlverse.github.io/cuda.ml/articles/model-persistence.md)
+compares state, bundle, and checkpoint workflows and documents the
+compatibility contract.
