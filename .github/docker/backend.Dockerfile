@@ -111,13 +111,15 @@ FROM backend AS test-build
 
 COPY . /build
 
+# The CRAN jobs build the vignette; this image exercises native functionality
+# and intentionally does not install Pandoc.
 RUN cp /out/full/*.row.tsv \
       inst/backends/linux-x86_64-glibc2.28.tsv \
     && cp /out/cpu/*.row.tsv \
       inst/nvforest-backends/linux-x86_64-glibc2.28-nvforest-cpu.tsv \
     && Rscript -e \
       "install.packages('pak', repos = 'https://r-lib.github.io/p/pak/stable/'); options(repos = c(CRAN = 'https://packagemanager.posit.co/cran/__linux__/centos8/latest')); pak::local_install_deps('/build', dependencies = TRUE)" \
-    && R CMD build . \
+    && R CMD build --no-build-vignettes . \
     && R CMD INSTALL --install-tests cuda.ml_*.tar.gz
 
 RUN --network=none \
