@@ -89,6 +89,11 @@ are likewise restore-time settings. Prediction precision is retained unless
 explicitly overridden. Schema 1 nvForest states require an exact Treelite
 version match. The recorded package, CUDA, RAPIDS, nvForest, and platform
 versions are provenance rather than compatibility gates.
+
+To create a standard Treelite checkpoint together with the metadata needed
+for a complete cuda.ml round-trip, use
+\code{\link{cuda_ml_nvforest_export}()} and restore the pair with
+\code{\link{cuda_ml_nvforest_import}()}.
 }
 
 \seealso{

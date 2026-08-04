@@ -227,6 +227,11 @@ new_nvforest_model <- function(
 #' version match. The recorded package, CUDA, RAPIDS, nvForest, and platform
 #' versions are provenance rather than compatibility gates.
 #'
+#' To create a standard Treelite checkpoint together with the metadata needed
+#' for a complete cuda.ml round-trip, use
+#' \code{\link{cuda_ml_nvforest_export}()} and restore the pair with
+#' \code{\link{cuda_ml_nvforest_import}()}.
+#'
 #' @seealso \code{\link{cuda_ml_nvforest_info}()},
 #'   \code{\link{cuda_ml_nvforest_leaf_ids}()},
 #'   \code{\link{cuda_ml_nvforest_predict_per_tree}()}, and
@@ -546,6 +551,404 @@ nvforest_model_payload <- function(model) {
       identical(model$mode, "classification"),
     blueprint = model$blueprint
   )
+}
+
+nvforest_export_paths <- function(directory, prefix) {
+  stopifnot(
+    "`directory` must name one existing directory" = is.character(
+      directory
+    ) &&
+      length(directory) == 1L &&
+      !is.na(directory) &&
+      dir.exists(directory),
+    "`prefix` must be one non-empty basename" = is.character(prefix) &&
+      length(prefix) == 1L &&
+      !is.na(prefix) &&
+      nzchar(prefix) &&
+      !prefix %in% c(".", "..") &&
+      !grepl("[/\\\\]", prefix)
+  )
+
+  directory <- normalizePath(directory, mustWork = TRUE)
+  c(
+    checkpoint = file.path(
+      directory,
+      paste0(prefix, ".treelite.checkpoint")
+    ),
+    metadata = file.path(directory, paste0(prefix, ".cuda-ml.json"))
+  )
+}
+
+nvforest_json_scalar <- function(x) {
+  jsonlite::unbox(x)
+}
+
+nvforest_export_model_info <- function(object) {
+  info <- cuda_ml_nvforest_info(object)
+  fields <- c(
+    "task_type",
+    "num_classes",
+    "num_features",
+    "num_outputs",
+    "num_trees",
+    "has_vector_leaves",
+    "average_tree_output",
+    "has_probability_output",
+    "treelite_postprocessor"
+  )
+  lapply(info[fields], nvforest_json_scalar)
+}
+
+nvforest_export_feature_names <- function(blueprint, num_features) {
+  predictors <- blueprint$ptypes$predictors
+  if (is.null(predictors)) {
+    return(NULL)
+  }
+
+  processed <- hardhat::forge(predictors, blueprint)$predictors
+  feature_names <- colnames(processed)
+  if (is.null(feature_names) || length(feature_names) != num_features) {
+    return(NULL)
+  }
+  feature_names
+}
+
+nvforest_export_manifest <- function(
+  object,
+  state,
+  checkpoint_file,
+  checkpoint_path
+) {
+  info <- cuda_ml_nvforest_info(object)
+  list(
+    format = nvforest_json_scalar("cuda_ml_nvforest_export"),
+    schema = nvforest_json_scalar(1L),
+    package_version = nvforest_json_scalar(state$package_version),
+    backend = lapply(state$backend, nvforest_json_scalar),
+    model_abi = nvforest_json_scalar(state$model_abi),
+    checkpoint = list(
+      file = nvforest_json_scalar(checkpoint_file),
+      format = nvforest_json_scalar("treelite_checkpoint"),
+      size = nvforest_json_scalar(unname(file.info(checkpoint_path)$size)),
+      sha256 = nvforest_json_scalar(cuda_ml_hash_file(checkpoint_path))
+    ),
+    payload = list(
+      class_levels = state$payload$class_levels,
+      precision = nvforest_json_scalar(state$payload$precision),
+      averaged_vector_leaf_probabilities = nvforest_json_scalar(
+        state$payload$averaged_vector_leaf_probabilities
+      ),
+      blueprint = list(
+        encoding = nvforest_json_scalar("r-serialize-v3-base64"),
+        data = nvforest_json_scalar(
+          jsonlite::base64_enc(
+            serialize(state$payload$blueprint, NULL, version = 3L)
+          )
+        )
+      )
+    ),
+    model = list(
+      mode = nvforest_json_scalar(object$mode),
+      feature_names = nvforest_export_feature_names(
+        state$payload$blueprint,
+        info$num_features
+      ),
+      info = nvforest_export_model_info(object)
+    )
+  )
+}
+
+#' Export and import an nvForest checkpoint pair
+#'
+#' \code{cuda_ml_nvforest_export()} writes a standard Treelite checkpoint and a
+#' cuda.ml JSON sidecar. The checkpoint contains the device-neutral tree
+#' ensemble. The sidecar retains the cuda.ml model ABI, backend provenance,
+#' class labels, prediction precision, random-forest probability semantics,
+#' and R preprocessing blueprint needed for a complete cuda.ml round-trip.
+#' \code{cuda_ml_nvforest_import()} restores the pair on a caller-selected
+#' inference device.
+#'
+#' @param object An nvForest-backed model.
+#' @param directory An existing output directory.
+#' @param prefix A non-empty filename prefix without directory components.
+#' @param overwrite Whether to replace both existing output files. The default
+#'   is \code{FALSE}.
+#'
+#' @return \code{cuda_ml_nvforest_export()} invisibly returns a named character
+#'   vector containing the absolute \code{checkpoint} and \code{metadata}
+#'   paths. \code{cuda_ml_nvforest_import()} returns the restored
+#'   nvForest-backed model.
+#'
+#' @section Files:
+#' The function writes exactly \file{<prefix>.treelite.checkpoint} and
+#' \file{<prefix>.cuda-ml.json}. The JSON records the checkpoint's relative
+#' filename, size, and SHA-256 digest. It does not record inference device,
+#' layout, chunk size, memory alignment, or GPU device identifier.
+#'
+#' Other Treelite consumers can load the checkpoint without the JSON. They must
+#' supply numeric predictors in the recorded processed feature order when
+#' feature names are available, or in the checkpoint's original positional
+#' order otherwise. They must also implement any class-label and postprocessing
+#' behavior described by the sidecar.
+#'
+#' Loading the bare checkpoint with
+#' \code{cuda_ml_nvforest_load_model(model_type = "treelite_checkpoint")}
+#' likewise omits the sidecar's preprocessing, original class labels, cuda.ml
+#' model class, and random-forest probability semantics. Use
+#' \code{cuda_ml_nvforest_import()} for an exact cuda.ml round-trip.
+#'
+#' @section Persistence choices:
+#' Use \code{\link{cuda_ml_serialize}()} and
+#' \code{\link{cuda_ml_unserialize}()} for one R-native state value. The
+#' checkpoint pair is useful when the Treelite model must also be independently
+#' available. A bundle is optional wrapping around the R-native state and is
+#' not required for either workflow.
+#'
+#' Import requires the exact Treelite version recorded by the sidecar. Prepare
+#' the selected backend before import: \code{\link{cuda_ml_install}()} for GPU
+#' operation or \code{cuda_ml_install(device = "cpu")} for CPU-only inference.
+#' Import never downloads a backend.
+#'
+#' @section Trust:
+#' The JSON embeds an R-serialized hardhat blueprint so that formula and recipe
+#' preprocessing round-trip. Import only artifacts from trusted sources, as
+#' with \code{readRDS()} and \code{\link{cuda_ml_unserialize}()}. The recorded
+#' SHA-256 digest checks integrity, not authenticity.
+#'
+#' @seealso \code{\link{cuda_ml_nvforest_load_model}()} and
+#'   \code{\link{cuda_ml_serialize}()}
+#' @export
+cuda_ml_nvforest_export <- function(
+  object,
+  directory,
+  prefix,
+  overwrite = FALSE
+) {
+  nvforest_validate_model(object)
+  stopifnot(
+    "`overwrite` must be one non-missing logical value" = is.logical(
+      overwrite
+    ) &&
+      length(overwrite) == 1L &&
+      !is.na(overwrite)
+  )
+  paths <- nvforest_export_paths(directory, prefix)
+  stopifnot(
+    "nvForest export targets must not be directories" = !any(
+      dir.exists(paths)
+    )
+  )
+  if (!overwrite && any(file.exists(paths))) {
+    stop(
+      "The nvForest export files already exist: ",
+      paste(basename(paths[file.exists(paths)]), collapse = ", "),
+      ".",
+      call. = FALSE
+    )
+  }
+
+  staging <- c(
+    checkpoint = tempfile(
+      paste0(".", prefix, "-checkpoint-"),
+      tmpdir = directory
+    ),
+    metadata = tempfile(
+      paste0(".", prefix, "-metadata-"),
+      tmpdir = directory
+    )
+  )
+  on.exit(unlink(staging), add = TRUE)
+
+  state <- cuda_ml_get_state(object)
+  writeBin(state$payload$model, staging[["checkpoint"]])
+  manifest <- nvforest_export_manifest(
+    object,
+    state,
+    basename(paths[["checkpoint"]]),
+    staging[["checkpoint"]]
+  )
+  json <- jsonlite::toJSON(
+    manifest,
+    auto_unbox = FALSE,
+    null = "null",
+    digits = NA,
+    pretty = TRUE
+  )
+  writeLines(enc2utf8(json), staging[["metadata"]], useBytes = TRUE)
+
+  stopifnot(
+    "Could not publish the nvForest checkpoint" = file.rename(
+      staging[["checkpoint"]],
+      paths[["checkpoint"]]
+    ),
+    "Could not publish the nvForest metadata" = file.rename(
+      staging[["metadata"]],
+      paths[["metadata"]]
+    )
+  )
+  paths <- normalizePath(paths, mustWork = TRUE)
+  names(paths) <- c("checkpoint", "metadata")
+  invisible(paths)
+}
+
+nvforest_validate_export_manifest <- function(metadata, paths) {
+  stopifnot(
+    "The nvForest metadata format is unsupported" = is.list(metadata) &&
+      identical(metadata$format, "cuda_ml_nvforest_export"),
+    "The nvForest metadata schema is unsupported" = identical(
+      metadata$schema,
+      1L
+    ),
+    "The nvForest metadata model ABI is unsupported" = metadata$model_abi %in%
+      c(
+        "cuda_ml_nvforest_model_state_v2",
+        "cuda_ml_rand_forest_model_state_v2"
+      ),
+    "The nvForest metadata checkpoint is invalid" = is.list(
+      metadata$checkpoint
+    ) &&
+      identical(metadata$checkpoint$file, basename(paths[["checkpoint"]])) &&
+      identical(metadata$checkpoint$format, "treelite_checkpoint") &&
+      is.numeric(metadata$checkpoint$size) &&
+      length(metadata$checkpoint$size) == 1L &&
+      is.character(metadata$checkpoint$sha256) &&
+      length(metadata$checkpoint$sha256) == 1L,
+    "The nvForest metadata payload is invalid" = is.list(metadata$payload) &&
+      is.character(metadata$payload$precision) &&
+      length(metadata$payload$precision) == 1L &&
+      is.logical(metadata$payload$averaged_vector_leaf_probabilities) &&
+      length(metadata$payload$averaged_vector_leaf_probabilities) == 1L &&
+      is.list(metadata$payload$blueprint) &&
+      identical(
+        metadata$payload$blueprint$encoding,
+        "r-serialize-v3-base64"
+      ) &&
+      is.character(metadata$payload$blueprint$data) &&
+      length(metadata$payload$blueprint$data) == 1L
+  )
+
+  size <- unname(file.info(paths[["checkpoint"]])$size)
+  if (!identical(as.numeric(metadata$checkpoint$size), as.numeric(size))) {
+    stop(
+      "The nvForest checkpoint size does not match its metadata.",
+      call. = FALSE
+    )
+  }
+  if (
+    !identical(
+      metadata$checkpoint$sha256,
+      cuda_ml_hash_file(paths[["checkpoint"]])
+    )
+  ) {
+    stop(
+      "The nvForest checkpoint SHA-256 does not match its metadata.",
+      call. = FALSE
+    )
+  }
+  invisible(metadata)
+}
+
+nvforest_read_checkpoint <- function(path) {
+  connection <- file(path, open = "rb")
+  on.exit(close(connection))
+  readBin(connection, what = "raw", n = unname(file.info(path)$size))
+}
+
+nvforest_export_state <- function(metadata, checkpoint_path) {
+  blueprint <- unserialize(
+    jsonlite::base64_dec(metadata$payload$blueprint$data)
+  )
+  stopifnot(
+    "The nvForest metadata blueprint is invalid" = is.list(blueprint)
+  )
+  structure(
+    list(
+      schema = metadata$schema,
+      package_version = metadata$package_version,
+      backend = metadata$backend,
+      model_abi = metadata$model_abi,
+      payload = list(
+        model = nvforest_read_checkpoint(checkpoint_path),
+        class_levels = metadata$payload$class_levels,
+        precision = metadata$payload$precision,
+        averaged_vector_leaf_probabilities = metadata$payload$averaged_vector_leaf_probabilities,
+        blueprint = blueprint
+      )
+    ),
+    class = c(metadata$model_abi, "cuda_ml_model_state")
+  )
+}
+
+nvforest_validate_export_model <- function(object, metadata) {
+  info <- cuda_ml_nvforest_info(object)
+  expected <- metadata$model$info
+  if (
+    !identical(object$mode, metadata$model$mode) ||
+      !identical(info[names(expected)], expected)
+  ) {
+    stop(
+      "The imported nvForest model does not match its metadata.",
+      call. = FALSE
+    )
+  }
+  invisible(object)
+}
+
+#' @rdname cuda_ml_nvforest_export
+#'
+#' @param device Inference device: \code{"gpu"} or \code{"cpu"}. The default
+#'   is \code{"gpu"}.
+#' @param device_id GPU device identifier, or \code{NULL} for the current device.
+#' @param layout Tree layout.
+#' @param precision Native, single, or double precision. \code{NULL} retains the
+#'   exported model's prediction precision.
+#' @param default_chunk_size Default prediction chunk size, or \code{NULL} to
+#'   use nvForest's heuristic.
+#' @param align_bytes Memory alignment, or \code{NULL} for the device default.
+#'
+#' @export
+cuda_ml_nvforest_import <- function(
+  directory,
+  prefix,
+  device = c("gpu", "cpu"),
+  device_id = NULL,
+  layout = c("depth_first", "breadth_first", "layered"),
+  precision = NULL,
+  default_chunk_size = NULL,
+  align_bytes = NULL
+) {
+  paths <- nvforest_export_paths(directory, prefix)
+  if (!all(file.exists(paths)) || any(dir.exists(paths))) {
+    stop(
+      "The nvForest export files do not exist: ",
+      paste(
+        basename(paths[!file.exists(paths) | dir.exists(paths)]),
+        collapse = ", "
+      ),
+      ".",
+      call. = FALSE
+    )
+  }
+
+  metadata <- jsonlite::read_json(
+    paths[["metadata"]],
+    simplifyVector = TRUE
+  )
+  nvforest_validate_export_manifest(metadata, paths)
+  state <- nvforest_export_state(metadata, paths[["checkpoint"]])
+  object <- cuda_ml_set_state_with_options(
+    state,
+    list(
+      device = device,
+      device_id = device_id,
+      layout = layout,
+      precision = precision,
+      default_chunk_size = default_chunk_size,
+      align_bytes = align_bytes
+    )
+  )
+  nvforest_validate_export_model(object, metadata)
+  object
 }
 
 nvforest_unserialize_payload <- function(payload, cls, inference) {

@@ -37,6 +37,17 @@ nvforest_format_cases <- list(
   )
 )
 
+test_that("nvForest checkpoint APIs fail before native loading", {
+  expect_error(
+    cuda_ml_nvforest_export(list(), tempdir(), "model"),
+    "nvForest-backed model"
+  )
+  expect_error(
+    cuda_ml_nvforest_import(tempdir(), "missing", device = "cpu"),
+    "do not exist"
+  )
+})
+
 test_that("the complete backend retains CPU nvForest inference", {
   skip_if_not(
     identical(Sys.getenv("CUDA_ML_FULL_CPU_NVFOREST_TESTS"), "true"),
@@ -86,6 +97,94 @@ test_that("nvForest loads every advertised model format", {
       info = case$label
     )
   }
+})
+
+test_that("nvForest checkpoint exports round-trip on CPU", {
+  skip_if_not(
+    cuda_ml_backend_info()$nvforest_cpu_runtime_installed ||
+      cuda_ml_backend_info()$runtime_installed,
+    "requires an nvForest runtime"
+  )
+
+  x <- nvforest_fixture_data
+  model <- cuda_ml_nvforest_load_model(
+    test_path("fixtures", "nvforest", "xgboost.ubj"),
+    model_type = "xgboost_ubj",
+    device = "cpu"
+  )
+  directory <- tempfile("nvforest-export-")
+  dir.create(directory)
+  on.exit(unlink(directory, recursive = TRUE))
+
+  paths <- cuda_ml_nvforest_export(model, directory, "regression")
+
+  expect_identical(names(paths), c("checkpoint", "metadata"))
+  expect_identical(
+    basename(paths),
+    c("regression.treelite.checkpoint", "regression.cuda-ml.json")
+  )
+  expect_true(all(file.exists(paths)))
+  expect_identical(sort(list.files(directory)), sort(basename(paths)))
+
+  metadata <- jsonlite::read_json(paths[["metadata"]], simplifyVector = TRUE)
+  expect_identical(metadata$format, "cuda_ml_nvforest_export")
+  expect_identical(metadata$schema, 1L)
+  expect_identical(
+    metadata$checkpoint$file,
+    "regression.treelite.checkpoint"
+  )
+  expect_match(metadata$checkpoint$sha256, "^[[:xdigit:]]{64}$")
+  expect_identical(metadata$model$mode, "regression")
+
+  imported <- cuda_ml_nvforest_import(
+    directory,
+    "regression",
+    device = "cpu"
+  )
+  checkpoint <- cuda_ml_nvforest_load_model(
+    paths[["checkpoint"]],
+    model_type = "treelite_checkpoint",
+    device = "cpu"
+  )
+  expected <- predict(model, x)
+
+  expect_s3_class(imported, "cuda_ml_nvforest")
+  expect_identical(cuda_ml_nvforest_info(imported)$device, "cpu")
+  expect_equal(predict(imported, x), expected, tolerance = 1e-6)
+  expect_equal(predict(checkpoint, x), expected, tolerance = 1e-6)
+  expect_error(
+    cuda_ml_nvforest_export(model, directory, "regression"),
+    "already exist"
+  )
+  overwritten <- cuda_ml_nvforest_export(
+    model,
+    directory,
+    "regression",
+    overwrite = TRUE
+  )
+  expect_identical(overwritten, paths)
+  expect_equal(
+    predict(
+      cuda_ml_nvforest_import(directory, "regression", device = "cpu"),
+      x
+    ),
+    expected,
+    tolerance = 1e-6
+  )
+
+  checkpoint_bytes <- readBin(
+    paths[["checkpoint"]],
+    what = "raw",
+    n = file.info(paths[["checkpoint"]])$size
+  )
+  checkpoint_bytes[[1L]] <- as.raw(
+    bitwXor(as.integer(checkpoint_bytes[[1L]]), 1L)
+  )
+  writeBin(checkpoint_bytes, paths[["checkpoint"]])
+  expect_error(
+    cuda_ml_nvforest_import(directory, "regression", device = "cpu"),
+    "SHA-256"
+  )
 })
 
 test_that("nvForest infers every documented model suffix", {

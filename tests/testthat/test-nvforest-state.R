@@ -178,7 +178,8 @@ test_that("GPU-trained random forests restore for CPU inference", {
   )
 
   model <- cuda_ml_rand_forest(Species ~ ., iris, trees = 50L, seed = 1L)
-  data <- iris[names(iris) != "Species"]
+  predictor_names <- names(iris)[names(iris) != "Species"]
+  data <- iris[rev(predictor_names)]
   expected_class <- predict(model, data, type = "class")
   expected_prob <- predict(model, data, type = "prob")
   state <- unserialize(cuda_ml_serialize(model))
@@ -187,26 +188,45 @@ test_that("GPU-trained random forests restore for CPU inference", {
   expect_false("inference" %in% names(state$payload))
 
   bundle_path <- tempfile(fileext = ".rds")
+  export_directory <- tempfile("cuda-ml-nvforest-export-")
   cache <- tempfile("cuda-ml-cpu-deployment-")
-  on.exit(unlink(c(bundle_path, cache), recursive = TRUE), add = TRUE)
+  dir.create(export_directory)
+  on.exit(
+    unlink(c(bundle_path, export_directory, cache), recursive = TRUE),
+    add = TRUE
+  )
   saveRDS(bundle::bundle(model, device = "cpu"), bundle_path)
+  cuda_ml_nvforest_export(model, export_directory, "iris-random-forest")
 
   deployed <- callr::r(
-    function(state, data, bundle_path, cache) {
+    function(state, data, bundle_path, export_directory, cache) {
       Sys.setenv(CUDA_ML_CACHE_DIR = cache)
       suppressPackageStartupMessages(library(cuda.ml))
       cuda_ml_install(device = "cpu")
 
       model <- cuda_ml_unserialize(state, device = "cpu")
       unbundled <- bundle::unbundle(readRDS(bundle_path))
+      imported <- cuda_ml_nvforest_import(
+        export_directory,
+        "iris-random-forest",
+        device = "cpu"
+      )
       list(
         class = class(model),
+        imported_class = class(imported),
         info = cuda_ml_nvforest_info(model),
+        imported_info = cuda_ml_nvforest_info(imported),
         bundle_info = cuda_ml_nvforest_info(unbundled),
         backend = cuda_ml_backend_info(),
         dlls = names(getLoadedDLLs()),
         class_prediction = predict(model, data, type = "class"),
         probability_prediction = predict(model, data, type = "prob"),
+        imported_class_prediction = predict(imported, data, type = "class"),
+        imported_probability_prediction = predict(
+          imported,
+          data,
+          type = "prob"
+        ),
         bundled_prediction = predict(unbundled, data, type = "class")
       )
     },
@@ -214,6 +234,7 @@ test_that("GPU-trained random forests restore for CPU inference", {
       state = serialize(state, NULL),
       data = data,
       bundle_path = bundle_path,
+      export_directory = export_directory,
       cache = cache
     ),
     env = c(CUDA_VISIBLE_DEVICES = "-1"),
@@ -222,7 +243,9 @@ test_that("GPU-trained random forests restore for CPU inference", {
   )
 
   expect_true("cuda_ml_rand_forest" %in% deployed$class)
+  expect_true("cuda_ml_rand_forest" %in% deployed$imported_class)
   expect_identical(deployed$info$device, "cpu")
+  expect_identical(deployed$imported_info$device, "cpu")
   expect_identical(deployed$bundle_info$device, "cpu")
   expect_true(deployed$backend$nvforest_cpu_backend_loaded)
   expect_true(deployed$backend$nvforest_cpu_runtime_installed)
@@ -233,6 +256,12 @@ test_that("GPU-trained random forests restore for CPU inference", {
   expect_equal(deployed$class_prediction, expected_class)
   expect_equal(
     deployed$probability_prediction,
+    expected_prob,
+    tolerance = 1e-6
+  )
+  expect_equal(deployed$imported_class_prediction, expected_class)
+  expect_equal(
+    deployed$imported_probability_prediction,
     expected_prob,
     tolerance = 1e-6
   )
@@ -269,16 +298,42 @@ test_that("GPU-trained random forest regressors restore on CPU", {
     "requires the CPU-only nvForest runtime"
   )
 
-  model <- cuda_ml_rand_forest(mpg ~ ., mtcars, trees = 50L, seed = 1L)
-  data <- mtcars[names(mtcars) != "mpg"]
+  model <- cuda_ml_rand_forest(
+    mpg ~ log(disp) + cyl + hp,
+    mtcars,
+    trees = 50L,
+    seed = 1L
+  )
+  data <- mtcars[c("hp", "disp", "cyl")]
   expected <- predict(model, data)
 
   restored <- cuda_ml_unserialize(
     cuda_ml_serialize(model),
     device = "cpu"
   )
+  export_directory <- tempfile("cuda-ml-nvforest-export-")
+  dir.create(export_directory)
+  on.exit(unlink(export_directory, recursive = TRUE), add = TRUE)
+  paths <- cuda_ml_nvforest_export(
+    model,
+    export_directory,
+    "mtcars-random-forest"
+  )
+  metadata <- jsonlite::read_json(paths[["metadata"]], simplifyVector = TRUE)
+  imported <- cuda_ml_nvforest_import(
+    export_directory,
+    "mtcars-random-forest",
+    device = "cpu"
+  )
 
   expect_s3_class(restored, "cuda_ml_rand_forest")
+  expect_s3_class(imported, "cuda_ml_rand_forest")
+  expect_identical(
+    metadata$model$feature_names,
+    c("log(disp)", "cyl", "hp")
+  )
   expect_identical(cuda_ml_nvforest_info(restored)$device, "cpu")
+  expect_identical(cuda_ml_nvforest_info(imported)$device, "cpu")
   expect_equal(predict(restored, data), expected, tolerance = 1e-6)
+  expect_equal(predict(imported, data), expected, tolerance = 1e-6)
 })

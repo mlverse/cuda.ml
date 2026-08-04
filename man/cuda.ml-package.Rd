@@ -38,9 +38,11 @@ runtime libraries. Treelite 4.7.0 is linked statically into both backends.
 Random forests trained on a GPU by \code{\link{cuda_ml_rand_forest}()} can
 be persisted with \code{\link{cuda_ml_serialize}()} and restored for CPU
 inference with \code{cuda_ml_unserialize(state, device = "cpu")}. Current
-nvForest model states do not encode their deployment device. Native
-operations fail with an installation instruction until their corresponding
-backend is installed. Set
+nvForest model states do not encode their deployment device. Alternatively,
+\code{\link{cuda_ml_nvforest_export}()} writes a standard Treelite checkpoint
+and cuda.ml JSON metadata that can be restored with
+\code{\link{cuda_ml_nvforest_import}()}. Native operations fail with an
+installation instruction until their corresponding backend is installed. Set
 \code{CUDA_ML_CACHE_DIR} to override the default cache and
 \code{CUDA_ML_BACKEND_MIRROR} to use an exact backend mirror.
 

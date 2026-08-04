@@ -38,7 +38,10 @@
 #' \code{cuda_ml_install(device = "cpu")} and restore the state with
 #' \code{cuda_ml_unserialize(state, device = "cpu")}. The CPU backend is
 #' roughly 3 MiB installed and does not include cuML or the complete managed
-#' CUDA and RAPIDS runtime.
+#' CUDA and RAPIDS runtime. To create an independently usable Treelite
+#' checkpoint and a cuda.ml JSON sidecar instead, use
+#' \code{\link{cuda_ml_nvforest_export}()} and
+#' \code{\link{cuda_ml_nvforest_import}()}.
 #' @importFrom ellipsis check_dots_used
 #' @export
 cuda_ml_rand_forest <- function(x, ...) {

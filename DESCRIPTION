@@ -33,6 +33,7 @@ Imports:
     ellipsis,
     filelock,
     hardhat,
+    jsonlite,
     Rcpp (>= 1.0.6),
     rlang (>= 0.1.4)
 Suggests:
