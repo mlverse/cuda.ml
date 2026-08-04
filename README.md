@@ -142,27 +142,7 @@ library(cuda.ml)
 library(ggplot2)
 library(magrittr)
 
-# Load checksum-matched local MNIST inputs. Rendering never downloads data.
-mnist_files <- file.path(
-  "data-raw",
-  c("train-images-idx3-ubyte.gz", "train-labels-idx1-ubyte.gz")
-)
-stopifnot(
-  all(file.exists(mnist_files)),
-  identical(
-    unname(vapply(
-      mnist_files,
-      digest::digest,
-      character(1),
-      algo = "sha256",
-      file = TRUE
-    )),
-    c(
-      "440fcabf73cc546fa21475e81ea370265605f56be210a4024d2ca8f203523609",
-      "3552534a0a558bbed6aed32b30c495cca23d567ec52cac8be1a0730e8010255c"
-    )
-  )
-)
+# load mnist
 source("data-raw/load-mnist.R")
 str(mnist_images)
 #>  int [1:28, 1:28, 1:60000] 0 0 0 0 0 0 0 0 0 0 ...

@@ -140,12 +140,7 @@ the true label of each sample demonstrates how well the UMAP algorithm
 transforms different hand writings of the same digit into nearby points in a 2D
 embedding:
 
-```{r umap-example}
-library(cuda.ml)
-library(ggplot2)
-library(magrittr)
-
-# Load checksum-matched local MNIST inputs. Rendering never downloads data.
+```{r mnist-inputs, include = FALSE}
 mnist_files <- file.path(
   "data-raw",
   c("train-images-idx3-ubyte.gz", "train-labels-idx1-ubyte.gz")
@@ -166,6 +161,14 @@ stopifnot(
     )
   )
 )
+```
+
+```{r umap-example}
+library(cuda.ml)
+library(ggplot2)
+library(magrittr)
+
+# load mnist
 source("data-raw/load-mnist.R")
 str(mnist_images)
 str(mnist_labels)
