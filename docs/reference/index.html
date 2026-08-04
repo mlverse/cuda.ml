@@ -16,6 +16,10 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/nvforest.html">nvForest inference</a></li>
+  </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -43,7 +47,7 @@
 
       <dl><dt>
 
-          <code><a href="bundle.cuda_ml_model.html">bundle(<i>&lt;cuda_ml_model&gt;</i>)</a></code>
+          <code><a href="bundle.cuda_ml_model.html">bundle(<i>&lt;cuda_ml_model&gt;</i>)</a></code> <code><a href="bundle.cuda_ml_model.html">bundle(<i>&lt;cuda_ml_nvforest&gt;</i>)</a></code>
 
         </dt>
         <dd>Bundle a cuda.ml model</dd>
@@ -67,14 +71,14 @@
           <code><a href="cuda_ml_backend_info.html">cuda_ml_backend_info()</a></code>
 
         </dt>
-        <dd>Report backend and managed-runtime metadata</dd>
+        <dd>Report native-backend metadata</dd>
 
         <dt>
 
           <code><a href="cuda_ml_cache_clean.html">cuda_ml_cache_clean()</a></code>
 
         </dt>
-        <dd>Remove managed cuda.ml runtime caches</dd>
+        <dd>Remove cuda.ml native-backend caches</dd>
 
         <dt>
 
@@ -95,7 +99,7 @@
           <code><a href="cuda_ml_install.html">cuda_ml_install()</a></code>
 
         </dt>
-        <dd>Prepare the managed CUDA and RAPIDS runtime</dd>
+        <dd>Install a cuda.ml native backend</dd>
 
         <dt>
 
@@ -152,6 +156,13 @@
 
         </dt>
         <dd>Train a logistic or multinomial regression model</dd>
+
+        <dt>
+
+          <code><a href="cuda_ml_nvforest_export.html">cuda_ml_nvforest_export()</a></code> <code><a href="cuda_ml_nvforest_export.html">cuda_ml_nvforest_import()</a></code>
+
+        </dt>
+        <dd>Export and import an nvForest checkpoint pair</dd>
 
         <dt>
 
@@ -214,7 +225,7 @@
           <code><a href="cuda_ml_runtime_audit.html">cuda_ml_runtime_audit()</a></code>
 
         </dt>
-        <dd>Audit the installed managed runtime</dd>
+        <dd>Audit the installed native backend</dd>
 
         <dt>
 
@@ -325,3 +336,4 @@
 
 
   </body></html>
+

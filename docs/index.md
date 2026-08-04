@@ -36,7 +36,8 @@ cuML](https://github.com/rapidsai/cuml#supported-algorithms)).
 
 {cuda.ml} provides {parsnip} bindings for supervised ML algorithms such
 as `linear_reg`, `logistic_reg`, `multinom_reg`, `rand_forest`,
-`nearest_neighbor`, `svm_rbf`, `svm_poly`, and `svm_linear`.
+`nearest_neighbor`, `svm_rbf`, `svm_poly`, and `svm_linear`. Install
+{parsnip} separately to use these optional bindings.
 
 Regularized models follow tidymodels conventions for `penalty` and
 `mixture`. When predictors need scaling, learn and apply it explicitly
@@ -67,9 +68,15 @@ model <- svm_rbf(mode = "classification", rbf_sigma = 10, cost = 50) %>%
 preds <- predict(model, test_data)
 
 cat("Confusion matrix:\n\n")
+#> Confusion matrix:
 preds %>%
   bind_cols(test_data %>% select(Species)) %>%
   yardstick::conf_mat(truth = Species, estimate = .pred_class)
+#>             Truth
+#> Prediction   setosa versicolor virginica
+#>   setosa         15          0         0
+#>   versicolor      0         12         1
+#>   virginica       0          3        14
 ```
 
 ## Using {cuda.ml} for unsupervised ML tasks
@@ -82,16 +89,30 @@ library(cuda.ml)
 
 clustering <- cuda_ml_kmeans(
   iris[, which(names(iris) != "Species")],
-  k = 3, max_iters = 100
+  k = 3, max_iters = 100, seed = 0L
 )
 
 # Expected outcome: there is strong correlation
 # between cluster labels and `iris$Species`
-print(clustering)
+str(clustering)
+#> List of 4
+#>  $ labels   : int [1:150] 1 1 1 1 1 1 1 1 1 1 ...
+#>  $ centroids: num [1:3, 1:4] 5.9 5.01 6.85 2.75 3.43 ...
+#>  $ inertia  : num 78.9
+#>  $ n_iter   : int 100
 
 library(dplyr, warn.conflicts = FALSE)
 tibble(cluster_id = clustering$labels, species = iris$Species) %>%
   group_by(cluster_id) %>% count(species)
+#> # A tibble: 5 × 3
+#> # Groups:   cluster_id [3]
+#>   cluster_id species        n
+#>        <int> <fct>      <int>
+#> 1          0 versicolor    48
+#> 2          0 virginica     14
+#> 3          1 setosa        50
+#> 4          2 versicolor     2
+#> 5          2 virginica     36
 ```
 
 ## Using {cuda.ml} for visualizations
@@ -116,7 +137,9 @@ library(magrittr)
 # load mnist
 source("data-raw/load-mnist.R")
 str(mnist_images)
+#>  int [1:28, 1:28, 1:60000] 0 0 0 0 0 0 0 0 0 0 ...
 str(mnist_labels)
+#>  int [1:60000(1d)] 5 0 4 1 9 2 1 3 1 4 ...
 
 
 # flatten each image to a 1d array, combine into a matrix with 1 row per image
@@ -131,10 +154,11 @@ flattened_mnist_images <-
 # embed
 embedding <- cuda_ml_umap(
   flattened_mnist_images, n_components = 2, n_neighbors = 50,
-  local_connectivity = 15, repulsion_strength = 10
+  local_connectivity = 15, repulsion_strength = 10, seed = 0L
 )
 
 str(embedding$transformed_data)
+#>  num [1:60000, 1:2] -7.08 -32.55 9.61 20.65 12.25 ...
 
 # visualize
 embedding$transformed_data %>%
@@ -145,6 +169,8 @@ embedding$transformed_data %>%
   labs(title = "UMAP: Uniform Manifold Approximation and Projection",
        subtitle = "Two Dimensional Embedding of MNIST")
 ```
+
+![](reference/figures/README-umap-example-1.png)
 
 From this type of visualization, we can qualitatively understand the
 following about the MNIST dataset:
@@ -162,82 +188,57 @@ following about the MNIST dataset:
 
 ## Installation
 
-### R-universe binary
-
-The R-universe binary is the supported no-compiler installation for its
-current Linux target: Ubuntu 26.04 (Resolute) x86_64, including WSL2
-running that distribution. Use [R-universe’s Linux binary
-repository](https://docs.r-universe.dev/install/binaries.html) rather
-than its source-package repository:
+Install the R package from CRAN, then prepare its native backend and
+runtime:
 
 ``` r
-linux_binary_repo <- function(universe) {
-  r_version <- paste(
-    R.version$major,
-    strsplit(R.version$minor, ".", fixed = TRUE)[[1L]][1L],
-    sep = "."
-  )
-  sprintf(
-    "https://%s.r-universe.dev/bin/linux/resolute-%s/%s/",
-    universe,
-    R.version$arch,
-    r_version
-  )
-}
-
-repos <- c(
-  mlverse = linux_binary_repo("mlverse"),
-  CRAN = linux_binary_repo("cran")
-)
-stopifnot(
-  identical(unname(Sys.info()[["sysname"]]), "Linux"),
-  identical(R.version$arch, "x86_64"),
-  grepl(
-    "/bin/linux/resolute-x86_64/[0-9]+[.][0-9]+/$",
-    repos[["mlverse"]]
-  )
-)
-
-install.packages(
-  "cuda.ml",
-  repos = repos
-)
+install.packages("cuda.ml")
+cuda.ml::cuda_ml_install()
 ```
 
-The binary repository path selects the prebuilt tarball. Stock Linux R
-does not support `type = "binary"`, so leave `type` at its default. The
-[`stopifnot()`](https://rdrr.io/r/base/stopifnot.html) check prevents
-accidentally installing from the source endpoint or an unsupported
-architecture.
-
-The binary contains a precompiled {cuda.ml} backend with Treelite 4.7.0
-linked statically, but not the CUDA and RAPIDS runtime libraries.
-Loading the package is silent and side-effect free:
+The CRAN package is a portable R installer and loader. It contains no
+compiled code, so `install.packages("cuda.ml")` does not need a
+compiler, CUDA, RAPIDS, Python, or conda. Loading it is silent and
+side-effect free:
 
 ``` r
 library(cuda.ml)
 info <- cuda_ml_backend_info()
-stopifnot(identical(info$backend, "full"))
+stopifnot(
+  identical(info$backend, "download"),
+  info$backend_available
+)
 ```
 
 [`library(cuda.ml)`](https://mlverse.github.io/cuda.ml/) does not
-inspect the GPU, create a cache, contact the network, or load the native
-backend.
+inspect the GPU, create a cache, contact the network, or load native
+code.
 [`cuda_ml_backend_info()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_backend_info.md)
-reports the packaged backend, its exact library versions, and whether
-its runtime has been installed; it does not report whether a GPU can
-execute a model. The assertion also catches an unavailable binary that
-fell back to the CRAN-compatible source stub.
+reports the selected platform and R-version backend, its exact library
+versions, and whether the managed cache is complete. It does not report
+whether a GPU can execute a model.
 
 ### Runtime provisioning
 
-Prepare the exact CUDA 13.2.2 and RAPIDS cuML and nvForest 26.06 runtime
-required by the binary before fitting or predicting. The current runtime
-lock downloads about 1.6 GiB, so installation can take several minutes:
+[`cuda_ml_install()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_install.md)
+first downloads the small backend archive for the current R minor
+version from the package’s GitHub Releases. It verifies the archive and
+native library against hashes shipped in the R package. It then
+downloads the locked CUDA 13.2.2 and RAPIDS cuML and nvForest 26.06
+wheels directly from their upstream Python package hosts. The current
+runtime is about 1.6 GiB, so this step can take several minutes.
+Treelite 4.7.0 is linked into the backend and is not a runtime download.
 
-``` r
-cuda.ml::cuda_ml_install()
-```
+For CPU-only nvForest inference, use `cuda_ml_install(device = "cpu")`.
+This installs a separate backend that is roughly 1 MiB to download and 3
+MiB when installed. It does not include cuML or any CUDA runtime
+libraries, and it requires neither an NVIDIA GPU nor an NVIDIA driver.
+Random forests trained on a GPU by
+[`cuda_ml_rand_forest()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_rand_forest.md)
+can be serialized and restored with `device = "cpu"` on this smaller
+deployment backend. An existing complete backend installation can also
+execute nvForest models on CPU; the smaller backend avoids that runtime
+for CPU-only deployments.
 
 [`cuda_ml_install()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_install.md)
 does not require a GPU or NVIDIA driver, and repeated calls reuse the
@@ -245,7 +246,6 @@ completed cache. It does not load the backend or initialize CUDA. Model
 operations do not provision the runtime implicitly; when the cache is
 absent, they report the installation command. After provisioning,
 GPU-backed operations require only a supported NVIDIA GPU and driver.
-nvForest CPU inference does not require a GPU or driver.
 
 The default cache is `tools::R_user_dir("cuda.ml", "cache")`. Set
 `CUDA_ML_CACHE_DIR` to use a different location:
@@ -255,11 +255,16 @@ Sys.setenv(CUDA_ML_CACHE_DIR = "/opt/cuda-ml-cache")
 cuda.ml::cuda_ml_install()
 ```
 
+For an internal or offline mirror, set `CUDA_ML_BACKEND_MIRROR` to an
+`https://` or `file://` directory containing the exact locked backend
+archive. Hash verification remains enabled.
+
 ### Supported systems
 
-R-universe currently publishes the managed binary for Ubuntu 26.04
-(Resolute) x86_64. This includes WSL2 when its Linux distribution is
-Ubuntu 26.04. Following the [RAPIDS 26.06 platform
+Prebuilt backends target Linux x86_64 with glibc 2.28 or newer rather
+than a specific distribution. This includes current Ubuntu, Debian,
+RHEL-compatible, and WSL2 Linux distributions that meet the glibc
+requirement. Following the [RAPIDS 26.06 platform
 requirements](https://docs.rapids.ai/platform-support/), the binary
 requires an NVIDIA driver version 580 or newer and supports GPU compute
 capabilities 7.5, 8.0, 8.6, 8.9, 9.0, 10.0, and 12.0. The compute
@@ -267,52 +272,79 @@ capability 12.0 PTX image also provides forward compatibility for newer
 GPUs supported by CUDA, following [CUDA’s forward-compatibility
 model](https://docs.nvidia.com/cuda/archive/13.2.0/cuda-compiler-driver-nvcc/index.html).
 
-Other Linux distributions, native Windows, macOS, and Linux ARM64 are
-not yet supported by the managed binary.
+Native Windows, macOS, Linux ARM64, musl-based Linux distributions, and
+glibc versions older than 2.28 are not currently supported.
 
-### CRAN and source builds
+### Build the backend from source
 
-CRAN checks are network-free and install an explicit stub backend.
-[`cuda_ml_backend_info()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_backend_info.md)
-reports `backend = "stub"` for that build, and
+To compile the native backend directly on the host without Docker or a
+prebuilt cuda.ml backend, install GNU C++ 14 or newer and run:
+
+``` r
+cuda.ml::cuda_ml_install(source = TRUE)
+```
+
+The default managed source build downloads and verifies about 1.7 GiB of
+exact locked build artifacts from PyPI and GitHub. These provide CUDA
+Toolkit 13.2.2, cuML and nvForest 26.06, Treelite 4.7.0, CMake, and
+Ninja. Python, Conda, Docker, a system CUDA Toolkit, a system RAPIDS
+installation, and a GPU are not required for the build. Linux x86_64
+with glibc 2.28 or newer and GNU C++ 14 or newer are required. The
+installer prefers `g++-14`, then `g++`, on `PATH`; set `CUDA_ML_CXX` to
+override this discovery.
+
+The toolchain and compiled backend are cached under `CUDA_ML_CACHE_DIR`,
+or the default cuda.ml user cache. Calling the function again with the
+same inputs is a no-op. By default, a managed build detects the distinct
+CUDA-visible GPU compute capabilities reported by `nvidia-smi` and
+compiles their real targets. It honors `CUDA_VISIBLE_DEVICES`. If
+detection is unavailable, it uses the package’s portable GPU
+architecture list, so GPU-free build hosts remain supported.
+
+This usually reduces build time and backend size, but the resulting
+backend supports only the detected GPU architectures. Use
+`architectures = "portable"` to force a relocatable build, or
+`architectures = "native"` to require successful detection. You can also
+supply an explicit semicolon-separated CMake CUDA architecture list, for
+example `architectures = "86-real;89-real"`.
+
+To use a native toolchain already installed on the host and make no
+downloads, provide every build input explicitly:
+
+``` r
+Sys.setenv(
+  CUDA_HOME = "/usr/local/cuda-13.2",
+  CUML_PREFIX = "/opt/rapids-26.06",
+  CUML_CUDA_ARCHITECTURES = "86-real",
+  CUDA_ML_CXX = "/usr/bin/g++-14"
+)
+cuda.ml::cuda_ml_install(source = TRUE, dependencies = "host")
+```
+
+This host pathway requires CUDA Toolkit 13.2.2; a `CUML_PREFIX`
+containing cuML and nvForest 26.06, Treelite 4.7.0 headers, and
+`lib/libtreelite_static.a`; GNU C++ 14 or newer; and CMake 3.21.1 or
+newer. The CUDA, RAPIDS, and Treelite prefixes must remain in place
+because the compiled backend links to their libraries.
+
+### Packaging
+
+CRAN installation and checks are network-free. The package contacts the
+network only when
 [`cuda_ml_install()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_install.md)
-directs users to the R-universe binary. Install from R-universe when a
-functional binary without local compilation is required.
-
-Advanced local source builds remain available. Set
-`CUDA_ML_BUILD_MODE=local`, supply CUDA Toolkit 13.2.2 through
-`CUDA_HOME`, and supply a prefix through `CUML_PREFIX` containing cuML
-and nvForest 26.06, Treelite 4.7.0 headers, and
-`lib/libtreelite_static.a`. Build Treelite as position-independent code
-with its default libstdc++ ABI and with OpenMP disabled. Local builds
-never download or provision Treelite. Set `CUML_CUDA_ARCHITECTURES`
-explicitly to the CMake CUDA architectures to compile, and set
-`CUDA_ML_CXX` to GNU C++ 14 or newer. The same compiler is used for C++
-sources and nvcc host compilation. Missing inputs and other library
-versions fail at configuration time.
+is called explicitly. Native backend archives are built in a pinned
+manylinux 2.28 container, audited for their glibc and libstdc++
+requirements, and hosted as GitHub Release assets. One archive is
+published for each supported R minor version.
 
 ### Development version
 
-A bare development installation from [GitHub](https://github.com/)
-produces the same CRAN-compatible stub:
+A development installation uses the same downloaded backend pathway:
 
 ``` r
 # install.packages("devtools")
 devtools::install_github("mlverse/cuda.ml")
-```
-
-For a functional local build, set the exact toolchain and backend inputs
-described above before installing:
-
-``` r
-Sys.setenv(
-  CUDA_ML_BUILD_MODE = "local",
-  CUDA_HOME = "/opt/cuda-13.2.2",
-  CUML_PREFIX = "/opt/cuda-ml-backend",
-  CUML_CUDA_ARCHITECTURES = "75",
-  CUDA_ML_CXX = "g++-14"
-)
-devtools::install_github("mlverse/cuda.ml")
+cuda.ml::cuda_ml_install()
 ```
 
 ## Appendix
@@ -322,3 +354,5 @@ Inspect MNIST images
 ``` r
 plot_mnist(1:64)
 ```
+
+![](reference/figures/README-mnist-1.png)

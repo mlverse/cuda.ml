@@ -194,3 +194,20 @@ cuda_ml_rand_forest(
 
 A random forest model for use with
 [`predict()`](https://rdrr.io/r/stats/predict.html).
+
+## Deployment
+
+Training uses cuML and requires the complete GPU backend installed by
+[`cuda_ml_install()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_install.md).
+Persist the fitted model with
+[`cuda_ml_serialize()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_serialize.md);
+the current state is device neutral. A host without a GPU can install
+the separate CPU inference backend with
+`cuda_ml_install(device = "cpu")` and restore the state with
+`cuda_ml_unserialize(state, device = "cpu")`. The CPU backend is roughly
+3 MiB installed and does not include cuML or the complete managed CUDA
+and RAPIDS runtime. To create an independently usable Treelite
+checkpoint and a cuda.ml JSON sidecar instead, use
+[`cuda_ml_nvforest_export()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_nvforest_export.md)
+and
+[`cuda_ml_nvforest_import()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_nvforest_export.md).

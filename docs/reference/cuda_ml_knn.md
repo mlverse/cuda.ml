@@ -106,7 +106,8 @@ cuda_ml_knn(
   Distance metric to use. Must be one of {"euclidean", "l2", "l1",
   "cityblock", "taxicab", "manhattan", "braycurtis", "canberra",
   "minkowski", "lp", "chebyshev", "linf", "jensenshannon", "cosine",
-  "correlation"}. Default: "euclidean".
+  "correlation"}. The approximate algorithms support only "euclidean",
+  "l2", "cosine", and "correlation". Default: "euclidean".
 
 - p:
 

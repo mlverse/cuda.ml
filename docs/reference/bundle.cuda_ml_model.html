@@ -20,6 +20,10 @@ than serializing native pointers."></head><body>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/nvforest.html">nvForest inference</a></li>
+  </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -46,7 +50,10 @@ than serializing native pointers.</p>
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'cuda_ml_model'</span></span>
-<span><span class="fu">bundle</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">bundle</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'cuda_ml_nvforest'</span></span>
+<span><span class="fu">bundle</span><span class="op">(</span><span class="va">x</span>, device <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -60,7 +67,65 @@ than serializing native pointers.</p>
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Unused.</p></dd>
 
+
+<dt id="arg-device">device<a class="anchor" aria-label="anchor" href="#arg-device"></a></dt>
+<dd><p>For an nvForest-backed model, the device on which the bundle
+will restore. <code>NULL</code> preserves the model's current device. Use
+<code>"cpu"</code> when bundling a GPU-trained random forest for CPU-only
+deployment. Other cuda.ml model types do not accept this argument.</p></dd>
+
 </dl></div>
+    <div class="section level2">
+    <h2 id="persistence-contract">Persistence contract<a class="anchor" aria-label="anchor" href="#persistence-contract"></a></h2>
+
+
+<p>cuda.ml schema 1 model states contain a schema number, the cuda.ml package
+version that created the state, backend provenance, a model ABI identifier,
+and a payload. The package version is provenance only: a difference from the
+installed cuda.ml version does not prevent restoration.</p>
+<p>Compatibility is determined before the payload is restored:</p><ul><li><p>The schema must be the integer <code>1</code>. Unknown and unversioned
+    schemas are rejected.</p></li>
+<li><p>The state class and model ABI must identify a restoration method
+    supported by the installed package. A change to a model's payload layout
+    requires a new model ABI.</p></li>
+<li><p>Linear-model and logistic-regression states have portable R payloads
+    and do not require matching backend identity fields.</p></li>
+<li><p>PCA, SVC, one-vs-rest SVC, SVR, and UMAP states require an exact
+    <code>rapids_version</code> match because their payloads reconstruct RAPIDS
+    native state.</p></li>
+<li><p>Random-forest and nvForest states require an exact
+    <code>treelite_version</code> match because their payloads contain serialized
+    Treelite model bytes.</p></li>
+</ul><p>The remaining recorded backend fields—<code>cuda_version</code>,
+<code>nvforest_version</code>, and <code>platform</code>—are provenance for schema 1,
+not compatibility gates. A missing payload, unsupported ABI, or missing or
+unequal required backend field is rejected. cuda.ml does not implicitly
+migrate a state or fall back to serializing native pointers.</p>
+<p>Current nvForest and random-forest states store device-neutral Treelite
+model bytes. They retain model semantics and prediction precision, but not
+the inference device, device identifier, tree layout, chunk size, or memory
+alignment. Select those settings when restoring with
+<code><a href="cuda_ml_unserialize.html">cuda_ml_unserialize()</a></code>; GPU is the default. Legacy v1 nvForest and
+random-forest states remain supported and restore with the inference settings
+recorded in their payloads.</p>
+<p>Saving a state to a file connection and restoring it in another R process
+uses this same contract. The target process must have a compatible cuda.ml
+installation and must prepare the corresponding backend before prediction:
+<code><a href="cuda_ml_install.html">cuda_ml_install()</a></code> for GPU operation or
+<code>cuda_ml_install(device = "cpu")</code> for CPU-only nvForest inference.
+<code><a href="https://rstudio.github.io/bundle/reference/bundle.html" class="external-link">bundle::bundle()</a></code> stores the same explicit state, so saving a bundle
+with <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS()</a></code> and restoring it with <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS()</a></code> and
+<code><a href="https://rstudio.github.io/bundle/reference/bundle.html" class="external-link">bundle::unbundle()</a></code> has the same compatibility requirements. For an
+nvForest-backed model, the bundle also stores its chosen deployment device
+separately from the device-neutral state. A bundle is not required for
+deployment; <code><a href="cuda_ml_serialize.html">cuda_ml_serialize()</a></code> returns the complete state artifact
+directly.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="cuda_ml_serialize.html">cuda_ml_serialize</a></code>,
+  <code><a href="cuda_ml_unserialize.html">cuda_ml_unserialize</a></code></p></div>
+    </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
@@ -81,3 +146,4 @@ than serializing native pointers.</p>
 
 
   </body></html>
+

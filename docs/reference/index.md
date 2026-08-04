@@ -3,6 +3,7 @@
 ## All functions
 
 - [`bundle(`*`<cuda_ml_model>`*`)`](https://mlverse.github.io/cuda.ml/reference/bundle.cuda_ml_model.md)
+  [`bundle(`*`<cuda_ml_nvforest>`*`)`](https://mlverse.github.io/cuda.ml/reference/bundle.cuda_ml_model.md)
   : Bundle a cuda.ml model
 - [`cuda.ml`](https://mlverse.github.io/cuda.ml/reference/cuda.ml-package.md)
   [`cuda.ml-package`](https://mlverse.github.io/cuda.ml/reference/cuda.ml-package.md)
@@ -10,15 +11,15 @@
 - [`cuda_ml_agglomerative_clustering()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_agglomerative_clustering.md)
   : Perform Single-Linkage Agglomerative Clustering.
 - [`cuda_ml_backend_info()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_backend_info.md)
-  : Report backend and managed-runtime metadata
+  : Report native-backend metadata
 - [`cuda_ml_cache_clean()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_cache_clean.md)
-  : Remove managed cuda.ml runtime caches
+  : Remove cuda.ml native-backend caches
 - [`cuda_ml_dbscan()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_dbscan.md)
   : Run the DBSCAN clustering algorithm.
 - [`cuda_ml_elastic_net()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_elastic_net.md)
   : Train a linear model using elastic regression.
 - [`cuda_ml_install()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_install.md)
-  : Prepare the managed CUDA and RAPIDS runtime
+  : Install a cuda.ml native backend
 - [`cuda_ml_inverse_transform()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_inverse_transform.md)
   : Apply the inverse transformation defined by a trained cuML model.
 - [`cuda_ml_kmeans()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_kmeans.md)
@@ -35,6 +36,9 @@
   : Train a regularized linear regression model
 - [`cuda_ml_logistic_reg()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_logistic_reg.md)
   : Train a logistic or multinomial regression model
+- [`cuda_ml_nvforest_export()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_nvforest_export.md)
+  [`cuda_ml_nvforest_import()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_nvforest_export.md)
+  : Export and import an nvForest checkpoint pair
 - [`cuda_ml_nvforest_info()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_nvforest_info.md)
   : Inspect an nvForest model
 - [`cuda_ml_nvforest_leaf_ids()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_nvforest_leaf_ids.md)
@@ -52,7 +56,7 @@
 - [`cuda_ml_ridge()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_ridge.md)
   : Train a linear model using ridge regression.
 - [`cuda_ml_runtime_audit()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_runtime_audit.md)
-  : Audit the installed managed runtime
+  : Audit the installed native backend
 - [`cuda_ml_serialize()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_serialize.md)
   : Serialize a CuML model
 - [`cuda_ml_sgd()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_sgd.md)

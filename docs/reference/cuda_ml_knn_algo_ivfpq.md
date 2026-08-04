@@ -6,13 +6,7 @@ query algorithm, with all required parameters specified explicitly.
 ## Usage
 
 ``` r
-cuda_ml_knn_algo_ivfpq(
-  nlist,
-  nprobe,
-  m,
-  n_bits,
-  use_precomputed_tables = FALSE
-)
+cuda_ml_knn_algo_ivfpq(nlist, nprobe, m, n_bits)
 ```
 
 ## Arguments
@@ -32,11 +26,8 @@ cuda_ml_knn_algo_ivfpq(
 
 - n_bits:
 
-  Bits allocated per subquantizer.
-
-- use_precomputed_tables:
-
-  Whether to use precomputed tables.
+  Bits allocated per subquantizer, from 4 to 8. The product of `m` and
+  `n_bits` must be divisible by 8.
 
 ## Value
 

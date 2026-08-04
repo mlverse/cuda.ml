@@ -2,6 +2,8 @@
 <url><loc>https://mlverse.github.io/cuda.ml/404.html</loc></url>
 <url><loc>https://mlverse.github.io/cuda.ml/LICENSE-text.html</loc></url>
 <url><loc>https://mlverse.github.io/cuda.ml/LICENSE.html</loc></url>
+<url><loc>https://mlverse.github.io/cuda.ml/articles/index.html</loc></url>
+<url><loc>https://mlverse.github.io/cuda.ml/articles/nvforest.html</loc></url>
 <url><loc>https://mlverse.github.io/cuda.ml/authors.html</loc></url>
 <url><loc>https://mlverse.github.io/cuda.ml/index.html</loc></url>
 <url><loc>https://mlverse.github.io/cuda.ml/news/index.html</loc></url>
@@ -21,6 +23,7 @@
 <url><loc>https://mlverse.github.io/cuda.ml/reference/cuda_ml_lasso.html</loc></url>
 <url><loc>https://mlverse.github.io/cuda.ml/reference/cuda_ml_linear_reg.html</loc></url>
 <url><loc>https://mlverse.github.io/cuda.ml/reference/cuda_ml_logistic_reg.html</loc></url>
+<url><loc>https://mlverse.github.io/cuda.ml/reference/cuda_ml_nvforest_export.html</loc></url>
 <url><loc>https://mlverse.github.io/cuda.ml/reference/cuda_ml_nvforest_info.html</loc></url>
 <url><loc>https://mlverse.github.io/cuda.ml/reference/cuda_ml_nvforest_leaf_ids.html</loc></url>
 <url><loc>https://mlverse.github.io/cuda.ml/reference/cuda_ml_nvforest_load_model.html</loc></url>
@@ -45,3 +48,4 @@
 <url><loc>https://mlverse.github.io/cuda.ml/reference/predict.cuda_ml_nvforest.html</loc></url>
 <url><loc>https://mlverse.github.io/cuda.ml/reference/predict.cuda_ml_svm.html</loc></url>
 </urlset>
+

@@ -16,6 +16,10 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/nvforest.html">nvForest inference</a></li>
+  </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -246,21 +250,22 @@ applicable) the outcome.</p></dd>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="cuda_ml_backend_info.html">cuda_ml_backend_info</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">runtime_installed</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">model</span> <span class="op">&lt;-</span> <span class="fu">cuda_ml_sgd</span><span class="op">(</span></span>
-<span>    <span class="va">mpg</span> <span class="op">~</span> <span class="va">.</span>, <span class="va">mtcars</span>,</span>
-<span>    batch_size <span class="op">=</span> <span class="fl">4L</span>, epochs <span class="op">=</span> <span class="fl">50000L</span>,</span>
-<span>    learning_rate <span class="op">=</span> <span class="st">"adaptive"</span>, eta0 <span class="op">=</span> <span class="fl">1e-5</span>,</span>
-<span>    penalty <span class="op">=</span> <span class="st">"l2"</span>, alpha <span class="op">=</span> <span class="fl">1e-5</span>, tol <span class="op">=</span> <span class="fl">1e-6</span>,</span>
-<span>    n_iter_no_change <span class="op">=</span> <span class="fl">10L</span></span>
-<span>  <span class="op">)</span></span>
-<span></span>
-<span>  <span class="va">preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">mtcars</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">)</span> <span class="op">!=</span> <span class="st">"mpg"</span><span class="op">]</span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="va">preds</span><span class="op">$</span><span class="va">.pred</span>, <span class="va">mtcars</span><span class="op">$</span><span class="va">mpg</span>, tolerance <span class="op">=</span> <span class="fl">0.09</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="cuda_ml_backend_info.html">cuda_ml_backend_info</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">runtime_installed</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">model</span> <span class="op">&lt;-</span> <span class="fu">cuda_ml_sgd</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="va">mpg</span> <span class="op">~</span> <span class="va">.</span>, <span class="va">mtcars</span>,</span></span>
+<span class="r-in"><span>    batch_size <span class="op">=</span> <span class="fl">4L</span>, epochs <span class="op">=</span> <span class="fl">50000L</span>,</span></span>
+<span class="r-in"><span>    learning_rate <span class="op">=</span> <span class="st">"adaptive"</span>, eta0 <span class="op">=</span> <span class="fl">1e-5</span>,</span></span>
+<span class="r-in"><span>    penalty <span class="op">=</span> <span class="st">"l2"</span>, alpha <span class="op">=</span> <span class="fl">1e-5</span>, tol <span class="op">=</span> <span class="fl">1e-6</span>,</span></span>
+<span class="r-in"><span>    n_iter_no_change <span class="op">=</span> <span class="fl">10L</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="va">preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">mtcars</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">)</span> <span class="op">!=</span> <span class="st">"mpg"</span><span class="op">]</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="va">preds</span><span class="op">$</span><span class="va">.pred</span>, <span class="va">mtcars</span><span class="op">$</span><span class="va">mpg</span>, tolerance <span class="op">=</span> <span class="fl">0.09</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+</code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
@@ -281,3 +286,4 @@ applicable) the outcome.</p></dd>
 
 
   </body></html>
+
