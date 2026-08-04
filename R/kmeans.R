@@ -14,9 +14,9 @@ kmeans_match_init_method <- function(m = c("kmeans++", "random")) {
   }
 }
 
-#' Run the K means clustering algorithm.
+#' Run the k-means clustering algorithm.
 #'
-#' Run the K means clustering algorithm.
+#' Run the k-means clustering algorithm.
 #'
 #' @template model-with-numeric-input
 #' @param k The number of clusters.

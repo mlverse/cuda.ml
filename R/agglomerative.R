@@ -6,7 +6,7 @@ agglomerative_clustering_match_metric <- function(
   switch(metric, euclidean = 1L, l1 = 3L, l2 = 1L, manhattan = 3L, cosine = 2L)
 }
 
-#' Perform Single-Linkage Agglomerative Clustering.
+#' Perform single-linkage agglomerative clustering.
 #'
 #' Recursively merge the pair of clusters that minimally increases a given
 #' linkage distance.

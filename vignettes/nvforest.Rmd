@@ -1,5 +1,8 @@
 ---
 title: "nvForest inference"
+description: >
+  Train random forests on a GPU, import tree ensembles, and deploy nvForest
+  inference on a CPU or GPU.
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{nvForest inference}

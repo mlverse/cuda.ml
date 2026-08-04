@@ -11,7 +11,7 @@
 #'
 #' @return A TSVD model object with the following attributes:
 #'   - "components": a matrix of \code{n_components} rows to be used for
-#'      dimensionalitiy reduction on new data points.
+#'      dimensionality reduction on new data points.
 #'   - "explained_variance": (only present if "transform_input" is set to TRUE)
 #'     amount of variance within the input data explained by each component.
 #'   - "explained_variance_ratio": (only present if "transform_input" is set to

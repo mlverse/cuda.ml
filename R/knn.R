@@ -162,7 +162,7 @@ cuda_ml_knn_algo_ivfpq <- function(
 
 #' Build a KNN model.
 #'
-#' Build a k-nearest-model for classification or regression tasks.
+#' Build a k-nearest-neighbor model for classification or regression tasks.
 #'
 #' @template supervised-model-inputs
 #' @template supervised-model-output
@@ -516,7 +516,7 @@ cuda_ml_knn_bridge <- function(processed, algo, metric, p, neighbors) {
 
 #' Make predictions on new data points.
 #'
-#' Make predictions on new data points using a CuML KNN model.
+#' Make predictions on new data points using a cuML KNN model.
 #'
 #' @template predict
 #' @param type Type of prediction. Classification models support

@@ -4,9 +4,9 @@ ols_match_method <- function(method = c("svd", "eig", "qr")) {
   switch(method, "svd" = 0L, "eig" = 1L, "qr" = 2L)
 }
 
-#' Train a OLS model.
+#' Train an OLS model.
 #'
-#' Train an Ordinary Least Square (OLS) model for regression tasks.
+#' Train an ordinary least squares (OLS) model for regression tasks.
 #'
 #' @template supervised-model-inputs
 #' @template supervised-model-output
@@ -24,7 +24,7 @@ ols_match_method <- function(method = c("svd", "eig", "qr")) {
 #'
 #'   Default: "svd".
 #'
-#' @return A OLS regressor that can be used with the 'predict' S3 generic to
+#' @return An OLS regressor that can be used with the 'predict' S3 generic to
 #'   make predictions on new data points.
 #'
 #' @examples
