@@ -33,19 +33,23 @@ Imports:
     ellipsis,
     filelock,
     hardhat,
+    jsonlite,
     Rcpp (>= 1.0.6),
     rlang (>= 0.1.4)
 Suggests:
     callr,
     glmnet,
+    knitr,
     MASS,
     magrittr,
     parsnip,
     purrr,
     recipes,
     reticulate,
+    rmarkdown,
     testthat,
     xgboost
+VignetteBuilder: knitr
 Encoding: UTF-8
 OS_type: unix
 SystemRequirements: Native operations require Linux x86_64 with glibc 2.28 or

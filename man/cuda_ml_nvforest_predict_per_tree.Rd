@@ -11,7 +11,9 @@ cuda_ml_nvforest_predict_per_tree(object, new_data, chunk_size = NULL)
 
 \item{new_data}{Numeric predictor data.}
 
-\item{chunk_size}{Prediction chunk size, or \code{NULL} for the model default.}
+\item{chunk_size}{Native prediction chunk size, or \code{NULL} for the model
+default. It controls native batching and does not limit the size of the
+returned R object.}
 }
 \value{
 For scalar-leaf models, a numeric matrix with one column per tree.
@@ -20,4 +22,15 @@ For scalar-leaf models, a numeric matrix with one column per tree.
 }
 \description{
 Return individual-tree predictions
+}
+\section{Memory use}{
+
+The complete result is materialized in R: rows by trees for scalar-leaf
+models and rows by trees by outputs for vector-leaf models. The
+\code{chunk_size} argument controls native prediction work but does not bound
+the memory required by the R result.
+}
+
+\seealso{
+\code{\link{cuda_ml_nvforest_leaf_ids}()}
 }

@@ -1,0 +1,7 @@
+symbol	arity
+_cuda_ml_nvforest_backend_versions	0
+_cuda_ml_nvforest_cpu_load_model	8
+_cuda_ml_nvforest_cpu_model_info	1
+_cuda_ml_nvforest_cpu_predict	5
+_cuda_ml_nvforest_cpu_serialize	1
+_cuda_ml_nvforest_cpu_unserialize	8

@@ -95,6 +95,7 @@ jobs:
     timeout-minutes: 120
     env:
       CUDA_ML_GPU_TESTS: true
+      CUDA_ML_CROSS_DEVICE_TESTS: true
       CUDA_ML_CACHE_DIR: /tmp/cuda-ml-runtime
 
     steps:
@@ -114,6 +115,7 @@ jobs:
             !info$backend_loaded
           )
           cuda_ml_install()
+          cuda_ml_install(device = "cpu")
 
       - name: Exercise a GPU algorithm
         shell: Rscript {0}
@@ -142,7 +144,8 @@ jobs:
           testthat::test_package("cuda.ml", reporter = "progress")
 
   # The image contains the functional R package but neither a CUDA toolkit nor
-  # a prepared runtime cache. This job validates the CPU-only setup path.
+  # a prepared runtime cache. This job validates the complete managed runtime
+  # on a host without a GPU.
   test-runtime-cpu:
     needs: build-image
     runs-on: ubuntu-latest
@@ -154,6 +157,7 @@ jobs:
     timeout-minutes: 180
     env:
       CUDA_ML_RUNTIME_TESTS: true
+      CUDA_ML_FULL_CPU_NVFOREST_TESTS: true
       CUDA_ML_CACHE_DIR: /tmp/cuda-ml-runtime
 
     steps:
@@ -177,9 +181,28 @@ jobs:
             reporter = "progress"
           )
 
+      - name: Retain CPU nvForest inference on the complete backend
+        shell: Rscript {0}
+        # fmt: r
+        run: |
+          testthat::test_package(
+            "cuda.ml",
+            filter = "nvforest-runtime",
+            reporter = "progress"
+          )
+
       # nvForest loads and retains the backend, so run it in a separate R
       # process from the side-effect and lazy-loading assertions above.
+      - name: Install the CPU nvForest runtime
+        shell: Rscript {0}
+        # fmt: r
+        run: |
+          library(cuda.ml)
+          cuda_ml_install(device = "cpu")
+
       - name: Exercise CPU-only nvForest inference
+        env:
+          CUDA_ML_FULL_CPU_NVFOREST_TESTS: false
         shell: Rscript {0}
         # fmt: r
         run: |
@@ -224,3 +247,67 @@ jobs:
           runtime_lib="$(Rscript -e 'library(cuda.ml); cat(file.path(cuda_ml_backend_info()$runtime_path, "lib"))')"
           test -d "$runtime_lib"
           LD_LIBRARY_PATH="$runtime_lib" /usr/local/bin/nvrtc-probe
+
+  test-nvforest-cpu-runtime:
+    needs: build-image
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ needs.build-image.outputs.image }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    timeout-minutes: 60
+    env:
+      CUDA_ML_CPU_RUNTIME_TESTS: true
+      CUDA_ML_CACHE_DIR: /tmp/cuda-ml-nvforest-cpu-runtime
+
+    steps:
+      - name: Install only the CPU nvForest runtime
+        shell: Rscript {0}
+        # fmt: r
+        run: |
+          library(cuda.ml)
+          cuda_ml_install(device = "cpu")
+          info <- cuda_ml_backend_info()
+          stopifnot(
+            info$nvforest_cpu_runtime_installed,
+            !info$runtime_installed,
+            !info$backend_loaded
+          )
+
+      - name: Validate the slim CPU runtime
+        shell: Rscript {0}
+        # fmt: r
+        run: |
+          testthat::test_package(
+            "cuda.ml",
+            filter = "runtime-functional|nvforest-runtime|nvforest-state",
+            reporter = "progress"
+          )
+
+      - name: Check the CPU runtime footprint
+        run: |
+          runtime_path="$(Rscript -e 'library(cuda.ml); cat(cuda_ml_backend_info()$nvforest_cpu_runtime_path)')"
+          test -d "$runtime_path"
+          test "$(du -sm "$runtime_path" | cut -f1)" -lt 8
+          test ! -e /tmp/cuda-ml-nvforest-cpu-runtime/runtime-v3
+          test -z "$(find "$runtime_path/lib" -maxdepth 1 -name 'libcuda*' -print -quit)"
+
+      - name: Reuse the CPU runtime without downloads
+        env:
+          http_proxy: http://127.0.0.1:9
+          https_proxy: http://127.0.0.1:9
+          all_proxy: http://127.0.0.1:9
+          no_proxy: ""
+        shell: Rscript {0}
+        # fmt: r
+        run: |
+          library(cuda.ml)
+          trace(
+            "download.file",
+            where = asNamespace("utils"),
+            tracer = quote(stop("unexpected runtime download")),
+            print = FALSE
+          )
+          cuda_ml_install(device = "cpu")
+          stopifnot(cuda_ml_runtime_audit(device = "cpu"))

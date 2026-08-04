@@ -216,12 +216,21 @@ upstream Python package hosts. The current runtime is about 1.6 GiB, so this ste
 can take several minutes. Treelite 4.7.0 is linked into the backend and is not a
 runtime download.
 
+For CPU-only nvForest inference, use
+`cuda_ml_install(device = "cpu")`. This installs a separate backend that is
+roughly 1 MiB to download and 3 MiB when installed. It does not include cuML
+or any CUDA runtime libraries, and it requires neither an NVIDIA GPU nor an
+NVIDIA driver. Random forests trained on a GPU by
+`cuda_ml_rand_forest()` can be serialized and restored with `device = "cpu"`
+on this smaller deployment backend. An existing complete backend installation
+can also execute nvForest models on CPU; the smaller backend avoids that runtime
+for CPU-only deployments.
+
 `cuda_ml_install()` does not require a GPU or NVIDIA driver, and repeated calls
 reuse the completed cache. It does not load the backend or initialize CUDA.
 Model operations do not provision the runtime implicitly; when the cache is
 absent, they report the installation command. After provisioning, GPU-backed
-operations require only a supported NVIDIA GPU and driver. nvForest CPU
-inference does not require a GPU or driver.
+operations require only a supported NVIDIA GPU and driver.
 
 The default cache is `tools::R_user_dir("cuda.ml", "cache")`. Set
 `CUDA_ML_CACHE_DIR` to use a different location:

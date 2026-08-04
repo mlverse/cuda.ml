@@ -4,12 +4,18 @@
 \alias{cuda_ml_install}
 \title{Install a cuda.ml native backend}
 \usage{
-cuda_ml_install(source = FALSE, dependencies = "managed", architectures = NULL)
+cuda_ml_install(
+  source = FALSE,
+  dependencies = "managed",
+  architectures = NULL,
+  device = c("gpu", "cpu")
+)
 }
 \arguments{
-\item{source}{A logical value. If \code{FALSE}, install the prebuilt backend
-and managed runtime. If \code{TRUE}, compile the backend from the native
-sources included in the R package.}
+\item{source}{A logical value. If \code{FALSE}, install the requested
+prebuilt backend. If \code{TRUE}, compile the complete GPU backend from the
+native sources included in the R package. Source installation is not
+supported for \code{device = "cpu"}.}
 
 \item{dependencies}{For a source installation, either \code{"managed"} to
 download and cache the exact locked build dependencies, or \code{"host"}
@@ -22,6 +28,11 @@ default and otherwise use the package's portable architecture list.
 \code{"native"} requires detection, and \code{"portable"} forces the
 package list. Host source builds use \code{CUML_CUDA_ARCHITECTURES} when
 this argument is \code{NULL}.}
+
+\item{device}{Backend to install: \code{"gpu"} installs the complete CUDA and
+RAPIDS backend used for training and GPU inference; \code{"cpu"} installs
+only the CPU nvForest inference backend. CPU installation does not
+provision the complete CUDA and RAPIDS runtime or any cuML algorithms.}
 }
 \value{
 Invisibly returns \code{TRUE}.
@@ -30,13 +41,22 @@ Invisibly returns \code{TRUE}.
 By default, downloads, verifies, extracts, and caches the precompiled backend
 and its runtime libraries. Alternatively, bootstraps a locked CUDA and RAPIDS
 build toolchain and compiles the native backend on the host. Calling it again
-with the same inputs is a no-op.
+with the same inputs is a no-op. Use \code{device = "cpu"} to install the
+separate nvForest CPU inference backend, roughly 1 MiB to download and
+3 MiB when installed, without the complete CUDA and RAPIDS runtime.
+Installation never occurs implicitly during model loading or prediction.
 }
 \details{
 The default cache is \code{tools::R_user_dir("cuda.ml", "cache")}. Set
 \code{CUDA_ML_CACHE_DIR} to use a different cache root. Set
 \code{CUDA_ML_BACKEND_MIRROR} to an \code{https://} or \code{file://}
 directory containing the exact locked backend archive.
+
+The CPU-only backend supports nvForest model loading, restoration, and
+inference. It does not provide cuML training or GPU inference and requires
+neither an NVIDIA GPU nor an NVIDIA driver. It contains no CUDA runtime
+libraries. Install the complete backend separately with
+\code{cuda_ml_install()} when training or GPU inference is needed.
 
 A managed source installation downloads no precompiled cuda.ml backend. It
 downloads and verifies the locked CUDA 13.2.2 and RAPIDS 26.06 development
@@ -65,6 +85,8 @@ nvForest 26.06, Treelite 4.7.0 headers, and
 \examples{
 \dontrun{
 cuda_ml_install()
+
+cuda_ml_install(device = "cpu")
 
 cuda_ml_install(source = TRUE)
 
