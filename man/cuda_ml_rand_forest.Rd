@@ -156,3 +156,14 @@ A random forest model for use with \code{predict()}.
 Trains a cuML random forest for classification or regression and returns an
 nvForest-backed model for inference.
 }
+\section{Deployment}{
+
+Training uses cuML and requires the complete GPU backend installed by
+\code{\link{cuda_ml_install}()}. Persist the fitted model with
+\code{\link{cuda_ml_serialize}()}; the current state is device neutral. A
+host without a GPU can install the separate CPU inference backend with
+\code{cuda_ml_install(device = "cpu")} and restore the state with
+\code{cuda_ml_unserialize(state, device = "cpu")}. The CPU backend is
+roughly 3 MiB installed and does not include cuML or the complete managed
+CUDA and RAPIDS runtime.
+}

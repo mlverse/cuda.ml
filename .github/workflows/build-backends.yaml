@@ -6,7 +6,7 @@ on:
       release_tag:
         description: GitHub release tag used by the backend lock
         required: true
-        default: cuda-ml-backend-0.4.0
+        default: cuda-ml-backend-0.4.1
 
 jobs:
   build:
@@ -70,15 +70,16 @@ jobs:
           merge-multiple: true
 
       - name: Merge the package backend lock
-        run: >-
-          Rscript tools/merge-backend-lock.R
-          inst/backends/linux-x86_64-glibc2.28.tsv
-          backend-assets
+        run: |
+          Rscript tools/merge-backend-lock.R inst/backends/linux-x86_64-glibc2.28.tsv backend-assets/full
+          Rscript tools/merge-backend-lock.R inst/nvforest-backends/linux-x86_64-glibc2.28-nvforest-cpu.tsv backend-assets/cpu
 
       - uses: actions/upload-artifact@v4
         with:
           name: backend-lock
-          path: inst/backends/linux-x86_64-glibc2.28.tsv
+          path: |
+            inst/backends/linux-x86_64-glibc2.28.tsv
+            inst/nvforest-backends/linux-x86_64-glibc2.28-nvforest-cpu.tsv
           if-no-files-found: error
 
       - name: Create the draft release
@@ -87,8 +88,10 @@ jobs:
           RELEASE_TAG: ${{ inputs.release_tag }}
         run: >-
           gh release create "$RELEASE_TAG"
-          backend-assets/*.tar.gz
+          backend-assets/full/*.tar.gz
+          backend-assets/cpu/*.tar.gz
           inst/backends/linux-x86_64-glibc2.28.tsv
+          inst/nvforest-backends/linux-x86_64-glibc2.28-nvforest-cpu.tsv
           --draft
           --generate-notes
           --target "$GITHUB_SHA"

@@ -85,7 +85,11 @@ test_that("backend metadata does not provision or load the backend", {
       "architectures",
       "runtime_installed",
       "runtime_path",
-      "backend_loaded"
+      "backend_loaded",
+      "nvforest_cpu_backend_available",
+      "nvforest_cpu_runtime_installed",
+      "nvforest_cpu_runtime_path",
+      "nvforest_cpu_backend_loaded"
     ),
     ignore.order = FALSE
   )
@@ -117,6 +121,11 @@ test_that("backend metadata does not provision or load the backend", {
   expect_false(state$cache_exists)
   expect_false(state$backend_dll_loaded)
   expect_false(state$value$backend_loaded)
+  expect_type(state$value$nvforest_cpu_backend_available, "logical")
+  expect_length(state$value$nvforest_cpu_backend_available, 1L)
+  expect_false(state$value$nvforest_cpu_runtime_installed)
+  expect_true(is.na(state$value$nvforest_cpu_runtime_path))
+  expect_false(state$value$nvforest_cpu_backend_loaded)
 })
 
 test_that("cache cleanup is scoped to cuda.ml cache generations", {
@@ -130,7 +139,8 @@ test_that("cache cleanup is scoped to cuda.ml cache generations", {
     "backends-v3",
     "source-backends-v1",
     "backend-selection-v1",
-    "source-toolchains-v1"
+    "source-toolchains-v1",
+    "nvforest-cpu-backends-v1"
   )
   for (generation in generations) {
     dir.create(file.path(cache, generation), recursive = TRUE)
@@ -158,6 +168,66 @@ test_that("cache cleanup is scoped to cuda.ml cache generations", {
   expect_false(any(state$generations))
 })
 
+test_that("CPU-only nvForest installation is explicit", {
+  skip_if_not(
+    native_platform_supported,
+    "requires the managed runtime platform"
+  )
+
+  cache <- tempfile("cuda-ml-cpu-cache-")
+  old_cache <- Sys.getenv("CUDA_ML_CACHE_DIR", unset = NA_character_)
+  Sys.setenv(CUDA_ML_CACHE_DIR = cache)
+  on.exit(
+    {
+      if (is.na(old_cache)) {
+        Sys.unsetenv("CUDA_ML_CACHE_DIR")
+      } else {
+        Sys.setenv(CUDA_ML_CACHE_DIR = old_cache)
+      }
+    },
+    add = TRUE
+  )
+
+  info <- cuda_ml_backend_info()
+  skip_if(
+    info$nvforest_cpu_backend_available,
+    "CPU-only nvForest backend is published"
+  )
+  error <- expect_error(
+    cuda_ml_install(device = "cpu"),
+    class = "error"
+  )
+
+  expect_match(
+    conditionMessage(error),
+    "No prebuilt CPU-only nvForest backend"
+  )
+  expect_match(
+    conditionMessage(error),
+    paste0("R ", info$r_version),
+    fixed = TRUE
+  )
+  expect_false(dir.exists(cache))
+})
+
+test_that("CPU-only nvForest installation does not accept source inputs", {
+  expect_error(
+    cuda_ml_install(device = "cpu", source = TRUE),
+    "CPU-only nvForest source installation is not supported",
+    fixed = TRUE
+  )
+  expect_error(
+    cuda_ml_install(device = "cpu", dependencies = "host"),
+    "dependencies and architectures apply only to source installations",
+    fixed = TRUE
+  )
+  expect_error(
+    cuda_ml_install(device = "cpu", architectures = "native"),
+    "dependencies and architectures apply only to source installations",
+    fixed = TRUE
+  )
+})
+
 test_that("an unpublished backend fails before downloading the runtime", {
   skip_if_not(
     native_platform_supported,
@@ -167,13 +237,16 @@ test_that("an unpublished backend fails before downloading the runtime", {
   cache <- tempfile("cuda-ml-cache-")
   old_cache <- Sys.getenv("CUDA_ML_CACHE_DIR", unset = NA_character_)
   Sys.setenv(CUDA_ML_CACHE_DIR = cache)
-  on.exit({
-    if (is.na(old_cache)) {
-      Sys.unsetenv("CUDA_ML_CACHE_DIR")
-    } else {
-      Sys.setenv(CUDA_ML_CACHE_DIR = old_cache)
-    }
-  }, add = TRUE)
+  on.exit(
+    {
+      if (is.na(old_cache)) {
+        Sys.unsetenv("CUDA_ML_CACHE_DIR")
+      } else {
+        Sys.setenv(CUDA_ML_CACHE_DIR = old_cache)
+      }
+    },
+    add = TRUE
+  )
 
   skip_if(cuda_ml_backend_info()$backend_available, "backend is published")
   error <- expect_error(cuda_ml_install(), class = "error")

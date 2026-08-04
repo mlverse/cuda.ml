@@ -68,21 +68,27 @@ contents; use an explicit type when the suffix does not identify the format.
 
 \section{Runtime requirements}{
 
-Both CPU and GPU inference require \code{\link{cuda_ml_install}()} and the
-full managed CUDA and RAPIDS runtime, which is roughly 1.6 GiB. CPU
-inference does not require an NVIDIA GPU or driver. GPU inference requires a
-supported NVIDIA GPU and driver.
+GPU inference requires the complete, roughly 1.6 GiB runtime installed by
+\code{\link{cuda_ml_install}()} and a supported NVIDIA GPU and driver.
+For CPU-only deployment, install the separate, roughly 3 MiB backend with
+\code{cuda_ml_install(device = "cpu")}. It does not install cuML or the
+complete managed CUDA and RAPIDS runtime, and it requires neither an NVIDIA
+GPU nor an NVIDIA driver. An existing complete backend installation can also
+execute nvForest models on CPU; the separate backend avoids that runtime in
+CPU-only environments.
 }
 
 \section{Persistence}{
 
 Persist nvForest models with \code{\link{cuda_ml_serialize}()} and restore
-them with \code{\link{cuda_ml_unserialize}()}, or use
-\code{bundle::bundle()}. Schema 1 nvForest states require an exact Treelite
+them with \code{\link{cuda_ml_unserialize}()}. Current states do not record
+CPU or GPU placement. Select the deployment device when restoring, for
+example \code{cuda_ml_unserialize(state, device = "cpu")}; GPU is the
+default. Tree layout, chunk size, memory alignment, and GPU device identifier
+are likewise restore-time settings. Prediction precision is retained unless
+explicitly overridden. Schema 1 nvForest states require an exact Treelite
 version match. The recorded package, CUDA, RAPIDS, nvForest, and platform
-versions are provenance rather than compatibility gates. The restoring
-process must have prepared its runtime with
-\code{\link{cuda_ml_install}()}.
+versions are provenance rather than compatibility gates.
 }
 
 \seealso{

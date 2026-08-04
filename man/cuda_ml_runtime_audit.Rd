@@ -4,14 +4,18 @@
 \alias{cuda_ml_runtime_audit}
 \title{Audit the installed native backend}
 \usage{
-cuda_ml_runtime_audit()
+cuda_ml_runtime_audit(device = c("gpu", "cpu"))
+}
+\arguments{
+\item{device}{Backend to audit: the complete \code{"gpu"} backend or the
+CPU-only nvForest backend.}
 }
 \value{
 Invisibly returns \code{TRUE}.
 }
 \description{
-Recomputes the hashes recorded when the selected backend was installed and
-validates its native registration. For a downloaded backend, also validates
-the complete managed-runtime dependency closure. Ordinary runtime reuse
-performs only fast marker, inventory, size, and link checks.
+Recomputes the hashes recorded when the requested backend was installed and
+validates its native registration. For the complete downloaded backend, it
+also validates the managed-runtime dependency closure. Ordinary runtime
+reuse performs only fast marker, inventory, size, and link checks.
 }

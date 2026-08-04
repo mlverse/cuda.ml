@@ -13,6 +13,7 @@
 ^inst/backend-src/CMakeCache\.txt$
 ^inst/backend-src/CMakeFiles($|/)
 ^inst/backend-src/\.cmake-build($|/)
+^inst/nvforest-cpu-src/\.cmake-build.*($|/)
 ^inst/backend-src/_deps($|/)
 ^inst/backend-src/eval_gpu_archs*
 ^inst/backend-src/.*[.]o$

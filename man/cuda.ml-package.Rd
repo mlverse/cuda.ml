@@ -23,14 +23,24 @@ version.
 
 Loading \pkg{cuda.ml} does not require a GPU, load native code, create a
 cache, or contact the network. Call \code{\link{cuda_ml_install}()} to
-download the exact backend from GitHub Releases and the pinned CUDA 13.2.2
-and RAPIDS cuML and nvForest 26.06 runtime from upstream wheel hosts.
-The managed CUDA and RAPIDS runtime is roughly 1.6 GiB. Treelite 4.7.0 is
-linked statically into the backend. Native operations fail with an
-installation instruction until setup is complete. GPU operations then
-require a supported NVIDIA GPU and driver 580 or newer. nvForest CPU
-inference does not require a GPU or NVIDIA driver, but it still requires
-\code{cuda_ml_install()} and the full managed runtime. Set
+install the complete backend used for GPU training and inference. It uses
+the pinned CUDA 13.2.2 and RAPIDS cuML and nvForest 26.06 runtime and is
+roughly 1.6 GiB. GPU operations then require a supported NVIDIA GPU and
+driver 580 or newer.
+
+For CPU-only nvForest inference, call
+\code{cuda_ml_install(device = "cpu")} instead. This installs a separate
+backend that is roughly 1 MiB to download and 3 MiB when installed. It
+does not install cuML or the complete managed CUDA and RAPIDS runtime and
+requires neither an NVIDIA GPU nor an NVIDIA driver. It contains no CUDA
+runtime libraries. Treelite 4.7.0 is linked statically into both backends.
+
+Random forests trained on a GPU by \code{\link{cuda_ml_rand_forest}()} can
+be persisted with \code{\link{cuda_ml_serialize}()} and restored for CPU
+inference with \code{cuda_ml_unserialize(state, device = "cpu")}. Current
+nvForest model states do not encode their deployment device. Native
+operations fail with an installation instruction until their corresponding
+backend is installed. Set
 \code{CUDA_ML_CACHE_DIR} to override the default cache and
 \code{CUDA_ML_BACKEND_MIRROR} to use an exact backend mirror.
 

@@ -30,6 +30,15 @@
 #'
 #' @return A random forest model for use with \code{predict()}.
 #'
+#' @section Deployment:
+#' Training uses cuML and requires the complete GPU backend installed by
+#' \code{\link{cuda_ml_install}()}. Persist the fitted model with
+#' \code{\link{cuda_ml_serialize}()}; the current state is device neutral. A
+#' host without a GPU can install the separate CPU inference backend with
+#' \code{cuda_ml_install(device = "cpu")} and restore the state with
+#' \code{cuda_ml_unserialize(state, device = "cpu")}. The CPU backend is
+#' roughly 3 MiB installed and does not include cuML or the complete managed
+#' CUDA and RAPIDS runtime.
 #' @importFrom ellipsis check_dots_used
 #' @export
 cuda_ml_rand_forest <- function(x, ...) {
@@ -395,7 +404,7 @@ cuda_ml_rand_forest_bridge <- function(
 cuda_ml_get_state.cuda_ml_rand_forest <- function(model) {
   new_model_state(
     nvforest_model_payload(model),
-    "cuda_ml_rand_forest_model_state"
+    "cuda_ml_rand_forest_model_state_v2"
   )
 }
 
@@ -405,9 +414,40 @@ cuda_ml_set_state.cuda_ml_rand_forest_model_state <- function(model_state) {
     model_state,
     "cuda_ml_rand_forest_model_state"
   )
-  nvforest_unserialize_payload(
+  nvforest_unserialize_payload_v1(
     payload,
     c("cuda_ml_rand_forest", "cuda_ml_nvforest")
+  )
+}
+
+#' @export
+cuda_ml_set_state.cuda_ml_rand_forest_model_state_v2 <- function(
+  model_state
+) {
+  cuda_ml_set_state_with_options.cuda_ml_rand_forest_model_state_v2(
+    model_state,
+    list()
+  )
+}
+
+#' @export
+cuda_ml_set_state_with_options.cuda_ml_rand_forest_model_state_v2 <- function(
+  model_state,
+  options
+) {
+  payload <- cuda_ml_state_payload(
+    model_state,
+    "cuda_ml_rand_forest_model_state_v2"
+  )
+  do.call(
+    nvforest_unserialize_payload_v2,
+    c(
+      list(
+        payload = payload,
+        cls = c("cuda_ml_rand_forest", "cuda_ml_nvforest")
+      ),
+      options
+    )
   )
 }
 

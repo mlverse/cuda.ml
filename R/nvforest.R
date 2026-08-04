@@ -138,7 +138,7 @@ new_nvforest_model <- function(
   cls = "cuda_ml_nvforest",
   blueprint = hardhat::default_xy_blueprint()
 ) {
-  info <- .nvforest_model_info(xptr)
+  info <- nvforest_native_model_info(xptr)
   mode <- nvforest_task_mode(info$task_type)
 
   if (identical(mode, "classification")) {
@@ -207,19 +207,25 @@ new_nvforest_model <- function(
 #' contents; use an explicit type when the suffix does not identify the format.
 #'
 #' @section Runtime requirements:
-#' Both CPU and GPU inference require \code{\link{cuda_ml_install}()} and the
-#' full managed CUDA and RAPIDS runtime, which is roughly 1.6 GiB. CPU
-#' inference does not require an NVIDIA GPU or driver. GPU inference requires a
-#' supported NVIDIA GPU and driver.
+#' GPU inference requires the complete, roughly 1.6 GiB runtime installed by
+#' \code{\link{cuda_ml_install}()} and a supported NVIDIA GPU and driver.
+#' For CPU-only deployment, install the separate, roughly 3 MiB backend with
+#' \code{cuda_ml_install(device = "cpu")}. It does not install cuML or the
+#' complete managed CUDA and RAPIDS runtime, and it requires neither an NVIDIA
+#' GPU nor an NVIDIA driver. An existing complete backend installation can also
+#' execute nvForest models on CPU; the separate backend avoids that runtime in
+#' CPU-only environments.
 #'
 #' @section Persistence:
 #' Persist nvForest models with \code{\link{cuda_ml_serialize}()} and restore
-#' them with \code{\link{cuda_ml_unserialize}()}, or use
-#' \code{bundle::bundle()}. Schema 1 nvForest states require an exact Treelite
+#' them with \code{\link{cuda_ml_unserialize}()}. Current states do not record
+#' CPU or GPU placement. Select the deployment device when restoring, for
+#' example \code{cuda_ml_unserialize(state, device = "cpu")}; GPU is the
+#' default. Tree layout, chunk size, memory alignment, and GPU device identifier
+#' are likewise restore-time settings. Prediction precision is retained unless
+#' explicitly overridden. Schema 1 nvForest states require an exact Treelite
 #' version match. The recorded package, CUDA, RAPIDS, nvForest, and platform
-#' versions are provenance rather than compatibility gates. The restoring
-#' process must have prepared its runtime with
-#' \code{\link{cuda_ml_install}()}.
+#' versions are provenance rather than compatibility gates.
 #'
 #' @seealso \code{\link{cuda_ml_nvforest_info}()},
 #'   \code{\link{cuda_ml_nvforest_leaf_ids}()},
@@ -251,7 +257,7 @@ cuda_ml_nvforest_load_model <- function(
     default_chunk_size,
     align_bytes
   )
-  xptr <- .nvforest_load_model(
+  xptr <- nvforest_native_load_model(
     filename = normalizePath(model_file, mustWork = TRUE),
     model_type = nvforest_match_model_type(model_type),
     device = inference$device,
@@ -291,7 +297,7 @@ nvforest_predict_matrix <- function(
         chunk_size == as.integer(chunk_size))
   )
 
-  info <- .nvforest_model_info(object$xptr)
+  info <- nvforest_native_model_info(object$xptr)
   if (identical(object$mode, "classification")) {
     stopifnot(
       "`threshold` is only valid for binary classifiers" = is.null(threshold) ||
@@ -315,7 +321,7 @@ nvforest_predict_matrix <- function(
     prediction_type <- 0L
   }
 
-  predictions <- .nvforest_predict(
+  predictions <- nvforest_native_predict(
     model = object$xptr,
     input = x,
     prediction_type = prediction_type,
@@ -412,7 +418,7 @@ predict.cuda_ml_nvforest <- function(
 #' @export
 cuda_ml_nvforest_info <- function(object) {
   nvforest_validate_model(object)
-  info <- .nvforest_model_info(object$xptr)
+  info <- nvforest_native_model_info(object$xptr)
   info$task_type <- nvforest_task_name(info$task_type)
   info$device <- nvforest_code_name(
     info$device,
@@ -465,13 +471,13 @@ nvforest_chunk_size <- function(info, chunk_size) {
 cuda_ml_nvforest_leaf_ids <- function(object, new_data, chunk_size = NULL) {
   nvforest_validate_model(object)
   x <- nvforest_predictors(object, new_data)
-  predictions <- .nvforest_predict(
+  predictions <- nvforest_native_predict(
     model = object$xptr,
     input = x,
     prediction_type = 2L,
     threshold = 0.5,
     chunk_size = nvforest_chunk_size(
-      .nvforest_model_info(object$xptr),
+      nvforest_native_model_info(object$xptr),
       chunk_size
     )
   )
@@ -502,13 +508,13 @@ cuda_ml_nvforest_predict_per_tree <- function(
 ) {
   nvforest_validate_model(object)
   x <- nvforest_predictors(object, new_data)
-  predictions <- .nvforest_predict(
+  predictions <- nvforest_native_predict(
     model = object$xptr,
     input = x,
     prediction_type = 3L,
     threshold = 0.5,
     chunk_size = nvforest_chunk_size(
-      .nvforest_model_info(object$xptr),
+      nvforest_native_model_info(object$xptr),
       chunk_size
     )
   )
@@ -526,9 +532,13 @@ cuda_ml_nvforest_predict_per_tree <- function(
 
 nvforest_model_payload <- function(model) {
   list(
-    model = .nvforest_serialize(model$xptr),
+    model = nvforest_native_serialize(model$xptr),
     class_levels = model$class_levels,
-    inference = model$inference,
+    precision = nvforest_code_name(
+      model$inference$precision,
+      c("-1" = "native", "0" = "single", "1" = "double"),
+      "precision"
+    ),
     averaged_vector_leaf_probabilities = inherits(
       model,
       "cuda_ml_rand_forest"
@@ -538,9 +548,8 @@ nvforest_model_payload <- function(model) {
   )
 }
 
-nvforest_unserialize_payload <- function(payload, cls) {
-  inference <- payload$inference
-  xptr <- .nvforest_unserialize(
+nvforest_unserialize_payload <- function(payload, cls, inference) {
+  xptr <- nvforest_native_unserialize(
     bytes = payload$model,
     device = inference$device,
     device_id = inference$device_id,
@@ -559,11 +568,36 @@ nvforest_unserialize_payload <- function(payload, cls) {
   )
 }
 
+nvforest_unserialize_payload_v1 <- function(payload, cls) {
+  nvforest_unserialize_payload(payload, cls, payload$inference)
+}
+
+nvforest_unserialize_payload_v2 <- function(
+  payload,
+  cls,
+  device = c("gpu", "cpu"),
+  device_id = NULL,
+  layout = c("depth_first", "breadth_first", "layered"),
+  precision = NULL,
+  default_chunk_size = NULL,
+  align_bytes = NULL
+) {
+  inference <- nvforest_inference_options(
+    device = device %||% c("gpu", "cpu"),
+    device_id = device_id,
+    layout = layout %||% c("depth_first", "breadth_first", "layered"),
+    precision = precision %||% payload$precision,
+    default_chunk_size = default_chunk_size,
+    align_bytes = align_bytes
+  )
+  nvforest_unserialize_payload(payload, cls, inference)
+}
+
 #' @export
 cuda_ml_get_state.cuda_ml_nvforest <- function(model) {
   new_model_state(
     nvforest_model_payload(model),
-    "cuda_ml_nvforest_model_state"
+    "cuda_ml_nvforest_model_state_v2"
   )
 }
 
@@ -573,5 +607,33 @@ cuda_ml_set_state.cuda_ml_nvforest_model_state <- function(model_state) {
     model_state,
     "cuda_ml_nvforest_model_state"
   )
-  nvforest_unserialize_payload(payload, "cuda_ml_nvforest")
+  nvforest_unserialize_payload_v1(payload, "cuda_ml_nvforest")
+}
+
+#' @export
+cuda_ml_set_state.cuda_ml_nvforest_model_state_v2 <- function(
+  model_state
+) {
+  cuda_ml_set_state_with_options.cuda_ml_nvforest_model_state_v2(
+    model_state,
+    list()
+  )
+}
+
+#' @export
+cuda_ml_set_state_with_options.cuda_ml_nvforest_model_state_v2 <- function(
+  model_state,
+  options
+) {
+  payload <- cuda_ml_state_payload(
+    model_state,
+    "cuda_ml_nvforest_model_state_v2"
+  )
+  do.call(
+    nvforest_unserialize_payload_v2,
+    c(
+      list(payload = payload, cls = "cuda_ml_nvforest"),
+      options
+    )
+  )
 }

@@ -10,3 +10,4 @@ inst/backend-src/Makefile
 inst/backend-src/Makevars
 inst/backend-src/*.o
 inst/backend-src/*.so
+inst/nvforest-cpu-src/.cmake-build*

@@ -1,17 +1,23 @@
 #include "nvforest.h"
 
-#include "cuda_utils.h"
-#include "handle_utils.h"
+#if defined(NVFOREST_ENABLE_GPU) && !defined(CUDA_ML_NVFOREST_CPU_ONLY)
+#define CUDA_ML_NVFOREST_GPU_WRAPPER
+#endif
+
 #include "matrix_utils.h"
 #include "nvforest_internal.h"
-#include "stream_allocator.h"
 #include "treelite_utils.cuh"
+
+#ifdef CUDA_ML_NVFOREST_GPU_WRAPPER
+#include "cuda_utils.h"
+#include "handle_utils.h"
+#include "stream_allocator.h"
+#endif
 
 #include <treelite/c_api.h>
 #include <treelite/enum/task_type.h>
 #include <treelite/tree.h>
 #include <treelite/version.h>
-#include <cuml/version_config.hpp>
 #include <nvforest/detail/raft_proto/buffer.hpp>
 #include <nvforest/forest_model.hpp>
 #include <nvforest/infer_kind.hpp>
@@ -19,6 +25,10 @@
 #include <nvforest/tree_layout.hpp>
 #include <nvforest/treelite_importer.hpp>
 #include <nvforest/version_config.hpp>
+
+#ifdef CUDA_ML_NVFOREST_GPU_WRAPPER
+#include <cuml/version_config.hpp>
+#endif
 
 #include <Rcpp.h>
 
@@ -37,8 +47,10 @@
 namespace cuml4r {
 namespace {
 
+#ifdef CUDA_ML_NVFOREST_GPU_WRAPPER
 static_assert(CUML_VERSION_MAJOR == 26 && CUML_VERSION_MINOR == 6 &&
               CUML_VERSION_PATCH == 0);
+#endif
 static_assert(NVForest_VERSION_MAJOR == 26 && NVForest_VERSION_MINOR == 6 &&
               NVForest_VERSION_PATCH == 0);
 static_assert(TREELITE_VER_MAJOR == 4 && TREELITE_VER_MINOR == 7 &&
@@ -59,7 +71,13 @@ enum class PredictionType : int {
   PER_TREE = 3
 };
 
-SEXP nvforest_model_tag() { return Rf_install("cuda.ml.nvforest_model"); }
+SEXP nvforest_model_tag() {
+#ifdef CUDA_ML_NVFOREST_CPU_ONLY
+  return Rf_install("cuda.ml.nvforest_cpu_model");
+#else
+  return Rf_install("cuda.ml.nvforest_model");
+#endif
+}
 
 struct ModelMetadata {
   treelite::TaskType task_type;
@@ -68,6 +86,7 @@ struct ModelMetadata {
   bool average_tree_output;
 };
 
+#ifdef CUDA_ML_NVFOREST_GPU_WRAPPER
 class ScopedCudaDevice {
  public:
   explicit ScopedCudaDevice(int const device) {
@@ -91,6 +110,7 @@ class ScopedCudaDevice {
   int previous_ = 0;
   bool changed_ = false;
 };
+#endif
 
 bool is_power_of_two(int const value) {
   return value > 0 && (value & (value - 1)) == 0;
@@ -104,6 +124,11 @@ NvForestOptions parse_options(int const device, int const device_id,
       device > static_cast<int>(NvForestDevice::GPU)) {
     Rcpp::stop("'device' must be either CPU or GPU.");
   }
+#ifndef CUDA_ML_NVFOREST_GPU_WRAPPER
+  if (device == static_cast<int>(NvForestDevice::GPU)) {
+    Rcpp::stop("This nvForest backend supports CPU inference only.");
+  }
+#endif
   if (layout < static_cast<int>(NvForestLayout::DEPTH_FIRST) ||
       layout > static_cast<int>(NvForestLayout::LAYERED)) {
     Rcpp::stop("Unknown nvForest tree layout.");
@@ -257,10 +282,14 @@ int resolve_device_id(NvForestOptions const& options) {
   if (options.device == NvForestDevice::CPU) {
     return -1;
   }
+#ifdef CUDA_ML_NVFOREST_GPU_WRAPPER
   if (options.device_id >= 0) {
     return options.device_id;
   }
   return currentDevice();
+#else
+  Rcpp::stop("This nvForest backend supports CPU inference only.");
+#endif
 }
 
 int resolve_align_bytes(NvForestOptions const& options) {
@@ -272,6 +301,7 @@ int resolve_align_bytes(NvForestOptions const& options) {
 
 class NvForestModel {
  public:
+#ifdef CUDA_ML_NVFOREST_GPU_WRAPPER
   NvForestModel(std::unique_ptr<raft::handle_t> handle,
                 ::nvforest::forest_model forest,
                 std::vector<std::uint8_t> serialized, ModelMetadata metadata,
@@ -284,6 +314,18 @@ class NvForestModel {
       options_(options),
       resolved_device_id_(resolved_device_id),
       averaged_vector_leaf_probabilities_(averaged_vector_leaf_probabilities) {}
+#else
+  NvForestModel(::nvforest::forest_model forest,
+                std::vector<std::uint8_t> serialized, ModelMetadata metadata,
+                NvForestOptions options,
+                bool const averaged_vector_leaf_probabilities)
+    : forest_(std::move(forest)),
+      serialized_(std::move(serialized)),
+      metadata_(std::move(metadata)),
+      options_(options),
+      resolved_device_id_(-1),
+      averaged_vector_leaf_probabilities_(averaged_vector_leaf_probabilities) {}
+#endif
 
   static std::unique_ptr<NvForestModel> create(
     TreeliteHandle const& treelite, NvForestOptions const& options,
@@ -298,12 +340,13 @@ class NvForestModel {
         "contract.");
     }
     auto serialized = serialize_treelite(treelite);
+#ifdef CUDA_ML_NVFOREST_GPU_WRAPPER
     auto const device_id = resolve_device_id(options);
     auto const device_type = options.device == NvForestDevice::GPU
                                ? raft_proto::device_type::gpu
                                : raft_proto::device_type::cpu;
     auto handle = std::unique_ptr<raft::handle_t>();
-    auto stream = cudaStream_t{};
+    auto stream = raft_proto::cuda_stream{};
     auto device_guard = std::unique_ptr<ScopedCudaDevice>();
 
     if (options.device == NvForestDevice::GPU) {
@@ -327,6 +370,17 @@ class NvForestModel {
     return std::make_unique<NvForestModel>(
       std::move(handle), std::move(forest), std::move(serialized), metadata,
       options, device_id, averaged_vector_leaf_probabilities);
+#else
+    auto forest = ::nvforest::import_from_treelite_handle(
+      treelite.get(), as_nvforest_layout(options.layout),
+      static_cast<::nvforest::index_type>(resolve_align_bytes(options)),
+      as_nvforest_precision(options.precision), raft_proto::device_type::cpu, 0,
+      raft_proto::cuda_stream{});
+
+    return std::make_unique<NvForestModel>(
+      std::move(forest), std::move(serialized), metadata, options,
+      averaged_vector_leaf_probabilities);
+#endif
   }
 
   bool is_classifier() const {
@@ -364,11 +418,12 @@ class NvForestModel {
       auto output_buffer =
         raft_proto::buffer<T>(output.data(), output.size(),
                               raft_proto::device_type::cpu, device_index);
-      forest_.predict(output_buffer, input_buffer, cudaStream_t{}, kind,
-                      as_chunk_size(effective_chunk_size));
+      forest_.predict(output_buffer, input_buffer, raft_proto::cuda_stream{},
+                      kind, as_chunk_size(effective_chunk_size));
       return output;
     }
 
+#ifdef CUDA_ML_NVFOREST_GPU_WRAPPER
     ScopedCudaDevice const device_guard(resolved_device_id_);
     auto const stream = handle_->get_stream();
     auto input_buffer = raft_proto::buffer<T>(
@@ -383,10 +438,13 @@ class NvForestModel {
     CUDA_RT_CALL(cudaStreamSynchronize(stream));
     return std::vector<T>(host_output.data(),
                           host_output.data() + host_output.size());
+#else
+    Rcpp::stop("This nvForest backend supports CPU inference only.");
+#endif
   }
 
   void validate_input(Rcpp::NumericMatrix const& input) {
-    if (input.ncol() != forest_.num_features()) {
+    if (input.ncol() != static_cast<int>(forest_.num_features())) {
       Rcpp::stop("nvForest model expects %d features, but received %d.",
                  static_cast<int>(forest_.num_features()), input.ncol());
     }
@@ -428,8 +486,10 @@ class NvForestModel {
     }
   }
 
+#ifdef CUDA_ML_NVFOREST_GPU_WRAPPER
+  // This member must be declared before forest_ so it is destroyed after it.
   std::unique_ptr<raft::handle_t> handle_;
-  // This member must be destroyed before handle_.
+#endif
   ::nvforest::forest_model forest_;
   std::vector<std::uint8_t> serialized_;
   ModelMetadata metadata_;

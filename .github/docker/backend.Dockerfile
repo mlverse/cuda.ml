@@ -45,10 +45,33 @@ RUN /opt/cuda.ml/managed-build/cuda-13.2.2-rapids-26.6.0/cmake/bin/cmake \
       --build inst/backend-src/.cmake-build \
       --target cuda.ml \
       --parallel 2
+COPY inst/nvforest-cpu-src/ /build/inst/nvforest-cpu-src/
+RUN CUDA_ML_PREFIX=/opt/cuda.ml/managed-build/cuda-13.2.2-rapids-26.6.0 \
+    && R_INCLUDE_DIR="$(Rscript -e 'cat(R.home("include"))')" \
+    && RCPP_INCLUDE_DIR="$(Rscript -e 'cat(system.file("include", package = "Rcpp"))')" \
+    && "${CUDA_ML_PREFIX}/cmake/bin/cmake" \
+      -S inst/nvforest-cpu-src \
+      -B inst/nvforest-cpu-src/.cmake-build \
+      -GNinja \
+      -DCMAKE_MAKE_PROGRAM="${CUDA_ML_PREFIX}/bin/ninja" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_CXX_COMPILER="$(command -v g++)" \
+      -DR_INCLUDE_DIR="${R_INCLUDE_DIR}" \
+      -DRCPP_INCLUDE_DIR="${RCPP_INCLUDE_DIR}" \
+      -DRAPIDS_INCLUDE_DIR="${CUDA_ML_PREFIX}/include" \
+      -DRAPIDS_LIB_DIR="${CUDA_ML_PREFIX}/lib" \
+    && "${CUDA_ML_PREFIX}/cmake/bin/cmake" \
+      --build inst/nvforest-cpu-src/.cmake-build \
+      --target cuda.ml.nvforest \
+      --parallel 2
 
 FROM backend-build AS backend
 
-COPY tools/audit-backend.R tools/package-backend.R tools/nvrtc-probe.c /build/tools/
+COPY LICENSE.md /build/LICENSE.md
+COPY inst/COPYRIGHTS /build/inst/COPYRIGHTS
+COPY inst/third-party/ /build/inst/third-party/
+COPY inst/nvforest-native-symbols.txt /build/inst/
+COPY tools/audit-backend.R tools/audit-nvforest-cpu-backend.R tools/package-backend.R tools/package-nvforest-cpu-backend.R tools/nvrtc-probe.c /build/tools/
 
 RUN CUDA_ML_PREFIX="$(Rscript -e \
       "cuml_artifact_root <- function() '/build/inst/artifacts'; source('inst/build-tools/artifacts.R'); source('inst/build-tools/bootstrap.R'); cat(cuml_managed_bootstrap_prefix())")" \
@@ -63,12 +86,23 @@ RUN CUDA_ML_PREFIX="$(Rscript -e \
       -lnvrtc \
       -o /usr/local/bin/nvrtc-probe
 
-RUN mkdir -p /out \
+RUN mkdir -p /out/full /out/cpu \
     && Rscript tools/package-backend.R \
       inst/backend-src/.cmake-build/cuda.ml.so \
-      /out \
+      /out/full \
       "${SOURCE_COMMIT}" \
-      "${BACKEND_BASE_URL}"
+      "${BACKEND_BASE_URL}" \
+    && Rscript tools/package-nvforest-cpu-backend.R \
+      inst/nvforest-cpu-src/.cmake-build/cuda.ml.nvforest.so \
+      /out/cpu \
+      "${SOURCE_COMMIT}" \
+      "${BACKEND_BASE_URL}" \
+    && mkdir /tmp/cuda-ml-nvforest-cpu-audit \
+    && tar -xzf /out/cpu/*.tar.gz \
+      -C /tmp/cuda-ml-nvforest-cpu-audit \
+    && Rscript tools/audit-nvforest-cpu-backend.R \
+      /tmp/cuda-ml-nvforest-cpu-audit/cuda.ml.nvforest.so \
+    && rm -rf /tmp/cuda-ml-nvforest-cpu-audit
 
 FROM scratch AS export
 COPY --from=backend /out /
@@ -77,8 +111,10 @@ FROM backend AS test-build
 
 COPY . /build
 
-RUN cp /out/*.row.tsv \
+RUN cp /out/full/*.row.tsv \
       inst/backends/linux-x86_64-glibc2.28.tsv \
+    && cp /out/cpu/*.row.tsv \
+      inst/nvforest-backends/linux-x86_64-glibc2.28-nvforest-cpu.tsv \
     && Rscript -e \
       "install.packages('pak', repos = 'https://r-lib.github.io/p/pak/stable/'); options(repos = c(CRAN = 'https://packagemanager.posit.co/cran/__linux__/centos8/latest')); pak::local_install_deps('/build', dependencies = TRUE)" \
     && R CMD build . \
@@ -107,7 +143,8 @@ RUN uv venv --python /usr/bin/python3 /opt/cuda.ml/python \
       scikit-learn
 
 COPY --from=test-build /opt/R/library /opt/R/library
-COPY --from=backend /out/*.tar.gz /opt/cuda.ml/backend/
+COPY --from=backend /out/full/*.tar.gz /opt/cuda.ml/backend/
+COPY --from=backend /out/cpu/*.tar.gz /opt/cuda.ml/backend/
 COPY --from=backend /usr/local/bin/nvrtc-probe /usr/local/bin/nvrtc-probe
 
 ENV CUDA_ML_BACKEND_MIRROR=file:///opt/cuda.ml/backend

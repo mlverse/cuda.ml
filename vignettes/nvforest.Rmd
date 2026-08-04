@@ -15,25 +15,99 @@ knitr::opts_chunk$set(
 )
 ```
 
-nvForest runs inference for tree ensembles exported by XGBoost, LightGBM, or
-Treelite. The examples in this vignette are not evaluated when the vignette is
-built. Building it therefore does not require model files, a GPU, the managed
-runtime, network access, or a runtime download.
+nvForest is the inference layer for random forests trained by cuda.ml and for
+tree ensembles exported by XGBoost, LightGBM, or Treelite. cuda.ml trains its
+random forests with cuML on a GPU. The resulting model state is device neutral,
+so it can be restored for GPU inference or deployed to a host without a GPU for
+CPU inference. Imported XGBoost and LightGBM models can likewise run on either
+device; cuda.ml does not train those model types.
+
+For an externally trained XGBoost or LightGBM model, GPU inference is the
+CUDA-accelerated use case. CPU mode is a deployment option that preserves the
+same nvForest API on hosts without a GPU; it is not CUDA acceleration. The
+GPU-training-to-CPU-deployment workflow supplied entirely by cuda.ml applies
+to `cuda_ml_rand_forest()` models.
+
+The examples in this vignette are not evaluated when the vignette is built.
+Building it therefore does not require model files, a GPU, a native backend,
+network access, or a runtime download.
 
 ## Prepare the runtime
 
-Install the native backend and its managed runtime before loading a model:
+Install the complete backend before training with cuML or running GPU
+inference:
 
 ```{r install}
 library(cuda.ml)
 cuda_ml_install()
 ```
 
-CPU inference does not require an NVIDIA GPU or driver. It still requires
-`cuda_ml_install()` and the full, roughly 1.6 GiB managed CUDA/RAPIDS runtime.
-Provision that runtime while preparing the deployment environment, not while
-handling a prediction request. A completed managed cache is reused by later R
-processes.
+That installation is roughly 1.6 GiB and contains the managed CUDA, RAPIDS
+cuML, and nvForest runtime. For CPU-only nvForest inference, install the
+separate backend instead:
+
+```{r install-cpu}
+cuda_ml_install(device = "cpu")
+```
+
+The CPU backend is roughly 1 MiB to download and 3 MiB when installed. It
+does not include cuML, CUDA runtime libraries, or the complete managed
+CUDA/RAPIDS runtime. It requires neither an NVIDIA GPU nor an NVIDIA driver,
+and cuda.ml selects nvForest's CPU execution path.
+
+An environment that already has the complete backend can continue to execute
+nvForest models on CPU. The separate backend removes the complete runtime from
+CPU-only deployments.
+
+Installation never occurs while loading or predicting. Provision the required
+backend while preparing each environment. A completed cache is reused by later
+R processes.
+
+## Train on GPU and deploy on CPU
+
+`cuda_ml_rand_forest()` trains a cuML random forest on a GPU. Its fitted object
+uses nvForest for inference and supports the same prediction and inspection
+functions as imported models.
+
+```{r train-random-forest}
+library(cuda.ml)
+cuda_ml_install()
+
+forest <- cuda_ml_rand_forest(
+  Species ~ .,
+  data = iris,
+  trees = 500,
+  seed = 1
+)
+
+state <- cuda_ml_serialize(forest)
+saveRDS(state, "iris-forest.cuda-ml-state.rds")
+```
+
+Copy the RDS file to a CPU host. That host needs only the CPU inference
+backend:
+
+```{r deploy-random-forest}
+library(cuda.ml)
+cuda_ml_install(device = "cpu")
+
+forest <- cuda_ml_unserialize(
+  readRDS("iris-forest.cuda-ml-state.rds"),
+  device = "cpu"
+)
+
+predict(forest, iris[1:5, -5], type = "class")
+predict(forest, iris[1:5, -5], type = "prob")
+```
+
+The persisted state contains the Treelite model representation, preprocessing
+blueprint, class labels, and prediction semantics. It does not encode the
+inference device, GPU identifier, tree layout, chunk size, or memory alignment.
+Those are deployment choices. No bundle object is needed for this workflow;
+the value returned by `cuda_ml_serialize()` is the deployment artifact.
+If an existing workflow uses `bundle`, `bundle::bundle(forest, device = "cpu")`
+binds CPU deployment to that bundle while leaving its nested model state
+device neutral.
 
 ## Load exported models
 
@@ -206,24 +280,28 @@ state <- cuda_ml_serialize(classifier)
 saveRDS(state, "classifier.cuda-ml-state.rds")
 ```
 
-Restore the state with `cuda_ml_unserialize()` in a fresh R process. Prepare the
-managed runtime on that host before restoration.
+Restore the state with `cuda_ml_unserialize()` in a fresh R process. Select the
+deployment device during restoration and prepare its backend first.
 
 ```{r restore-state}
 library(cuda.ml)
-cuda_ml_install()
+cuda_ml_install(device = "cpu")
 
 state <- readRDS("classifier.cuda-ml-state.rds")
-classifier <- cuda_ml_unserialize(state)
+classifier <- cuda_ml_unserialize(state, device = "cpu")
 predict(classifier, new_data, type = "prob")
 ```
 
 Schema 1 restoration requires the installed package to support the saved state
-class and model ABI. An nvForest state contains serialized Treelite model bytes,
-so its recorded `treelite_version` must exactly match the target backend.
-The package version and other recorded backend fields are provenance rather
-than compatibility gates for schema 1. States are not migrated implicitly, and
-native pointers are not used as a persistence fallback.
+class and model ABI. Current nvForest and random-forest states are device
+neutral. They retain prediction precision unless it is overridden during
+restoration; other device-specific settings use nvForest defaults unless they
+are supplied to `cuda_ml_unserialize()`. An nvForest state contains serialized
+Treelite model bytes, so its recorded `treelite_version` must exactly match the
+target backend. The package version and other recorded backend fields are
+provenance rather than compatibility gates for schema 1. States are not
+migrated implicitly, and native pointers are not used as a persistence
+fallback. Legacy nvForest states retain their recorded inference settings.
 
 ## Serve predictions with Plumber
 
@@ -236,9 +314,10 @@ column-oriented `predictors` object, such as
 # plumber.R
 library(cuda.ml)
 
-cuda_ml_install()
+cuda_ml_install(device = "cpu")
 classifier <- cuda_ml_unserialize(
-  readRDS("classifier.cuda-ml-state.rds")
+  readRDS("classifier.cuda-ml-state.rds"),
+  device = "cpu"
 )
 
 #* Return class probabilities
@@ -250,6 +329,6 @@ function(req) {
 }
 ```
 
-The route uses only the public cuda.ml persistence and prediction APIs. Prepare
-the managed cache before starting the service so `cuda_ml_install()` reuses the
-completed installation without downloading files.
+The route uses only public cuda.ml persistence and prediction APIs. Run the
+installer while building or provisioning the service image, before starting
+Plumber, so service startup and requests need no network access.

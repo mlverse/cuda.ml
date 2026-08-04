@@ -2,14 +2,22 @@
 % Please edit documentation in R/model.R
 \name{bundle.cuda_ml_model}
 \alias{bundle.cuda_ml_model}
+\alias{bundle.cuda_ml_nvforest}
 \title{Bundle a cuda.ml model}
 \usage{
 \method{bundle}{cuda_ml_model}(x, ...)
+
+\method{bundle}{cuda_ml_nvforest}(x, device = NULL, ...)
 }
 \arguments{
 \item{x}{A fitted cuda.ml model.}
 
 \item{...}{Unused.}
+
+\item{device}{For an nvForest-backed model, the device on which the bundle
+will restore. \code{NULL} preserves the model's current device. Use
+\code{"cpu"} when bundling a GPU-trained random forest for CPU-only
+deployment. Other cuda.ml model types do not accept this argument.}
 }
 \description{
 Converts a model with an explicit portable state into a
@@ -45,13 +53,26 @@ not compatibility gates. A missing payload, unsupported ABI, or missing or
 unequal required backend field is rejected. cuda.ml does not implicitly
 migrate a state or fall back to serializing native pointers.
 
+Current nvForest and random-forest states store device-neutral Treelite
+model bytes. They retain model semantics and prediction precision, but not
+the inference device, device identifier, tree layout, chunk size, or memory
+alignment. Select those settings when restoring with
+\code{cuda_ml_unserialize()}; GPU is the default. Legacy v1 nvForest and
+random-forest states remain supported and restore with the inference settings
+recorded in their payloads.
+
 Saving a state to a file connection and restoring it in another R process
 uses this same contract. The target process must have a compatible cuda.ml
-installation and must prepare the required runtime with
-\code{cuda_ml_install()} before prediction. \code{bundle::bundle()} stores
-the same explicit state, so saving a bundle with \code{saveRDS()} and
-restoring it with \code{readRDS()} and \code{bundle::unbundle()} has the
-same compatibility requirements.
+installation and must prepare the corresponding backend before prediction:
+\code{cuda_ml_install()} for GPU operation or
+\code{cuda_ml_install(device = "cpu")} for CPU-only nvForest inference.
+\code{bundle::bundle()} stores the same explicit state, so saving a bundle
+with \code{saveRDS()} and restoring it with \code{readRDS()} and
+\code{bundle::unbundle()} has the same compatibility requirements. For an
+nvForest-backed model, the bundle also stores its chosen deployment device
+separately from the device-neutral state. A bundle is not required for
+deployment; \code{cuda_ml_serialize()} returns the complete state artifact
+directly.
 }
 
 \seealso{

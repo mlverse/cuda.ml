@@ -56,7 +56,9 @@ cuda_ml_state_backend_requirements <- function(model_abi) {
     cuda_ml_svr_model_state = "rapids_version",
     cuda_ml_umap_model_state = "rapids_version",
     cuda_ml_nvforest_model_state = "treelite_version",
-    cuda_ml_rand_forest_model_state = "treelite_version"
+    cuda_ml_nvforest_model_state_v2 = "treelite_version",
+    cuda_ml_rand_forest_model_state = "treelite_version",
+    cuda_ml_rand_forest_model_state_v2 = "treelite_version"
   )
   required <- requirements[[model_abi]]
   if (is.null(required)) {
@@ -288,13 +290,26 @@ cuda_ml_inverse_transform <- function(model, x, ...) {
 #' unequal required backend field is rejected. cuda.ml does not implicitly
 #' migrate a state or fall back to serializing native pointers.
 #'
+#' Current nvForest and random-forest states store device-neutral Treelite
+#' model bytes. They retain model semantics and prediction precision, but not
+#' the inference device, device identifier, tree layout, chunk size, or memory
+#' alignment. Select those settings when restoring with
+#' \code{cuda_ml_unserialize()}; GPU is the default. Legacy v1 nvForest and
+#' random-forest states remain supported and restore with the inference settings
+#' recorded in their payloads.
+#'
 #' Saving a state to a file connection and restoring it in another R process
 #' uses this same contract. The target process must have a compatible cuda.ml
-#' installation and must prepare the required runtime with
-#' \code{cuda_ml_install()} before prediction. \code{bundle::bundle()} stores
-#' the same explicit state, so saving a bundle with \code{saveRDS()} and
-#' restoring it with \code{readRDS()} and \code{bundle::unbundle()} has the
-#' same compatibility requirements.
+#' installation and must prepare the corresponding backend before prediction:
+#' \code{cuda_ml_install()} for GPU operation or
+#' \code{cuda_ml_install(device = "cpu")} for CPU-only nvForest inference.
+#' \code{bundle::bundle()} stores the same explicit state, so saving a bundle
+#' with \code{saveRDS()} and restoring it with \code{readRDS()} and
+#' \code{bundle::unbundle()} has the same compatibility requirements. For an
+#' nvForest-backed model, the bundle also stores its chosen deployment device
+#' separately from the device-neutral state. A bundle is not required for
+#' deployment; \code{cuda_ml_serialize()} returns the complete state artifact
+#' directly.
 #'
 #' @seealso \code{\link[base]{serialize}}
 #'
@@ -335,6 +350,12 @@ cuda_ml_get_state.default <- function(model) {
 #'
 #' @param connection An open connection or a raw vector.
 #' @param ... Additional arguments to \code{base::unserialize()}.
+#' @param device,device_id,layout,precision,default_chunk_size,align_bytes Named
+#'   nvForest inference options. They are supported only for device-neutral
+#'   nvForest and random-forest states. When \code{device} is omitted, these
+#'   states restore for GPU inference. When \code{precision} is omitted, the
+#'   precision recorded in the state is used. The remaining omitted options use
+#'   nvForest defaults.
 #'
 #' @return A unserialized CuML model.
 #'
@@ -343,15 +364,67 @@ cuda_ml_get_state.default <- function(model) {
 #' @seealso \code{\link[base]{unserialize}}
 #'
 #' @export
-cuda_ml_unserialize <- function(connection, ...) {
+cuda_ml_unserialize <- function(
+  connection,
+  ...,
+  device = NULL,
+  device_id = NULL,
+  layout = NULL,
+  precision = NULL,
+  default_chunk_size = NULL,
+  align_bytes = NULL
+) {
   model_state <- unserialize(connection, ...)
 
-  cuda_ml_set_state(model_state)
+  restore_options <- list()
+  if (!missing(device)) {
+    restore_options["device"] <- list(device)
+  }
+  if (!missing(device_id)) {
+    restore_options["device_id"] <- list(device_id)
+  }
+  if (!missing(layout)) {
+    restore_options["layout"] <- list(layout)
+  }
+  if (!missing(precision)) {
+    restore_options["precision"] <- list(precision)
+  }
+  if (!missing(default_chunk_size)) {
+    restore_options["default_chunk_size"] <- list(default_chunk_size)
+  }
+  if (!missing(align_bytes)) {
+    restore_options["align_bytes"] <- list(align_bytes)
+  }
+
+  if (length(restore_options) == 0L) {
+    return(cuda_ml_set_state(model_state))
+  }
+  cuda_ml_set_state_with_options(model_state, restore_options)
 }
 
 cuda_ml_set_state <- function(model_state) {
   cuda_ml_validate_model_state(model_state)
   UseMethod("cuda_ml_set_state")
+}
+
+cuda_ml_set_state_with_options <- function(model_state, options) {
+  stopifnot(
+    "Restore options must be a named list" = is.list(options) &&
+      length(options) > 0L &&
+      !is.null(names(options)) &&
+      all(nzchar(names(options)))
+  )
+  cuda_ml_validate_model_state(model_state)
+  UseMethod("cuda_ml_set_state_with_options")
+}
+
+#' @export
+cuda_ml_set_state_with_options.default <- function(model_state, options) {
+  stop(
+    "Restore-time inference options are only supported for nvForest ",
+    "model-state v2 ABIs.",
+    call. = FALSE
+  )
 }
 
 #' @export
@@ -371,6 +444,10 @@ cuda_ml_set_state.default <- function(model_state) {
 #'
 #' @param x A fitted cuda.ml model.
 #' @param ... Unused.
+#' @param device For an nvForest-backed model, the device on which the bundle
+#'   will restore. \code{NULL} preserves the model's current device. Use
+#'   \code{"cpu"} when bundling a GPU-trained random forest for CPU-only
+#'   deployment. Other cuda.ml model types do not accept this argument.
 #'
 #' @inheritSection cuda_ml_serialize Persistence contract
 #'
@@ -385,6 +462,30 @@ bundle.cuda_ml_model <- function(x, ...) {
     object = cuda_ml_serialize(x),
     situate = bundle::situate_constr(function(object) {
       cuda.ml::cuda_ml_unserialize(object)
+    }),
+    desc_class = class(x)[[1L]]
+  )
+}
+
+#' @rdname bundle.cuda_ml_model
+#' @exportS3Method bundle::bundle
+bundle.cuda_ml_nvforest <- function(x, device = NULL, ...) {
+  ellipsis::check_dots_empty()
+  device <- match.arg(
+    device %||% cuda_ml_nvforest_info(x)$device,
+    c("gpu", "cpu")
+  )
+
+  bundle::bundle_constr(
+    object = list(
+      state = cuda_ml_serialize(x),
+      device = device
+    ),
+    situate = bundle::situate_constr(function(object) {
+      cuda.ml::cuda_ml_unserialize(
+        object$state,
+        device = object$device
+      )
     }),
     desc_class = class(x)[[1L]]
   )

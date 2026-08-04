@@ -110,6 +110,26 @@ cuda_ml_backend_info <- function() {
     }
   }
 
+  nvforest_cpu_release <- cuda_ml_nvforest_cpu_backend_release(
+    required = FALSE
+  )
+  nvforest_cpu_backend_available <- !is.null(nvforest_cpu_release)
+  nvforest_cpu_runtime_installed <- FALSE
+  nvforest_cpu_runtime_path <- NA_character_
+  if (nvforest_cpu_backend_available && cuda_ml_supported_platform()) {
+    nvforest_cpu_identity <- cuda_ml_nvforest_cpu_backend_identity(
+      nvforest_cpu_release
+    )
+    candidate <- cuda_ml_nvforest_cpu_backend_path(nvforest_cpu_identity)
+    nvforest_cpu_runtime_installed <- cuda_ml_nvforest_cpu_backend_complete(
+      candidate,
+      nvforest_cpu_identity
+    )
+    if (nvforest_cpu_runtime_installed) {
+      nvforest_cpu_runtime_path <- candidate
+    }
+  }
+
   list(
     package_version = as.character(utils::packageVersion("cuda.ml")),
     backend = backend,
@@ -129,7 +149,13 @@ cuda_ml_backend_info <- function() {
     architectures = architectures,
     runtime_installed = runtime_installed,
     runtime_path = runtime_path,
-    backend_loaded = !is.null(.cuda_ml_state$dll)
+    backend_loaded = !is.null(.cuda_ml_state$dll),
+    nvforest_cpu_backend_available = nvforest_cpu_backend_available,
+    nvforest_cpu_runtime_installed = nvforest_cpu_runtime_installed,
+    nvforest_cpu_runtime_path = nvforest_cpu_runtime_path,
+    nvforest_cpu_backend_loaded = !is.null(
+      .cuda_ml_state$nvforest_cpu_dll
+    )
   )
 }
 
@@ -159,6 +185,39 @@ cuda_ml_native_symbols <- function(pkgname = "cuda.ml") {
     all(symbols$arity >= 0L)
   if (!valid) {
     stop("The cuda.ml native-symbol manifest is invalid.", call. = FALSE)
+  }
+  symbols
+}
+
+cuda_ml_nvforest_cpu_native_symbols <- function(pkgname = "cuda.ml") {
+  path <- system.file("nvforest-native-symbols.txt", package = pkgname)
+  if (!nzchar(path)) {
+    stop(
+      "The CPU-only nvForest native-symbol manifest is missing from this installation.",
+      call. = FALSE
+    )
+  }
+
+  symbols <- tryCatch(
+    utils::read.delim(
+      path,
+      stringsAsFactors = FALSE,
+      check.names = FALSE,
+      colClasses = c("character", "integer")
+    ),
+    error = function(e) NULL
+  )
+  valid <- !is.null(symbols) &&
+    identical(names(symbols), c("symbol", "arity")) &&
+    nrow(symbols) > 0L &&
+    all(grepl("^_cuda_ml_nvforest_[[:alnum:]_]+$", symbols$symbol)) &&
+    !anyDuplicated(symbols$symbol) &&
+    all(symbols$arity >= 0L)
+  if (!valid) {
+    stop(
+      "The CPU-only nvForest native-symbol manifest is invalid.",
+      call. = FALSE
+    )
   }
   symbols
 }
@@ -362,6 +421,88 @@ cuda_ml_backend_release <- function(required = TRUE) {
   release
 }
 
+cuda_ml_nvforest_cpu_backend_catalog <- function() {
+  platform <- unname(.cuda_ml_state$metadata[["Platform"]])
+  path <- system.file(
+    "nvforest-backends",
+    paste0(platform, "-nvforest-cpu.tsv"),
+    package = "cuda.ml"
+  )
+  if (!nzchar(path)) {
+    stop(
+      "The CPU-only nvForest backend catalog is missing.",
+      call. = FALSE
+    )
+  }
+  catalog <- tryCatch(
+    utils::read.delim(
+      path,
+      stringsAsFactors = FALSE,
+      check.names = FALSE,
+      colClasses = c(
+        "character",
+        "character",
+        "character",
+        "numeric",
+        "character",
+        "character"
+      )
+    ),
+    error = function(e) NULL
+  )
+  required <- c(
+    "r_version",
+    "filename",
+    "url",
+    "size",
+    "sha256",
+    "backend_sha256"
+  )
+  valid <- !is.null(catalog) &&
+    identical(names(catalog), required) &&
+    !anyDuplicated(catalog$r_version) &&
+    all(grepl("^[0-9]+[.][0-9]+$", catalog$r_version)) &&
+    all(nzchar(catalog$filename)) &&
+    all(basename(catalog$filename) == catalog$filename) &&
+    all(endsWith(catalog$filename, ".tar.gz")) &&
+    all(startsWith(catalog$url, "https://")) &&
+    all(endsWith(catalog$url, paste0("/", catalog$filename))) &&
+    all(catalog$size > 0) &&
+    all(grepl("^[[:xdigit:]]{64}$", catalog$sha256)) &&
+    all(grepl("^[[:xdigit:]]{64}$", catalog$backend_sha256))
+  if (!valid) {
+    stop(
+      "The CPU-only nvForest backend catalog is invalid.",
+      call. = FALSE
+    )
+  }
+  catalog
+}
+
+cuda_ml_nvforest_cpu_backend_release <- function(required = TRUE) {
+  catalog <- cuda_ml_nvforest_cpu_backend_catalog()
+  release <- catalog[
+    catalog$r_version == cuda_ml_r_version(),
+    ,
+    drop = FALSE
+  ]
+  if (!nrow(release)) {
+    if (!required) {
+      return(NULL)
+    }
+    stop(
+      "No prebuilt CPU-only nvForest backend is published for R ",
+      cuda_ml_r_version(),
+      " on ",
+      .cuda_ml_state$metadata[["Platform"]],
+      ".",
+      call. = FALSE
+    )
+  }
+  stopifnot(nrow(release) == 1L)
+  release
+}
+
 cuda_ml_hash_file <- function(path) {
   unname(digest::digest(file = path, algo = "sha256", serialize = FALSE))
 }
@@ -412,6 +553,17 @@ cuda_ml_backend_identity <- function(release = cuda_ml_backend_release()) {
   )
 }
 
+cuda_ml_nvforest_cpu_backend_identity <- function(
+  release = cuda_ml_nvforest_cpu_backend_release()
+) {
+  list(
+    release = release,
+    backend_hash = unname(release[["sha256"]]),
+    backend_dso_hash = unname(release[["backend_sha256"]]),
+    r_version = cuda_ml_r_version()
+  )
+}
+
 cuda_ml_backend_url <- function(backend_identity) {
   mirror <- Sys.getenv("CUDA_ML_BACKEND_MIRROR", unset = "")
   if (!nzchar(mirror)) {
@@ -421,6 +573,24 @@ cuda_ml_backend_url <- function(backend_identity) {
     !startsWith(mirror, "https://") &&
       !startsWith(mirror, "file://")
   ) {
+    stop(
+      "CUDA_ML_BACKEND_MIRROR must be an https:// or file:// URL.",
+      call. = FALSE
+    )
+  }
+  paste0(
+    sub("/+$", "", mirror),
+    "/",
+    backend_identity$release[["filename"]]
+  )
+}
+
+cuda_ml_nvforest_cpu_backend_url <- function(backend_identity) {
+  mirror <- Sys.getenv("CUDA_ML_BACKEND_MIRROR", unset = "")
+  if (!nzchar(mirror)) {
+    return(unname(backend_identity$release[["url"]]))
+  }
+  if (!startsWith(mirror, "https://") && !startsWith(mirror, "file://")) {
     stop(
       "CUDA_ML_BACKEND_MIRROR must be an https:// or file:// URL.",
       call. = FALSE
@@ -460,6 +630,16 @@ cuda_ml_backend_cache_path <- function(runtime_identity, backend_identity) {
     paste0("r-", backend_identity$r_version),
     backend_identity$backend_hash,
     runtime_identity$runtime_hash
+  )
+}
+
+cuda_ml_nvforest_cpu_backend_path <- function(backend_identity) {
+  file.path(
+    cuda_ml_cache_dir(),
+    "nvforest-cpu-backends-v1",
+    cuda_ml_platform(),
+    paste0("r-", backend_identity$r_version),
+    backend_identity$backend_hash
   )
 }
 
@@ -658,6 +838,50 @@ cuda_ml_backend_asset_complete <- function(
   cuda_ml_inventory_complete(path, audit = audit)
 }
 
+cuda_ml_nvforest_cpu_backend_complete <- function(
+  path,
+  backend_identity,
+  audit = FALSE
+) {
+  backend <- file.path(
+    path,
+    "lib",
+    paste0("cuda.ml.nvforest", .Platform$dynlib.ext)
+  )
+  metadata_path <- file.path(path, "lib", "backend.dcf")
+  if (!file.exists(backend) || !file.exists(metadata_path)) {
+    return(FALSE)
+  }
+
+  metadata <- cuda_ml_complete_metadata(path)
+  fields <- c(
+    "Schema",
+    "Asset-SHA256",
+    "Backend-SHA256",
+    "Inventory-SHA256"
+  )
+  if (
+    is.null(metadata) ||
+      !all(fields %in% names(metadata)) ||
+      !identical(unname(metadata[["Schema"]]), "1") ||
+      !identical(
+        unname(metadata[["Asset-SHA256"]]),
+        backend_identity$backend_hash
+      ) ||
+      !identical(
+        unname(metadata[["Backend-SHA256"]]),
+        backend_identity$backend_dso_hash
+      ) ||
+      !identical(
+        unname(metadata[["Inventory-SHA256"]]),
+        cuda_ml_hash_file(file.path(path, "inventory.tsv"))
+      )
+  ) {
+    return(FALSE)
+  }
+  cuda_ml_inventory_complete(path, audit = audit)
+}
+
 cuda_ml_download <- function(component, url, destination, size, sha256) {
   message(
     "Downloading ",
@@ -760,6 +984,53 @@ cuda_ml_backend_archive_metadata <- function(path, backend_identity) {
   metadata
 }
 
+cuda_ml_nvforest_cpu_archive_metadata <- function(path, backend_identity) {
+  metadata <- tryCatch(read.dcf(path), error = function(e) NULL)
+  required <- c(
+    "Schema",
+    "Package",
+    "Backend",
+    "Package-Version",
+    "R-Version",
+    "Platform",
+    "nvForest",
+    "Treelite",
+    "Backend-SHA256",
+    "Source-Commit"
+  )
+  valid <- !is.null(metadata) &&
+    nrow(metadata) == 1L &&
+    identical(colnames(metadata), required)
+  if (!valid) {
+    stop(
+      "The downloaded CPU-only nvForest backend metadata is invalid.",
+      call. = FALSE
+    )
+  }
+  metadata <- metadata[1L, , drop = TRUE]
+  expected <- c(
+    Schema = "1",
+    Package = "cuda.ml",
+    Backend = "nvforest-cpu",
+    `Package-Version` = as.character(utils::packageVersion("cuda.ml")),
+    `R-Version` = backend_identity$r_version,
+    Platform = unname(.cuda_ml_state$metadata[["Platform"]]),
+    nvForest = unname(.cuda_ml_state$metadata[["nvForest"]]),
+    Treelite = unname(.cuda_ml_state$metadata[["Treelite"]]),
+    `Backend-SHA256` = backend_identity$backend_dso_hash
+  )
+  if (
+    !identical(unname(metadata[names(expected)]), unname(expected)) ||
+      !grepl("^[[:xdigit:]]{40}$", metadata[["Source-Commit"]])
+  ) {
+    stop(
+      "The downloaded CPU-only nvForest backend does not match this R package.",
+      call. = FALSE
+    )
+  }
+  metadata
+}
+
 cuda_ml_install_backend_asset <- function(backend_identity, final_path) {
   lock <- cuda_ml_acquire_lock(paste0(
     "backend-asset-",
@@ -789,7 +1060,9 @@ cuda_ml_install_backend_asset <- function(backend_identity, final_path) {
   )
 
   expected <- c("backend.dcf", paste0("cuda.ml", .Platform$dynlib.ext))
-  files <- tryCatch(utils::untar(archive, list = TRUE), error = function(e) NULL)
+  files <- tryCatch(utils::untar(archive, list = TRUE), error = function(e) {
+    NULL
+  })
   if (is.null(files) || !identical(sort(files), sort(expected))) {
     stop("The downloaded cuda.ml backend archive is invalid.", call. = FALSE)
   }
@@ -831,6 +1104,120 @@ cuda_ml_install_backend_asset <- function(backend_identity, final_path) {
   }
   if (!file.rename(staging, final_path)) {
     stop("Unable to publish the downloaded cuda.ml backend.", call. = FALSE)
+  }
+  final_path
+}
+
+cuda_ml_nvforest_cpu_archive_files <- function(files) {
+  backend <- paste0("cuda.ml.nvforest", .Platform$dynlib.ext)
+  license <- "THIRD-PARTY-LICENSES.txt"
+  required <- c("backend.dcf", backend, license)
+  if (!identical(sort(files), sort(required))) {
+    stop(
+      "The downloaded CPU-only nvForest backend archive is invalid.",
+      call. = FALSE
+    )
+  }
+  files
+}
+
+cuda_ml_install_nvforest_cpu_backend <- function(
+  backend_identity,
+  final_path
+) {
+  lock <- cuda_ml_acquire_lock(paste0(
+    "nvforest-cpu-backend-",
+    backend_identity$backend_hash
+  ))
+  on.exit(filelock::unlock(lock), add = TRUE)
+  if (cuda_ml_nvforest_cpu_backend_complete(final_path, backend_identity)) {
+    return(final_path)
+  }
+
+  dir.create(dirname(final_path), recursive = TRUE, showWarnings = FALSE)
+  staging <- tempfile(
+    paste0(basename(final_path), "-staging-"),
+    tmpdir = dirname(final_path)
+  )
+  dir.create(staging)
+  on.exit(unlink(staging, recursive = TRUE, force = TRUE), add = TRUE)
+
+  release <- backend_identity$release
+  archive <- file.path(staging, release[["filename"]])
+  cuda_ml_download(
+    paste0("CPU-only nvForest backend for R ", backend_identity$r_version),
+    cuda_ml_nvforest_cpu_backend_url(backend_identity),
+    archive,
+    release[["size"]],
+    release[["sha256"]]
+  )
+
+  files <- tryCatch(utils::untar(archive, list = TRUE), error = function(e) {
+    NULL
+  })
+  if (is.null(files)) {
+    stop(
+      "The downloaded CPU-only nvForest backend archive is invalid.",
+      call. = FALSE
+    )
+  }
+  files <- cuda_ml_nvforest_cpu_archive_files(files)
+  libdir <- file.path(staging, "lib")
+  dir.create(libdir)
+  utils::untar(archive, files = files, exdir = libdir)
+  unlink(archive, force = TRUE)
+
+  metadata_path <- file.path(libdir, "backend.dcf")
+  license_path <- file.path(libdir, "THIRD-PARTY-LICENSES.txt")
+  backend <- file.path(
+    libdir,
+    paste0("cuda.ml.nvforest", .Platform$dynlib.ext)
+  )
+  license_info <- file.info(license_path)
+  if (
+    !file.exists(license_path) ||
+      is.na(license_info[["isdir"]]) ||
+      license_info[["isdir"]] ||
+      license_info[["size"]] <= 0 ||
+      nzchar(Sys.readlink(license_path))
+  ) {
+    stop(
+      "The downloaded CPU-only nvForest license notice is invalid.",
+      call. = FALSE
+    )
+  }
+  cuda_ml_nvforest_cpu_archive_metadata(metadata_path, backend_identity)
+  if (
+    !cuda_ml_is_elf(backend) ||
+      !identical(cuda_ml_hash_file(backend), backend_identity$backend_dso_hash)
+  ) {
+    stop(
+      "The downloaded CPU-only nvForest backend library is invalid.",
+      call. = FALSE
+    )
+  }
+  if (nzchar(Sys.readlink(backend))) {
+    stop(
+      "The downloaded CPU-only nvForest backend library is invalid.",
+      call. = FALSE
+    )
+  }
+
+  inventory <- cuda_ml_write_inventory(staging)
+  cuda_ml_write_nvforest_cpu_backend_complete(
+    staging,
+    backend_identity,
+    cuda_ml_hash_file(inventory)
+  )
+
+  if (dir.exists(final_path)) {
+    unlink(final_path, recursive = TRUE, force = TRUE)
+  }
+  if (!file.rename(staging, final_path)) {
+    stop(
+      "Unable to publish the CPU-only nvForest backend cache.",
+      call. = FALSE
+    )
   }
   final_path
 }
@@ -1208,6 +1595,34 @@ cuda_ml_write_backend_asset_complete <- function(
   )
 }
 
+cuda_ml_write_nvforest_cpu_backend_complete <- function(
+  path,
+  backend_identity,
+  inventory_hash
+) {
+  write.dcf(
+    matrix(
+      c(
+        "1",
+        backend_identity$backend_hash,
+        backend_identity$backend_dso_hash,
+        inventory_hash
+      ),
+      nrow = 1L,
+      dimnames = list(
+        NULL,
+        c(
+          "Schema",
+          "Asset-SHA256",
+          "Backend-SHA256",
+          "Inventory-SHA256"
+        )
+      )
+    ),
+    file = file.path(path, ".complete")
+  )
+}
+
 cuda_ml_acquire_lock <- function(name) {
   cache <- cuda_ml_cache_dir()
   lock_dir <- file.path(cache, "locks")
@@ -1457,6 +1872,16 @@ cuda_ml_prepare_runtime <- function() {
   list(runtime = runtime_path, backend = backend_path)
 }
 
+cuda_ml_prepare_nvforest_cpu_backend <- function() {
+  cuda_ml_platform()
+  backend_identity <- cuda_ml_nvforest_cpu_backend_identity()
+  backend_path <- cuda_ml_nvforest_cpu_backend_path(backend_identity)
+  if (!cuda_ml_nvforest_cpu_backend_complete(backend_path, backend_identity)) {
+    cuda_ml_install_nvforest_cpu_backend(backend_identity, backend_path)
+  }
+  backend_path
+}
+
 cuda_ml_require_backend <- function() {
   if (!is.null(.cuda_ml_state$dll)) {
     return(.cuda_ml_state$dll)
@@ -1507,6 +1932,51 @@ cuda_ml_require_backend <- function() {
   dll
 }
 
+cuda_ml_require_nvforest_cpu_backend <- function() {
+  if (!is.null(.cuda_ml_state$nvforest_cpu_dll)) {
+    return(.cuda_ml_state$nvforest_cpu_dll)
+  }
+
+  cuda_ml_platform()
+  backend_identity <- cuda_ml_nvforest_cpu_backend_identity()
+  backend_path <- cuda_ml_nvforest_cpu_backend_path(backend_identity)
+  if (!cuda_ml_nvforest_cpu_backend_complete(backend_path, backend_identity)) {
+    stop(
+      "The CPU-only nvForest backend is not installed. ",
+      "Call cuda_ml_install(device = \"cpu\") once before CPU inference.",
+      call. = FALSE
+    )
+  }
+
+  dll <- cuda_ml_load_nvforest_cpu_backend(backend_path)
+  .cuda_ml_state$nvforest_cpu_dll <- dll
+  dll
+}
+
+cuda_ml_nvforest_cpu_symbol <- function(name) {
+  stopifnot(
+    is.character(name),
+    length(name) == 1L,
+    !is.na(name),
+    startsWith(name, "_cuda_ml_nvforest_")
+  )
+  dll <- cuda_ml_require_nvforest_cpu_backend()
+  if (is.null(.cuda_ml_state$nvforest_cpu_symbols)) {
+    .cuda_ml_state$nvforest_cpu_symbols <-
+      getDLLRegisteredRoutines(dll)[[".Call"]]
+  }
+  symbol <- .cuda_ml_state$nvforest_cpu_symbols[[name]]
+  if (is.null(symbol)) {
+    stop(
+      "The CPU-only nvForest backend does not register '",
+      name,
+      "'.",
+      call. = FALSE
+    )
+  }
+  symbol
+}
+
 cuda_ml_load_backend <- function(runtime_dir) {
   backend <- file.path(
     runtime_dir,
@@ -1518,6 +1988,23 @@ cuda_ml_load_backend <- function(runtime_dir) {
     dyn.unload(backend)
     stop(
       "The cached cuda.ml backend failed its registration check.",
+      call. = FALSE
+    )
+  }
+  dll
+}
+
+cuda_ml_load_nvforest_cpu_backend <- function(runtime_dir) {
+  backend <- file.path(
+    runtime_dir,
+    "lib",
+    paste0("cuda.ml.nvforest", .Platform$dynlib.ext)
+  )
+  dll <- dyn.load(backend, local = TRUE, now = TRUE)
+  if (!cuda_ml_nvforest_cpu_registration_valid(dll)) {
+    dyn.unload(backend)
+    stop(
+      "The cached CPU-only nvForest backend failed its registration check.",
       call. = FALSE
     )
   }
@@ -1588,16 +2075,68 @@ cuda_ml_backend_registration_valid <- function(dll) {
   )
 }
 
+cuda_ml_nvforest_cpu_registration_valid <- function(dll) {
+  tryCatch(
+    {
+      registered <- getDLLRegisteredRoutines(dll)[[".Call"]]
+      registered_manifest <- data.frame(
+        symbol = names(registered),
+        arity = as.integer(vapply(
+          registered,
+          `[[`,
+          numeric(1),
+          "numParameters"
+        )),
+        stringsAsFactors = FALSE
+      )
+      registered_manifest <- registered_manifest[
+        order(registered_manifest$symbol),
+        ,
+        drop = FALSE
+      ]
+      expected_manifest <- cuda_ml_nvforest_cpu_native_symbols()
+      expected_manifest <- expected_manifest[
+        order(expected_manifest$symbol),
+        ,
+        drop = FALSE
+      ]
+      rownames(registered_manifest) <- NULL
+      rownames(expected_manifest) <- NULL
+      version_symbol <- getNativeSymbolInfo(
+        "_cuda_ml_nvforest_backend_versions",
+        PACKAGE = dll,
+        withRegistrationInfo = TRUE
+      )
+      versions <- do.call(.Call, list(version_symbol))
+      identical(registered_manifest, expected_manifest) &&
+        identical(names(versions), c("nvforest", "treelite")) &&
+        identical(
+          package_version(versions[["nvforest"]]),
+          package_version(unname(.cuda_ml_state$metadata[["nvForest"]]))
+        ) &&
+        identical(
+          package_version(versions[["treelite"]]),
+          package_version(unname(.cuda_ml_state$metadata[["Treelite"]]))
+        )
+    },
+    error = function(e) FALSE
+  )
+}
+
 #' Install a cuda.ml native backend
 #'
 #' By default, downloads, verifies, extracts, and caches the precompiled backend
 #' and its runtime libraries. Alternatively, bootstraps a locked CUDA and RAPIDS
 #' build toolchain and compiles the native backend on the host. Calling it again
-#' with the same inputs is a no-op.
+#' with the same inputs is a no-op. Use \code{device = "cpu"} to install the
+#' separate nvForest CPU inference backend, roughly 1 MiB to download and
+#' 3 MiB when installed, without the complete CUDA and RAPIDS runtime.
+#' Installation never occurs implicitly during model loading or prediction.
 #'
-#' @param source A logical value. If \code{FALSE}, install the prebuilt backend
-#'   and managed runtime. If \code{TRUE}, compile the backend from the native
-#'   sources included in the R package.
+#' @param source A logical value. If \code{FALSE}, install the requested
+#'   prebuilt backend. If \code{TRUE}, compile the complete GPU backend from the
+#'   native sources included in the R package. Source installation is not
+#'   supported for \code{device = "cpu"}.
 #' @param dependencies For a source installation, either \code{"managed"} to
 #'   download and cache the exact locked build dependencies, or \code{"host"}
 #'   to use explicit host installations.
@@ -1608,6 +2147,10 @@ cuda_ml_backend_registration_valid <- function(dll) {
 #'   \code{"native"} requires detection, and \code{"portable"} forces the
 #'   package list. Host source builds use \code{CUML_CUDA_ARCHITECTURES} when
 #'   this argument is \code{NULL}.
+#' @param device Backend to install: \code{"gpu"} installs the complete CUDA and
+#'   RAPIDS backend used for training and GPU inference; \code{"cpu"} installs
+#'   only the CPU nvForest inference backend. CPU installation does not
+#'   provision the complete CUDA and RAPIDS runtime or any cuML algorithms.
 #'
 #' @return Invisibly returns \code{TRUE}.
 #'
@@ -1616,6 +2159,12 @@ cuda_ml_backend_registration_valid <- function(dll) {
 #' \code{CUDA_ML_CACHE_DIR} to use a different cache root. Set
 #' \code{CUDA_ML_BACKEND_MIRROR} to an \code{https://} or \code{file://}
 #' directory containing the exact locked backend archive.
+#'
+#' The CPU-only backend supports nvForest model loading, restoration, and
+#' inference. It does not provide cuML training or GPU inference and requires
+#' neither an NVIDIA GPU nor an NVIDIA driver. It contains no CUDA runtime
+#' libraries. Install the complete backend separately with
+#' \code{cuda_ml_install()} when training or GPU inference is needed.
 #'
 #' A managed source installation downloads no precompiled cuda.ml backend. It
 #' downloads and verifies the locked CUDA 13.2.2 and RAPIDS 26.06 development
@@ -1645,6 +2194,8 @@ cuda_ml_backend_registration_valid <- function(dll) {
 #' \dontrun{
 #' cuda_ml_install()
 #'
+#' cuda_ml_install(device = "cpu")
+#'
 #' cuda_ml_install(source = TRUE)
 #'
 #' cuda_ml_install(source = TRUE, architectures = "native")
@@ -1663,7 +2214,8 @@ cuda_ml_backend_registration_valid <- function(dll) {
 cuda_ml_install <- function(
   source = FALSE,
   dependencies = "managed",
-  architectures = NULL
+  architectures = NULL,
+  device = c("gpu", "cpu")
 ) {
   stopifnot(
     is.logical(source),
@@ -1674,12 +2226,11 @@ cuda_ml_install <- function(
     !is.na(dependencies),
     dependencies %in% c("managed", "host"),
     is.null(architectures) ||
-      (
-        is.character(architectures) &&
-          length(architectures) == 1L &&
-          !is.na(architectures)
-      )
+      (is.character(architectures) &&
+        length(architectures) == 1L &&
+        !is.na(architectures))
   )
+  device <- match.arg(device)
   if (
     !source &&
       (!identical(dependencies, "managed") || !is.null(architectures))
@@ -1688,6 +2239,21 @@ cuda_ml_install <- function(
       "dependencies and architectures apply only to source installations.",
       call. = FALSE
     )
+  }
+  if (identical(device, "cpu") && source) {
+    stop(
+      "CPU-only nvForest source installation is not supported.",
+      call. = FALSE
+    )
+  }
+
+  if (identical(device, "cpu")) {
+    cuda_ml_platform()
+    cuda_ml_nvforest_cpu_backend_release()
+    lock <- cuda_ml_acquire_lock("cache-install")
+    on.exit(filelock::unlock(lock), add = TRUE)
+    cuda_ml_prepare_nvforest_cpu_backend()
+    return(invisible(TRUE))
   }
 
   requested <- if (source) "source" else "download"
@@ -1738,18 +2304,55 @@ cuda_ml_install <- function(
 
 #' Audit the installed native backend
 #'
-#' Recomputes the hashes recorded when the selected backend was installed and
-#' validates its native registration. For a downloaded backend, also validates
-#' the complete managed-runtime dependency closure. Ordinary runtime reuse
-#' performs only fast marker, inventory, size, and link checks.
+#' Recomputes the hashes recorded when the requested backend was installed and
+#' validates its native registration. For the complete downloaded backend, it
+#' also validates the managed-runtime dependency closure. Ordinary runtime
+#' reuse performs only fast marker, inventory, size, and link checks.
+#'
+#' @param device Backend to audit: the complete \code{"gpu"} backend or the
+#'   CPU-only nvForest backend.
 #'
 #' @return Invisibly returns \code{TRUE}.
 #' @export
-cuda_ml_runtime_audit <- function() {
+cuda_ml_runtime_audit <- function(device = c("gpu", "cpu")) {
+  device <- match.arg(device)
   cuda_ml_platform()
 
   lock <- cuda_ml_acquire_lock("cache-install")
   on.exit(filelock::unlock(lock), add = TRUE)
+  if (identical(device, "cpu")) {
+    backend_identity <- cuda_ml_nvforest_cpu_backend_identity()
+    backend_path <- cuda_ml_nvforest_cpu_backend_path(backend_identity)
+    if (
+      !cuda_ml_nvforest_cpu_backend_complete(
+        backend_path,
+        backend_identity,
+        audit = TRUE
+      )
+    ) {
+      stop(
+        "The installed CPU-only nvForest backend failed its content audit. ",
+        "Run cuda_ml_cache_clean(), then ",
+        "cuda_ml_install(device = \"cpu\").",
+        call. = FALSE
+      )
+    }
+    if (is.null(.cuda_ml_state$nvforest_cpu_dll)) {
+      dll <- cuda_ml_load_nvforest_cpu_backend(backend_path)
+      on.exit(dyn.unload(dll[["path"]]), add = TRUE)
+    } else if (
+      !cuda_ml_nvforest_cpu_registration_valid(
+        .cuda_ml_state$nvforest_cpu_dll
+      )
+    ) {
+      stop(
+        "The loaded CPU-only nvForest backend failed its registration check.",
+        call. = FALSE
+      )
+    }
+    return(invisible(TRUE))
+  }
+
   selection <- cuda_ml_backend_selection()
   if (identical(selection$backend, "source")) {
     backend_path <- cuda_ml_source_backend_path(selection$source_hash)
@@ -1833,7 +2436,10 @@ cuda_ml_runtime_audit <- function() {
 #' @return Invisibly returns \code{TRUE}.
 #' @export
 cuda_ml_cache_clean <- function() {
-  if (!is.null(.cuda_ml_state$dll)) {
+  if (
+    !is.null(.cuda_ml_state$dll) ||
+      !is.null(.cuda_ml_state$nvforest_cpu_dll)
+  ) {
     stop(
       "Restart R before cleaning a loaded cuda.ml backend cache.",
       call. = FALSE
@@ -1851,7 +2457,8 @@ cuda_ml_cache_clean <- function() {
     "backends-v3",
     "source-backends-v1",
     "backend-selection-v1",
-    "source-toolchains-v1"
+    "source-toolchains-v1",
+    "nvforest-cpu-backends-v1"
   )
   targets <- file.path(cache, generations)
   stopifnot(

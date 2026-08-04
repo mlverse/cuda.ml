@@ -1,9 +1,17 @@
 cuda.ml is Copyright (c) 2021 cuda.ml authors and is distributed under the
 MIT license in LICENSE.
 
-The downloadable cuda.ml backend statically links Treelite 4.7.0. Treelite is
-not a separate runtime download. The CRAN package does not contain the compiled
-backend.
+The downloadable cuda.ml backends statically link Treelite 4.7.0. Treelite is
+not a separate runtime download. The CPU-only backend also compiles nvForest
+26.06.0 CPU template code directly into cuda.ml.nvforest.so.
+
+Component       Version or revision                              License file
+nvForest        26.06.0 (a9216c6162daef1434fd4cfa554c7a963c6b2016) third-party/nvforest-LICENSE
+
+The nvForest license is copied from the exact tagged source artifact. The
+CPU-only archive contains no nvForest, RMM, RAPIDS Logger, libgomp, CUDA, or
+RAPIDS shared runtime libraries. The CRAN package does not contain any compiled
+backend or shared runtime library.
 
 The managed builder uses the following source-only dependencies while compiling
 Treelite. Their header code may be incorporated into the static backend, but
