@@ -151,7 +151,7 @@ positive sample in the optimization process. Default: 5.</p></dd>
 
 <dt id="arg-transform-queue-size">transform_queue_size<a class="anchor" aria-label="anchor" href="#arg-transform-queue-size"></a></dt>
 <dd><p>For transform operations (embedding new points
-using a trained model this will control how aggressively to search for
+using a trained model), this controls how aggressively to search for
 nearest neighbors. Default: 4.0.</p></dd>
 
 
@@ -163,12 +163,12 @@ and <code>spread</code>. Default: NULL.</p></dd>
 
 <dt id="arg-target-n-neighbors">target_n_neighbors<a class="anchor" aria-label="anchor" href="#arg-target-n-neighbors"></a></dt>
 <dd><p>The number of nearest neighbors to use to construct
-the target simplcial set. Default: n_neighbors.</p></dd>
+the target simplicial set. Default: n_neighbors.</p></dd>
 
 
 <dt id="arg-target-metric">target_metric<a class="anchor" aria-label="anchor" href="#arg-target-metric"></a></dt>
 <dd><p>The metric for measuring distance between the actual and
-and the target values (<code>y</code>) if using supervised dimension reduction.
+the target values (<code>y</code>) if using supervised dimension reduction.
 Must be one of {"categorical", "euclidean"}. Default: "categorical".</p></dd>
 
 
@@ -216,7 +216,7 @@ deterministic.</p></dd>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">0L</span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/kmeans.html" class="external-link">kmeans</a></span><span class="op">(</span><span class="va">model</span><span class="op">$</span><span class="va">transformed</span>, iter.max <span class="op">=</span> <span class="fl">100</span>, centers <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/kmeans.html" class="external-link">kmeans</a></span><span class="op">(</span><span class="va">model</span><span class="op">$</span><span class="va">transformed_data</span>, iter.max <span class="op">=</span> <span class="fl">100</span>, centers <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>

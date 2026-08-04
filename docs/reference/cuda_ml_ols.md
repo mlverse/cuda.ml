@@ -1,6 +1,6 @@
-# Train a OLS model.
+# Train an OLS model.
 
-Train an Ordinary Least Square (OLS) model for regression tasks.
+Train an ordinary least squares (OLS) model for regression tasks.
 
 ## Usage
 
@@ -82,7 +82,7 @@ cuda_ml_ols(x, data, method = c("svd", "eig", "qr"), fit_intercept = TRUE, ...)
 
 ## Value
 
-A OLS regressor that can be used with the 'predict' S3 generic to make
+An OLS regressor that can be used with the 'predict' S3 generic to make
 predictions on new data points.
 
 ## Examples

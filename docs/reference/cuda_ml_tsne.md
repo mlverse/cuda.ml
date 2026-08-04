@@ -1,7 +1,7 @@
-# t-distributed Stochastic Neighbor Embedding.
+# Perform t-distributed stochastic neighbor embedding.
 
-t-distributed Stochastic Neighbor Embedding (TSNE) for visualizing high-
-dimensional data.
+t-distributed stochastic neighbor embedding (t-SNE) for visualizing
+high- dimensional data.
 
 ## Usage
 
@@ -88,7 +88,7 @@ cuda_ml_tsne(
 - perplexity_tol:
 
   Stop optimizing the Gaussian bands when the conditional distribution's
-  perplexity is within this desired tolerance compared to its taget
+  perplexity is within this desired tolerance compared to its target
   value. Default: 1e-5.
 
 - early_exaggeration:
@@ -126,7 +126,7 @@ cuda_ml_tsne(
 
 - seed:
 
-  Seed to the psuedorandom number generator. Setting this can make
+  Seed to the pseudorandom number generator. Setting this can make
   repeated runs look more similar. Note, however, that this highly
   parallelized t-SNE implementation is not completely deterministic
   between runs, even with the same `seed` being used for each run.

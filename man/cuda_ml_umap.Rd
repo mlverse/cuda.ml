@@ -75,7 +75,7 @@ greater weight being given to negative samples. Default: 1.0.}
 positive sample in the optimization process. Default: 5.}
 
 \item{transform_queue_size}{For transform operations (embedding new points
-using a trained model this will control how aggressively to search for
+using a trained model), this controls how aggressively to search for
 nearest neighbors. Default: 4.0.}
 
 \item{a, b}{More specific parameters controlling the embedding. If not set,
@@ -83,10 +83,10 @@ then these values are set automatically as determined by \code{min_dist}
 and \code{spread}. Default: NULL.}
 
 \item{target_n_neighbors}{The number of nearest neighbors to use to construct
-the target simplcial set. Default: n_neighbors.}
+the target simplicial set. Default: n_neighbors.}
 
 \item{target_metric}{The metric for measuring distance between the actual and
-and the target values (\code{y}) if using supervised dimension reduction.
+the target values (\code{y}) if using supervised dimension reduction.
 Must be one of \{"categorical", "euclidean"\}. Default: "categorical".}
 
 \item{target_weight}{Weighting factor between data topology and target
@@ -129,6 +129,6 @@ if (interactive() && cuda_ml_backend_info()$runtime_installed) {
   )
 
   set.seed(0L)
-  print(kmeans(model$transformed, iter.max = 100, centers = 3))
+  print(kmeans(model$transformed_data, iter.max = 100, centers = 3))
 }
 }

@@ -7,7 +7,7 @@
 \alias{cuda_ml_elastic_net.matrix}
 \alias{cuda_ml_elastic_net.formula}
 \alias{cuda_ml_elastic_net.recipe}
-\title{Train a linear model using elastic regression.}
+\title{Train a linear model using elastic net regression.}
 \usage{
 cuda_ml_elastic_net(x, ...)
 

@@ -15,8 +15,8 @@ within distance `eps` from it.}
 }
 \value{
 A list containing the cluster assignments of all data points. A data
- point not belonging to any cluster (i.e., "noise") will have NA its cluster
- assignment.
+ point not belonging to any cluster (i.e., "noise") will have NA as its
+ cluster assignment.
 }
 \description{
 Run the DBSCAN (Density-based spatial clustering of applications with noise)

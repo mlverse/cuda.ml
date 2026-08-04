@@ -1,4 +1,4 @@
-# Train a MBSGD linear model.
+# Train a linear model using mini-batch stochastic gradient descent.
 
 Train a linear model using mini-batch stochastic gradient descent.
 
@@ -123,7 +123,7 @@ cuda_ml_sgd(
   values of the coefficients. - "l2": perform regularization based on
   the L2 norm (Ridge) which tries to minimize the sum of the square of
   the coefficients. - "elasticnet": perform the Elastic Net
-  regularization which is based on the weighted averable of L1 and L2
+  regularization which is based on the weighted average of L1 and L2
   norms. Default: "none".
 
 - alpha:
@@ -152,7 +152,7 @@ cuda_ml_sgd(
 
 - shuffle:
 
-  Whether to shuffles the training data after each epoch. Default: True.
+  Whether to shuffle the training data after each epoch. Default: TRUE.
 
 - learning_rate:
 
@@ -173,7 +173,8 @@ cuda_ml_sgd(
 
 - power_t:
 
-  The exponent used in the invscaling learning rate calculations.
+  The exponent used for calculating the invscaling learning rate.
+  Default: 0.5.
 
 - batch_size:
 
@@ -182,7 +183,7 @@ cuda_ml_sgd(
 
 - n_iter_no_change:
 
-  The maximum number of epochs to train if there is no imporvement in
+  The maximum number of epochs to train if there is no improvement in
   the model. Default: 5.
 
 - formula:

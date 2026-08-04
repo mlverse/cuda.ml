@@ -7,7 +7,7 @@
 \alias{cuda_ml_sgd.matrix}
 \alias{cuda_ml_sgd.formula}
 \alias{cuda_ml_sgd.recipe}
-\title{Train a MBSGD linear model.}
+\title{Train a linear model using mini-batch stochastic gradient descent.}
 \usage{
 cuda_ml_sgd(x, ...)
 
@@ -112,7 +112,7 @@ centered. Default: TRUE.}
   - "l2": perform regularization based on the L2 norm (Ridge) which tries to
           minimize the sum of the square of the coefficients.
   - "elasticnet": perform the Elastic Net regularization which is based on
-                  the weighted averable of L1 and L2 norms.
+                  the weighted average of L1 and L2 norms.
   Default: "none".}
 
 \item{alpha}{Multiplier of the penalty term. Default: 1e-4.}
@@ -134,8 +134,8 @@ dataset during training. Default: 1000L.}
 (loss in current epoch) > (loss in previous epoch) - \code{tol}.
 Default: 1e-3.}
 
-\item{shuffle}{Whether to shuffles the training data after each epoch.
-Default: True.}
+\item{shuffle}{Whether to shuffle the training data after each epoch.
+Default: TRUE.}
 
 \item{learning_rate}{Must be one of \{"constant", "invscaling", "adaptive"\}.
 
@@ -152,14 +152,14 @@ Default: True.}
 
 \item{eta0}{The initial learning rate. Default: 1e-3.}
 
-\item{power_t}{The exponent used in the invscaling learning rate
-calculations.}
+\item{power_t}{The exponent used for calculating the invscaling learning
+rate. Default: 0.5.}
 
 \item{batch_size}{The number of samples that will be included in each batch.
 Default: 32L.}
 
 \item{n_iter_no_change}{The maximum number of epochs to train if there is no
-imporvement in the model. Default: 5.}
+improvement in the model. Default: 5.}
 
 \item{formula}{A formula specifying the outcome terms on the left-hand side,
 and the predictor terms on the right-hand side.}

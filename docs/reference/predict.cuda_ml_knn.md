@@ -1,6 +1,6 @@
 # Make predictions on new data points.
 
-Make predictions on new data points using a CuML KNN model.
+Make predictions on new data points using a cuML KNN model.
 
 ## Usage
 

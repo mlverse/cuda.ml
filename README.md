@@ -6,7 +6,7 @@
 <!-- badges: start -->
 
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/cuda.ml)](https://cran.r-project.org/package=cuda.ml)
-<a href="https://www.r-pkg.org/pkg/cuda.ml"><img src="https://cranlogs.r-pkg.org/badges/cuda.ml?color=brightgreen" style=""></a>
+<a href="https://www.r-pkg.org/pkg/cuda.ml"><img src="https://cranlogs.r-pkg.org/badges/cuda.ml?color=brightgreen" alt="CRAN downloads"></a>
 <!-- badges: end -->
 
 The goal of {cuda.ml} is to provide a simple and intuitive R interface
@@ -17,7 +17,7 @@ development, and currently implements R interfaces for the algorithms
 listed below (which is a subset of [algorithms supported by RAPIDS
 cuML](https://github.com/rapidsai/cuml#supported-algorithms)).
 
-### Supported Algorithms
+## Supported Algorithms
 
 | Category                                              | Algorithm                                                            | Notes                                                     |
 |-------------------------------------------------------|----------------------------------------------------------------------|-----------------------------------------------------------|
@@ -39,9 +39,9 @@ cuML](https://github.com/rapidsai/cuml#supported-algorithms)).
 |                                                       | Support Vector Machine Classifier (SVC)                              |                                                           |
 |                                                       | Epsilon-Support Vector Regression (SVR)                              |                                                           |
 
-# Examples
+## Examples
 
-## Using {cuda.ml} for supervised ML tasks through {parsnip}
+### Using {cuda.ml} for supervised ML tasks through {parsnip}
 
 {cuda.ml} provides {parsnip} bindings for supervised ML algorithms such
 as `linear_reg`, `logistic_reg`, `multinom_reg`, `rand_forest`,
@@ -88,7 +88,7 @@ preds %>%
 #>   virginica       0          3        14
 ```
 
-## Using {cuda.ml} for unsupervised ML tasks
+### Using {cuda.ml} for unsupervised ML tasks
 
 The following example shows how {cuda.ml} can be used for unsupervised
 ML tasks such as k-means clustering.
@@ -124,7 +124,7 @@ tibble(cluster_id = clustering$labels, species = iris$Species) %>%
 #> 5          2 virginica     36
 ```
 
-## Using {cuda.ml} for visualizations
+### Using {cuda.ml} for visualizations
 
 {cuda.ml} also features R interfaces for algorithms such as UMAP and
 t-SNE, which are useful when one needs to visualize clusters of
@@ -178,7 +178,7 @@ embedding$transformed_data %>%
        subtitle = "Two Dimensional Embedding of MNIST")
 ```
 
-<img src="man/figures/README-umap-example-1.png" alt="" width="100%" />
+<img src="man/figures/README-umap-example-1.png" alt="A two-dimensional UMAP embedding of MNIST digits colored by digit label." width="100%" />
 
 From this type of visualization, we can qualitatively understand the
 following about the MNIST dataset:
@@ -360,5 +360,5 @@ Inspect MNIST images
 plot_mnist(1:64)
 ```
 
-<img src="man/figures/README-mnist-1.png" alt="" width="100%" />
+<img src="man/figures/README-mnist-1.png" alt="A grid of 64 MNIST handwritten digit images." width="100%" />
 </details>

@@ -1,6 +1,6 @@
 # cuda.ml
 
-This package provides a R interface for the RAPIDS cuML library.
+This package provides an R interface for the RAPIDS cuML library.
 
 ## Installation
 

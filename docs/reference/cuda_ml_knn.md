@@ -1,6 +1,6 @@
 # Build a KNN model.
 
-Build a k-nearest-model for classification or regression tasks.
+Build a k-nearest-neighbor model for classification or regression tasks.
 
 ## Usage
 

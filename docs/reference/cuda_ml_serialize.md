@@ -1,6 +1,6 @@
-# Serialize a CuML model
+# Serialize a cuML model
 
-Given a CuML model, serialize its state into a connection.
+Given a cuML model, serialize its state into a connection.
 
 ## Usage
 

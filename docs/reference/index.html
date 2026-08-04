@@ -36,7 +36,7 @@
     </div>
 
     <div class="section level2">
-      <h2 id="all-functions">All functions<a class="anchor" aria-label="anchor" href="#all-functions"></a></h2>
+      <h2 id="install-and-manage-the-backend">Install and manage the backend<a class="anchor" aria-label="anchor" href="#install-and-manage-the-backend"></a></h2>
 
 
 
@@ -47,24 +47,10 @@
 
       <dl><dt>
 
-          <code><a href="bundle.cuda_ml_model.html">bundle(<i>&lt;cuda_ml_model&gt;</i>)</a></code> <code><a href="bundle.cuda_ml_model.html">bundle(<i>&lt;cuda_ml_nvforest&gt;</i>)</a></code>
+          <code><a href="cuda_ml_install.html">cuda_ml_install()</a></code>
 
         </dt>
-        <dd>Bundle a cuda.ml model</dd>
-
-        <dt>
-
-          <code><a href="cuda.ml-package.html">cuda.ml</a></code> <code><a href="cuda.ml-package.html">cuda.ml-package</a></code>
-
-        </dt>
-        <dd>cuda.ml</dd>
-
-        <dt>
-
-          <code><a href="cuda_ml_agglomerative_clustering.html">cuda_ml_agglomerative_clustering()</a></code>
-
-        </dt>
-        <dd>Perform Single-Linkage Agglomerative Clustering.</dd>
+        <dd>Install a cuda.ml native backend</dd>
 
         <dt>
 
@@ -75,47 +61,100 @@
 
         <dt>
 
+          <code><a href="cuda_ml_runtime_audit.html">cuda_ml_runtime_audit()</a></code>
+
+        </dt>
+        <dd>Audit the installed native backend</dd>
+
+        <dt>
+
           <code><a href="cuda_ml_cache_clean.html">cuda_ml_cache_clean()</a></code>
 
         </dt>
         <dd>Remove cuda.ml native-backend caches</dd>
+      </dl></div><div class="section level2">
+      <h2 id="linear-models">Linear models<a class="anchor" aria-label="anchor" href="#linear-models"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="cuda_ml_linear_reg.html">cuda_ml_linear_reg()</a></code>
+
+        </dt>
+        <dd>Train a regularized linear regression model</dd>
 
         <dt>
 
-          <code><a href="cuda_ml_dbscan.html">cuda_ml_dbscan()</a></code>
+          <code><a href="cuda_ml_logistic_reg.html">cuda_ml_logistic_reg()</a></code>
 
         </dt>
-        <dd>Run the DBSCAN clustering algorithm.</dd>
+        <dd>Train a logistic or multinomial regression model</dd>
+
+        <dt>
+
+          <code><a href="cuda_ml_ols.html">cuda_ml_ols()</a></code>
+
+        </dt>
+        <dd>Train an OLS model.</dd>
+
+        <dt>
+
+          <code><a href="cuda_ml_ridge.html">cuda_ml_ridge()</a></code>
+
+        </dt>
+        <dd>Train a linear model using ridge regression.</dd>
+
+        <dt>
+
+          <code><a href="cuda_ml_lasso.html">cuda_ml_lasso()</a></code>
+
+        </dt>
+        <dd>Train a linear model using LASSO regression.</dd>
 
         <dt>
 
           <code><a href="cuda_ml_elastic_net.html">cuda_ml_elastic_net()</a></code>
 
         </dt>
-        <dd>Train a linear model using elastic regression.</dd>
+        <dd>Train a linear model using elastic net regression.</dd>
 
         <dt>
 
-          <code><a href="cuda_ml_install.html">cuda_ml_install()</a></code>
+          <code><a href="cuda_ml_sgd.html">cuda_ml_sgd()</a></code>
 
         </dt>
-        <dd>Install a cuda.ml native backend</dd>
+        <dd>Train a linear model using mini-batch stochastic gradient descent.</dd>
 
         <dt>
 
-          <code><a href="cuda_ml_inverse_transform.html">cuda_ml_inverse_transform()</a></code>
+          <code><a href="predict.cuda_ml_linear_model.html">predict(<i>&lt;cuda_ml_linear_model&gt;</i>)</a></code>
 
         </dt>
-        <dd>Apply the inverse transformation defined by a trained cuML model.</dd>
+        <dd>Make predictions on new data points.</dd>
 
         <dt>
 
-          <code><a href="cuda_ml_kmeans.html">cuda_ml_kmeans()</a></code>
+          <code><a href="predict.cuda_ml_logistic_reg.html">predict(<i>&lt;cuda_ml_logistic_reg&gt;</i>)</a></code>
 
         </dt>
-        <dd>Run the K means clustering algorithm.</dd>
+        <dd>Predict from a logistic or multinomial regression model</dd>
+      </dl></div><div class="section level2">
+      <h2 id="nonlinear-models">Nonlinear models<a class="anchor" aria-label="anchor" href="#nonlinear-models"></a></h2>
 
-        <dt>
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
 
           <code><a href="cuda_ml_knn.html">cuda_ml_knn()</a></code>
 
@@ -138,108 +177,10 @@
 
         <dt>
 
-          <code><a href="cuda_ml_lasso.html">cuda_ml_lasso()</a></code>
-
-        </dt>
-        <dd>Train a linear model using LASSO regression.</dd>
-
-        <dt>
-
-          <code><a href="cuda_ml_linear_reg.html">cuda_ml_linear_reg()</a></code>
-
-        </dt>
-        <dd>Train a regularized linear regression model</dd>
-
-        <dt>
-
-          <code><a href="cuda_ml_logistic_reg.html">cuda_ml_logistic_reg()</a></code>
-
-        </dt>
-        <dd>Train a logistic or multinomial regression model</dd>
-
-        <dt>
-
-          <code><a href="cuda_ml_nvforest_export.html">cuda_ml_nvforest_export()</a></code> <code><a href="cuda_ml_nvforest_export.html">cuda_ml_nvforest_import()</a></code>
-
-        </dt>
-        <dd>Export and import an nvForest checkpoint pair</dd>
-
-        <dt>
-
-          <code><a href="cuda_ml_nvforest_info.html">cuda_ml_nvforest_info()</a></code>
-
-        </dt>
-        <dd>Inspect an nvForest model</dd>
-
-        <dt>
-
-          <code><a href="cuda_ml_nvforest_leaf_ids.html">cuda_ml_nvforest_leaf_ids()</a></code>
-
-        </dt>
-        <dd>Return terminal leaf identifiers</dd>
-
-        <dt>
-
-          <code><a href="cuda_ml_nvforest_load_model.html">cuda_ml_nvforest_load_model()</a></code>
-
-        </dt>
-        <dd>Load a tree ensemble with nvForest</dd>
-
-        <dt>
-
-          <code><a href="cuda_ml_nvforest_predict_per_tree.html">cuda_ml_nvforest_predict_per_tree()</a></code>
-
-        </dt>
-        <dd>Return individual-tree predictions</dd>
-
-        <dt>
-
-          <code><a href="cuda_ml_ols.html">cuda_ml_ols()</a></code>
-
-        </dt>
-        <dd>Train a OLS model.</dd>
-
-        <dt>
-
-          <code><a href="cuda_ml_pca.html">cuda_ml_pca()</a></code>
-
-        </dt>
-        <dd>Perform principal component analysis.</dd>
-
-        <dt>
-
           <code><a href="cuda_ml_rand_forest.html">cuda_ml_rand_forest()</a></code>
 
         </dt>
         <dd>Train a random forest model</dd>
-
-        <dt>
-
-          <code><a href="cuda_ml_ridge.html">cuda_ml_ridge()</a></code>
-
-        </dt>
-        <dd>Train a linear model using ridge regression.</dd>
-
-        <dt>
-
-          <code><a href="cuda_ml_runtime_audit.html">cuda_ml_runtime_audit()</a></code>
-
-        </dt>
-        <dd>Audit the installed native backend</dd>
-
-        <dt>
-
-          <code><a href="cuda_ml_serialize.html">cuda_ml_serialize()</a></code>
-
-        </dt>
-        <dd>Serialize a CuML model</dd>
-
-        <dt>
-
-          <code><a href="cuda_ml_sgd.html">cuda_ml_sgd()</a></code>
-
-        </dt>
-        <dd>Train a MBSGD linear model.</dd>
 
         <dt>
 
@@ -250,17 +191,63 @@
 
         <dt>
 
-          <code><a href="cuda_ml_transform.html">cuda_ml_transform()</a></code>
+          <code><a href="predict.cuda_ml_knn.html">predict(<i>&lt;cuda_ml_knn&gt;</i>)</a></code>
 
         </dt>
-        <dd>Transform data using a trained cuML model.</dd>
+        <dd>Make predictions on new data points.</dd>
 
         <dt>
 
-          <code><a href="cuda_ml_tsne.html">cuda_ml_tsne()</a></code>
+          <code><a href="predict.cuda_ml_svm.html">predict(<i>&lt;cuda_ml_svm&gt;</i>)</a></code>
 
         </dt>
-        <dd>t-distributed Stochastic Neighbor Embedding.</dd>
+        <dd>Make predictions on new data points.</dd>
+      </dl></div><div class="section level2">
+      <h2 id="clustering">Clustering<a class="anchor" aria-label="anchor" href="#clustering"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="cuda_ml_agglomerative_clustering.html">cuda_ml_agglomerative_clustering()</a></code>
+
+        </dt>
+        <dd>Perform single-linkage agglomerative clustering.</dd>
+
+        <dt>
+
+          <code><a href="cuda_ml_dbscan.html">cuda_ml_dbscan()</a></code>
+
+        </dt>
+        <dd>Run the DBSCAN clustering algorithm.</dd>
+
+        <dt>
+
+          <code><a href="cuda_ml_kmeans.html">cuda_ml_kmeans()</a></code>
+
+        </dt>
+        <dd>Run the k-means clustering algorithm.</dd>
+      </dl></div><div class="section level2">
+      <h2 id="dimensionality-reduction">Dimensionality reduction<a class="anchor" aria-label="anchor" href="#dimensionality-reduction"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="cuda_ml_pca.html">cuda_ml_pca()</a></code>
+
+        </dt>
+        <dd>Perform principal component analysis.</dd>
 
         <dt>
 
@@ -278,31 +265,40 @@
 
         <dt>
 
-          <code><a href="cuda_ml_unserialize.html">cuda_ml_unserialize()</a></code>
+          <code><a href="cuda_ml_tsne.html">cuda_ml_tsne()</a></code>
 
         </dt>
-        <dd>Unserialize a CuML model state</dd>
+        <dd>Perform t-distributed stochastic neighbor embedding.</dd>
 
         <dt>
 
-          <code><a href="predict.cuda_ml_knn.html">predict(<i>&lt;cuda_ml_knn&gt;</i>)</a></code>
+          <code><a href="cuda_ml_transform.html">cuda_ml_transform()</a></code>
 
         </dt>
-        <dd>Make predictions on new data points.</dd>
+        <dd>Transform data using a trained cuML model.</dd>
 
         <dt>
 
-          <code><a href="predict.cuda_ml_linear_model.html">predict(<i>&lt;cuda_ml_linear_model&gt;</i>)</a></code>
+          <code><a href="cuda_ml_inverse_transform.html">cuda_ml_inverse_transform()</a></code>
 
         </dt>
-        <dd>Make predictions on new data points.</dd>
+        <dd>Apply the inverse transformation defined by a trained cuML model.</dd>
+      </dl></div><div class="section level2">
+      <h2 id="nvforest-inference">nvForest inference<a class="anchor" aria-label="anchor" href="#nvforest-inference"></a></h2>
 
-        <dt>
 
-          <code><a href="predict.cuda_ml_logistic_reg.html">predict(<i>&lt;cuda_ml_logistic_reg&gt;</i>)</a></code>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="cuda_ml_nvforest_load_model.html">cuda_ml_nvforest_load_model()</a></code>
 
         </dt>
-        <dd>Predict from a logistic or multinomial regression model</dd>
+        <dd>Load a tree ensemble with nvForest</dd>
 
         <dt>
 
@@ -313,12 +309,80 @@
 
         <dt>
 
-          <code><a href="predict.cuda_ml_svm.html">predict(<i>&lt;cuda_ml_svm&gt;</i>)</a></code>
+          <code><a href="cuda_ml_nvforest_info.html">cuda_ml_nvforest_info()</a></code>
 
         </dt>
-        <dd>Make predictions on new data points.</dd>
+        <dd>Inspect an nvForest model</dd>
+
+        <dt>
+
+          <code><a href="cuda_ml_nvforest_leaf_ids.html">cuda_ml_nvforest_leaf_ids()</a></code>
+
+        </dt>
+        <dd>Return terminal leaf identifiers</dd>
+
+        <dt>
+
+          <code><a href="cuda_ml_nvforest_predict_per_tree.html">cuda_ml_nvforest_predict_per_tree()</a></code>
+
+        </dt>
+        <dd>Return individual-tree predictions</dd>
+      </dl></div><div class="section level2">
+      <h2 id="model-persistence">Model persistence<a class="anchor" aria-label="anchor" href="#model-persistence"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="cuda_ml_serialize.html">cuda_ml_serialize()</a></code>
+
+        </dt>
+        <dd>Serialize a cuML model</dd>
+
+        <dt>
+
+          <code><a href="cuda_ml_unserialize.html">cuda_ml_unserialize()</a></code>
+
+        </dt>
+        <dd>Unserialize a cuML model state</dd>
+
+        <dt>
+
+          <code><a href="bundle.cuda_ml_model.html">bundle(<i>&lt;cuda_ml_model&gt;</i>)</a></code> <code><a href="bundle.cuda_ml_model.html">bundle(<i>&lt;cuda_ml_nvforest&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Bundle a cuda.ml model</dd>
+
+        <dt>
+
+          <code><a href="cuda_ml_nvforest_export.html">cuda_ml_nvforest_export()</a></code> <code><a href="cuda_ml_nvforest_export.html">cuda_ml_nvforest_import()</a></code>
+
+        </dt>
+        <dd>Export and import an nvForest checkpoint pair</dd>
+      </dl></div><div class="section level2">
+      <h2 id="package-overview">Package overview<a class="anchor" aria-label="anchor" href="#package-overview"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="cuda.ml-package.html">cuda.ml</a></code> <code><a href="cuda.ml-package.html">cuda.ml-package</a></code>
+
+        </dt>
+        <dd>cuda.ml</dd>
       </dl></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

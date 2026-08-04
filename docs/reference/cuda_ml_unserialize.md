@@ -1,6 +1,6 @@
-# Unserialize a CuML model state
+# Unserialize a cuML model state
 
-Unserialize a CuML model state into a CuML model object.
+Unserialize a cuML model state into a cuML model object.
 
 ## Usage
 
@@ -38,7 +38,7 @@ cuda_ml_unserialize(
 
 ## Value
 
-A unserialized CuML model.
+An unserialized cuML model.
 
 ## Persistence contract
 
