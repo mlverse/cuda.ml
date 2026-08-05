@@ -49,10 +49,9 @@ CPU deployment.
 ## Supported systems
 
 The native backends require Linux x86_64 with glibc 2.28 or newer. This
-covers current Ubuntu, Debian, RHEL-compatible, and WSL2 Linux
-distributions that meet the glibc requirement. Native Windows, macOS,
-Linux ARM64, musl-based Linux, and systems with an older glibc are not
-supported.
+covers current Ubuntu, Debian, and RHEL-compatible distributions that
+meet the glibc requirement. macOS, Linux ARM64, musl-based Linux, and
+systems with an older glibc are not supported.
 
 GPU-backed operations require NVIDIA driver 580 or newer and a supported
 GPU. The prebuilt backend contains real targets for compute capabilities
@@ -60,6 +59,15 @@ GPU. The prebuilt backend contains real targets for compute capabilities
 PTX image for forward compatibility. CPU-only nvForest inference has the
 same operating- system requirement but requires neither an NVIDIA GPU
 nor an NVIDIA driver.
+
+### Windows through WSL2
+
+On Windows, install a compatible Linux distribution under WSL2, then
+install and run R and cuda.ml inside that distribution. The same
+installation commands shown above apply there. Native Windows R cannot
+load the Linux cuda.ml backend. See the RAPIDS [WSL2 installation
+guide](https://docs.rapids.ai/install/#windows-wsl2) for current
+Windows, WSL, and NVIDIA driver setup requirements.
 
 ## Place or mirror the cache
 

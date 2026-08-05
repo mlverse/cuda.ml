@@ -37,6 +37,10 @@ loading cuda.ml itself is quiet and does not initialize CUDA.
 
 Prebuilt support is available for Linux x86_64 with glibc 2.28 or newer.
 GPU operations require a supported NVIDIA GPU and driver 580 or newer.
+On Windows, install and run R inside a
+[compatible WSL2 Linux distribution](
+  https://mlverse.github.io/cuda.ml/articles/install-manage.html#windows-through-wsl2
+); native Windows R is not supported.
 The [installation guide](
   https://mlverse.github.io/cuda.ml/articles/install-manage.html
 ) has the complete system requirements and source-build options.
