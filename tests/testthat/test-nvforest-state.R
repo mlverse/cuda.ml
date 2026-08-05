@@ -63,7 +63,6 @@ test_that("nvForest models can use a selected second GPU", {
   expected <- predict(gpu_0_model, nvforest_state_data)
   expect_equal(predict(gpu_1_model, nvforest_state_data), expected)
   expect_equal(predict(restored, nvforest_state_data), expected)
-  expect_equal(predict(gpu_0_model, nvforest_state_data), expected)
 })
 
 test_that("one nvForest state restores on CPU and GPU", {

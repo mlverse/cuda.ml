@@ -11,9 +11,9 @@
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Save and restore models">
-<meta name="description" content="Choose a persistence format, move fitted cuda.ml models between R sessions, and understand backend compatibility requirements.
+<meta name="description" content="Choose a persistence format and move fitted cuda.ml models between R sessions.
 ">
-<meta property="og:description" content="Choose a persistence format, move fitted cuda.ml models between R sessions, and understand backend compatibility requirements.
+<meta property="og:description" content="Choose a persistence format and move fitted cuda.ml models between R sessions.
 ">
 </head>
 <body>
@@ -128,9 +128,8 @@ nvForest-backed models. It is described in more detail in the <a href="nvforest.
 <div class="section level2">
 <h2 id="save-directly-to-a-file">Save directly to a file<a class="anchor" aria-label="anchor" href="#save-directly-to-a-file"></a>
 </h2>
-<p>The simplest file workflow writes the model state to an open binary
-connection. The file contains explicit model state rather than a live
-native pointer.</p>
+<p>The simplest file workflow passes a path directly. cuda.ml writes a
+gzip-compressed model state rather than a live native pointer.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span></span>
 <span></span>
@@ -144,20 +143,16 @@ native pointer.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">state_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".cuda-ml-state"</span><span class="op">)</span></span>
-<span><span class="va">connection</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/connections.html" class="external-link">file</a></span><span class="op">(</span><span class="va">state_path</span>, open <span class="op">=</span> <span class="st">"wb"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/cuda_ml_serialize.html">cuda_ml_serialize</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">connection</span><span class="op">)</span></span>
-<span><span class="co">#&gt; NULL</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/connections.html" class="external-link">close</a></span><span class="op">(</span><span class="va">connection</span><span class="op">)</span></span></code></pre></div>
-<p>In a new R process, prepare the required backend, open the file for
-binary reading, and restore the model.</p>
+<span><span class="fu"><a href="../reference/cuda_ml_serialize.html">cuda_ml_serialize</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">state_path</span><span class="op">)</span></span>
+<span><span class="co">#&gt; NULL</span></span></code></pre></div>
+<p>In a new R process, prepare the required backend and restore the
+model. cuda.ml validates the state and backend before loading it.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">connection</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/connections.html" class="external-link">file</a></span><span class="op">(</span><span class="va">state_path</span>, open <span class="op">=</span> <span class="st">"rb"</span><span class="op">)</span></span>
-<span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_ml_serialize.html">cuda_ml_unserialize</a></span><span class="op">(</span><span class="va">connection</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/connections.html" class="external-link">close</a></span><span class="op">(</span><span class="va">connection</span><span class="op">)</span></span>
+<span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_ml_serialize.html">cuda_ml_unserialize</a></span><span class="op">(</span><span class="va">state_path</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">mtcars</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">)</span> <span class="op">!=</span> <span class="st">"mpg"</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 1</span></span></span>
@@ -173,7 +168,7 @@ binary reading, and restore the model.</p>
 <h2 id="keep-the-state-as-raw-bytes">Keep the state as raw bytes<a class="anchor" aria-label="anchor" href="#keep-the-state-as-raw-bytes"></a>
 </h2>
 <p>With its default <code>connection = NULL</code>,
-<code><a href="../reference/cuda_ml_serialize.html">cuda_ml_serialize()</a></code> returns the complete state as a raw
+<code><a href="../reference/cuda_ml_serialize.html">cuda_ml_serialize()</a></code> returns the uncompressed state as a raw
 vector. This is useful for object stores and other systems that accept
 bytes directly.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -190,8 +185,7 @@ database BLOB value.</p>
 </h2>
 <p>The <code>bundle</code> package wraps the same explicit cuda.ml state
 and records how to restore it. This is useful in workflows that already
-use <code>bundle</code>; it does not change cuda.ml’s compatibility
-requirements.</p>
+use <code>bundle</code>.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rstudio/bundle" class="external-link">bundle</a></span><span class="op">)</span></span>
 <span></span>
@@ -264,45 +258,6 @@ checkpoint back into cuda.ml does not recover those semantics. Use the
 pair for an exact round-trip.</p>
 </div>
 <div class="section level2">
-<h2 id="compatibility-rules">Compatibility rules<a class="anchor" aria-label="anchor" href="#compatibility-rules"></a>
-</h2>
-<p>cuda.ml records the package and backend details needed to check a
-state before restoring it. A different cuda.ml package version does not
-by itself prevent restoration. Native backend requirements depend on the
-model family.</p>
-<table class="table">
-<colgroup>
-<col width="50%">
-<col width="50%">
-</colgroup>
-<thead><tr class="header">
-<th align="left">Model state</th>
-<th align="left">Restore requirement</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">OLS, ridge, lasso, elastic-net, SGD, and logistic or
-multinomial regression</td>
-<td align="left">No backend-version match</td>
-</tr>
-<tr class="even">
-<td align="left">PCA, SVC, one-vs-rest SVC, SVR, and UMAP</td>
-<td align="left">Exact RAPIDS version</td>
-</tr>
-<tr class="odd">
-<td align="left">Random forest and nvForest</td>
-<td align="left">Exact Treelite version</td>
-</tr>
-</tbody>
-</table>
-<p>These model families implement explicit state in the current release.
-Models without explicit state support fail during
-<code><a href="../reference/cuda_ml_serialize.html">cuda_ml_serialize()</a></code> rather than falling back to
-serialization of native pointers.</p>
-<p>An unsupported model state or an incompatible required backend
-version produces an error before the model payload is restored.</p>
-</div>
-<div class="section level2">
 <h2 id="select-the-nvforest-restore-device">Select the nvForest restore device<a class="anchor" aria-label="anchor" href="#select-the-nvforest-restore-device"></a>
 </h2>
 <p>Current random-forest and nvForest states contain device-neutral
@@ -324,11 +279,6 @@ and random-forest states.</p>
 <p>Install the complete backend for GPU operation or the smaller CPU
 backend for CPU-only nvForest inference. See the <a href="install-manage.html">installation and runtime guide</a> for those
 workflows.</p>
-<p>A restored fit supports the same prediction or transformation
-operations as the original fit. cuda.ml does not provide warm-start,
-incremental-training, or fine-tuning operations for either live or
-restored fits. To refit a model, call its fitting function again with
-the training data.</p>
 </div>
 <div class="section level2">
 <h2 id="treat-model-artifacts-as-trusted-input">Treat model artifacts as trusted input<a class="anchor" aria-label="anchor" href="#treat-model-artifacts-as-trusted-input"></a>

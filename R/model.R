@@ -264,9 +264,11 @@ cuda_ml_inverse_transform <- function(model, x, ...) {
 #' model. \code{cuda_ml_unserialize()} restores that state as a fitted model.
 #'
 #' @param model The model object.
-#' @param connection For \code{cuda_ml_serialize()}, an open connection or
-#'   \code{NULL}; \code{NULL} returns the state as a raw vector. For
-#'   \code{cuda_ml_unserialize()}, an open connection or a raw vector.
+#' @param connection For \code{cuda_ml_serialize()}, a file path, an open
+#'   connection, or \code{NULL}; a file path writes a gzip-compressed state and
+#'   \code{NULL} returns the state as a raw vector. For
+#'   \code{cuda_ml_unserialize()}, a file path, an open connection, or a raw
+#'   vector.
 #' @param ... Additional arguments passed to \code{base::serialize()} or
 #'   \code{base::unserialize()}.
 #' @param device,device_id,layout,precision,default_chunk_size,align_bytes Named
@@ -276,7 +278,7 @@ cuda_ml_inverse_transform <- function(model, x, ...) {
 #'   precision is used. The remaining omitted options use nvForest defaults.
 #'
 #' @return \code{cuda_ml_serialize()} returns \code{NULL} when writing to a
-#'   connection and otherwise returns a raw vector.
+#'   file or connection and otherwise returns a raw vector.
 #'   \code{cuda_ml_unserialize()} returns the restored fitted model.
 #'
 #' @section Supported models:
@@ -289,23 +291,15 @@ cuda_ml_inverse_transform <- function(model, x, ...) {
 #'   \item UMAP;
 #'   \item random forests and other nvForest-backed models.
 #' }
-#' Other cuda.ml models fail during \code{cuda_ml_serialize()} instead of
-#' saving native pointers that cannot be used in another R process.
+#' KNN and TSVD fits are not currently supported. The pinned KNN API does not
+#' expose portable approximate-index state, and the current TSVD binding retains
+#' native transform parameters that cuda.ml does not reconstruct.
 #'
-#' @section Compatibility:
-#' The cuda.ml package version that created a state is recorded as provenance;
-#' a different package version does not by itself prevent restoration. Backend
-#' compatibility depends on the model family:
-#' \itemize{
-#'   \item Linear and logistic-regression states do not require a matching
-#'     backend version.
-#'   \item PCA, SVC, one-vs-rest SVC, SVR, and UMAP states require the same
-#'     RAPIDS version.
-#'   \item Random-forest and nvForest states require the same Treelite version.
-#' }
-#' Other recorded backend details are provenance and do not gate restoration.
-#' The package checks the saved model type and required metadata before loading
-#' its payload, and rejects unsupported or incompatible states.
+#' @section Deployment:
+#' cuda.ml validates the model state and required backend before loading it.
+#' Prepare the backend in the target process with \code{cuda_ml_install()} for
+#' GPU operation or \code{cuda_ml_install(device = "cpu")} for CPU-only
+#' nvForest inference.
 #'
 #' Random-forest and nvForest states contain device-neutral Treelite model
 #' bytes. They retain prediction precision, class labels, preprocessing, and
@@ -313,23 +307,11 @@ cuda_ml_inverse_transform <- function(model, x, ...) {
 #' layout, chunk size, or memory alignment. Select those settings while
 #' restoring; omitting \code{device} selects GPU inference.
 #'
-#' Saving a state to a file connection and restoring it in another R process
-#' uses this same contract. The target process must have a compatible cuda.ml
-#' installation and must prepare the corresponding backend before prediction:
-#' \code{cuda_ml_install()} for GPU operation or
-#' \code{cuda_ml_install(device = "cpu")} for CPU-only nvForest inference.
-#' \code{bundle::bundle()} stores the same explicit state, so saving a bundle
-#' with \code{saveRDS()} and restoring it with \code{readRDS()} and
-#' \code{bundle::unbundle()} has the same compatibility requirements. For an
+#' \code{bundle::bundle()} stores the same explicit state. For an
 #' nvForest-backed model, the bundle also stores its chosen deployment device
 #' separately from the device-neutral state. A bundle is not required for
 #' deployment; \code{cuda_ml_serialize()} returns the complete state artifact
 #' directly.
-#'
-#' A restored fit supports the same prediction or transformation operations as
-#' the original fit. cuda.ml does not provide warm-start, incremental-training,
-#' or fine-tuning operations for either live or restored fits. Refit a model by
-#' calling its fitting function again with training data.
 #'
 #' @seealso \code{\link[base]{serialize}},
 #'   \code{\link[base]{unserialize}}, and \code{\link[bundle]{bundle}}
@@ -347,6 +329,16 @@ cuda_ml_serialize.default <- function(model, connection = NULL, ...) {
 #' @export
 cuda_ml_serialize.cuda_ml_model <- function(model, connection = NULL, ...) {
   model_state <- cuda_ml_get_state(model)
+
+  if (is.character(connection)) {
+    stopifnot(
+      "`connection` must be one nonempty file path" = length(connection) == 1L &&
+        !is.na(connection) &&
+        nzchar(connection)
+    )
+    connection <- gzfile(connection, open = "wb")
+    on.exit(close(connection))
+  }
 
   serialize(model_state, connection, ...)
 }
@@ -377,6 +369,16 @@ cuda_ml_unserialize <- function(
   default_chunk_size = NULL,
   align_bytes = NULL
 ) {
+  if (is.character(connection)) {
+    stopifnot(
+      "`connection` must be one nonempty file path" = length(connection) == 1L &&
+        !is.na(connection) &&
+        nzchar(connection)
+    )
+    connection <- gzfile(connection, open = "rb")
+    on.exit(close(connection))
+  }
+
   model_state <- unserialize(connection, ...)
 
   restore_options <- list()
@@ -442,8 +444,8 @@ cuda_ml_set_state.default <- function(model_state) {
 #' Bundle a cuda.ml model
 #'
 #' Converts a model with explicit state into a
-#' \code{bundle::bundle()} object. Models without an explicit state fail rather
-#' than serializing native pointers.
+#' \code{bundle::bundle()} object. KNN and TSVD fits do not currently implement
+#' explicit state.
 #'
 #' @param x A fitted cuda.ml model.
 #' @param ... Unused.
@@ -452,7 +454,7 @@ cuda_ml_set_state.default <- function(model_state) {
 #'   \code{"cpu"} when bundling a GPU-trained random forest for CPU-only
 #'   deployment. Other cuda.ml model types do not accept this argument.
 #'
-#' @inheritSection cuda_ml_serialize Compatibility
+#' @inheritSection cuda_ml_serialize Deployment
 #'
 #' @seealso \code{\link{cuda_ml_serialize}},
 #'   \code{\link{cuda_ml_unserialize}}

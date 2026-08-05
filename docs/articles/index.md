@@ -18,8 +18,8 @@
 - [Save and restore
   models](https://mlverse.github.io/cuda.ml/articles/model-persistence.md):
 
-  Choose a persistence format, move fitted cuda.ml models between R
-  sessions, and understand backend compatibility requirements.
+  Choose a persistence format and move fitted cuda.ml models between R
+  sessions.
 
 - [nvForest inference and
   deployment](https://mlverse.github.io/cuda.ml/articles/nvforest.md):

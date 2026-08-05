@@ -133,25 +133,22 @@ release series. It requires R 4.1 or newer and targets CUDA Toolkit
   [`cuda_ml_unserialize()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_serialize.md)
   now provide durable model states for OLS, ridge, lasso, elastic-net,
   SGD, logistic and multinomial regression, PCA, binary and one-vs-rest
-  SVC, SVR, UMAP, random forest, and nvForest models. They can write and
-  read an open connection directly or use an in-memory raw vector.
-  Models outside these families report that serialization is
-  unsupported.
+  SVC, SVR, UMAP, random forest, and nvForest models. Passing a file
+  path writes or reads a gzip-compressed state; open connections and
+  in-memory raw vectors are also supported. KNN and TSVD fits are not
+  currently supported: the pinned KNN API does not expose portable
+  approximate-index state, and the current TSVD binding does not
+  reconstruct its native transform parameters.
 
 - [`bundle::bundle()`](https://rstudio.github.io/bundle/reference/bundle.html)
   stores the same explicit state for workflows that use the bundle
   package. Both interfaces support saving an artifact and restoring it
-  in a fresh R process after the target environment prepares a
-  compatible backend. nvForest models can also be exported and imported
-  as a Treelite checkpoint plus cuda.ml metadata.
+  in a fresh R process after the target environment prepares the
+  required backend. nvForest models can also be exported and imported as
+  a Treelite checkpoint plus cuda.ml metadata.
 
-- For states written by this release, the cuda.ml package version is
-  recorded as provenance and is not itself a compatibility gate. Linear
-  and logistic regression states do not require an exact backend
-  identity. PCA, SVC, one-vs-rest SVC, SVR, and UMAP require the
-  recorded RAPIDS version; random-forest and nvForest states require the
-  recorded Treelite version. Artifacts written by cuda.ml 0.3.x are
-  outside this contract and must be refit and saved with this release.
+- cuda.ml validates each saved state and its required backend before
+  restoring the model.
 
 ### Documentation
 

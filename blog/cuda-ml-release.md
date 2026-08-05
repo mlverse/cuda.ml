@@ -85,7 +85,8 @@ Some fitted cuda.ml objects contain native pointers that belong to one R
 process. Persistence now saves explicit model state instead of relying on
 `saveRDS()` to capture a live pointer.
 
-The simplest file workflow uses a binary connection:
+The simplest file workflow passes a path directly. cuda.ml compresses the model
+state with gzip:
 
 ```r
 model <- cuda_ml_rand_forest(
@@ -95,38 +96,30 @@ model <- cuda_ml_rand_forest(
   seed = 1L
 )
 
-connection <- file("iris-forest.cuda-ml", open = "wb")
-cuda_ml_serialize(model, connection)
-close(connection)
+cuda_ml_serialize(model, "iris-forest.cuda-ml")
 ```
 
-In a fresh R process with a compatible backend prepared, restore the fitted
-model and predict:
+In a fresh R process, prepare the required backend, restore the fitted model,
+and predict:
 
 ```r
 library(cuda.ml)
 
-connection <- file("iris-forest.cuda-ml", open = "rb")
-model <- cuda_ml_unserialize(connection)
-close(connection)
+model <- cuda_ml_unserialize("iris-forest.cuda-ml")
 
 predict(model, iris[1:5, -5], type = "class")
 ```
 
-Passing `connection = NULL` returns the same artifact as a raw vector of bytes.
-That form is convenient for object stores and database BLOB columns; the blob
-package can represent raw vectors for database workflows. The bundle package is
-also supported for teams that already use bundled model artifacts.
+Passing `connection = NULL` returns the uncompressed state as a raw vector of
+bytes. That form is convenient for object stores and database BLOB columns; the
+blob package can represent raw vectors for database workflows. The bundle
+package is also supported for teams that already use bundled model artifacts.
 
 Persistence is available for linear models, logistic and multinomial
 regression, PCA, SVC and SVR models, UMAP, random forests, and nvForest models.
-Linear and logistic model states contain portable R data. Models whose state
-uses a RAPIDS native format require the matching RAPIDS release, while random
-forest and nvForest states require the matching Treelite release.
+cuda.ml validates the state and required backend before restoring the model.
 
-For nvForest-backed models, `device` on restore selects CPU or GPU inference; it
-does not change training support. cuda.ml does not provide incremental training
-for either an original or a restored fitted model.
+For nvForest-backed models, `device` on restore selects CPU or GPU inference.
 
 ## Notes for users upgrading from cuda.ml 0.3
 
@@ -158,9 +151,7 @@ upstream libraries:
   `cuda_ml_nvforest_info(model)$has_probability_output` when probability support
   depends on the imported model.
 - Use `cuda_ml_serialize()` and `cuda_ml_unserialize()`. The aliases with
-  British spellings have been removed. Artifacts saved by cuda.ml 0.3 are not
-  accepted by the new persistence contract; refit and save them with this
-  release.
+  British spellings have been removed.
 
 The [getting-started guide](https://mlverse.github.io/cuda.ml/articles/cuda-ml.html)
 shows a first GPU workflow. The

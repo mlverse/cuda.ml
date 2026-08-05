@@ -2,9 +2,9 @@
 
 `cuda_ml_nvforest_export()` writes a standard Treelite checkpoint and a
 cuda.ml JSON sidecar. The checkpoint contains the device-neutral tree
-ensemble. The sidecar retains cuda.ml compatibility metadata, class
-labels, prediction precision, random-forest probability semantics, and
-the R preprocessing blueprint needed for a complete cuda.ml round-trip.
+ensemble. The sidecar retains cuda.ml metadata, class labels, prediction
+precision, random-forest probability semantics, and the R preprocessing
+blueprint needed for a complete cuda.ml round-trip.
 `cuda_ml_nvforest_import()` restores the pair on a caller-selected
 inference device.
 
@@ -104,8 +104,8 @@ Treelite model must also be independently available. A bundle is
 optional wrapping around the R-native state and is not required for
 either workflow.
 
-Import requires the exact Treelite version recorded by the sidecar.
-Prepare the selected backend before import:
+cuda.ml validates the sidecar and selected backend before import.
+Prepare the backend first with
 [`cuda_ml_install()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_install.md)
 for GPU operation or `cuda_ml_install(device = "cpu")` for CPU-only
 inference. Import never downloads a backend.

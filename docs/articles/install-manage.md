@@ -86,6 +86,12 @@ verification enabled. The mirror setting covers the cuda.ml archive, not
 the complete backend’s CUDA and RAPIDS artifacts, which continue to use
 their pinned upstream URLs.
 
+GitHub tags named `cuda-ml-backend-*` identify binary-backend revisions,
+not R package releases, so their number can differ from
+`packageVersion("cuda.ml")`.
+[`cuda_ml_install()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_install.md)
+uses the backend pinned by the installed package.
+
 ## Inspect, audit, or remove a backend
 
 These two checks have different purposes:

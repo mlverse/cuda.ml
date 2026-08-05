@@ -73,9 +73,11 @@ model. <code>cuda_ml_unserialize()</code> restores that state as a fitted model.
 
 
 <dt id="arg-connection">connection<a class="anchor" aria-label="anchor" href="#arg-connection"></a></dt>
-<dd><p>For <code>cuda_ml_serialize()</code>, an open connection or
-<code>NULL</code>; <code>NULL</code> returns the state as a raw vector. For
-<code>cuda_ml_unserialize()</code>, an open connection or a raw vector.</p></dd>
+<dd><p>For <code>cuda_ml_serialize()</code>, a file path, an open
+connection, or <code>NULL</code>; a file path writes a gzip-compressed state and
+<code>NULL</code> returns the state as a raw vector. For
+<code>cuda_ml_unserialize()</code>, a file path, an open connection, or a raw
+vector.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -94,7 +96,7 @@ precision is used. The remaining omitted options use nvForest defaults.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p><code>cuda_ml_serialize()</code> returns <code>NULL</code> when writing to a
-  connection and otherwise returns a raw vector.
+  file or connection and otherwise returns a raw vector.
   <code>cuda_ml_unserialize()</code> returns the restored fitted model.</p>
     </div>
     <div class="section level2">
@@ -107,44 +109,28 @@ precision is used. The remaining omitted options use nvForest defaults.</p></dd>
 <li><p>binary and one-vs-rest SVC models and SVR models;</p></li>
 <li><p>UMAP;</p></li>
 <li><p>random forests and other nvForest-backed models.</p></li>
-</ul><p>Other cuda.ml models fail during <code>cuda_ml_serialize()</code> instead of
-saving native pointers that cannot be used in another R process.</p>
+</ul><p>KNN and TSVD fits are not currently supported. The pinned KNN API does not
+expose portable approximate-index state, and the current TSVD binding retains
+native transform parameters that cuda.ml does not reconstruct.</p>
     </div>
     <div class="section level2">
-    <h2 id="compatibility">Compatibility<a class="anchor" aria-label="anchor" href="#compatibility"></a></h2>
+    <h2 id="deployment">Deployment<a class="anchor" aria-label="anchor" href="#deployment"></a></h2>
 
 
-<p>The cuda.ml package version that created a state is recorded as provenance;
-a different package version does not by itself prevent restoration. Backend
-compatibility depends on the model family:</p><ul><li><p>Linear and logistic-regression states do not require a matching
-    backend version.</p></li>
-<li><p>PCA, SVC, one-vs-rest SVC, SVR, and UMAP states require the same
-    RAPIDS version.</p></li>
-<li><p>Random-forest and nvForest states require the same Treelite version.</p></li>
-</ul><p>Other recorded backend details are provenance and do not gate restoration.
-The package checks the saved model type and required metadata before loading
-its payload, and rejects unsupported or incompatible states.</p>
+<p>cuda.ml validates the model state and required backend before loading it.
+Prepare the backend in the target process with <code><a href="cuda_ml_install.html">cuda_ml_install()</a></code> for
+GPU operation or <code>cuda_ml_install(device = "cpu")</code> for CPU-only
+nvForest inference.</p>
 <p>Random-forest and nvForest states contain device-neutral Treelite model
 bytes. They retain prediction precision, class labels, preprocessing, and
 model semantics, but not the inference device, device identifier, tree
 layout, chunk size, or memory alignment. Select those settings while
 restoring; omitting <code>device</code> selects GPU inference.</p>
-<p>Saving a state to a file connection and restoring it in another R process
-uses this same contract. The target process must have a compatible cuda.ml
-installation and must prepare the corresponding backend before prediction:
-<code><a href="cuda_ml_install.html">cuda_ml_install()</a></code> for GPU operation or
-<code>cuda_ml_install(device = "cpu")</code> for CPU-only nvForest inference.
-<code><a href="https://rstudio.github.io/bundle/reference/bundle.html" class="external-link">bundle::bundle()</a></code> stores the same explicit state, so saving a bundle
-with <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS()</a></code> and restoring it with <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS()</a></code> and
-<code><a href="https://rstudio.github.io/bundle/reference/bundle.html" class="external-link">bundle::unbundle()</a></code> has the same compatibility requirements. For an
+<p><code><a href="https://rstudio.github.io/bundle/reference/bundle.html" class="external-link">bundle::bundle()</a></code> stores the same explicit state. For an
 nvForest-backed model, the bundle also stores its chosen deployment device
 separately from the device-neutral state. A bundle is not required for
 deployment; <code>cuda_ml_serialize()</code> returns the complete state artifact
 directly.</p>
-<p>A restored fit supports the same prediction or transformation operations as
-the original fit. cuda.ml does not provide warm-start, incremental-training,
-or fine-tuning operations for either live or restored fits. Refit a model by
-calling its fitting function again with training data.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

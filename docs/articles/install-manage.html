@@ -166,6 +166,11 @@ archive:</p>
 verification enabled. The mirror setting covers the cuda.ml archive, not
 the complete backend’s CUDA and RAPIDS artifacts, which continue to use
 their pinned upstream URLs.</p>
+<p>GitHub tags named <code>cuda-ml-backend-*</code> identify
+binary-backend revisions, not R package releases, so their number can
+differ from <code>packageVersion("cuda.ml")</code>.
+<code><a href="../reference/cuda_ml_install.html">cuda_ml_install()</a></code> uses the backend pinned by the installed
+package.</p>
 </div>
 <div class="section level2">
 <h2 id="inspect-audit-or-remove-a-backend">Inspect, audit, or remove a backend<a class="anchor" aria-label="anchor" href="#inspect-audit-or-remove-a-backend"></a>

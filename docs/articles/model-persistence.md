@@ -22,9 +22,8 @@ guide](https://mlverse.github.io/cuda.ml/articles/nvforest.md).
 
 ## Save directly to a file
 
-The simplest file workflow writes the model state to an open binary
-connection. The file contains explicit model state rather than a live
-native pointer.
+The simplest file workflow passes a path directly. cuda.ml writes a
+gzip-compressed model state rather than a live native pointer.
 
 ``` r
 library(cuda.ml)
@@ -39,23 +38,19 @@ model <- cuda_ml_linear_reg(
 )
 
 state_path <- tempfile(fileext = ".cuda-ml-state")
-connection <- file(state_path, open = "wb")
-cuda_ml_serialize(model, connection)
+cuda_ml_serialize(model, state_path)
 #> NULL
-close(connection)
 ```
 
-In a new R process, prepare the required backend, open the file for
-binary reading, and restore the model.
+In a new R process, prepare the required backend and restore the model.
+cuda.ml validates the state and backend before loading it.
 
 ``` r
 library(cuda.ml)
 
 cuda_ml_install()
 
-connection <- file(state_path, open = "rb")
-model <- cuda_ml_unserialize(connection)
-close(connection)
+model <- cuda_ml_unserialize(state_path)
 
 predict(model, mtcars[1:5, names(mtcars) != "mpg"])
 #> # A tibble: 5 × 1
@@ -72,8 +67,8 @@ predict(model, mtcars[1:5, names(mtcars) != "mpg"])
 
 With its default `connection = NULL`,
 [`cuda_ml_serialize()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_serialize.md)
-returns the complete state as a raw vector. This is useful for object
-stores and other systems that accept bytes directly.
+returns the uncompressed state as a raw vector. This is useful for
+object stores and other systems that accept bytes directly.
 
 ``` r
 state <- cuda_ml_serialize(model)
@@ -89,7 +84,7 @@ The `blob` package can wrap this raw vector as one database BLOB value.
 
 The `bundle` package wraps the same explicit cuda.ml state and records
 how to restore it. This is useful in workflows that already use
-`bundle`; it does not change cuda.ml’s compatibility requirements.
+`bundle`.
 
 ``` r
 library(bundle)
@@ -172,27 +167,6 @@ and postprocessing semantics in the JSON sidecar. Loading the bare
 checkpoint back into cuda.ml does not recover those semantics. Use the
 pair for an exact round-trip.
 
-## Compatibility rules
-
-cuda.ml records the package and backend details needed to check a state
-before restoring it. A different cuda.ml package version does not by
-itself prevent restoration. Native backend requirements depend on the
-model family.
-
-| Model state                                                                 | Restore requirement      |
-|:----------------------------------------------------------------------------|:-------------------------|
-| OLS, ridge, lasso, elastic-net, SGD, and logistic or multinomial regression | No backend-version match |
-| PCA, SVC, one-vs-rest SVC, SVR, and UMAP                                    | Exact RAPIDS version     |
-| Random forest and nvForest                                                  | Exact Treelite version   |
-
-These model families implement explicit state in the current release.
-Models without explicit state support fail during
-[`cuda_ml_serialize()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_serialize.md)
-rather than falling back to serialization of native pointers.
-
-An unsupported model state or an incompatible required backend version
-produces an error before the model payload is restored.
-
 ## Select the nvForest restore device
 
 Current random-forest and nvForest states contain device-neutral
@@ -220,12 +194,6 @@ backend for CPU-only nvForest inference. See the [installation and
 runtime
 guide](https://mlverse.github.io/cuda.ml/articles/install-manage.md) for
 those workflows.
-
-A restored fit supports the same prediction or transformation operations
-as the original fit. cuda.ml does not provide warm-start,
-incremental-training, or fine-tuning operations for either live or
-restored fits. To refit a model, call its fitting function again with
-the training data.
 
 ## Treat model artifacts as trusted input
 

@@ -223,9 +223,8 @@ new_nvforest_model <- function(
 #' example \code{cuda_ml_unserialize(state, device = "cpu")}; GPU is the
 #' default. Tree layout, chunk size, memory alignment, and GPU device identifier
 #' are likewise restore-time settings. Prediction precision is retained unless
-#' explicitly overridden. nvForest states require an exact Treelite version
-#' match. The recorded package, CUDA, RAPIDS, nvForest, and platform versions
-#' are provenance rather than compatibility gates.
+#' explicitly overridden. cuda.ml validates the saved state and selected
+#' backend before restoration.
 #'
 #' To create a standard Treelite checkpoint together with the metadata needed
 #' for a complete cuda.ml round-trip, use
@@ -662,7 +661,7 @@ nvforest_export_manifest <- function(
 #'
 #' \code{cuda_ml_nvforest_export()} writes a standard Treelite checkpoint and a
 #' cuda.ml JSON sidecar. The checkpoint contains the device-neutral tree
-#' ensemble. The sidecar retains cuda.ml compatibility metadata, class labels,
+#' ensemble. The sidecar retains cuda.ml metadata, class labels,
 #' prediction precision, random-forest probability semantics, and the R
 #' preprocessing blueprint needed for a complete cuda.ml round-trip.
 #' \code{cuda_ml_nvforest_import()} restores the pair on a caller-selected
@@ -704,10 +703,10 @@ nvforest_export_manifest <- function(
 #' available. A bundle is optional wrapping around the R-native state and is
 #' not required for either workflow.
 #'
-#' Import requires the exact Treelite version recorded by the sidecar. Prepare
-#' the selected backend before import: \code{\link{cuda_ml_install}()} for GPU
-#' operation or \code{cuda_ml_install(device = "cpu")} for CPU-only inference.
-#' Import never downloads a backend.
+#' cuda.ml validates the sidecar and selected backend before import. Prepare the
+#' backend first with \code{\link{cuda_ml_install}()} for GPU operation or
+#' \code{cuda_ml_install(device = "cpu")} for CPU-only inference. Import never
+#' downloads a backend.
 #'
 #' @section Trust:
 #' The JSON embeds an R-serialized hardhat blueprint so that formula and recipe
