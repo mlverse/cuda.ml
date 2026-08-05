@@ -66,6 +66,20 @@ algorithm-specific controls go in `set_engine()`. Recipes can learn
 preprocessing on the training data and carry it into resampling and
 prediction.
 
+## Work directly with cuda.ml
+
+For operations without a parsnip specification, or if you prefer direct
+function calls, you can use cuda.ml without parsnip. For example,
+parsnip does not represent clustering models, so you can run k-means
+directly:
+
+```r
+iris_x <- scale(iris[1:4])
+clusters <- cuda_ml_kmeans(iris_x, k = 3, seed = 1L)
+
+table(cluster = clusters$labels, species = iris$Species)
+```
+
 The direct API covers supervised models as well as clustering and
 dimensionality reduction, including DBSCAN, k-means, PCA, tSVD, UMAP,
 and t-SNE. It also exposes capabilities without a matching parsnip
