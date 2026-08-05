@@ -242,6 +242,45 @@ probability_predictions <- predict(classifier, new_data, type = "prob")
 Probability prediction is available only when the model's Treelite
 postprocessor produces probabilities.
 
+## Serve predictions with plumber2
+
+The following plumber2 route file restores one model when the serving process
+starts and uses that model for every request. The request body is JSON with a
+column-oriented `predictors` object, such as
+`{"predictors":{"feature_1":[0.2],"feature_2":[1.5]}}`.
+
+```r
+# plumber2.R
+library(cuda.ml)
+
+classifier <- cuda_ml_nvforest_import(
+  directory = "models",
+  prefix = "classifier",
+  device = "cpu"
+)
+
+#* Return class probabilities
+#*
+#* @post /predict
+#* @parser json
+#* @serializer unboxedJSON
+function(body) {
+  new_data <- as.data.frame(body$predictors)
+  predict(classifier, new_data, type = "prob")
+}
+```
+
+Start the service with plumber2 after provisioning the CPU inference backend:
+
+```r
+plumber2::api("plumber2.R") |>
+  plumber2::api_run(host = "0.0.0.0", port = 8000)
+```
+
+The route uses only public cuda.ml persistence and prediction APIs. Run the
+installer while building or provisioning the service image so startup and
+requests need no network access.
+
 ## Inspect a model
 
 Use `cuda_ml_nvforest_info()` to inspect the task, model dimensions, output

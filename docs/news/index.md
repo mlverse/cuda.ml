@@ -24,10 +24,10 @@ release series. It requires R 4.1 or newer and targets CUDA Toolkit
   `architectures = "native"`, `"portable"`, or an explicit CMake
   architecture list selects the build target policy.
 
-- Loading cuda.ml is silent and side-effect free.
+- Loading cuda.ml is silent; it does not inspect a GPU, load native
+  code, modify the cache, or use the network.
   [`cuda_ml_backend_info()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_backend_info.md)
-  reports pinned versions and cache status without inspecting a GPU,
-  loading native code, modifying the cache, or using the network.
+  reports pinned versions and cache status without those actions.
   [`cuda_ml_runtime_audit()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_runtime_audit.md)
   is the separate, explicit full content and native registration check,
   and
@@ -108,10 +108,9 @@ release series. It requires R 4.1 or newer and targets CUDA Toolkit
   `use_precomputed_tables` argument was removed from
   [`cuda_ml_knn_algo_ivfpq()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_knn_algo.md).
 
-- Per-call `cuML_log_level` arguments were removed as cuda.ml package
-  policy; this is not a limitation of RAPIDS logging. `has_cuML()`,
-  `cuML_major_version()`, and `cuML_minor_version()` were replaced by
-  fields in
+- The per-call `cuML_log_level` arguments were removed. `has_cuML()`,
+  `cuML_major_version()`, and `cuML_minor_version()` were removed in
+  favor of fields returned by
   [`cuda_ml_backend_info()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_backend_info.md).
 
 - `cuda_ml_is_classifier()` and

@@ -260,11 +260,12 @@ and source builds.
 
 ### Development version
 
-A development installation uses the same downloaded backend pathway:
+Install the development version directly from GitHub with {pak}. It uses the
+same downloaded backend pathway:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("mlverse/cuda.ml")
+# install.packages("pak")
+pak::pak("mlverse/cuda.ml")
 cuda.ml::cuda_ml_install()
 ```
 
