@@ -1,42 +1,53 @@
 # cuda.ml 0.4.0: GPU-accelerated machine learning from R
 
-cuda.ml provides R interfaces to machine-learning algorithms in RAPIDS cuML.
-This release updates the package for CUDA Toolkit 13.2.2, RAPIDS cuML and
-nvForest 26.06, and Treelite 4.7.0. It also adds an explicit installation
-workflow, broader tidymodels support, nvForest inference, and cross-process
-model persistence.
+cuda.ml brings common data science and machine-learning operations to
+NVIDIA GPUs from R. It provides high-level interfaces for fitting
+regression and classification models, finding nearest neighbors,
+clustering observations, reducing dimensions, and running predictions
+from tree ensembles. You can use its direct R functions or work through
+parsnip and tidymodels.
 
-The release is aimed at data scientists who work primarily in R and want to
-train or run supported models on an NVIDIA GPU without managing a separate
-Python environment. The package supports both direct R functions and parsnip
-engines, so it can fit into an existing tidymodels workflow or be used on its
-own.
+cuda.ml is for data scientists who work primarily in R and want to use a
+GPU without moving their modeling workflow to Python or learning
+low-level GPU APIs. Version 0.4.0 is a substantial update to the
+package. It makes installation much simpler, expands tidymodels support,
+adds more ways to run tree-ensemble models, and makes it straightforward
+to save and restore supported fitted models.
 
-## Prepare the runtime once
+## Install from CRAN
 
-The R package is a portable installer and loader. After installing it, prepare
-the pinned native backend and runtime for the environment:
+For most users, setup is two commands:
 
 ```r
 install.packages("cuda.ml")
 cuda.ml::cuda_ml_install()
 ```
 
-The complete runtime is currently about 1.6 GiB. The installer verifies its
-artifacts and reuses the completed cache on later calls. Loading cuda.ml itself
-is quiet and does not initialize CUDA.
+The package from CRAN is a regular, portable R package.
+`cuda_ml_install()` downloads and verifies the matching compiled backend
+and GPU libraries, then keeps them in a cache for later R sessions. On a
+supported system, you do not need to compile cuda.ml from source,
+configure a Python environment, or assemble the GPU libraries yourself.
 
-Prebuilt backends support Linux x86_64 with glibc 2.28 or newer. GPU operations
-require a supported NVIDIA GPU and driver 580 or newer. cuda.ml generally uses
-one GPU for an operation; nvForest inference can target a particular GPU with
-`device_id`.
+The result is a familiar R package workflow: install the package,
+prepare its supporting libraries once, and start an analysis. The extra
+installation call is explicit because the GPU libraries are much larger
+than the R package. Repeated calls reuse the completed cache, and
+loading cuda.ml itself is quiet and does not initialize CUDA.
 
-## Use cuda.ml through parsnip
+Prebuilt support is available for Linux x86_64 with glibc 2.28 or newer.
+GPU operations require a supported NVIDIA GPU and driver 580 or newer.
+The [installation guide](
+  https://mlverse.github.io/cuda.ml/articles/install-manage.html
+) has the complete system requirements and source-build options.
 
-cuda.ml registers parsnip engines for linear and logistic regression, random
-forests, nearest neighbors, and radial, polynomial, and linear support-vector
-machines. For example, this fits a random-forest classifier on the GPU and
-requests class probabilities through the usual parsnip interface:
+## Use familiar modeling interfaces
+
+cuda.ml registers parsnip engines for linear, logistic, and multinomial
+regression, random forests, nearest neighbors, and radial, polynomial,
+and linear support-vector machines. For example, this fits a
+random-forest classifier on the GPU and requests class probabilities
+through the usual parsnip interface:
 
 ```r
 library(cuda.ml)
@@ -50,43 +61,47 @@ forest_fit <- fit(forest_spec, Species ~ ., data = iris)
 predict(forest_fit, iris[1:5, ], type = "prob")
 ```
 
-Portable model arguments stay in the parsnip specification. Backend-specific
-controls go in `set_engine()`. Recipes can learn preprocessing on the training
-data and carry it into resampling and prediction.
+Portable model arguments stay in the parsnip specification, while
+algorithm-specific controls go in `set_engine()`. Recipes can learn
+preprocessing on the training data and carry it into resampling and
+prediction.
 
-The direct API remains useful for clustering and dimensionality reduction,
-including DBSCAN, k-means, PCA, tSVD, UMAP, and t-SNE. It also exposes
-algorithm-specific features that do not have parsnip specifications, such as
-the hyperbolic-tangent SVM kernel and the stochastic-gradient-descent linear
-model.
+The direct API covers supervised models as well as clustering and
+dimensionality reduction, including DBSCAN, k-means, PCA, tSVD, UMAP,
+and t-SNE. It also exposes capabilities without a matching parsnip
+specification, such as stochastic-gradient-descent regression, the
+hyperbolic-tangent SVM kernel, and external tree-ensemble inference.
 
-## nvForest replaces FIL
+## Run tree ensembles on a GPU or CPU
 
-The former Forest Inference Library interface has been replaced by nvForest.
-nvForest runs random forests trained by `cuda_ml_rand_forest()` and can load
-XGBoost models, LightGBM text models, and Treelite checkpoints. Its public API
-covers prediction, model metadata, leaf identifiers, individual-tree
-predictions, and checkpoint import and export.
+This release expands where and how you can make predictions with tree
+ensembles. The new nvForest support powers prediction for random forests
+trained with `cuda_ml_rand_forest()` and can load trained XGBoost
+models, LightGBM text models, and Treelite checkpoints. Once a model is
+loaded, the API provides standard prediction along with model
+information, leaf identifiers, individual-tree predictions, and
+checkpoint import and export.
 
-GPU inference uses the complete runtime. A deployment that only needs nvForest
-CPU inference can install a separate CUDA-free backend:
+GPU inference uses the complete cuda.ml installation. A deployment that
+only needs CPU inference can prepare a smaller, CUDA-free backend:
 
 ```r
 cuda.ml::cuda_ml_install(device = "cpu")
 ```
 
-That backend can run a cuda.ml random forest trained on a GPU as well as a
-supported external tree ensemble. It does not provide cuML training or GPU
-inference. The complete runtime can also run nvForest models on a CPU.
+The CPU backend can run a cuda.ml random forest trained on a GPU as well
+as a supported external tree ensemble. The complete installation can
+also run these models on a CPU, so the smaller backend is an optional
+deployment choice.
 
-## Move fitted models between R processes
+## Save and deploy fitted models
 
-Some fitted cuda.ml objects contain native pointers that belong to one R
-process. Persistence now saves explicit model state instead of relying on
-`saveRDS()` to capture a live pointer.
+cuda.ml 0.4.0 expands model persistence for training, analysis, and
+deployment workflows. Supported fitted models can be saved to a
+compressed file, restored in another R process, stored as raw bytes, or
+wrapped with the bundle package.
 
-The simplest file workflow passes a path directly. cuda.ml compresses the model
-state with gzip:
+The simplest file workflow passes a path directly:
 
 ```r
 model <- cuda_ml_rand_forest(
@@ -99,64 +114,64 @@ model <- cuda_ml_rand_forest(
 cuda_ml_serialize(model, "iris-forest.cuda-ml")
 ```
 
-In a fresh R process, prepare the required backend, restore the fitted model,
-and predict:
+In another R process or deployment environment, prepare cuda.ml and
+restore the fitted model:
 
 ```r
 library(cuda.ml)
 
+cuda_ml_install()
 model <- cuda_ml_unserialize("iris-forest.cuda-ml")
 
 predict(model, iris[1:5, -5], type = "class")
 ```
 
-Passing `connection = NULL` returns the uncompressed state as a raw vector of
-bytes. That form is convenient for object stores and database BLOB columns; the
-blob package can represent raw vectors for database workflows. The bundle
-package is also supported for teams that already use bundled model artifacts.
+File paths use gzip compression. Passing `connection = NULL` instead
+returns the state as an uncompressed raw vector of bytes, which is
+convenient for object stores and database BLOB columns. The blob package
+can represent raw vectors for database workflows, and the bundle package
+is supported for teams that already use bundled model artifacts.
 
 Persistence is available for linear models, logistic and multinomial
-regression, PCA, SVC and SVR models, UMAP, random forests, and nvForest models.
-cuda.ml validates the state and required backend before restoring the model.
+regression, PCA, SVC and SVR models, UMAP, random forests, and nvForest
+models. cuda.ml checks the saved state and required backend before
+restoring it. For an nvForest-backed model, the restore call can select
+CPU or GPU inference.
 
-For nvForest-backed models, `device` on restore selects CPU or GPU inference.
+## Highlights for users upgrading from cuda.ml 0.3
 
-## Notes for users upgrading from cuda.ml 0.3
-
-This release updates several interfaces as part of the move to the current
-upstream libraries:
+This is a breaking update to the earlier package. The most visible
+changes are:
 
 - The random-forest API now uses `mtry` for predictor sampling and
-  `sample_fraction` for row sampling. The unused
-  `max_predictors_per_note_split` argument was removed. `trees` defaults to 100,
-  and an omitted `seed` draws from R's random-number generator so `set.seed()`
-  controls fitting.
-- Logistic and multinomial regression now use numeric `penalty` and `mixture`
-  arguments and are unregularized by default. The iteration arguments are
-  `max_iter` and `linesearch_max_iter`.
-- `cuda_ml_sgd()` now fits squared-loss regression only. Its `loss` argument
-  was removed, and `n_iters_no_change` is now `n_iter_no_change`.
-- Random projection and the KNN IVFSQ index have no replacement in the pinned
-  upstream API. KNN continues to support brute-force, IVFFlat, and IVFPQ
-  indexes.
-- Per-call cuML logging controls were removed as a cuda.ml package policy.
-- `normalize_input = TRUE` previously requested GPU-side L2 normalization. Use
-  explicit preprocessing such as `recipes::step_normalize()` when appropriate;
-  it centers and scales predictors and is not numerically identical to the old
-  operation.
-- `cuda_ml_is_classifier()` and
-  `cuda_ml_can_predict_class_probabilities()` have been removed. Use
-  `predict(..., type = "class")` and `predict(..., type = "prob")`; for an
-  nvForest model, inspect
-  `cuda_ml_nvforest_info(model)$has_probability_output` when probability support
-  depends on the imported model.
-- Use `cuda_ml_serialize()` and `cuda_ml_unserialize()`. The aliases with
-  British spellings have been removed.
+  `sample_fraction` for row sampling. `trees` defaults to 100, and an
+  omitted `seed` draws from R's random-number generator, so `set.seed()`
+  controls the fit.
+- Linear, logistic, and multinomial regression now use numeric `penalty`
+  and `mixture` arguments that match parsnip. Logistic and multinomial
+  regression are unregularized by default.
+- `normalize_input` was removed from the linear-model functions. It
+  previously requested GPU-side L2 normalization. Use explicit
+  preprocessing such as `recipes::step_normalize()` when centering and
+  scaling are appropriate; but please note, the two operations are not
+  numerically identical.
+- `cuda_ml_sgd()` now fits squared-loss regression only. Its `loss`
+  argument was removed, and `n_iters_no_change` is now
+  `n_iter_no_change`.
+- The former FIL interface has been replaced by nvForest. Random
+  projection and the KNN IVFSQ index have no replacement in the pinned
+  upstream API.
 
-The [getting-started guide](https://mlverse.github.io/cuda.ml/articles/cuda-ml.html)
-shows a first GPU workflow. The
-[installation guide](https://mlverse.github.io/cuda.ml/articles/install-manage.html)
-covers system requirements, caches, mirrors, audits, and source builds. See the
-[tidymodels guide](https://mlverse.github.io/cuda.ml/articles/tidymodels.html)
-and [model-persistence guide](https://mlverse.github.io/cuda.ml/articles/model-persistence.html)
-for complete workflows.
+See the
+[full changelog](https://mlverse.github.io/cuda.ml/news/index.html) for
+the complete list of API changes.
+
+The [getting-started guide](
+  https://mlverse.github.io/cuda.ml/articles/cuda-ml.html
+) shows a first GPU workflow. See the [tidymodels guide](
+  https://mlverse.github.io/cuda.ml/articles/tidymodels.html
+), [model-persistence guide](
+  https://mlverse.github.io/cuda.ml/articles/model-persistence.html
+), and [nvForest guide](
+  https://mlverse.github.io/cuda.ml/articles/nvforest.html
+) for more complete examples.
