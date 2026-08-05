@@ -23,7 +23,7 @@ Description: R interface for RAPIDS cuML (<https://github.com/rapidsai/cuml>),
     (<https://en.wikipedia.org/wiki/CUDA>).
 License: MIT + file LICENSE
 Copyright: file inst/COPYRIGHTS
-URL: https://mlverse.github.io/cuda.ml/
+URL: https://mlverse.github.io/cuda.ml/, https://github.com/mlverse/cuda.ml
 BugReports: https://github.com/mlverse/cuda.ml/issues
 Depends:
     R (>= 4.1)
