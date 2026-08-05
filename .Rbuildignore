@@ -41,3 +41,4 @@
 ^\.claude$
 ^\.codex$
 ^CRAN-SUBMISSION$
+^cran-comments\.md$
