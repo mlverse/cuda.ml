@@ -20,9 +20,9 @@ and nvForest 26.06, and Treelite 4.7.0.
   `architectures = "native"`, `"portable"`, or an explicit CMake architecture
   list selects the build target policy.
 
-- Loading cuda.ml is silent and side-effect free. `cuda_ml_backend_info()`
-  reports pinned versions and cache status without inspecting a GPU, loading
-  native code, modifying the cache, or using the network.
+- Loading cuda.ml is silent; it does not inspect a GPU, load native code,
+  modify the cache, or use the network. `cuda_ml_backend_info()` reports pinned
+  versions and cache status without those actions.
   `cuda_ml_runtime_audit()` is the separate, explicit full content and native
   registration check, and `cuda_ml_cache_clean()` removes managed cache
   generations.
@@ -87,10 +87,9 @@ and nvForest 26.06, and Treelite 4.7.0.
   and IVFPQ search. The unused `use_precomputed_tables` argument was removed
   from `cuda_ml_knn_algo_ivfpq()`.
 
-- Per-call `cuML_log_level` arguments were removed as cuda.ml package policy;
-  this is not a limitation of RAPIDS logging. `has_cuML()`,
-  `cuML_major_version()`, and `cuML_minor_version()` were replaced by fields in
-  `cuda_ml_backend_info()`.
+- The per-call `cuML_log_level` arguments were removed. `has_cuML()`,
+  `cuML_major_version()`, and `cuML_minor_version()` were removed in favor of
+  fields returned by `cuda_ml_backend_info()`.
 
 - `cuda_ml_is_classifier()` and
   `cuda_ml_can_predict_class_probabilities()` were removed. Use the documented
