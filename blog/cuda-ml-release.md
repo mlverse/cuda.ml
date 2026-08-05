@@ -72,10 +72,10 @@ prediction.
 
 ## Work directly with cuda.ml
 
-For operations without a parsnip specification, or if you prefer direct
-function calls, you can use cuda.ml without parsnip. For example,
-parsnip does not represent clustering models, so you can run k-means
-directly:
+cuda.ml also provides a direct R interface. This is useful when you
+prefer a function-oriented workflow or want to use the package on its
+own. For example, you can run k-means clustering with a single function
+call:
 
 ```r
 iris_x <- scale(iris[1:4])
@@ -86,8 +86,7 @@ table(cluster = clusters$labels, species = iris$Species)
 
 The direct API covers supervised models as well as clustering and
 dimensionality reduction, including DBSCAN, k-means, PCA, tSVD, UMAP,
-and t-SNE. It also exposes capabilities without a matching parsnip
-specification, such as stochastic-gradient-descent regression, the
+and t-SNE. It also includes stochastic-gradient-descent regression, the
 hyperbolic-tangent SVM kernel, and external tree-ensemble inference.
 
 ## Run tree ensembles on a GPU or CPU
