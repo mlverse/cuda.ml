@@ -253,7 +253,9 @@ __host__ Rcpp::NumericMatrix pca_inverse_transform(
   auto const& h_components = components.values;
   Rcpp::NumericVector const h_singular_vals = model["singular_values"];
   Rcpp::NumericVector const h_mu = model["mean"];
-  Rcpp::XPtr<ML::paramsPCA> params = model["pca_params"];
+  Rcpp::XPtr<ML::paramsPCA> const model_params = model["pca_params"];
+  auto params = *model_params;
+  params.n_rows = m.numCols;
 
   auto stream_view = stream_allocator::getOrCreateStream();
   raft::handle_t handle;
@@ -278,7 +280,7 @@ __host__ Rcpp::NumericMatrix pca_inverse_transform(
     async_copy(stream_view.value(), h_mu.cbegin(), h_mu.cend(), d_mu.begin());
 
   // inverse transform output
-  thrust::device_vector<double> d_result(params->n_rows * params->n_cols);
+  thrust::device_vector<double> d_result(params.n_rows * params.n_cols);
 
   ML::pcaInverseTransform(handle,
                           /*trans_input=*/d_trans_input.data().get(),
@@ -286,7 +288,7 @@ __host__ Rcpp::NumericMatrix pca_inverse_transform(
                           /*singular_vals=*/d_singular_vals.data().get(),
                           /*mu=*/d_mu.data().get(),
                           /*input=*/d_result.data().get(),
-                          /*prms=*/*params);
+                          /*prms=*/params);
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
@@ -296,7 +298,7 @@ __host__ Rcpp::NumericMatrix pca_inverse_transform(
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
-  return Rcpp::NumericMatrix(params->n_rows, params->n_cols, h_result.begin());
+  return Rcpp::NumericMatrix(params.n_rows, params.n_cols, h_result.begin());
 }
 
 }  // namespace cuml4r

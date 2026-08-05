@@ -154,7 +154,9 @@ __host__ Rcpp::NumericMatrix tsvd_transform(Rcpp::List model,
   auto const& h_input = m.values;
   auto const components = Matrix<>(model["components"], /*transpose=*/true);
   auto const& h_components = components.values;
-  Rcpp::XPtr<ML::paramsTSVD> const params = model["tsvd_params"];
+  Rcpp::XPtr<ML::paramsTSVD> const model_params = model["tsvd_params"];
+  auto params = *model_params;
+  params.n_rows = m.numCols;
 
   auto stream_view = stream_allocator::getOrCreateStream();
   raft::handle_t handle;
@@ -171,12 +173,12 @@ __host__ Rcpp::NumericMatrix tsvd_transform(Rcpp::List model,
                d_components.begin());
 
   // transform output
-  thrust::device_vector<double> d_result(params->n_rows * params->n_components);
+  thrust::device_vector<double> d_result(params.n_rows * params.n_components);
 
   ML::tsvdTransform(handle, /*input=*/d_input.data().get(),
                     /*components=*/d_components.data().get(),
                     /*trans_input=*/d_result.data().get(),
-                    /*prms=*/*params);
+                    /*prms=*/params);
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
@@ -186,7 +188,7 @@ __host__ Rcpp::NumericMatrix tsvd_transform(Rcpp::List model,
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
-  return Rcpp::NumericMatrix(params->n_rows, params->n_components,
+  return Rcpp::NumericMatrix(params.n_rows, params.n_components,
                              h_result.begin());
 }
 
@@ -196,7 +198,9 @@ __host__ Rcpp::NumericMatrix tsvd_inverse_transform(
   auto const& h_input = m.values;
   auto const components = Matrix<>(model["components"], /*transpose=*/true);
   auto const& h_components = components.values;
-  Rcpp::XPtr<ML::paramsTSVD> params = model["tsvd_params"];
+  Rcpp::XPtr<ML::paramsTSVD> const model_params = model["tsvd_params"];
+  auto params = *model_params;
+  params.n_rows = m.numCols;
 
   auto stream_view = stream_allocator::getOrCreateStream();
   raft::handle_t handle;
@@ -213,12 +217,12 @@ __host__ Rcpp::NumericMatrix tsvd_inverse_transform(
                d_components.begin());
 
   // inverse transform output
-  thrust::device_vector<double> d_result(params->n_rows * params->n_cols);
+  thrust::device_vector<double> d_result(params.n_rows * params.n_cols);
 
   ML::tsvdInverseTransform(handle, /*trans_input=*/d_input.data().get(),
                            /*componenets=*/d_components.data().get(),
                            /*input=*/d_result.data().get(),
-                           /*prms=*/*params);
+                           /*prms=*/params);
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
@@ -228,7 +232,7 @@ __host__ Rcpp::NumericMatrix tsvd_inverse_transform(
 
   CUDA_RT_CALL(cudaStreamSynchronize(stream_view.value()));
 
-  return Rcpp::NumericMatrix(params->n_rows, params->n_cols, h_result.begin());
+  return Rcpp::NumericMatrix(params.n_rows, params.n_cols, h_result.begin());
 }
 
 }  // namespace cuml4r

@@ -57,10 +57,22 @@ cuda_ml_tsvd <- function(
 
 #' @export
 cuda_ml_transform.cuda_ml_tsvd <- function(model, x, ...) {
-  .tsvd_transform(model = model, x = as.matrix(x))
+  x <- as.matrix(x)
+  stopifnot(
+    "`x` must have the same number of columns as the fitted TSVD input" =
+      ncol(x) == ncol(model$components)
+  )
+
+  .tsvd_transform(model = model, x = x)
 }
 
 #' @export
 cuda_ml_inverse_transform.cuda_ml_tsvd <- function(model, x, ...) {
-  .tsvd_inverse_transform(model = model, x = as.matrix(x))
+  x <- as.matrix(x)
+  stopifnot(
+    "`x` must have one column per fitted TSVD component" =
+      ncol(x) == nrow(model$components)
+  )
+
+  .tsvd_inverse_transform(model = model, x = x)
 }

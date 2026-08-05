@@ -54,3 +54,39 @@ test_that("cuda_ml_inverse_transform() works as expected for PCA models", {
     scale = 1
   )
 })
+
+test_that("PCA inverse transformation uses the current batch size", {
+  batch_sizes <- c(3L, nrow(cuda_ml_pca_model$transformed_data) + 7L)
+
+  for (batch_size in batch_sizes) {
+    rows <- rep(
+      seq_len(nrow(cuda_ml_pca_model$transformed_data)),
+      length.out = batch_size
+    )
+    transformed <- cuda_ml_pca_model$transformed_data[rows, , drop = FALSE]
+    expected <- sweep(
+      transformed %*% cuda_ml_pca_model$components,
+      MARGIN = 2L,
+      STATS = cuda_ml_pca_model$mean,
+      FUN = "+"
+    )
+
+    reconstructed <- cuda_ml_inverse_transform(
+      cuda_ml_pca_model,
+      transformed
+    )
+
+    expect_identical(dim(reconstructed), c(batch_size, 4L))
+    expect_equal(reconstructed, expected, tolerance = 1e-8, scale = 1)
+  }
+})
+
+test_that("PCA inverse transformation rejects incompatible input widths", {
+  expect_error(
+    cuda_ml_inverse_transform(
+      cuda_ml_pca_model,
+      cbind(cuda_ml_pca_model$transformed_data, extra = 0)
+    ),
+    "one column per fitted PCA component"
+  )
+})

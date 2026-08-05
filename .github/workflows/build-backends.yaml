@@ -6,7 +6,7 @@ on:
       release_tag:
         description: GitHub release tag used by the backend lock
         required: true
-        default: cuda-ml-backend-0.4.1
+        default: cuda-ml-backend-0.4.2
 
 jobs:
   build:
