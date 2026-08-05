@@ -69,103 +69,85 @@
 </h2>
 <table class="table">
 <colgroup>
-<col width="29%">
-<col width="38%">
-<col width="32%">
+<col width="39%">
+<col width="60%">
 </colgroup>
 <thead><tr class="header">
 <th>Category</th>
 <th>Algorithm</th>
-<th>Notes</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
 <td><strong>Clustering</strong></td>
 <td>Density-Based Spatial Clustering of Applications with Noise (DBSCAN)</td>
-<td>Only single-GPU implementation is supported at the moment</td>
 </tr>
 <tr class="even">
 <td></td>
 <td>K-Means</td>
-<td>Only single-GPU implementation is supported at the moment</td>
 </tr>
 <tr class="odd">
 <td></td>
 <td>Single-Linkage Agglomerative Clustering</td>
-<td></td>
 </tr>
 <tr class="even">
 <td><strong>Dimensionality Reduction</strong></td>
 <td>Principal Components Analysis (PCA)</td>
-<td>Only single-GPU implementation is supported at the moment</td>
 </tr>
 <tr class="odd">
 <td></td>
 <td>Truncated Singular Value Decomposition (tSVD)</td>
-<td>Only single-GPU implementation is supported at the moment</td>
 </tr>
 <tr class="even">
 <td></td>
 <td>Uniform Manifold Approximation and Projection (UMAP)</td>
-<td>Only single-GPU implementation is supported at the moment</td>
 </tr>
 <tr class="odd">
 <td></td>
 <td>t-Distributed Stochastic Neighbor Embedding (TSNE)</td>
-<td></td>
 </tr>
 <tr class="even">
 <td><strong>Linear Models for Regression or Classification</strong></td>
 <td>Linear Regression (OLS)</td>
-<td></td>
 </tr>
 <tr class="odd">
 <td></td>
 <td>Ridge, lasso, and elastic-net linear regression</td>
-<td></td>
 </tr>
 <tr class="even">
 <td></td>
 <td>Logistic and multinomial regression</td>
-<td></td>
 </tr>
 <tr class="odd">
 <td><strong>Nonlinear Models for Regression or Classification</strong></td>
-<td>Random Forest (RF) Classification</td>
-<td>Training is single-GPU; inference uses nvForest.</td>
+<td>Random Forest (RF) classification with nvForest inference</td>
 </tr>
 <tr class="even">
 <td></td>
-<td>Random Forest (RF) Regression</td>
-<td>Training is single-GPU; inference uses nvForest.</td>
+<td>Random Forest (RF) regression with nvForest inference</td>
 </tr>
 <tr class="odd">
 <td></td>
-<td>nvForest inference for XGBoost, LightGBM, and Treelite models</td>
-<td>CPU and GPU inference are supported.</td>
+<td>CPU or GPU nvForest inference for XGBoost, LightGBM, and Treelite models</td>
 </tr>
 <tr class="even">
 <td></td>
-<td>K-Nearest Neighbors (KNN) Classification</td>
-<td>Brute-force, IVFFlat, and IVFPQ indexes are supported.</td>
+<td>K-Nearest Neighbors (KNN) classification with brute-force, IVFFlat, or IVFPQ indexes</td>
 </tr>
 <tr class="odd">
 <td></td>
-<td>K-Nearest Neighbors (KNN) Regression</td>
-<td>Brute-force, IVFFlat, and IVFPQ indexes are supported.</td>
+<td>K-Nearest Neighbors (KNN) regression with brute-force, IVFFlat, or IVFPQ indexes</td>
 </tr>
 <tr class="even">
 <td></td>
 <td>Support Vector Machine Classifier (SVC)</td>
-<td></td>
 </tr>
 <tr class="odd">
 <td></td>
 <td>Epsilon-Support Vector Regression (SVR)</td>
-<td></td>
 </tr>
 </tbody>
 </table>
+<p>cuda.ml generally provides single-GPU implementations. Interfaces that expose <code>device_id</code>, currently nvForest inference, can target a particular GPU.</p>
 </div>
 <div class="section level2">
 <h2 id="guides">Guides<a class="anchor" aria-label="anchor" href="#guides"></a>
@@ -314,63 +296,17 @@
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"cuda.ml"</span><span class="op">)</span></span>
 <span><span class="fu">cuda.ml</span><span class="fu">::</span><span class="fu"><a href="reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>The CRAN package is a portable R installer and loader. It contains no compiled code, so <code>install.packages("cuda.ml")</code> does not need a compiler, CUDA, RAPIDS, Python, or conda. Loading it is silent and side-effect free:</p>
+<p>The CRAN package contains no compiled code. <code><a href="reference/cuda_ml_install.html">cuda_ml_install()</a></code> prepares a native backend with the pinned CUDA 13.2.2, RAPIDS cuML and nvForest 26.06, and Treelite 4.7.0 stack. The complete runtime is about 1.6 GiB. Repeated calls reuse the prepared cache.</p>
+<p>For a deployment that only runs nvForest inference on a CPU, prepare the separate CUDA-free backend instead:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span></span>
-<span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cuda_ml_backend_info.html">cuda_ml_backend_info</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">info</span><span class="op">$</span><span class="va">backend</span>, <span class="st">"download"</span><span class="op">)</span>,</span>
-<span>  <span class="va">info</span><span class="op">$</span><span class="va">backend_available</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p><code><a href="https://mlverse.github.io/cuda.ml/">library(cuda.ml)</a></code> does not inspect the GPU, create a cache, contact the network, or load native code. <code><a href="reference/cuda_ml_backend_info.html">cuda_ml_backend_info()</a></code> reports the selected platform and R-version backend, its exact library versions, and whether the managed cache is complete. It does not report whether a GPU can execute a model.</p>
-<div class="section level3">
-<h3 id="runtime-provisioning">Runtime provisioning<a class="anchor" aria-label="anchor" href="#runtime-provisioning"></a>
-</h3>
-<p><code><a href="reference/cuda_ml_install.html">cuda_ml_install()</a></code> first downloads the small backend archive for the current R minor version from the package’s GitHub Releases. It verifies the archive and native library against hashes shipped in the R package. It then downloads the locked CUDA 13.2.2 and RAPIDS cuML and nvForest 26.06 wheels directly from their upstream Python package hosts. The current runtime is about 1.6 GiB, so this step can take several minutes. Treelite 4.7.0 is linked into the backend and is not a runtime download.</p>
-<p>For CPU-only nvForest inference, use <code>cuda_ml_install(device = "cpu")</code>. This installs a separate backend that is roughly 1 MiB to download and 3 MiB when installed. It does not include cuML or any CUDA runtime libraries, and it requires neither an NVIDIA GPU nor an NVIDIA driver. Random forests trained on a GPU by <code><a href="reference/cuda_ml_rand_forest.html">cuda_ml_rand_forest()</a></code> can be serialized and restored with <code>device = "cpu"</code> on this smaller deployment backend. An existing complete backend installation can also execute nvForest models on CPU; the smaller backend avoids that runtime for CPU-only deployments.</p>
-<p><code><a href="reference/cuda_ml_install.html">cuda_ml_install()</a></code> does not require a GPU or NVIDIA driver, and repeated calls reuse the completed cache. It does not load the backend or initialize CUDA. Model operations do not provision the runtime implicitly; when the cache is absent, they report the installation command. After provisioning, GPU-backed operations require only a supported NVIDIA GPU and driver.</p>
-<p>The default cache is <code>tools::R_user_dir("cuda.ml", "cache")</code>. Set <code>CUDA_ML_CACHE_DIR</code> to use a different location:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span>CUDA_ML_CACHE_DIR <span class="op">=</span> <span class="st">"/opt/cuda-ml-cache"</span><span class="op">)</span></span>
-<span><span class="fu">cuda.ml</span><span class="fu">::</span><span class="fu"><a href="reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>For an internal or offline mirror, set <code>CUDA_ML_BACKEND_MIRROR</code> to an <code>https://</code> or <code>file://</code> directory containing the exact locked backend archive. Hash verification remains enabled.</p>
-</div>
-<div class="section level3">
-<h3 id="supported-systems">Supported systems<a class="anchor" aria-label="anchor" href="#supported-systems"></a>
-</h3>
-<p>Prebuilt backends target Linux x86_64 with glibc 2.28 or newer rather than a specific distribution. This includes current Ubuntu, Debian, RHEL-compatible, and WSL2 Linux distributions that meet the glibc requirement. Following the <a href="https://docs.rapids.ai/platform-support/" class="external-link">RAPIDS 26.06 platform requirements</a>, the binary requires an NVIDIA driver version 580 or newer and supports GPU compute capabilities 7.5, 8.0, 8.6, 8.9, 9.0, 10.0, and 12.0. The compute capability 12.0 PTX image also provides forward compatibility for newer GPUs supported by CUDA, following <a href="https://docs.nvidia.com/cuda/archive/13.2.0/cuda-compiler-driver-nvcc/index.html" class="external-link">CUDA’s forward-compatibility model</a>.</p>
-<p>Native Windows, macOS, Linux ARM64, musl-based Linux distributions, and glibc versions older than 2.28 are not currently supported.</p>
-</div>
-<div class="section level3">
-<h3 id="build-the-backend-from-source">Build the backend from source<a class="anchor" aria-label="anchor" href="#build-the-backend-from-source"></a>
-</h3>
-<p>To compile the native backend directly on the host without Docker or a prebuilt cuda.ml backend, install GNU C++ 14 or newer and run:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">cuda.ml</span><span class="fu">::</span><span class="fu"><a href="reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span>source <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p>The default managed source build downloads and verifies about 1.7 GiB of exact locked build artifacts from PyPI and GitHub. These provide CUDA Toolkit 13.2.2, cuML and nvForest 26.06, Treelite 4.7.0, CMake, and Ninja. Python, Conda, Docker, a system CUDA Toolkit, a system RAPIDS installation, and a GPU are not required for the build. Linux x86_64 with glibc 2.28 or newer and GNU C++ 14 or newer are required. The installer prefers <code>g++-14</code>, then <code>g++</code>, on <code>PATH</code>; set <code>CUDA_ML_CXX</code> to override this discovery.</p>
-<p>The toolchain and compiled backend are cached under <code>CUDA_ML_CACHE_DIR</code>, or the default cuda.ml user cache. Calling the function again with the same inputs is a no-op. By default, a managed build detects the distinct CUDA-visible GPU compute capabilities reported by <code>nvidia-smi</code> and compiles their real targets. It honors <code>CUDA_VISIBLE_DEVICES</code>. If detection is unavailable, it uses the package’s portable GPU architecture list, so GPU-free build hosts remain supported.</p>
-<p>This usually reduces build time and backend size, but the resulting backend supports only the detected GPU architectures. Use <code>architectures = "portable"</code> to force a relocatable build, or <code>architectures = "native"</code> to require successful detection. You can also supply an explicit semicolon-separated CMake CUDA architecture list, for example <code>architectures = "86-real;89-real"</code>.</p>
-<p>To use a native toolchain already installed on the host and make no downloads, provide every build input explicitly:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span></span>
-<span>  CUDA_HOME <span class="op">=</span> <span class="st">"/usr/local/cuda-13.2"</span>,</span>
-<span>  CUML_PREFIX <span class="op">=</span> <span class="st">"/opt/rapids-26.06"</span>,</span>
-<span>  CUML_CUDA_ARCHITECTURES <span class="op">=</span> <span class="st">"86-real"</span>,</span>
-<span>  CUDA_ML_CXX <span class="op">=</span> <span class="st">"/usr/bin/g++-14"</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu">cuda.ml</span><span class="fu">::</span><span class="fu"><a href="reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span>source <span class="op">=</span> <span class="cn">TRUE</span>, dependencies <span class="op">=</span> <span class="st">"host"</span><span class="op">)</span></span></code></pre></div>
-<p>This host pathway requires CUDA Toolkit 13.2.2; a <code>CUML_PREFIX</code> containing cuML and nvForest 26.06, Treelite 4.7.0 headers, and <code>lib/libtreelite_static.a</code>; GNU C++ 14 or newer; and CMake 3.21.1 or newer. The CUDA, RAPIDS, and Treelite prefixes must remain in place because the compiled backend links to their libraries.</p>
-</div>
-<div class="section level3">
-<h3 id="packaging">Packaging<a class="anchor" aria-label="anchor" href="#packaging"></a>
-</h3>
-<p>CRAN installation and checks are network-free. The package contacts the network only when <code><a href="reference/cuda_ml_install.html">cuda_ml_install()</a></code> is called explicitly. Native backend archives are built in a pinned manylinux 2.28 container, audited for their glibc and libstdc++ requirements, and hosted as GitHub Release assets. One archive is published for each supported R minor version.</p>
-</div>
+<code class="sourceCode R"><span><span class="fu">cuda.ml</span><span class="fu">::</span><span class="fu"><a href="reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span>device <span class="op">=</span> <span class="st">"cpu"</span><span class="op">)</span></span></code></pre></div>
+<p>Native operations require Linux x86_64 with glibc 2.28 or newer. GPU operations also require a supported NVIDIA GPU and driver 580 or newer; the CPU-only nvForest backend requires neither.</p>
+<p>See <a href="https://mlverse.github.io/cuda.ml/articles/install-manage.html">Install and manage cuda.ml</a> for cache configuration, mirrors, runtime audits, supported GPU architectures, and source builds.</p>
 <div class="section level3">
 <h3 id="development-version">Development version<a class="anchor" aria-label="anchor" href="#development-version"></a>
 </h3>
 <p>A development installation uses the same downloaded backend pathway:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/install-deprecated.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"mlverse/cuda.ml"</span><span class="op">)</span></span>
 <span><span class="fu">cuda.ml</span><span class="fu">::</span><span class="fu"><a href="reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
@@ -381,7 +317,7 @@
 </h2>
 <details><summary>
 Inspect MNIST images
-</summary><div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+</summary><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">plot_mnist</span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">64</span><span class="op">)</span></span></code></pre></div>
 <img src="reference/figures/README-mnist-1.png" alt="A grid of 64 MNIST handwritten digit images." width="100%"></details>
 </div>

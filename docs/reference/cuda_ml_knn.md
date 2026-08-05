@@ -85,9 +85,9 @@ cuda_ml_knn(
 
 - algo:
 
-  The query algorithm to use. Must be one of {"brute", "ivfflat",
-  "ivfpq"} or a KNN algorithm specification constructed using the
-  `cuda_ml_knn_algo_*` family of functions. If the algorithm is
+  The query algorithm to use. For most workflows, pass one of {"brute",
+  "ivfflat", "ivfpq"} or a KNN algorithm specification constructed using
+  the `cuda_ml_knn_algo_*` family of functions. If the algorithm is
   specified by one of the `cuda_ml_knn_algo_*` functions, then values of
   all required parameters of the algorithm will need to be specified
   explicitly. If the algorithm is specified by a character vector, then

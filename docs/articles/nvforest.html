@@ -149,14 +149,14 @@ host needs only the CPU inference backend:</p>
 <p>The checkpoint is a standard, device-neutral Treelite checkpoint
 containing the trees. The JSON is cuda.ml metadata, not an XGBoost-style
 model file. It binds the pair with the checkpoint size and SHA-256
-digest and retains the model ABI, compatibility provenance, class
-labels, prediction precision, random-forest probability semantics, R
-preprocessing blueprint, and processed feature order when names are
-available. Exact cuda.ml round-trip requires both files. Other Treelite
-consumers can load the checkpoint alone, but must supply numeric
-predictors in the recorded processed order, or in the checkpoint’s
-original positional order when names are absent. They must also
-implement the sidecar’s labels and postprocessing semantics.</p>
+digest and retains compatibility metadata, class labels, prediction
+precision, random-forest probability semantics, R preprocessing
+blueprint, and processed feature order when names are available. Exact
+cuda.ml round-trip requires both files. Other Treelite consumers can
+load the checkpoint alone, but must supply numeric predictors in the
+recorded processed order, or in the checkpoint’s original positional
+order when names are absent. They must also implement the sidecar’s
+labels and postprocessing semantics.</p>
 <p>The sidecar does not encode the inference device, GPU identifier,
 tree layout, chunk size, or memory alignment. Those are deployment
 choices. It embeds an R-serialized preprocessing blueprint, which
@@ -356,14 +356,14 @@ this operation.</p>
 <h2 id="persist-as-a-single-r-state">Persist as a single R state<a class="anchor" aria-label="anchor" href="#persist-as-a-single-r-state"></a>
 </h2>
 <p>Use <code><a href="../reference/cuda_ml_serialize.html">cuda_ml_serialize()</a></code> and
-<code><a href="../reference/cuda_ml_unserialize.html">cuda_ml_unserialize()</a></code> when a single R-native artifact is
+<code><a href="../reference/cuda_ml_serialize.html">cuda_ml_unserialize()</a></code> when a single R-native artifact is
 preferable. Use <code><a href="../reference/cuda_ml_nvforest_export.html">cuda_ml_nvforest_export()</a></code> and
 <code><a href="../reference/cuda_ml_nvforest_export.html">cuda_ml_nvforest_import()</a></code> when the Treelite checkpoint must
 also be available independently. Do not save the live model object.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">state</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_ml_serialize.html">cuda_ml_serialize</a></span><span class="op">(</span><span class="va">classifier</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">state</span>, <span class="st">"classifier.cuda-ml-state.rds"</span><span class="op">)</span></span>
-<span><span class="va">classifier</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_ml_unserialize.html">cuda_ml_unserialize</a></span><span class="op">(</span><span class="va">state</span>, device <span class="op">=</span> <span class="st">"cpu"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">classifier</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_ml_serialize.html">cuda_ml_unserialize</a></span><span class="op">(</span><span class="va">state</span>, device <span class="op">=</span> <span class="st">"cpu"</span><span class="op">)</span></span></code></pre></div>
 <p>Current nvForest and random-forest states are device neutral and
 require the target backend’s Treelite version to match the recorded
 version. Select the deployment device while restoring and prepare that

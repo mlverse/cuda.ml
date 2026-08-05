@@ -75,7 +75,7 @@ cuda_ml_knn(x, ...)
 \item{y}{A numeric vector (for regression) or factor (for classification) of
 desired responses.}
 
-\item{algo}{The query algorithm to use. Must be one of
+\item{algo}{The query algorithm to use. For most workflows, pass one of
   \{"brute", "ivfflat", "ivfpq"\} or a KNN algorithm specification
   constructed using the \code{cuda_ml_knn_algo_*} family of functions.
   If the algorithm is specified by one of the \code{cuda_ml_knn_algo_*}

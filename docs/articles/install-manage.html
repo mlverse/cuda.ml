@@ -73,17 +73,12 @@
 
     
     
-<p>The cuda.ml R package contains no compiled code. Installing or
-loading the R package does not download a native backend, inspect a GPU,
-create a cache, or initialize CUDA. Provision the backend explicitly for
-each environment before running native operations.</p>
-<p>The examples in this vignette are not evaluated when it is built, so
-building the package does not require a network connection, a native
-backend, or a GPU.</p>
+<p>The cuda.ml R package contains no compiled code. Prepare one of its
+pinned native backends when setting up each environment.</p>
 <div class="section level2">
-<h2 id="choose-a-backend">Choose a backend<a class="anchor" aria-label="anchor" href="#choose-a-backend"></a>
+<h2 id="install-a-prebuilt-backend">Install a prebuilt backend<a class="anchor" aria-label="anchor" href="#install-a-prebuilt-backend"></a>
 </h2>
-<p>cuda.ml provides two prebuilt deployment paths:</p>
+<p>Choose the backend for the work that environment will perform:</p>
 <table class="table">
 <colgroup>
 <col width="33%">
@@ -91,66 +86,48 @@ backend, or a GPU.</p>
 <col width="33%">
 </colgroup>
 <thead><tr class="header">
-<th>Need</th>
-<th>Install</th>
-<th>Contents and requirements</th>
+<th>Workload</th>
+<th>Installation</th>
+<th>Contents</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td>Train cuML models or run GPU inference</td>
+<td>cuML training or GPU inference</td>
 <td><code><a href="../reference/cuda_ml_install.html">cuda_ml_install()</a></code></td>
-<td>Complete managed CUDA, RAPIDS cuML, and nvForest runtime; GPU
-operations require a supported NVIDIA GPU and driver.</td>
+<td>Complete CUDA, RAPIDS cuML, and nvForest runtime, currently about
+1.6 GiB</td>
 </tr>
 <tr class="even">
-<td>Run nvForest inference only on CPU</td>
+<td>nvForest CPU inference only</td>
 <td><code>cuda_ml_install(device = "cpu")</code></td>
-<td>Separate CPU backend with no cuML or CUDA runtime libraries; no
-NVIDIA GPU or driver is required.</td>
+<td>Separate CUDA-free backend, roughly 1 MiB to download and 3 MiB
+installed</td>
 </tr>
 </tbody>
 </table>
-<p>The complete backend is currently about 1.6 GiB. The CPU-only
-nvForest backend is roughly 1 MiB to download and 3 MiB when installed.
-It can load, restore, and run nvForest models, including random forests
-trained on a GPU with <code><a href="../reference/cuda_ml_rand_forest.html">cuda_ml_rand_forest()</a></code>, but it cannot
-train cuML models or run GPU inference.</p>
-<p>An installation of the complete backend can also execute nvForest
-models on CPU. The smaller backend is intended for deployments that do
-not otherwise need the managed CUDA and RAPIDS runtime. See <a href="nvforest.html">nvForest inference and deployment</a> for training,
-import, persistence, and deployment workflows.</p>
-</div>
-<div class="section level2">
-<h2 id="install-the-default-prebuilt-backend">Install the default prebuilt backend<a class="anchor" aria-label="anchor" href="#install-the-default-prebuilt-backend"></a>
-</h2>
-<p>Install the R package, then provision the complete backend:</p>
+<p>Install the R package, then prepare the complete backend:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"cuda.ml"</span><span class="op">)</span></span>
-<span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><code><a href="../reference/cuda_ml_install.html">cuda_ml_install()</a></code> downloads the prebuilt backend
-selected for the current R minor version and its exact locked runtime
-libraries. The installer verifies the downloaded files and stores the
-completed installation in the cuda.ml user cache. It does not require a
-GPU or NVIDIA driver, load the backend, or initialize CUDA.</p>
-<p>Calls with the same inputs reuse the completed cache and are a no-op.
-Model loading and prediction never install a missing backend implicitly;
-their error messages identify the required installation call.</p>
-<p>For a first model workflow after installation, continue with <a href="cuda-ml.html">Getting started with cuda.ml</a>.</p>
-</div>
-<div class="section level2">
-<h2 id="install-cpu-only-nvforest-inference">Install CPU-only nvForest inference<a class="anchor" aria-label="anchor" href="#install-cpu-only-nvforest-inference"></a>
-</h2>
-<p>On a host that will only run nvForest models on CPU, install the
-separate backend:</p>
+<p>On a CPU-only nvForest deployment host, use the smaller backend
+instead:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span>device <span class="op">=</span> <span class="st">"cpu"</span><span class="op">)</span></span></code></pre></div>
-<p>CPU-only installation is prebuilt only. <code>source = TRUE</code>,
-<code>dependencies</code>, and <code>architectures</code> do not apply
-to this path. Installation remains explicit: a CPU prediction does not
-download this backend when it is absent.</p>
+<p>The installer selects the backend for the current R minor version,
+verifies its files, and caches the result. Repeating a call with the
+same inputs reuses that cache. Preparing either backend does not require
+a GPU or load native code.</p>
+<p>The CPU-only backend can load, restore, and run nvForest models,
+including random forests trained by <code><a href="../reference/cuda_ml_rand_forest.html">cuda_ml_rand_forest()</a></code>.
+It cannot train cuML models or run GPU inference. The complete backend
+can also run nvForest inference on a CPU. CPU-only installation is
+prebuilt; its <code>source</code>, <code>dependencies</code>, and
+<code>architectures</code> arguments are not supported.</p>
+<p>Continue with <a href="cuda-ml.html">Getting started with cuda.ml</a>
+for a first model or <a href="nvforest.html">nvForest inference and
+deployment</a> for CPU deployment.</p>
 </div>
 <div class="section level2">
 <h2 id="supported-systems">Supported systems<a class="anchor" aria-label="anchor" href="#supported-systems"></a>
@@ -160,45 +137,63 @@ This covers current Ubuntu, Debian, RHEL-compatible, and WSL2 Linux
 distributions that meet the glibc requirement. Native Windows, macOS,
 Linux ARM64, musl-based Linux, and systems with an older glibc are not
 supported.</p>
-<p>Installing the complete backend does not require a GPU. GPU-backed
-operations require NVIDIA driver 580 or newer and a supported GPU. The
-prebuilt backend contains real targets for compute capabilities 7.5,
-8.0, 8.6, 8.9, 9.0, 10.0, and 12.0, plus the compute capability 12.0 PTX
-image for CUDA forward compatibility. CPU-only nvForest inference has
-the same operating-system requirement but requires neither an NVIDIA GPU
-nor an NVIDIA driver.</p>
+<p>GPU-backed operations require NVIDIA driver 580 or newer and a
+supported GPU. The prebuilt backend contains real targets for compute
+capabilities 7.5, 8.0, 8.6, 8.9, 9.0, 10.0, and 12.0, plus a compute
+capability 12.0 PTX image for forward compatibility. CPU-only nvForest
+inference has the same operating- system requirement but requires
+neither an NVIDIA GPU nor an NVIDIA driver.</p>
 </div>
 <div class="section level2">
 <h2 id="place-or-mirror-the-cache">Place or mirror the cache<a class="anchor" aria-label="anchor" href="#place-or-mirror-the-cache"></a>
 </h2>
-<p>By default, cuda.ml uses:</p>
+<p>The default cache is
+<code>tools::R_user_dir("cuda.ml", "cache")</code>. Set
+<code>CUDA_ML_CACHE_DIR</code> before installation to put managed files
+elsewhere:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">tools</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/tools/userdir.html" class="external-link">R_user_dir</a></span><span class="op">(</span><span class="st">"cuda.ml"</span>, <span class="st">"cache"</span><span class="op">)</span></span></code></pre></div>
-<p>Set <code>CUDA_ML_CACHE_DIR</code> before installation to put managed
-files elsewhere:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span>CUDA_ML_CACHE_DIR <span class="op">=</span> <span class="st">"/opt/cuda-ml-cache"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>Set <code>CUDA_ML_BACKEND_MIRROR</code> to an <code>https://</code>
 or <code>file://</code> directory that contains the exact locked backend
 archive:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span></span>
 <span>  CUDA_ML_BACKEND_MIRROR <span class="op">=</span> <span class="st">"file:///srv/cuda-ml-backends"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>The installer appends the locked archive filename to that directory
-and keeps hash verification enabled. Other URL schemes are rejected.</p>
-<p>For the complete backend, this setting mirrors only the cuda.ml
-backend archive. Managed CUDA and RAPIDS runtime artifacts still use the
-locked upstream URLs recorded in the package manifest.</p>
+<p>The installer appends the locked archive filename and keeps hash
+verification enabled. The mirror setting covers the cuda.ml archive, not
+the complete backend’s CUDA and RAPIDS artifacts, which continue to use
+their pinned upstream URLs.</p>
 </div>
 <div class="section level2">
-<h2 id="inspect-the-selected-backend">Inspect the selected backend<a class="anchor" aria-label="anchor" href="#inspect-the-selected-backend"></a>
+<h2 id="inspect-audit-or-remove-a-backend">Inspect, audit, or remove a backend<a class="anchor" aria-label="anchor" href="#inspect-audit-or-remove-a-backend"></a>
 </h2>
-<p><code><a href="../reference/cuda_ml_backend_info.html">cuda_ml_backend_info()</a></code> performs read-only cache and
-inventory checks:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<p>These two checks have different purposes:</p>
+<table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
+<thead><tr class="header">
+<th>Function</th>
+<th>Use</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code><a href="../reference/cuda_ml_backend_info.html">cuda_ml_backend_info()</a></code></td>
+<td>Read metadata and fast cache status without loading native code</td>
+</tr>
+<tr class="even">
+<td><code><a href="../reference/cuda_ml_runtime_audit.html">cuda_ml_runtime_audit()</a></code></td>
+<td>Recompute content hashes and validate native registration</td>
+</tr>
+</tbody>
+</table>
+<p>Inspect both complete and CPU-only backend status with one metadata
+call:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_ml_backend_info.html">cuda_ml_backend_info</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">info</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
@@ -214,60 +209,44 @@ inventory checks:</p>
 <span>  <span class="st">"nvforest_cpu_runtime_path"</span>,</span>
 <span>  <span class="st">"nvforest_cpu_backend_loaded"</span></span>
 <span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
-<p>It reports the selected backend, locked library versions, supported
-architectures, cache status, and the separate CPU-only nvForest status.
-It does not create or change the cache, use the network, inspect an
-NVIDIA GPU or driver, or load native code. Consequently, it reports
-whether the exact cache is complete, not whether a GPU can execute a
+<p>The result also contains the locked library versions and supported
+architectures. It describes the cache, not whether a GPU can execute a
 model.</p>
-</div>
-<div class="section level2">
-<h2 id="audit-or-remove-cached-backends">Audit or remove cached backends<a class="anchor" aria-label="anchor" href="#audit-or-remove-cached-backends"></a>
-</h2>
-<p>Ordinary cache reuse checks markers, inventories, sizes, and links.
-Run an explicit audit when you need to recompute the recorded hashes and
-validate native registration:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<p>Run the full audit for the backend that needs validation:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cuda_ml_runtime_audit.html">cuda_ml_runtime_audit</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># After cuda_ml_install(device = "cpu"):</span></span>
 <span><span class="fu"><a href="../reference/cuda_ml_runtime_audit.html">cuda_ml_runtime_audit</a></span><span class="op">(</span>device <span class="op">=</span> <span class="st">"cpu"</span><span class="op">)</span></span></code></pre></div>
-<p>For the complete downloaded backend, the audit also validates the
-managed runtime dependency closure. The default audits the selected
-complete backend; if a source build is selected, it audits that
-source-built backend.</p>
-<p>To remove downloaded, source-built, and CPU-only backend cache
-generations, including the selected-backend record, start a fresh R
-session and run:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<p>The complete downloaded-backend audit also validates its runtime
+dependency closure. The default follows the selected prebuilt or
+source-built complete backend.</p>
+<p>To remove all backend cache generations and the selected-backend
+record, start a fresh R session and run:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/cuda_ml_cache_clean.html">cuda_ml_cache_clean</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>Restart R first if either native backend has been loaded. After
-cleaning, provision the backend needed by the environment again.</p>
+<p>Prepare the required backend again after cleaning.</p>
 </div>
 <div class="section level2">
 <h2 id="build-the-complete-backend-from-source">Build the complete backend from source<a class="anchor" aria-label="anchor" href="#build-the-complete-backend-from-source"></a>
 </h2>
-<p>Source installation builds the complete GPU-capable backend. It does
-not build the separate CPU-only backend.</p>
-<div class="section level3">
-<h3 id="managed-dependencies">Managed dependencies<a class="anchor" aria-label="anchor" href="#managed-dependencies"></a>
-</h3>
-<p>The default source path downloads no prebuilt cuda.ml backend. It
-downloads and verifies the locked CUDA 13.2.2 and RAPIDS 26.06
-development artifacts, CMake, and Ninja, builds Treelite 4.7.0
-statically, and caches the toolchain:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<p>Source installation builds the complete GPU-capable backend, not the
+CPU-only backend. The managed path downloads and verifies the pinned
+CUDA 13.2.2 and RAPIDS 26.06 development artifacts, CMake, and Ninja,
+then builds Treelite 4.7.0 statically:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span>source <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p>The managed build requires Linux x86_64 with glibc 2.28 or newer and
-GNU C++ 14 or newer. It does not require Python, Conda, Docker, a system
-CUDA Toolkit, a system RAPIDS installation, or a GPU. If
-<code>CUDA_ML_CXX</code> is unset, the installer prefers
-<code>g++-14</code> and then <code>g++</code> on <code>PATH</code>.</p>
-<p>By default, the build uses <code>nvidia-smi</code> to detect distinct
-CUDA-visible compute capabilities and compiles their real targets. It
-honors <code>CUDA_VISIBLE_DEVICES</code>. If detection is unavailable,
-it uses cuda.ml’s portable architecture list. Choose the target policy
-explicitly when needed:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<p>This path requires GNU C++ 14 or newer. It does not require Python,
+Conda, Docker, a system CUDA Toolkit, a system RAPIDS installation, or a
+GPU. Set <code>CUDA_ML_CXX</code> to select a compiler; otherwise
+cuda.ml tries <code>g++-14</code> and then <code>g++</code>.</p>
+<p>By default, the build compiles real targets for the distinct
+CUDA-visible compute capabilities reported by <code>nvidia-smi</code>.
+It honors <code>CUDA_VISIBLE_DEVICES</code> and uses the portable
+architecture list when detection is unavailable. Override that policy
+when needed:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Require successful detection from a CUDA-visible GPU.</span></span>
 <span><span class="fu"><a href="../reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span>source <span class="op">=</span> <span class="cn">TRUE</span>, architectures <span class="op">=</span> <span class="st">"native"</span><span class="op">)</span></span>
 <span></span>
@@ -280,18 +259,15 @@ explicitly when needed:</p>
 <span>  architectures <span class="op">=</span> <span class="st">"86-real;89-real"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>A native-target build usually takes less time and space, but the
-resulting backend supports only the selected architectures. Repeated
-calls with the same build inputs reuse the cached toolchain and backend.
-Restart R before changing the selected prebuilt or source-built backend,
-or source-build inputs, after a native backend has been loaded in that
-process.</p>
-</div>
+result supports only those architectures. Restart R before changing
+backend selection or source inputs after native code has been
+loaded.</p>
 <div class="section level3">
-<h3 id="host-dependencies">Host dependencies<a class="anchor" aria-label="anchor" href="#host-dependencies"></a>
+<h3 id="use-host-dependencies">Use host dependencies<a class="anchor" aria-label="anchor" href="#use-host-dependencies"></a>
 </h3>
 <p>The host path makes no downloads and requires every build input
 explicitly:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span></span>
 <span>  CUDA_HOME <span class="op">=</span> <span class="st">"/usr/local/cuda-13.2"</span>,</span>
 <span>  CUML_PREFIX <span class="op">=</span> <span class="st">"/opt/rapids-26.06"</span>,</span>
@@ -300,12 +276,12 @@ explicitly:</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span>source <span class="op">=</span> <span class="cn">TRUE</span>, dependencies <span class="op">=</span> <span class="st">"host"</span><span class="op">)</span></span></code></pre></div>
-<p><code>CUDA_HOME</code> must contain the locked CUDA Toolkit 13.2.2.
-<code>CUML_PREFIX</code> must contain cuML and nvForest 26.06, Treelite
-4.7.0 headers, and <code>lib/libtreelite_static.a</code>. GNU C++ 14 or
-newer is required, and CMake 3.21.1 or newer must be on
-<code>PATH</code>. The CUDA, RAPIDS, and Treelite prefixes must remain
-in place because the compiled backend links to their libraries.</p>
+<p>This path requires CUDA Toolkit 13.2.2 in <code>CUDA_HOME</code>;
+cuML and nvForest 26.06, Treelite 4.7.0 headers, and
+<code>lib/libtreelite_static.a</code> in <code>CUML_PREFIX</code>; GNU
+C++ 14 or newer; and CMake 3.21.1 or newer. The CUDA and RAPIDS prefixes
+must remain available because the backend links to their shared
+libraries. Treelite is linked statically.</p>
 </div>
 </div>
 <div class="section level2">
@@ -322,48 +298,24 @@ in place because the compiled backend links to their libraries.</p>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td>A native model operation says the managed runtime is not
-installed.</td>
-<td>Run <code><a href="../reference/cuda_ml_install.html">cuda_ml_install()</a></code> once in that environment.</td>
-</tr>
-<tr class="even">
-<td>CPU inference says the CPU-only nvForest backend is not
-installed.</td>
-<td>Run <code>cuda_ml_install(device = "cpu")</code>.</td>
-</tr>
-<tr class="odd">
-<td>An operation says cuda.ml requires Linux x86_64 with glibc 2.28 or
-newer.</td>
-<td>Move the native operation to a supported system; the CPU-only
-backend has the same platform requirement.</td>
+<td>A model operation reports that its backend is missing.</td>
+<td>Run the installation call named in the error.</td>
 </tr>
 <tr class="even">
 <td>An audit reports failed content validation.</td>
-<td>Start a fresh R session, run <code><a href="../reference/cuda_ml_cache_clean.html">cuda_ml_cache_clean()</a></code>,
-then reinstall the complete or CPU-only backend.</td>
+<td>In a fresh R session, clean the cache and reinstall the required
+backend.</td>
 </tr>
 <tr class="odd">
-<td>Cleaning the cache or changing the selected backend asks for a
-restart.</td>
+<td>Cleaning or changing backend selection requests a restart.</td>
 <td>Restart R so no backend is loaded, then repeat the operation.</td>
 </tr>
 <tr class="even">
-<td>A managed source build cannot find a suitable compiler.</td>
-<td>Install GNU C++ 14 or newer and, if needed, set
-<code>CUDA_ML_CXX</code> to its executable.</td>
-</tr>
-<tr class="odd">
 <td>
 <code>architectures = "native"</code> cannot detect a GPU.</td>
-<td>Make a GPU and <code>nvidia-smi</code> visible, use
-<code>architectures = "portable"</code>, or supply explicit targets such
-as <code>"86-real"</code>.</td>
-</tr>
-<tr class="even">
-<td>A host source build reports missing inputs.</td>
-<td>Set <code>CUDA_HOME</code>, <code>CUML_PREFIX</code>,
-<code>CUML_CUDA_ARCHITECTURES</code>, and <code>CUDA_ML_CXX</code> to
-installations with the locked versions.</td>
+<td>Expose a GPU and <code>nvidia-smi</code>, use
+<code>"portable"</code>, or supply explicit targets such as
+<code>"86-real"</code>.</td>
 </tr>
 </tbody>
 </table>

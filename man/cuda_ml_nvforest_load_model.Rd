@@ -86,9 +86,9 @@ CPU or GPU placement. Select the deployment device when restoring, for
 example \code{cuda_ml_unserialize(state, device = "cpu")}; GPU is the
 default. Tree layout, chunk size, memory alignment, and GPU device identifier
 are likewise restore-time settings. Prediction precision is retained unless
-explicitly overridden. Schema 1 nvForest states require an exact Treelite
-version match. The recorded package, CUDA, RAPIDS, nvForest, and platform
-versions are provenance rather than compatibility gates.
+explicitly overridden. nvForest states require an exact Treelite version
+match. The recorded package, CUDA, RAPIDS, nvForest, and platform versions
+are provenance rather than compatibility gates.
 
 To create a standard Treelite checkpoint together with the metadata needed
 for a complete cuda.ml round-trip, use

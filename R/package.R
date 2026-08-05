@@ -49,7 +49,9 @@
 #' \code{CUDA_HOME}, \code{CUML_PREFIX}, \code{CUML_CUDA_ARCHITECTURES}, and
 #' \code{CUDA_ML_CXX} inputs for a fully native, network-free source build.
 #'
-#' @author Yitao Li <yitao@rstudio.com>
+#' @author Yitao Li <yitaoli1990@gmail.com>
+#' @author Tomasz Kalinowski <tomasz@posit.co>
+#' @author Daniel Falbel <daniel@posit.co>
 #' @import Rcpp
 "_PACKAGE"
 

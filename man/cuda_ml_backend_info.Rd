@@ -7,11 +7,22 @@
 cuda_ml_backend_info()
 }
 \value{
-A named list describing the selected backend and whether its exact
-  cache is complete. This function performs read-only cache and inventory
-  checks. It does not create or modify the cache, access the network, inspect
-  an NVIDIA GPU or driver, or load the native backend.
+A named list describing the selected backend, pinned library
+  versions, cache status, and CPU-only nvForest backend status.
 }
 \description{
-Report native-backend metadata
+Performs cheap, read-only cache and inventory checks for routine inspection.
+It reports whether the selected backend cache is complete, but does not
+verify every recorded hash or native registration. It does not create or
+modify the cache, access the network, inspect an NVIDIA GPU or driver, or
+load native code.
+}
+\details{
+Use \code{cuda_ml_runtime_audit()} when an explicit deep integrity check is
+needed. The audit recomputes recorded hashes, validates native registration,
+and, for the complete downloaded backend, validates the managed-runtime
+dependency closure.
+}
+\seealso{
+\code{\link{cuda_ml_runtime_audit}()}
 }

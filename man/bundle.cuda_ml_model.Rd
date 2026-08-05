@@ -20,46 +20,31 @@ will restore. \code{NULL} preserves the model's current device. Use
 deployment. Other cuda.ml model types do not accept this argument.}
 }
 \description{
-Converts a model with an explicit portable state into a
+Converts a model with explicit state into a
 \code{bundle::bundle()} object. Models without an explicit state fail rather
 than serializing native pointers.
 }
-\section{Persistence contract}{
+\section{Compatibility}{
 
-cuda.ml schema 1 model states contain a schema number, the cuda.ml package
-version that created the state, backend provenance, a model ABI identifier,
-and a payload. The package version is provenance only: a difference from the
-installed cuda.ml version does not prevent restoration.
-
-Compatibility is determined before the payload is restored:
+The cuda.ml package version that created a state is recorded as provenance;
+a different package version does not by itself prevent restoration. Backend
+compatibility depends on the model family:
 \itemize{
-  \item The schema must be the integer \code{1}. Unknown and unversioned
-    schemas are rejected.
-  \item The state class and model ABI must identify a restoration method
-    supported by the installed package. A change to a model's payload layout
-    requires a new model ABI.
-  \item Linear-model and logistic-regression states have portable R payloads
-    and do not require matching backend identity fields.
-  \item PCA, SVC, one-vs-rest SVC, SVR, and UMAP states require an exact
-    \code{rapids_version} match because their payloads reconstruct RAPIDS
-    native state.
-  \item Random-forest and nvForest states require an exact
-    \code{treelite_version} match because their payloads contain serialized
-    Treelite model bytes.
+  \item Linear and logistic-regression states do not require a matching
+    backend version.
+  \item PCA, SVC, one-vs-rest SVC, SVR, and UMAP states require the same
+    RAPIDS version.
+  \item Random-forest and nvForest states require the same Treelite version.
 }
-The remaining recorded backend fields---\code{cuda_version},
-\code{nvforest_version}, and \code{platform}---are provenance for schema 1,
-not compatibility gates. A missing payload, unsupported ABI, or missing or
-unequal required backend field is rejected. cuda.ml does not implicitly
-migrate a state or fall back to serializing native pointers.
+Other recorded backend details are provenance and do not gate restoration.
+The package checks the saved model type and required metadata before loading
+its payload, and rejects unsupported or incompatible states.
 
-Current nvForest and random-forest states store device-neutral Treelite
-model bytes. They retain model semantics and prediction precision, but not
-the inference device, device identifier, tree layout, chunk size, or memory
-alignment. Select those settings when restoring with
-\code{cuda_ml_unserialize()}; GPU is the default. Legacy v1 nvForest and
-random-forest states remain supported and restore with the inference settings
-recorded in their payloads.
+Random-forest and nvForest states contain device-neutral Treelite model
+bytes. They retain prediction precision, class labels, preprocessing, and
+model semantics, but not the inference device, device identifier, tree
+layout, chunk size, or memory alignment. Select those settings while
+restoring; omitting \code{device} selects GPU inference.
 
 Saving a state to a file connection and restoring it in another R process
 uses this same contract. The target process must have a compatible cuda.ml
@@ -73,6 +58,11 @@ nvForest-backed model, the bundle also stores its chosen deployment device
 separately from the device-neutral state. A bundle is not required for
 deployment; \code{cuda_ml_serialize()} returns the complete state artifact
 directly.
+
+A restored fit supports the same prediction or transformation operations as
+the original fit. cuda.ml does not provide warm-start, incremental-training,
+or fine-tuning operations for either live or restored fits. Refit a model by
+calling its fitting function again with training data.
 }
 
 \seealso{

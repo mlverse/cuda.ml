@@ -71,7 +71,7 @@ data based on principal components. - "pca_params": opaque pointer to
 PCA parameters which will be used for performing inverse transforms.
 
 The model object can be used as input to the
-[`cuda_ml_inverse_transform()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_inverse_transform.md)
+[`cuda_ml_inverse_transform()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_transform.md)
 function to map a representation based on principal components back to
 the original feature space.
 

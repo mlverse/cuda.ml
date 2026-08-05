@@ -65,4 +65,8 @@ Useful links:
 
 ## Author
 
-Yitao Li \<yitao@rstudio.com\>
+Yitao Li \<yitaoli1990@gmail.com\>
+
+Tomasz Kalinowski \<tomasz@posit.co\>
+
+Daniel Falbel \<daniel@posit.co\>

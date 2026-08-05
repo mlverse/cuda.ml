@@ -1,11 +1,23 @@
-# Serialize a cuML model
+# Save and restore supported cuda.ml models
 
-Given a cuML model, serialize its state into a connection.
+`cuda_ml_serialize()` saves the explicit state of a fitted cuda.ml
+model. `cuda_ml_unserialize()` restores that state as a fitted model.
 
 ## Usage
 
 ``` r
 cuda_ml_serialize(model, connection = NULL, ...)
+
+cuda_ml_unserialize(
+  connection,
+  ...,
+  device = NULL,
+  device_id = NULL,
+  layout = NULL,
+  precision = NULL,
+  default_chunk_size = NULL,
+  align_bytes = NULL
+)
 ```
 
 ## Arguments
@@ -16,60 +28,73 @@ cuda_ml_serialize(model, connection = NULL, ...)
 
 - connection:
 
-  An open connection or `NULL`. If `NULL`, then the model state is
-  serialized to a raw vector. Default: NULL.
+  For `cuda_ml_serialize()`, an open connection or `NULL`; `NULL`
+  returns the state as a raw vector. For `cuda_ml_unserialize()`, an
+  open connection or a raw vector.
 
 - ...:
 
-  Additional arguments to
-  [`base::serialize()`](https://rdrr.io/r/base/serialize.html).
+  Additional arguments passed to
+  [`base::serialize()`](https://rdrr.io/r/base/serialize.html) or
+  [`base::unserialize()`](https://rdrr.io/r/base/serialize.html).
+
+- device, device_id, layout, precision, default_chunk_size, align_bytes:
+
+  Named nvForest inference options. They are supported only for nvForest
+  and random-forest states. When `device` is omitted, those states
+  restore for GPU inference. When `precision` is omitted, the saved
+  prediction precision is used. The remaining omitted options use
+  nvForest defaults.
 
 ## Value
 
-`NULL` unless `connection` is `NULL`, in which case the serialized model
-state is returned as a raw vector.
+`cuda_ml_serialize()` returns `NULL` when writing to a connection and
+otherwise returns a raw vector. `cuda_ml_unserialize()` returns the
+restored fitted model.
 
-## Persistence contract
+## Supported models
 
-cuda.ml schema 1 model states contain a schema number, the cuda.ml
-package version that created the state, backend provenance, a model ABI
-identifier, and a payload. The package version is provenance only: a
-difference from the installed cuda.ml version does not prevent
-restoration.
+Explicit state is supported for:
 
-Compatibility is determined before the payload is restored:
+- OLS, ridge, lasso, elastic-net, and SGD linear models;
 
-- The schema must be the integer `1`. Unknown and unversioned schemas
-  are rejected.
+- logistic and multinomial regression;
 
-- The state class and model ABI must identify a restoration method
-  supported by the installed package. A change to a model's payload
-  layout requires a new model ABI.
+- PCA;
 
-- Linear-model and logistic-regression states have portable R payloads
-  and do not require matching backend identity fields.
+- binary and one-vs-rest SVC models and SVR models;
 
-- PCA, SVC, one-vs-rest SVC, SVR, and UMAP states require an exact
-  `rapids_version` match because their payloads reconstruct RAPIDS
-  native state.
+- UMAP;
 
-- Random-forest and nvForest states require an exact `treelite_version`
-  match because their payloads contain serialized Treelite model bytes.
+- random forests and other nvForest-backed models.
 
-The remaining recorded backend fields—`cuda_version`,
-`nvforest_version`, and `platform`—are provenance for schema 1, not
-compatibility gates. A missing payload, unsupported ABI, or missing or
-unequal required backend field is rejected. cuda.ml does not implicitly
-migrate a state or fall back to serializing native pointers.
+Other cuda.ml models fail during `cuda_ml_serialize()` instead of saving
+native pointers that cannot be used in another R process.
 
-Current nvForest and random-forest states store device-neutral Treelite
-model bytes. They retain model semantics and prediction precision, but
-not the inference device, device identifier, tree layout, chunk size, or
-memory alignment. Select those settings when restoring with
-[`cuda_ml_unserialize()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_unserialize.md);
-GPU is the default. Legacy v1 nvForest and random-forest states remain
-supported and restore with the inference settings recorded in their
-payloads.
+## Compatibility
+
+The cuda.ml package version that created a state is recorded as
+provenance; a different package version does not by itself prevent
+restoration. Backend compatibility depends on the model family:
+
+- Linear and logistic-regression states do not require a matching
+  backend version.
+
+- PCA, SVC, one-vs-rest SVC, SVR, and UMAP states require the same
+  RAPIDS version.
+
+- Random-forest and nvForest states require the same Treelite version.
+
+Other recorded backend details are provenance and do not gate
+restoration. The package checks the saved model type and required
+metadata before loading its payload, and rejects unsupported or
+incompatible states.
+
+Random-forest and nvForest states contain device-neutral Treelite model
+bytes. They retain prediction precision, class labels, preprocessing,
+and model semantics, but not the inference device, device identifier,
+tree layout, chunk size, or memory alignment. Select those settings
+while restoring; omitting `device` selects GPU inference.
 
 Saving a state to a file connection and restoring it in another R
 process uses this same contract. The target process must have a
@@ -88,6 +113,14 @@ the bundle also stores its chosen deployment device separately from the
 device-neutral state. A bundle is not required for deployment;
 `cuda_ml_serialize()` returns the complete state artifact directly.
 
+A restored fit supports the same prediction or transformation operations
+as the original fit. cuda.ml does not provide warm-start,
+incremental-training, or fine-tuning operations for either live or
+restored fits. Refit a model by calling its fitting function again with
+training data.
+
 ## See also
 
-[`serialize`](https://rdrr.io/r/base/serialize.html)
+[`serialize`](https://rdrr.io/r/base/serialize.html),
+[`unserialize`](https://rdrr.io/r/base/serialize.html), and
+[`bundle`](https://rstudio.github.io/bundle/reference/bundle.html)

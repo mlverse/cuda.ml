@@ -89,14 +89,14 @@ predict(forest, iris[1:5, -5], type = "prob")
 The checkpoint is a standard, device-neutral Treelite checkpoint
 containing the trees. The JSON is cuda.ml metadata, not an XGBoost-style
 model file. It binds the pair with the checkpoint size and SHA-256
-digest and retains the model ABI, compatibility provenance, class
-labels, prediction precision, random-forest probability semantics, R
-preprocessing blueprint, and processed feature order when names are
-available. Exact cuda.ml round-trip requires both files. Other Treelite
-consumers can load the checkpoint alone, but must supply numeric
-predictors in the recorded processed order, or in the checkpoint’s
-original positional order when names are absent. They must also
-implement the sidecar’s labels and postprocessing semantics.
+digest and retains compatibility metadata, class labels, prediction
+precision, random-forest probability semantics, R preprocessing
+blueprint, and processed feature order when names are available. Exact
+cuda.ml round-trip requires both files. Other Treelite consumers can
+load the checkpoint alone, but must supply numeric predictors in the
+recorded processed order, or in the checkpoint’s original positional
+order when names are absent. They must also implement the sidecar’s
+labels and postprocessing semantics.
 
 The sidecar does not encode the inference device, GPU identifier, tree
 layout, chunk size, or memory alignment. Those are deployment choices.
@@ -279,7 +279,7 @@ operation.
 Use
 [`cuda_ml_serialize()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_serialize.md)
 and
-[`cuda_ml_unserialize()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_unserialize.md)
+[`cuda_ml_unserialize()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_serialize.md)
 when a single R-native artifact is preferable. Use
 [`cuda_ml_nvforest_export()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_nvforest_export.md)
 and
