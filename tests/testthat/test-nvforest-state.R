@@ -18,7 +18,7 @@ test_that("nvForest states are device neutral", {
   )
   state <- unserialize(cuda_ml_serialize(model))
 
-  expect_identical(state$model_abi, "cuda_ml_nvforest_model_state_v2")
+  expect_identical(state$model_abi, "cuda_ml_nvforest_model_state")
   expect_false("inference" %in% names(state$payload))
   expect_named(
     state$payload,
@@ -34,6 +34,36 @@ test_that("nvForest states are device neutral", {
   restored <- cuda_ml_unserialize(serialize(state, NULL))
   expect_identical(cuda_ml_nvforest_info(restored)$device, "gpu")
   expect_equal(predict(restored, x), predict(model, x))
+})
+
+test_that("nvForest models can use a selected second GPU", {
+  skip_if_not(run_multi_gpu_tests, "requires at least two visible GPUs")
+
+  path <- test_path("fixtures", "nvforest", "xgboost.ubj")
+  gpu_0_model <- cuda_ml_nvforest_load_model(
+    path,
+    model_type = "xgboost_ubj",
+    device = "gpu",
+    device_id = 0L
+  )
+  gpu_1_model <- cuda_ml_nvforest_load_model(
+    path,
+    model_type = "xgboost_ubj",
+    device = "gpu",
+    device_id = 1L
+  )
+  restored <- cuda_ml_unserialize(
+    cuda_ml_serialize(gpu_1_model),
+    device = "gpu",
+    device_id = 1L
+  )
+
+  expect_identical(cuda_ml_nvforest_info(gpu_1_model)$device_id, 1L)
+  expect_identical(cuda_ml_nvforest_info(restored)$device_id, 1L)
+  expected <- predict(gpu_0_model, nvforest_state_data)
+  expect_equal(predict(gpu_1_model, nvforest_state_data), expected)
+  expect_equal(predict(restored, nvforest_state_data), expected)
+  expect_equal(predict(gpu_0_model, nvforest_state_data), expected)
 })
 
 test_that("one nvForest state restores on CPU and GPU", {
@@ -112,39 +142,6 @@ test_that("restore-time nvForest options are applied", {
   expect_identical(info$align_bytes, 128L)
 })
 
-test_that("legacy nvForest states retain their stored inference settings", {
-  skip_if_not(run_gpu_tests, "requires the GPU test environment")
-
-  x <- nvforest_state_data
-  model <- cuda_ml_nvforest_load_model(
-    test_path("fixtures", "nvforest", "xgboost.ubj"),
-    model_type = "xgboost_ubj",
-    device = "gpu",
-    layout = "layered"
-  )
-  state <- unserialize(cuda_ml_serialize(model))
-  state$model_abi <- "cuda_ml_nvforest_model_state"
-  state$payload$inference <- list(
-    device = 1L,
-    device_id = -1L,
-    layout = 2L,
-    precision = -1L,
-    default_chunk_size = 0L,
-    align_bytes = 0L
-  )
-  state$payload$precision <- NULL
-  class(state) <- c(
-    "cuda_ml_nvforest_model_state",
-    "cuda_ml_model_state"
-  )
-
-  restored <- cuda_ml_unserialize(serialize(state, NULL))
-
-  expect_identical(cuda_ml_nvforest_info(restored)$device, "gpu")
-  expect_identical(cuda_ml_nvforest_info(restored)$layout, "layered")
-  expect_equal(predict(restored, x), predict(model, x))
-})
-
 test_that("nvForest restore options reject other model states", {
   state <- readRDS(test_path("fixtures", "linear-model-state-schema-1.rds"))
 
@@ -184,7 +181,7 @@ test_that("GPU-trained random forests restore for CPU inference", {
   expected_prob <- predict(model, data, type = "prob")
   state <- unserialize(cuda_ml_serialize(model))
 
-  expect_identical(state$model_abi, "cuda_ml_rand_forest_model_state_v2")
+  expect_identical(state$model_abi, "cuda_ml_rand_forest_model_state")
   expect_false("inference" %in% names(state$payload))
 
   bundle_path <- tempfile(fileext = ".rds")
@@ -266,29 +263,6 @@ test_that("GPU-trained random forests restore for CPU inference", {
     tolerance = 1e-6
   )
   expect_equal(deployed$bundled_prediction, expected_class)
-
-  state$model_abi <- "cuda_ml_rand_forest_model_state"
-  state$payload$inference <- list(
-    device = 1L,
-    device_id = -1L,
-    layout = 0L,
-    precision = -1L,
-    default_chunk_size = 0L,
-    align_bytes = 0L
-  )
-  state$payload$precision <- NULL
-  class(state) <- c(
-    "cuda_ml_rand_forest_model_state",
-    "cuda_ml_model_state"
-  )
-  legacy <- cuda_ml_unserialize(serialize(state, NULL))
-
-  expect_equal(predict(legacy, data, type = "class"), expected_class)
-  expect_equal(
-    predict(legacy, data, type = "prob"),
-    expected_prob,
-    tolerance = 1e-6
-  )
 })
 
 test_that("GPU-trained random forest regressors restore on CPU", {

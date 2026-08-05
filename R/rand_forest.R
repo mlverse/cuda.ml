@@ -407,43 +407,29 @@ cuda_ml_rand_forest_bridge <- function(
 cuda_ml_get_state.cuda_ml_rand_forest <- function(model) {
   new_model_state(
     nvforest_model_payload(model),
-    "cuda_ml_rand_forest_model_state_v2"
+    "cuda_ml_rand_forest_model_state"
   )
 }
 
 #' @export
 cuda_ml_set_state.cuda_ml_rand_forest_model_state <- function(model_state) {
-  payload <- cuda_ml_state_payload(
-    model_state,
-    "cuda_ml_rand_forest_model_state"
-  )
-  nvforest_unserialize_payload_v1(
-    payload,
-    c("cuda_ml_rand_forest", "cuda_ml_nvforest")
-  )
-}
-
-#' @export
-cuda_ml_set_state.cuda_ml_rand_forest_model_state_v2 <- function(
-  model_state
-) {
-  cuda_ml_set_state_with_options.cuda_ml_rand_forest_model_state_v2(
+  cuda_ml_set_state_with_options.cuda_ml_rand_forest_model_state(
     model_state,
     list()
   )
 }
 
 #' @export
-cuda_ml_set_state_with_options.cuda_ml_rand_forest_model_state_v2 <- function(
+cuda_ml_set_state_with_options.cuda_ml_rand_forest_model_state <- function(
   model_state,
   options
 ) {
   payload <- cuda_ml_state_payload(
     model_state,
-    "cuda_ml_rand_forest_model_state_v2"
+    "cuda_ml_rand_forest_model_state"
   )
   do.call(
-    nvforest_unserialize_payload_v2,
+    nvforest_unserialize_payload_with_options,
     c(
       list(
         payload = payload,

@@ -25,10 +25,18 @@ gpu_visible <- (
   length(gpu_output) > 0L &&
   (is.null(gpu_status) || gpu_status == 0L) &&
   all(grepl("^[0-9]+[.][0-9]+$", trimws(gpu_output)))
+visible_gpu_count <- if (is.na(visible_devices)) {
+  length(gpu_output)
+} else if (gpu_visible) {
+  sum(nzchar(trimws(strsplit(visible_devices, ",", fixed = TRUE)[[1L]])))
+} else {
+  0L
+}
 run_gpu_tests <- !identical(Sys.getenv("CUDA_ML_GPU_TESTS"), "false") &&
   gpu_visible &&
   backend_info$backend_available &&
   backend_info$runtime_installed
+run_multi_gpu_tests <- run_gpu_tests && visible_gpu_count >= 2L
 
 if (run_gpu_tests) {
   library(magrittr, warn.conflicts = FALSE)

@@ -223,9 +223,9 @@ new_nvforest_model <- function(
 #' example \code{cuda_ml_unserialize(state, device = "cpu")}; GPU is the
 #' default. Tree layout, chunk size, memory alignment, and GPU device identifier
 #' are likewise restore-time settings. Prediction precision is retained unless
-#' explicitly overridden. Schema 1 nvForest states require an exact Treelite
-#' version match. The recorded package, CUDA, RAPIDS, nvForest, and platform
-#' versions are provenance rather than compatibility gates.
+#' explicitly overridden. nvForest states require an exact Treelite version
+#' match. The recorded package, CUDA, RAPIDS, nvForest, and platform versions
+#' are provenance rather than compatibility gates.
 #'
 #' To create a standard Treelite checkpoint together with the metadata needed
 #' for a complete cuda.ml round-trip, use
@@ -662,9 +662,9 @@ nvforest_export_manifest <- function(
 #'
 #' \code{cuda_ml_nvforest_export()} writes a standard Treelite checkpoint and a
 #' cuda.ml JSON sidecar. The checkpoint contains the device-neutral tree
-#' ensemble. The sidecar retains the cuda.ml model ABI, backend provenance,
-#' class labels, prediction precision, random-forest probability semantics,
-#' and R preprocessing blueprint needed for a complete cuda.ml round-trip.
+#' ensemble. The sidecar retains cuda.ml compatibility metadata, class labels,
+#' prediction precision, random-forest probability semantics, and the R
+#' preprocessing blueprint needed for a complete cuda.ml round-trip.
 #' \code{cuda_ml_nvforest_import()} restores the pair on a caller-selected
 #' inference device.
 #'
@@ -801,8 +801,8 @@ nvforest_validate_export_manifest <- function(metadata, paths) {
     ),
     "The nvForest metadata model ABI is unsupported" = metadata$model_abi %in%
       c(
-        "cuda_ml_nvforest_model_state_v2",
-        "cuda_ml_rand_forest_model_state_v2"
+        "cuda_ml_nvforest_model_state",
+        "cuda_ml_rand_forest_model_state"
       ),
     "The nvForest metadata checkpoint is invalid" = is.list(
       metadata$checkpoint
@@ -971,11 +971,7 @@ nvforest_unserialize_payload <- function(payload, cls, inference) {
   )
 }
 
-nvforest_unserialize_payload_v1 <- function(payload, cls) {
-  nvforest_unserialize_payload(payload, cls, payload$inference)
-}
-
-nvforest_unserialize_payload_v2 <- function(
+nvforest_unserialize_payload_with_options <- function(
   payload,
   cls,
   device = c("gpu", "cpu"),
@@ -1000,40 +996,29 @@ nvforest_unserialize_payload_v2 <- function(
 cuda_ml_get_state.cuda_ml_nvforest <- function(model) {
   new_model_state(
     nvforest_model_payload(model),
-    "cuda_ml_nvforest_model_state_v2"
+    "cuda_ml_nvforest_model_state"
   )
 }
 
 #' @export
 cuda_ml_set_state.cuda_ml_nvforest_model_state <- function(model_state) {
-  payload <- cuda_ml_state_payload(
-    model_state,
-    "cuda_ml_nvforest_model_state"
-  )
-  nvforest_unserialize_payload_v1(payload, "cuda_ml_nvforest")
-}
-
-#' @export
-cuda_ml_set_state.cuda_ml_nvforest_model_state_v2 <- function(
-  model_state
-) {
-  cuda_ml_set_state_with_options.cuda_ml_nvforest_model_state_v2(
+  cuda_ml_set_state_with_options.cuda_ml_nvforest_model_state(
     model_state,
     list()
   )
 }
 
 #' @export
-cuda_ml_set_state_with_options.cuda_ml_nvforest_model_state_v2 <- function(
+cuda_ml_set_state_with_options.cuda_ml_nvforest_model_state <- function(
   model_state,
   options
 ) {
   payload <- cuda_ml_state_payload(
     model_state,
-    "cuda_ml_nvforest_model_state_v2"
+    "cuda_ml_nvforest_model_state"
   )
   do.call(
-    nvforest_unserialize_payload_v2,
+    nvforest_unserialize_payload_with_options,
     c(
       list(payload = payload, cls = "cuda_ml_nvforest"),
       options
