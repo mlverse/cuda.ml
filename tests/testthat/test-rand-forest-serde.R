@@ -5,6 +5,11 @@ test_that("random forest classifier state preserves classes and probabilities", 
   state <- cuda_ml_serialize(model)
   data <- iris[names(iris) != "Species"]
 
+  expect_identical(
+    unserialize(state)$model_abi,
+    "cuda_ml_rand_forest_model_state"
+  )
+
   expected_class <- predict(model, data, type = "class")
   expected_prob <- predict(model, data, type = "prob")
   restored_class <- predict_in_sub_proc(
@@ -30,6 +35,11 @@ test_that("random forest regressor state preserves predictions", {
   model <- cuda_ml_rand_forest(mpg ~ ., mtcars, trees = 200L)
   state <- cuda_ml_serialize(model)
   data <- mtcars[names(mtcars) != "mpg"]
+
+  expect_identical(
+    unserialize(state)$model_abi,
+    "cuda_ml_rand_forest_model_state"
+  )
 
   expected <- predict(model, data)
   restored <- predict_in_sub_proc(

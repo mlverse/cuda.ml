@@ -86,3 +86,55 @@ test_that("cuda_ml_inverse_transform() works as expected for TSVD models", {
     scale = 1
   )
 })
+
+test_that("TSVD transformations use the current batch size", {
+  batch_sizes <- c(3L, nrow(sklearn_iris_dataset$data) + 7L)
+
+  for (batch_size in batch_sizes) {
+    rows <- rep(seq_len(nrow(sklearn_iris_dataset$data)), length.out = batch_size)
+    new_data <- sklearn_iris_dataset$data[rows, , drop = FALSE]
+    expected_transformed <- new_data %*% t(cuda_ml_tsvd_model$components)
+
+    transformed <- cuda_ml_transform(cuda_ml_tsvd_model, new_data)
+
+    expect_identical(dim(transformed), c(batch_size, 2L))
+    expect_equal(
+      transformed,
+      expected_transformed,
+      tolerance = 1e-8,
+      scale = 1
+    )
+
+    expected_reconstructed <-
+      expected_transformed %*% cuda_ml_tsvd_model$components
+    reconstructed <- cuda_ml_inverse_transform(
+      cuda_ml_tsvd_model,
+      expected_transformed
+    )
+
+    expect_identical(dim(reconstructed), c(batch_size, 4L))
+    expect_equal(
+      reconstructed,
+      expected_reconstructed,
+      tolerance = 1e-8,
+      scale = 1
+    )
+  }
+})
+
+test_that("TSVD transformations reject incompatible input widths", {
+  expect_error(
+    cuda_ml_transform(
+      cuda_ml_tsvd_model,
+      cbind(sklearn_iris_dataset$data, extra = 0)
+    ),
+    "same number of columns"
+  )
+  expect_error(
+    cuda_ml_inverse_transform(
+      cuda_ml_tsvd_model,
+      cbind(cuda_ml_tsvd_model$transformed_data, extra = 0)
+    ),
+    "one column per fitted TSVD component"
+  )
+})

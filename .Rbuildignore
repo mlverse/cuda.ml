@@ -29,6 +29,7 @@
 ^LICENSE\.md$
 ^_pkgdown\.yml$
 ^docs$
+^blog$
 ^pkgdown$
 ^README\.Rmd$
 ^README_cache$

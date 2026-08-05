@@ -1,8 +1,8 @@
 ---
 title: "Save and restore models"
 description: >
-  Choose a persistence format, move fitted cuda.ml models between R sessions,
-  and understand backend compatibility requirements.
+  Choose a persistence format and move fitted cuda.ml models between R
+  sessions.
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Save and restore models}
@@ -14,7 +14,8 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = FALSE
+  eval = identical(Sys.getenv("IN_PKGDOWN"), "true") ||
+    identical(Sys.getenv("CUDA_ML_GPU_VIGNETTES"), "true")
 )
 ```
 
@@ -23,15 +24,11 @@ the R process that created them. Use an explicit cuda.ml model state, a
 `bundle` object, or an nvForest checkpoint pair instead of relying on
 `saveRDS()` to capture a live fitted object.
 
-The examples are not evaluated when this vignette is built. Building the
-vignette therefore requires no GPU, native backend, runtime download, or
-network access.
-
 ## Choose a persistence format
 
 | Need | Save | Restore | Result |
 |:---|:---|:---|:---|
-| One R-native artifact | `cuda_ml_serialize()` | `cuda_ml_unserialize()` | A versioned cuda.ml model state |
+| One R-native artifact | `cuda_ml_serialize()` | `cuda_ml_unserialize()` | A cuda.ml model state |
 | Integration with the `bundle` package | `bundle::bundle()` and `saveRDS()` | `readRDS()` and `bundle::unbundle()` | A bundle containing the same cuda.ml state |
 | A Treelite checkpoint usable outside cuda.ml | `cuda_ml_nvforest_export()` | `cuda_ml_nvforest_import()` | A checkpoint plus cuda.ml metadata |
 
@@ -40,13 +37,12 @@ state. The checkpoint choice is only for random forests and other
 nvForest-backed models. It is described in more detail in the
 [nvForest inference guide](nvforest.html).
 
-## Save one R-native state
+## Save directly to a file
 
-`cuda_ml_serialize()` returns a raw vector when `connection = NULL`, its
-default. The vector contains a versioned model state rather than a live native
-pointer.
+The simplest file workflow passes a path directly. cuda.ml writes a
+gzip-compressed model state rather than a live native pointer.
 
-```{r save-state}
+```{r save-file}
 library(cuda.ml)
 
 cuda_ml_install()
@@ -58,48 +54,51 @@ model <- cuda_ml_linear_reg(
   mixture = 0
 )
 
-state <- cuda_ml_serialize(model)
-saveRDS(state, "mtcars-ridge.cuda-ml-state.rds")
+state_path <- tempfile(fileext = ".cuda-ml-state")
+cuda_ml_serialize(model, state_path)
 ```
 
-In a new R process, prepare the required backend before using the restored
-model, then pass the saved raw vector to `cuda_ml_unserialize()`.
+In a new R process, prepare the required backend and restore the model. cuda.ml
+validates the state and backend before loading it.
 
-```{r restore-state}
+```{r restore-file}
 library(cuda.ml)
 
 cuda_ml_install()
 
-state <- readRDS("mtcars-ridge.cuda-ml-state.rds")
-model <- cuda_ml_unserialize(state)
+model <- cuda_ml_unserialize(state_path)
+
 predict(model, mtcars[1:5, names(mtcars) != "mpg"])
 ```
 
-You can write the state directly to a binary connection instead:
+## Keep the state as raw bytes
 
-```{r connection}
-connection <- file("mtcars-ridge.cuda-ml-state", open = "wb")
-cuda_ml_serialize(model, connection)
-close(connection)
+With its default `connection = NULL`, `cuda_ml_serialize()` returns the
+uncompressed state as a raw vector. This is useful for object stores and other
+systems that accept bytes directly.
 
-connection <- file("mtcars-ridge.cuda-ml-state", open = "rb")
-model <- cuda_ml_unserialize(connection)
-close(connection)
+```{r raw-state}
+state <- cuda_ml_serialize(model)
+str(state)
+
+model <- cuda_ml_unserialize(state)
 ```
+
+The `blob` package can wrap this raw vector as one database BLOB value.
 
 ## Use a bundle
 
 The `bundle` package wraps the same explicit cuda.ml state and records how to
-restore it. This is useful in workflows that already use `bundle`; it does not
-change cuda.ml's compatibility requirements.
+restore it. This is useful in workflows that already use `bundle`.
 
 ```{r bundle}
 library(bundle)
 
+bundle_path <- tempfile(fileext = ".bundle.rds")
 bundled_model <- bundle(model)
-saveRDS(bundled_model, "mtcars-ridge.bundle.rds")
+saveRDS(bundled_model, bundle_path)
 
-bundled_model <- readRDS("mtcars-ridge.bundle.rds")
+bundled_model <- readRDS(bundle_path)
 model <- unbundle(bundled_model)
 ```
 
@@ -116,18 +115,19 @@ forest <- cuda_ml_rand_forest(
 )
 
 cpu_bundle <- bundle(forest, device = "cpu")
-saveRDS(cpu_bundle, "forest-cpu.bundle.rds")
+forest_bundle_path <- tempfile(fileext = ".bundle.rds")
+saveRDS(cpu_bundle, forest_bundle_path)
 ```
 
-The target host must install the CPU inference backend before calling
-`unbundle()`:
+The target host must prepare a backend that supports CPU inference before
+calling `unbundle()`. For a smaller CPU-only deployment:
 
 ```{r unbundle-nvforest}
 library(cuda.ml)
 library(bundle)
 
 cuda_ml_install(device = "cpu")
-forest <- unbundle(readRDS("forest-cpu.bundle.rds"))
+forest <- unbundle(readRDS(forest_bundle_path))
 ```
 
 The `device` argument is supported only for nvForest-backed models.
@@ -141,10 +141,11 @@ The `device` argument is supported only for nvForest-backed models.
   round-trip.
 
 ```{r export-nvforest}
-dir.create("forest-artifact")
+forest_directory <- tempfile("forest-artifact-")
+dir.create(forest_directory)
 cuda_ml_nvforest_export(
   forest,
-  directory = "forest-artifact",
+  directory = forest_directory,
   prefix = "model"
 )
 ```
@@ -156,7 +157,7 @@ deployment device during import:
 cuda_ml_install(device = "cpu")
 
 forest <- cuda_ml_nvforest_import(
-  directory = "forest-artifact",
+  directory = forest_directory,
   prefix = "model",
   device = "cpu"
 )
@@ -167,28 +168,6 @@ predictors in the recorded order and reproduce any class-label and
 postprocessing semantics in the JSON sidecar. Loading the bare checkpoint back
 into cuda.ml does not recover those semantics. Use the pair for an exact
 round-trip.
-
-## Compatibility rules
-
-Every current cuda.ml state uses schema 1 and records its model ABI, package
-version, backend provenance, and payload. The package version is provenance; a
-different package version does not by itself prevent restoration. Compatibility
-depends on the state schema, model ABI, and the native format used by the
-payload.
-
-| Model state | Required backend identity |
-|:---|:---|
-| Linear and logistic regression | No backend identity match; the state payload is portable R data |
-| PCA, SVC, one-vs-rest SVC, SVR, and UMAP | Exact RAPIDS version |
-| Random forest and nvForest | Exact Treelite version |
-
-These model families implement explicit state in the current release. Models
-without explicit state support fail during `cuda_ml_serialize()` rather than
-falling back to serialization of native pointers.
-
-States are not migrated implicitly. An unknown schema, unsupported model ABI,
-missing payload, or missing or unequal required backend field produces an
-error before restoration.
 
 ## Select the nvForest restore device
 
@@ -221,3 +200,10 @@ Load cuda.ml states, bundles, and checkpoint sidecars only from trusted
 sources. An nvForest JSON sidecar embeds an R-serialized preprocessing
 blueprint. Its SHA-256 digest checks checkpoint integrity, not the identity of
 the artifact's producer.
+
+```{r cleanup, include = FALSE}
+unlink(
+  c(state_path, bundle_path, forest_bundle_path, forest_directory),
+  recursive = TRUE
+)
+```

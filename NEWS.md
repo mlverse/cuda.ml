@@ -1,74 +1,130 @@
 # cuda.ml 0.4.0
 
-This is a breaking release targeting one backend: CUDA Toolkit 13.2.2, RAPIDS
-cuML and nvForest 26.06, and Treelite 4.7.0.
+This is a breaking release for users upgrading from the cuda.ml 0.3 release
+series. It requires R 4.1 or newer and targets CUDA Toolkit 13.2.2, RAPIDS cuML
+and nvForest 26.06, and Treelite 4.7.0.
 
-- Added Linux x86_64 backends targeting glibc 2.28 or newer and hosted as
-  GitHub Release assets. The CRAN package remains a portable R installer and
-  loader; it contains neither compiled code nor the approximately 1.6 GiB CUDA
-  and RAPIDS runtime.
+## Installation and runtime
 
-- Added explicit `cuda_ml_install()` runtime preparation. Model operations no
-  longer download libraries implicitly; they direct users to run the installer
-  when the managed runtime is absent. `cuda_ml_runtime_audit()` performs a full
-  content audit, and `cuda_ml_cache_clean()` removes cuda.ml cache generations.
+- The CRAN package is now a portable R installer and loader with no compiled
+  code or bundled CUDA libraries. On Linux x86_64 with glibc 2.28 or newer,
+  `cuda_ml_install()` explicitly prepares the pinned native backend and its
+  approximately 1.6 GiB CUDA and RAPIDS runtime. Repeated calls reuse the
+  prepared cache.
 
-- Added `cuda_ml_install(source = TRUE)` for host builds without Docker or a
-  prebuilt cuda.ml backend. By default it bootstraps exact locked CUDA, RAPIDS,
-  Treelite, CMake, and Ninja build inputs, requiring only GNU C++ 14 or newer on
-  a supported Linux host. `dependencies = "host"` uses explicit native build
-  inputs and makes no downloads. Managed builds detect CUDA-visible GPU
-  architectures by default and otherwise use the portable package list.
-  `architectures = "native"` requires detection, while
-  `architectures = "portable"` forces the package list. Source backend
-  selection persists across R sessions.
+- `cuda_ml_install(source = TRUE)` builds the backend on a supported host. Its
+  managed mode prepares the pinned CUDA, RAPIDS, Treelite, CMake, and Ninja
+  build inputs and requires GNU C++ 14 or newer. Use
+  `dependencies = "host"` to supply all native build inputs. Managed builds
+  detect distinct CUDA-visible architectures when possible, while
+  `architectures = "native"`, `"portable"`, or an explicit CMake architecture
+  list selects the build target policy.
 
-- Package loading and `cuda_ml_backend_info()` are silent and side-effect free.
-  They do not inspect the GPU, create a cache, contact the network, or load the
-  native backend. CRAN checks use an explicit network-free stub backend.
+- Loading cuda.ml is silent and side-effect free. `cuda_ml_backend_info()`
+  reports pinned versions and cache status without inspecting a GPU, loading
+  native code, modifying the cache, or using the network.
+  `cuda_ml_runtime_audit()` is the separate, explicit full content and native
+  registration check, and `cuda_ml_cache_clean()` removes managed cache
+  generations.
 
-- Parsnip is now optional. Loading cuda.ml does not load parsnip, ggplot2, or
-  S7; cuda.ml registers its engines when parsnip is loaded.
+- CPU nvForest inference requires a prepared cuda.ml backend. It can use the
+  complete runtime installed by `cuda_ml_install()` or the separate CPU-only
+  backend installed by `cuda_ml_install(device = "cpu")`. Selecting
+  `device = "cpu"` when loading or restoring a model does not itself prepare a
+  backend.
 
-- Replaced the removed cuML FIL interface with current nvForest loading,
-  prediction, model inspection, leaf-ID, per-tree, and persistence APIs.
-  Random-forest inference and persistence now use the same nvForest backend.
+- Prebuilt GPU backends contain real targets for compute capabilities 7.5,
+  8.0, 8.6, 8.9, 9.0, 10.0, and 12.0, plus PTX forward compatibility from
+  12.0.
 
-- Corrected random-forest arguments: `mtry` now controls sampled predictors,
-  `sample_fraction` controls sampled rows, `trees` defaults to 100, and `seed`
-  is forwarded to cuML. Classification uses `predict(..., type = "class")` and
-  `predict(..., type = "prob")`.
+## Models and public APIs
 
-- Added parsnip engines for `linear_reg()`, `logistic_reg()`, and
-  `multinom_reg()` using the customary `penalty` and `mixture` arguments.
-  Normalization is no longer emulated inside regularized linear models; use a
-  recipe preprocessing step when scaling is required.
+- The former FIL interface was replaced by nvForest. Use
+  `cuda_ml_nvforest_load_model()` for XGBoost models, LightGBM text models, and
+  Treelite checkpoints, standard `predict()` for inference, and the
+  `cuda_ml_nvforest_*()` inspection, checkpoint export, and import functions
+  for nvForest-specific operations. Random-forest fits now use nvForest for
+  prediction and persistence as well.
 
-- Removed interfaces that the supported backend cannot implement: FIL, random
-  projection, KNN IVFSQ, cuML log-level controls, `has_cuML()`, and the split
-  cuML version queries. `cuda_ml_backend_info()` is the single backend metadata
-  interface.
+- The random-forest API changed. `mtry` controls predictor sampling,
+  `sample_fraction` controls row sampling and defaults to 1, and the separate
+  `max_predictors_per_note_split` argument was removed. When `mtry` is omitted,
+  classification uses the square root of the predictor count and regression
+  uses all predictors. `trees` defaults to 100. When `seed` is omitted, it is
+  drawn from R's random-number generator, so `set.seed()` controls the fit. The
+  `max_batch_size` and `n_streams` defaults are now 4096 and 4. Regression split
+  criteria are now `"mse"`, `"poisson"`, `"gamma"`, and
+  `"inverse_gaussian"`; `"mae"` was removed. Classification predictions use
+  `predict(..., type = "class")` or `predict(..., type = "prob")`.
 
-- Model persistence now stores explicit versioned state through
-  `cuda_ml_serialize()` and `bundle::bundle()`. The package version is recorded
-  as provenance and does not by itself prevent restoration. Schema 1
-  compatibility is defined by the model ABI: linear and logistic-regression
-  states require no backend identity match; PCA, SVC, one-vs-rest SVC, SVR,
-  and UMAP states require the recorded RAPIDS version; and random-forest and
-  nvForest states require the recorded Treelite version. Unknown schemas or
-  ABIs, missing payloads, and missing or incompatible required backend fields
-  fail without implicit migration or native-pointer fallback behavior.
+- Logistic and multinomial regression now use numeric `penalty` and `mixture`
+  arguments consistent with parsnip instead of the previous `penalty`, `C`,
+  and `l1_ratio` combination. The default is now unregularized; set a numeric
+  `penalty` to request regularization. The iteration arguments are now
+  `max_iter` and `linesearch_max_iter`; `lbfgs_memory` and
+  `penalty_normalized` provide additional solver controls.
+  `cuda_ml_linear_reg()` provides the corresponding parsnip-style routing
+  across OLS, ridge, lasso, and elastic-net fits.
 
-- Added GPU-less fat-binary compilation for compute capabilities 7.5, 8.0, 8.6,
-  8.9, 9.0, 10.0, and 12.0, with PTX forward compatibility from 12.0.
+- The `normalize_input` argument was removed from OLS, ridge, lasso, and
+  elastic-net models. It previously requested GPU-side L2 normalization.
+  `recipes::step_normalize()` is the recommended explicit preprocessing step
+  when centering and scaling are appropriate, but it is not numerically
+  identical to the former L2 operation.
 
-- Organized the function reference and added guides for getting started,
-  runtime installation and management, tidymodels, model persistence, and
-  nvForest inference and deployment.
+- `cuda_ml_sgd()` now fits squared-loss regression only, so its `loss` argument
+  was removed, and `n_iters_no_change` was renamed to `n_iter_no_change`.
+  Prediction methods now consistently use `new_data`; KNN classification uses
+  `type = "class"` or `type = "prob"` instead of
+  `output_class_probabilities`.
 
-- Removed native compatibility branches for historical cuML releases and the
-  implicit bootstrap fallbacks for Python, pip, CMake, wheel layouts, CUDA
-  architectures, and missing local toolchains.
+- Parsnip is optional. cuda.ml registers engines when parsnip is loaded,
+  including `linear_reg()`, `logistic_reg()`, and `multinom_reg()` engines that
+  use the usual `penalty` and `mixture` arguments.
+
+- Random projection and KNN IVFSQ were removed and have no current replacement
+  in the pinned upstream API. KNN continues to support brute-force, IVFFlat,
+  and IVFPQ search. The unused `use_precomputed_tables` argument was removed
+  from `cuda_ml_knn_algo_ivfpq()`.
+
+- Per-call `cuML_log_level` arguments were removed as cuda.ml package policy;
+  this is not a limitation of RAPIDS logging. `has_cuML()`,
+  `cuML_major_version()`, and `cuML_minor_version()` were replaced by fields in
+  `cuda_ml_backend_info()`.
+
+- `cuda_ml_is_classifier()` and
+  `cuda_ml_can_predict_class_probabilities()` were removed. Use the documented
+  `predict()` types for each model; for nvForest models,
+  `cuda_ml_nvforest_info()` reports `task_type` and
+  `has_probability_output`. The `cuda_ml_serialise()` and
+  `cuda_ml_unserialise()` aliases were also removed; use
+  `cuda_ml_serialize()` and `cuda_ml_unserialize()`.
+
+## Model persistence
+
+- `cuda_ml_serialize()` and `cuda_ml_unserialize()` now provide durable model
+  states for OLS, ridge, lasso, elastic-net, SGD, logistic and multinomial
+  regression, PCA, binary and one-vs-rest SVC, SVR, UMAP, random forest, and
+  nvForest models. Passing a file path writes or reads a gzip-compressed state;
+  open connections and in-memory raw vectors are also supported. KNN and TSVD
+  fits are not currently supported: the pinned KNN API does not expose portable
+  approximate-index state, and the current TSVD binding does not reconstruct
+  its native transform parameters.
+
+- `bundle::bundle()` stores the same explicit state for workflows that use the
+  bundle package. Both interfaces support saving an artifact and restoring it
+  in a fresh R process after the target environment prepares the required
+  backend. nvForest models can also be exported and imported as a Treelite
+  checkpoint plus cuda.ml metadata.
+
+- cuda.ml validates each saved state and its required backend before restoring
+  the model.
+
+## Documentation
+
+- The function reference is reorganized and includes guides for getting
+  started, installation and runtime management, tidymodels, model persistence,
+  and nvForest inference and deployment.
 
 # cuml 0.3.2
 

@@ -46,16 +46,29 @@ knn_match_metric <- function(metric) {
   )
 }
 
-#' Build a specification for the "ivfflat" KNN query algorithm.
+#' Configure an approximate KNN query algorithm
 #'
-#' Build a specification of the flat-inverted-file KNN query algorithm, with all
-#' required parameters specified explicitly.
+#' For the main path, pass \code{"ivfflat"} or \code{"ivfpq"} directly to the
+#' \code{algo} argument of \code{cuda_ml_knn()}; cuda.ml then lets the backend
+#' choose the index parameters. Use these constructors only when those
+#' parameters need to be set explicitly.
+#'
+#' Both algorithms partition the training data into \code{nlist} cells and
+#' search \code{nprobe} cells for each query. IVFFlat stores the original
+#' vectors and therefore needs only those two parameters. IVFPQ also compresses
+#' vectors using product quantization, so it additionally requires the number
+#' of subquantizers (\code{m}) and the bits allocated to each subquantizer
+#' (\code{n_bits}). The distinct constructors keep the required parameters for
+#' each algorithm explicit.
 #'
 #' @template knn-algo-common
+#' @template knn-algo-ivfpq
 #'
-#' @return An object encapsulating all required parameters of the "ivfflat" KNN
-#'   query algorithm.
+#' @return A KNN algorithm specification to pass to the \code{algo} argument of
+#'   \code{cuda_ml_knn()}.
 #'
+#' @name cuda_ml_knn_algo
+#' @seealso \code{\link{cuda_ml_knn}()}
 #' @export
 cuda_ml_knn_algo_ivfflat <- function(nlist, nprobe) {
   stopifnot(
@@ -121,17 +134,7 @@ knn_validate_ivfpq_params <- function(
   invisible(TRUE)
 }
 
-#' Build a specification for the "ivfpq" KNN query algorithm.
-#'
-#' Build a specification of the inverted-file-product-quantization KNN query
-#' algorithm, with all required parameters specified explicitly.
-#'
-#' @template knn-algo-common
-#' @template knn-algo-ivfpq
-#'
-#' @return An object encapsulating all required parameters of the "ivfpq" KNN
-#'   query algorithm.
-#'
+#' @rdname cuda_ml_knn_algo
 #' @export
 cuda_ml_knn_algo_ivfpq <- function(
   nlist,
@@ -167,7 +170,7 @@ cuda_ml_knn_algo_ivfpq <- function(
 #' @template supervised-model-inputs
 #' @template supervised-model-output
 #' @template ellipsis-unused
-#' @param algo The query algorithm to use. Must be one of
+#' @param algo The query algorithm to use. For most workflows, pass one of
 #'   \{"brute", "ivfflat", "ivfpq"\} or a KNN algorithm specification
 #'   constructed using the \code{cuda_ml_knn_algo_*} family of functions.
 #'   If the algorithm is specified by one of the \code{cuda_ml_knn_algo_*}

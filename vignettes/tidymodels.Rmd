@@ -14,7 +14,9 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = FALSE
+  message = FALSE,
+  eval = identical(Sys.getenv("IN_PKGDOWN"), "true") ||
+    identical(Sys.getenv("CUDA_ML_GPU_VIGNETTES"), "true")
 )
 ```
 
@@ -22,11 +24,8 @@ cuda.ml registers parsnip engines for its supervised models. This gives the
 models the same specification, fitting, and prediction interface as other
 parsnip engines while training with cuML. Use the direct cuda.ml API when you
 need an algorithm that has no parsnip specification or detailed control over
-a solver.
-
-The examples are not evaluated when this vignette is built. Install the
-complete backend before running them. See [Getting started](cuda-ml.html) for
-installation and runtime setup.
+a solver. See [Getting started](cuda-ml.html) for installation and runtime
+setup.
 
 ## Available model specifications
 
@@ -210,14 +209,22 @@ use a tidymodels tuning workflow, or consume standard parsnip prediction
 types. Parsnip delegates training and prediction to cuda.ml's public model
 functions.
 
-Use the direct API when you need:
+The direct API includes several capabilities that have no parsnip
+specification:
 
-- an unsupervised or transformation algorithm such as PCA, UMAP, clustering,
-  or t-SNE;
-- a supervised algorithm without a matching parsnip specification;
-- direct matrix, data-frame, formula, or recipe methods; or
-- solver controls that do not fit cleanly into a portable model
-  specification.
+| Capability | parsnip | Direct cuda.ml API |
+|:--|:--|:--|
+| Linear, logistic, random-forest, KNN, and RBF, polynomial, or linear SVM models | Supported | Supported |
+| Clustering and dimensionality reduction | Not available | Agglomerative clustering, DBSCAN, k-means, PCA, tSVD, UMAP, and t-SNE |
+| Transform and inverse-transform operations | Not available | `cuda_ml_transform()` and `cuda_ml_inverse_transform()` |
+| Stochastic-gradient-descent linear regression | No dedicated route | `cuda_ml_sgd()` |
+| Hyperbolic-tangent SVM | No matching specification | `cuda_ml_svm(kernel = "tanh")` |
+| External tree-ensemble inference and inspection | Not available | nvForest load, predict, model-info, leaf-ID, per-tree, import, and export functions |
+
+Most algorithm-specific arguments for supported parsnip models remain
+available through `set_engine()`. Use the named direct function when selecting
+the algorithm or solver is part of the analysis, or when passing predictors and
+outcomes directly is preferable to a parsnip workflow.
 
 For example, cuda.ml's direct SVM interface supports a `"tanh"` kernel, but
 parsnip registration is limited to the RBF, polynomial, and linear SVM

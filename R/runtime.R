@@ -39,10 +39,20 @@ cuda_ml_backend_metadata <- function(pkgname = "cuda.ml") {
 
 #' Report native-backend metadata
 #'
-#' @return A named list describing the selected backend and whether its exact
-#'   cache is complete. This function performs read-only cache and inventory
-#'   checks. It does not create or modify the cache, access the network, inspect
-#'   an NVIDIA GPU or driver, or load the native backend.
+#' Performs cheap, read-only cache and inventory checks for routine inspection.
+#' It reports whether the selected backend cache is complete, but does not
+#' verify every recorded hash or native registration. It does not create or
+#' modify the cache, access the network, inspect an NVIDIA GPU or driver, or
+#' load native code.
+#'
+#' Use \code{cuda_ml_runtime_audit()} when an explicit deep integrity check is
+#' needed. The audit recomputes recorded hashes, validates native registration,
+#' and, for the complete downloaded backend, validates the managed-runtime
+#' dependency closure.
+#'
+#' @return A named list describing the selected backend, pinned library
+#'   versions, cache status, and CPU-only nvForest backend status.
+#' @seealso \code{\link{cuda_ml_runtime_audit}()}
 #' @export
 cuda_ml_backend_info <- function() {
   metadata <- .cuda_ml_state$metadata
@@ -2304,15 +2314,21 @@ cuda_ml_install <- function(
 
 #' Audit the installed native backend
 #'
-#' Recomputes the hashes recorded when the requested backend was installed and
-#' validates its native registration. For the complete downloaded backend, it
-#' also validates the managed-runtime dependency closure. Ordinary runtime
-#' reuse performs only fast marker, inventory, size, and link checks.
+#' Performs an explicit deep integrity check. It recomputes the hashes recorded
+#' when the requested backend was installed and validates native registration,
+#' loading the backend temporarily when needed. For the complete downloaded
+#' backend, it also validates the managed-runtime dependency closure.
+#'
+#' Use \code{cuda_ml_backend_info()} for routine, read-only inspection. That
+#' function performs only fast cache and inventory checks and does not load
+#' native code. Ordinary runtime reuse likewise performs only fast marker,
+#' inventory, size, and link checks.
 #'
 #' @param device Backend to audit: the complete \code{"gpu"} backend or the
 #'   CPU-only nvForest backend.
 #'
 #' @return Invisibly returns \code{TRUE}.
+#' @seealso \code{\link{cuda_ml_backend_info}()}
 #' @export
 cuda_ml_runtime_audit <- function(device = c("gpu", "cpu")) {
   device <- match.arg(device)

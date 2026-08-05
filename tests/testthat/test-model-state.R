@@ -17,6 +17,50 @@ current_linear_state <- function() {
   state
 }
 
+test_that("model states round trip through compressed file paths", {
+  model <- cuda_ml_unserialize(linear_state_fixture())
+  path <- tempfile(fileext = ".cuda-ml-state")
+  on.exit(unlink(path))
+
+  expect_null(cuda_ml_serialize(model, path, xdr = FALSE))
+  expect_identical(readBin(path, "raw", n = 2L), as.raw(c(0x1f, 0x8b)))
+
+  restored <- cuda_ml_unserialize(path)
+  expect_s3_class(restored, "cuda_ml_ols")
+  expect_identical(cuda_ml_serialize(restored), cuda_ml_serialize(model))
+})
+
+test_that("file paths read states written to caller-owned connections", {
+  model <- cuda_ml_unserialize(linear_state_fixture())
+  path <- tempfile(fileext = ".cuda-ml-state")
+  on.exit(unlink(path))
+
+  local({
+    connection <- file(path, open = "wb")
+    on.exit(close(connection))
+
+    expect_null(cuda_ml_serialize(model, connection))
+    expect_true(isOpen(connection))
+  })
+
+  restored <- cuda_ml_unserialize(path)
+  expect_s3_class(restored, "cuda_ml_ols")
+  expect_identical(cuda_ml_serialize(restored), cuda_ml_serialize(model))
+})
+
+test_that("model-state file paths are one nonempty string", {
+  model <- cuda_ml_unserialize(linear_state_fixture())
+
+  expect_error(
+    cuda_ml_serialize(model, character()),
+    "one nonempty file path"
+  )
+  expect_error(
+    cuda_ml_unserialize(c("first", "second")),
+    "one nonempty file path"
+  )
+})
+
 test_that("a frozen compatible state restores across package versions", {
   serialized <- linear_state_fixture()
   state <- unserialize(serialized)

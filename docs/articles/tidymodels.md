@@ -4,10 +4,7 @@ cuda.ml registers parsnip engines for its supervised models. This gives
 the models the same specification, fitting, and prediction interface as
 other parsnip engines while training with cuML. Use the direct cuda.ml
 API when you need an algorithm that has no parsnip specification or
-detailed control over a solver.
-
-The examples are not evaluated when this vignette is built. Install the
-complete backend before running them. See [Getting
+detailed control over a solver. See [Getting
 started](https://mlverse.github.io/cuda.ml/articles/cuda-ml.md) for
 installation and runtime setup.
 
@@ -133,6 +130,37 @@ results <- cbind(
   predict(knn_fit, test_predictors, type = "prob")
 )
 results
+#>         truth .pred_class .pred_setosa .pred_versicolor .pred_virginica
+#> 1      setosa      setosa            1              0.0             0.0
+#> 2      setosa      setosa            1              0.0             0.0
+#> 3      setosa      setosa            1              0.0             0.0
+#> 4      setosa      setosa            1              0.0             0.0
+#> 5      setosa      setosa            1              0.0             0.0
+#> 6      setosa      setosa            1              0.0             0.0
+#> 7      setosa      setosa            1              0.0             0.0
+#> 8      setosa      setosa            1              0.0             0.0
+#> 9      setosa      setosa            1              0.0             0.0
+#> 10     setosa      setosa            1              0.0             0.0
+#> 11     setosa      setosa            1              0.0             0.0
+#> 12 versicolor  versicolor            0              1.0             0.0
+#> 13 versicolor  versicolor            0              1.0             0.0
+#> 14 versicolor  versicolor            0              0.6             0.4
+#> 15 versicolor  versicolor            0              1.0             0.0
+#> 16 versicolor  versicolor            0              1.0             0.0
+#> 17 versicolor  versicolor            0              0.6             0.4
+#> 18 versicolor  versicolor            0              1.0             0.0
+#> 19 versicolor  versicolor            0              1.0             0.0
+#> 20 versicolor  versicolor            0              1.0             0.0
+#> 21 versicolor  versicolor            0              1.0             0.0
+#> 22 versicolor  versicolor            0              1.0             0.0
+#> 23 versicolor  versicolor            0              1.0             0.0
+#> 24  virginica   virginica            0              0.0             1.0
+#> 25  virginica  versicolor            0              0.8             0.2
+#> 26  virginica   virginica            0              0.2             0.8
+#> 27  virginica   virginica            0              0.2             0.8
+#> 28  virginica   virginica            0              0.4             0.6
+#> 29  virginica   virginica            0              0.0             1.0
+#> 30  virginica  versicolor            0              0.6             0.4
 ```
 
 The parsnip KNN engine defaults to `algo = "ivfflat"` and
@@ -212,14 +240,24 @@ specifications, use a tidymodels tuning workflow, or consume standard
 parsnip prediction types. Parsnip delegates training and prediction to
 cuda.ml’s public model functions.
 
-Use the direct API when you need:
+The direct API includes several capabilities that have no parsnip
+specification:
 
-- an unsupervised or transformation algorithm such as PCA, UMAP,
-  clustering, or t-SNE;
-- a supervised algorithm without a matching parsnip specification;
-- direct matrix, data-frame, formula, or recipe methods; or
-- solver controls that do not fit cleanly into a portable model
-  specification.
+| Capability                                                                      | parsnip                   | Direct cuda.ml API                                                                                                                                                                              |
+|:--------------------------------------------------------------------------------|:--------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Linear, logistic, random-forest, KNN, and RBF, polynomial, or linear SVM models | Supported                 | Supported                                                                                                                                                                                       |
+| Clustering and dimensionality reduction                                         | Not available             | Agglomerative clustering, DBSCAN, k-means, PCA, tSVD, UMAP, and t-SNE                                                                                                                           |
+| Transform and inverse-transform operations                                      | Not available             | [`cuda_ml_transform()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_transform.md) and [`cuda_ml_inverse_transform()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_transform.md) |
+| Stochastic-gradient-descent linear regression                                   | No dedicated route        | [`cuda_ml_sgd()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_sgd.md)                                                                                                                   |
+| Hyperbolic-tangent SVM                                                          | No matching specification | `cuda_ml_svm(kernel = "tanh")`                                                                                                                                                                  |
+| External tree-ensemble inference and inspection                                 | Not available             | nvForest load, predict, model-info, leaf-ID, per-tree, import, and export functions                                                                                                             |
+
+Most algorithm-specific arguments for supported parsnip models remain
+available through
+[`set_engine()`](https://parsnip.tidymodels.org/reference/set_engine.html).
+Use the named direct function when selecting the algorithm or solver is
+part of the analysis, or when passing predictors and outcomes directly
+is preferable to a parsnip workflow.
 
 For example, cuda.ml’s direct SVM interface supports a `"tanh"` kernel,
 but parsnip registration is limited to the RBF, polynomial, and linear

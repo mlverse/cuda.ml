@@ -56,9 +56,7 @@ cuda_ml_state_backend_requirements <- function(model_abi) {
     cuda_ml_svr_model_state = "rapids_version",
     cuda_ml_umap_model_state = "rapids_version",
     cuda_ml_nvforest_model_state = "treelite_version",
-    cuda_ml_nvforest_model_state_v2 = "treelite_version",
-    cuda_ml_rand_forest_model_state = "treelite_version",
-    cuda_ml_rand_forest_model_state_v2 = "treelite_version"
+    cuda_ml_rand_forest_model_state = "treelite_version"
   )
   required <- requirements[[model_abi]]
   if (is.null(required)) {
@@ -223,11 +221,28 @@ report_undefined_fn <- function(fn_name, x) {
   )
 }
 
-#' Transform data using a trained cuML model.
+#' Transform data with a dimensionality-reduction model
 #'
-#' Given a trained cuML model, transform an input dataset using that model.
+#' These generics apply a fitted dimensionality-reduction mapping. They are
+#' distinct from \code{predict()}, which produces outcomes from supervised
+#' models and returns tidymodels-style prediction columns.
+#'
+#' @section Supported methods:
+#' \itemize{
+#'   \item \code{cuda_ml_transform()} maps predictors into a learned
+#'     lower-dimensional representation. It supports fitted TSVD and UMAP
+#'     models.
+#'   \item \code{cuda_ml_inverse_transform()} maps component coordinates back
+#'     toward the original feature space. It supports fitted PCA and TSVD
+#'     models.
+#' }
+#' PCA stores the transformed training input when \code{transform_input = TRUE},
+#' but it does not currently provide a method for transforming new data.
 #'
 #' @template cudaml-transform
+#'
+#' @seealso \code{\link[stats]{predict}}, \code{\link{cuda_ml_pca}},
+#'   \code{\link{cuda_ml_tsvd}}, and \code{\link{cuda_ml_umap}}
 #'
 #' @importFrom ellipsis check_dots_used
 #' @export
@@ -236,82 +251,70 @@ cuda_ml_transform <- function(model, x, ...) {
   UseMethod("cuda_ml_transform")
 }
 
-#' Apply the inverse transformation defined by a trained cuML model.
-#'
-#' Given a trained cuML model, apply the inverse transformation defined by that
-#' model to an input dataset.
-#'
-#' @template cudaml-transform
-#'
-#' @importFrom ellipsis check_dots_used
+#' @rdname cuda_ml_transform
 #' @export
 cuda_ml_inverse_transform <- function(model, x, ...) {
   check_dots_used()
   UseMethod("cuda_ml_inverse_transform")
 }
 
-#' Serialize a cuML model
+#' Save and restore supported cuda.ml models
 #'
-#' Given a cuML model, serialize its state into a connection.
+#' \code{cuda_ml_serialize()} saves the explicit state of a fitted cuda.ml
+#' model. \code{cuda_ml_unserialize()} restores that state as a fitted model.
 #'
 #' @param model The model object.
-#' @param connection An open connection or \code{NULL}. If \code{NULL}, then the
-#'   model state is serialized to a raw vector. Default: NULL.
-#' @param ... Additional arguments to \code{base::serialize()}.
+#' @param connection For \code{cuda_ml_serialize()}, a file path, an open
+#'   connection, or \code{NULL}; a file path writes a gzip-compressed state and
+#'   \code{NULL} returns the state as a raw vector. For
+#'   \code{cuda_ml_unserialize()}, a file path, an open connection, or a raw
+#'   vector.
+#' @param ... Additional arguments passed to \code{base::serialize()} or
+#'   \code{base::unserialize()}.
+#' @param device,device_id,layout,precision,default_chunk_size,align_bytes Named
+#'   nvForest inference options. They are supported only for nvForest and
+#'   random-forest states. When \code{device} is omitted, those states restore
+#'   for GPU inference. When \code{precision} is omitted, the saved prediction
+#'   precision is used. The remaining omitted options use nvForest defaults.
 #'
-#' @return \code{NULL} unless \code{connection} is \code{NULL}, in which case
-#'   the serialized model state is returned as a raw vector.
+#' @return \code{cuda_ml_serialize()} returns \code{NULL} when writing to a
+#'   file or connection and otherwise returns a raw vector.
+#'   \code{cuda_ml_unserialize()} returns the restored fitted model.
 #'
-#' @section Persistence contract:
-#' cuda.ml schema 1 model states contain a schema number, the cuda.ml package
-#' version that created the state, backend provenance, a model ABI identifier,
-#' and a payload. The package version is provenance only: a difference from the
-#' installed cuda.ml version does not prevent restoration.
-#'
-#' Compatibility is determined before the payload is restored:
+#' @section Supported models:
+#' Explicit state is supported for:
 #' \itemize{
-#'   \item The schema must be the integer \code{1}. Unknown and unversioned
-#'     schemas are rejected.
-#'   \item The state class and model ABI must identify a restoration method
-#'     supported by the installed package. A change to a model's payload layout
-#'     requires a new model ABI.
-#'   \item Linear-model and logistic-regression states have portable R payloads
-#'     and do not require matching backend identity fields.
-#'   \item PCA, SVC, one-vs-rest SVC, SVR, and UMAP states require an exact
-#'     \code{rapids_version} match because their payloads reconstruct RAPIDS
-#'     native state.
-#'   \item Random-forest and nvForest states require an exact
-#'     \code{treelite_version} match because their payloads contain serialized
-#'     Treelite model bytes.
+#'   \item OLS, ridge, lasso, elastic-net, and SGD linear models;
+#'   \item logistic and multinomial regression;
+#'   \item PCA;
+#'   \item binary and one-vs-rest SVC models and SVR models;
+#'   \item UMAP;
+#'   \item random forests and other nvForest-backed models.
 #' }
-#' The remaining recorded backend fields---\code{cuda_version},
-#' \code{nvforest_version}, and \code{platform}---are provenance for schema 1,
-#' not compatibility gates. A missing payload, unsupported ABI, or missing or
-#' unequal required backend field is rejected. cuda.ml does not implicitly
-#' migrate a state or fall back to serializing native pointers.
+#' KNN and TSVD fits are not currently supported. The pinned KNN API does not
+#' expose portable approximate-index state, and the current TSVD binding retains
+#' native transform parameters that cuda.ml does not reconstruct.
 #'
-#' Current nvForest and random-forest states store device-neutral Treelite
-#' model bytes. They retain model semantics and prediction precision, but not
-#' the inference device, device identifier, tree layout, chunk size, or memory
-#' alignment. Select those settings when restoring with
-#' \code{cuda_ml_unserialize()}; GPU is the default. Legacy v1 nvForest and
-#' random-forest states remain supported and restore with the inference settings
-#' recorded in their payloads.
+#' @section Deployment:
+#' cuda.ml validates the model state and required backend before loading it.
+#' Prepare the backend in the target process with \code{cuda_ml_install()} for
+#' GPU operation or \code{cuda_ml_install(device = "cpu")} for CPU-only
+#' nvForest inference.
 #'
-#' Saving a state to a file connection and restoring it in another R process
-#' uses this same contract. The target process must have a compatible cuda.ml
-#' installation and must prepare the corresponding backend before prediction:
-#' \code{cuda_ml_install()} for GPU operation or
-#' \code{cuda_ml_install(device = "cpu")} for CPU-only nvForest inference.
-#' \code{bundle::bundle()} stores the same explicit state, so saving a bundle
-#' with \code{saveRDS()} and restoring it with \code{readRDS()} and
-#' \code{bundle::unbundle()} has the same compatibility requirements. For an
+#' Random-forest and nvForest states contain device-neutral Treelite model
+#' bytes. They retain prediction precision, class labels, preprocessing, and
+#' model semantics, but not the inference device, device identifier, tree
+#' layout, chunk size, or memory alignment. Select those settings while
+#' restoring; omitting \code{device} selects GPU inference.
+#'
+#' \code{bundle::bundle()} stores the same explicit state. For an
 #' nvForest-backed model, the bundle also stores its chosen deployment device
 #' separately from the device-neutral state. A bundle is not required for
 #' deployment; \code{cuda_ml_serialize()} returns the complete state artifact
 #' directly.
 #'
-#' @seealso \code{\link[base]{serialize}}
+#' @seealso \code{\link[base]{serialize}},
+#'   \code{\link[base]{unserialize}}, and \code{\link[bundle]{bundle}}
 #'
 #' @export
 cuda_ml_serialize <- function(model, connection = NULL, ...) {
@@ -326,6 +329,16 @@ cuda_ml_serialize.default <- function(model, connection = NULL, ...) {
 #' @export
 cuda_ml_serialize.cuda_ml_model <- function(model, connection = NULL, ...) {
   model_state <- cuda_ml_get_state(model)
+
+  if (is.character(connection)) {
+    stopifnot(
+      "`connection` must be one nonempty file path" = length(connection) == 1L &&
+        !is.na(connection) &&
+        nzchar(connection)
+    )
+    connection <- gzfile(connection, open = "wb")
+    on.exit(close(connection))
+  }
 
   serialize(model_state, connection, ...)
 }
@@ -344,25 +357,7 @@ cuda_ml_get_state.default <- function(model) {
   )
 }
 
-#' Unserialize a cuML model state
-#'
-#' Unserialize a cuML model state into a cuML model object.
-#'
-#' @param connection An open connection or a raw vector.
-#' @param ... Additional arguments to \code{base::unserialize()}.
-#' @param device,device_id,layout,precision,default_chunk_size,align_bytes Named
-#'   nvForest inference options. They are supported only for device-neutral
-#'   nvForest and random-forest states. When \code{device} is omitted, these
-#'   states restore for GPU inference. When \code{precision} is omitted, the
-#'   precision recorded in the state is used. The remaining omitted options use
-#'   nvForest defaults.
-#'
-#' @return An unserialized cuML model.
-#'
-#' @inheritSection cuda_ml_serialize Persistence contract
-#'
-#' @seealso \code{\link[base]{unserialize}}
-#'
+#' @rdname cuda_ml_serialize
 #' @export
 cuda_ml_unserialize <- function(
   connection,
@@ -374,6 +369,16 @@ cuda_ml_unserialize <- function(
   default_chunk_size = NULL,
   align_bytes = NULL
 ) {
+  if (is.character(connection)) {
+    stopifnot(
+      "`connection` must be one nonempty file path" = length(connection) == 1L &&
+        !is.na(connection) &&
+        nzchar(connection)
+    )
+    connection <- gzfile(connection, open = "rb")
+    on.exit(close(connection))
+  }
+
   model_state <- unserialize(connection, ...)
 
   restore_options <- list()
@@ -422,7 +427,7 @@ cuda_ml_set_state_with_options <- function(model_state, options) {
 cuda_ml_set_state_with_options.default <- function(model_state, options) {
   stop(
     "Restore-time inference options are only supported for nvForest ",
-    "model-state v2 ABIs.",
+    "and random-forest model states.",
     call. = FALSE
   )
 }
@@ -438,9 +443,9 @@ cuda_ml_set_state.default <- function(model_state) {
 
 #' Bundle a cuda.ml model
 #'
-#' Converts a model with an explicit portable state into a
-#' \code{bundle::bundle()} object. Models without an explicit state fail rather
-#' than serializing native pointers.
+#' Converts a model with explicit state into a
+#' \code{bundle::bundle()} object. KNN and TSVD fits do not currently implement
+#' explicit state.
 #'
 #' @param x A fitted cuda.ml model.
 #' @param ... Unused.
@@ -449,7 +454,7 @@ cuda_ml_set_state.default <- function(model_state) {
 #'   \code{"cpu"} when bundling a GPU-trained random forest for CPU-only
 #'   deployment. Other cuda.ml model types do not accept this argument.
 #'
-#' @inheritSection cuda_ml_serialize Persistence contract
+#' @inheritSection cuda_ml_serialize Deployment
 #'
 #' @seealso \code{\link{cuda_ml_serialize}},
 #'   \code{\link{cuda_ml_unserialize}}

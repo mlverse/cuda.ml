@@ -19,11 +19,9 @@
 <url><loc>https://mlverse.github.io/cuda.ml/reference/cuda_ml_dbscan.html</loc></url>
 <url><loc>https://mlverse.github.io/cuda.ml/reference/cuda_ml_elastic_net.html</loc></url>
 <url><loc>https://mlverse.github.io/cuda.ml/reference/cuda_ml_install.html</loc></url>
-<url><loc>https://mlverse.github.io/cuda.ml/reference/cuda_ml_inverse_transform.html</loc></url>
 <url><loc>https://mlverse.github.io/cuda.ml/reference/cuda_ml_kmeans.html</loc></url>
 <url><loc>https://mlverse.github.io/cuda.ml/reference/cuda_ml_knn.html</loc></url>
-<url><loc>https://mlverse.github.io/cuda.ml/reference/cuda_ml_knn_algo_ivfflat.html</loc></url>
-<url><loc>https://mlverse.github.io/cuda.ml/reference/cuda_ml_knn_algo_ivfpq.html</loc></url>
+<url><loc>https://mlverse.github.io/cuda.ml/reference/cuda_ml_knn_algo.html</loc></url>
 <url><loc>https://mlverse.github.io/cuda.ml/reference/cuda_ml_lasso.html</loc></url>
 <url><loc>https://mlverse.github.io/cuda.ml/reference/cuda_ml_linear_reg.html</loc></url>
 <url><loc>https://mlverse.github.io/cuda.ml/reference/cuda_ml_logistic_reg.html</loc></url>
@@ -44,7 +42,6 @@
 <url><loc>https://mlverse.github.io/cuda.ml/reference/cuda_ml_tsne.html</loc></url>
 <url><loc>https://mlverse.github.io/cuda.ml/reference/cuda_ml_tsvd.html</loc></url>
 <url><loc>https://mlverse.github.io/cuda.ml/reference/cuda_ml_umap.html</loc></url>
-<url><loc>https://mlverse.github.io/cuda.ml/reference/cuda_ml_unserialize.html</loc></url>
 <url><loc>https://mlverse.github.io/cuda.ml/reference/index.html</loc></url>
 <url><loc>https://mlverse.github.io/cuda.ml/reference/predict.cuda_ml_knn.html</loc></url>
 <url><loc>https://mlverse.github.io/cuda.ml/reference/predict.cuda_ml_linear_model.html</loc></url>

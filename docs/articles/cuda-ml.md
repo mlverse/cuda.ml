@@ -13,9 +13,11 @@ access, or a runtime download.
 
 Native cuda.ml operations require Linux x86_64 with glibc 2.28 or newer.
 The GPU workflows in this guide also require a supported NVIDIA GPU and
-an NVIDIA driver version 580 or newer. Native Windows, macOS, Linux
-ARM64, musl-based Linux distributions, and older glibc versions are not
-supported.
+an NVIDIA driver version 580 or newer. On Windows, install and run R
+inside a [compatible WSL2 Linux
+distribution](https://mlverse.github.io/cuda.ml/articles/install-manage.html#windows-through-wsl2);
+native Windows R is not supported. macOS, Linux ARM64, musl-based Linux
+distributions, and older glibc versions are not supported.
 
 CPU-only nvForest inference has separate requirements and does not
 require an NVIDIA GPU or driver. See [nvForest inference and

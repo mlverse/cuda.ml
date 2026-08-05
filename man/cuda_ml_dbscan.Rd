@@ -15,7 +15,7 @@ within distance `eps` from it.}
 }
 \value{
 A list containing the cluster assignments of all data points. A data
- point not belonging to any cluster (i.e., "noise") will have NA as its
+ point not belonging to any cluster (i.e., "noise") will have `NA` as its
  cluster assignment.
 }
 \description{

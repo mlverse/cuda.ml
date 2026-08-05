@@ -2,70 +2,79 @@
 % Please edit documentation in R/model.R
 \name{cuda_ml_serialize}
 \alias{cuda_ml_serialize}
-\title{Serialize a cuML model}
+\alias{cuda_ml_unserialize}
+\title{Save and restore supported cuda.ml models}
 \usage{
 cuda_ml_serialize(model, connection = NULL, ...)
+
+cuda_ml_unserialize(
+  connection,
+  ...,
+  device = NULL,
+  device_id = NULL,
+  layout = NULL,
+  precision = NULL,
+  default_chunk_size = NULL,
+  align_bytes = NULL
+)
 }
 \arguments{
 \item{model}{The model object.}
 
-\item{connection}{An open connection or \code{NULL}. If \code{NULL}, then the
-model state is serialized to a raw vector. Default: NULL.}
+\item{connection}{For \code{cuda_ml_serialize()}, a file path, an open
+connection, or \code{NULL}; a file path writes a gzip-compressed state and
+\code{NULL} returns the state as a raw vector. For
+\code{cuda_ml_unserialize()}, a file path, an open connection, or a raw
+vector.}
 
-\item{...}{Additional arguments to \code{base::serialize()}.}
+\item{...}{Additional arguments passed to \code{base::serialize()} or
+\code{base::unserialize()}.}
+
+\item{device, device_id, layout, precision, default_chunk_size, align_bytes}{Named
+nvForest inference options. They are supported only for nvForest and
+random-forest states. When \code{device} is omitted, those states restore
+for GPU inference. When \code{precision} is omitted, the saved prediction
+precision is used. The remaining omitted options use nvForest defaults.}
 }
 \value{
-\code{NULL} unless \code{connection} is \code{NULL}, in which case
-  the serialized model state is returned as a raw vector.
+\code{cuda_ml_serialize()} returns \code{NULL} when writing to a
+  file or connection and otherwise returns a raw vector.
+  \code{cuda_ml_unserialize()} returns the restored fitted model.
 }
 \description{
-Given a cuML model, serialize its state into a connection.
+\code{cuda_ml_serialize()} saves the explicit state of a fitted cuda.ml
+model. \code{cuda_ml_unserialize()} restores that state as a fitted model.
 }
-\section{Persistence contract}{
+\section{Supported models}{
 
-cuda.ml schema 1 model states contain a schema number, the cuda.ml package
-version that created the state, backend provenance, a model ABI identifier,
-and a payload. The package version is provenance only: a difference from the
-installed cuda.ml version does not prevent restoration.
-
-Compatibility is determined before the payload is restored:
+Explicit state is supported for:
 \itemize{
-  \item The schema must be the integer \code{1}. Unknown and unversioned
-    schemas are rejected.
-  \item The state class and model ABI must identify a restoration method
-    supported by the installed package. A change to a model's payload layout
-    requires a new model ABI.
-  \item Linear-model and logistic-regression states have portable R payloads
-    and do not require matching backend identity fields.
-  \item PCA, SVC, one-vs-rest SVC, SVR, and UMAP states require an exact
-    \code{rapids_version} match because their payloads reconstruct RAPIDS
-    native state.
-  \item Random-forest and nvForest states require an exact
-    \code{treelite_version} match because their payloads contain serialized
-    Treelite model bytes.
+  \item OLS, ridge, lasso, elastic-net, and SGD linear models;
+  \item logistic and multinomial regression;
+  \item PCA;
+  \item binary and one-vs-rest SVC models and SVR models;
+  \item UMAP;
+  \item random forests and other nvForest-backed models.
 }
-The remaining recorded backend fields---\code{cuda_version},
-\code{nvforest_version}, and \code{platform}---are provenance for schema 1,
-not compatibility gates. A missing payload, unsupported ABI, or missing or
-unequal required backend field is rejected. cuda.ml does not implicitly
-migrate a state or fall back to serializing native pointers.
+KNN and TSVD fits are not currently supported. The pinned KNN API does not
+expose portable approximate-index state, and the current TSVD binding retains
+native transform parameters that cuda.ml does not reconstruct.
+}
 
-Current nvForest and random-forest states store device-neutral Treelite
-model bytes. They retain model semantics and prediction precision, but not
-the inference device, device identifier, tree layout, chunk size, or memory
-alignment. Select those settings when restoring with
-\code{cuda_ml_unserialize()}; GPU is the default. Legacy v1 nvForest and
-random-forest states remain supported and restore with the inference settings
-recorded in their payloads.
+\section{Deployment}{
 
-Saving a state to a file connection and restoring it in another R process
-uses this same contract. The target process must have a compatible cuda.ml
-installation and must prepare the corresponding backend before prediction:
-\code{cuda_ml_install()} for GPU operation or
-\code{cuda_ml_install(device = "cpu")} for CPU-only nvForest inference.
-\code{bundle::bundle()} stores the same explicit state, so saving a bundle
-with \code{saveRDS()} and restoring it with \code{readRDS()} and
-\code{bundle::unbundle()} has the same compatibility requirements. For an
+cuda.ml validates the model state and required backend before loading it.
+Prepare the backend in the target process with \code{cuda_ml_install()} for
+GPU operation or \code{cuda_ml_install(device = "cpu")} for CPU-only
+nvForest inference.
+
+Random-forest and nvForest states contain device-neutral Treelite model
+bytes. They retain prediction precision, class labels, preprocessing, and
+model semantics, but not the inference device, device identifier, tree
+layout, chunk size, or memory alignment. Select those settings while
+restoring; omitting \code{device} selects GPU inference.
+
+\code{bundle::bundle()} stores the same explicit state. For an
 nvForest-backed model, the bundle also stores its chosen deployment device
 separately from the device-neutral state. A bundle is not required for
 deployment; \code{cuda_ml_serialize()} returns the complete state artifact
@@ -73,5 +82,6 @@ directly.
 }
 
 \seealso{
-\code{\link[base]{serialize}}
+\code{\link[base]{serialize}},
+  \code{\link[base]{unserialize}}, and \code{\link[bundle]{bundle}}
 }

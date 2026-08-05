@@ -77,7 +77,13 @@ cuda_ml_pca <- function(
 
 #' @export
 cuda_ml_inverse_transform.cuda_ml_pca <- function(model, x, ...) {
-  .pca_inverse_transform(model = model, x = as.matrix(x))
+  x <- as.matrix(x)
+  stopifnot(
+    "`x` must have one column per fitted PCA component" =
+      ncol(x) == nrow(model$components)
+  )
+
+  .pca_inverse_transform(model = model, x = x)
 }
 
 #' @export

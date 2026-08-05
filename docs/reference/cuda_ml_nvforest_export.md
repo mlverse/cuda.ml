@@ -2,9 +2,9 @@
 
 `cuda_ml_nvforest_export()` writes a standard Treelite checkpoint and a
 cuda.ml JSON sidecar. The checkpoint contains the device-neutral tree
-ensemble. The sidecar retains the cuda.ml model ABI, backend provenance,
-class labels, prediction precision, random-forest probability semantics,
-and R preprocessing blueprint needed for a complete cuda.ml round-trip.
+ensemble. The sidecar retains cuda.ml metadata, class labels, prediction
+precision, random-forest probability semantics, and the R preprocessing
+blueprint needed for a complete cuda.ml round-trip.
 `cuda_ml_nvforest_import()` restores the pair on a caller-selected
 inference device.
 
@@ -98,14 +98,14 @@ cuda.ml model class, and random-forest probability semantics. Use
 Use
 [`cuda_ml_serialize()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_serialize.md)
 and
-[`cuda_ml_unserialize()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_unserialize.md)
+[`cuda_ml_unserialize()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_serialize.md)
 for one R-native state value. The checkpoint pair is useful when the
 Treelite model must also be independently available. A bundle is
 optional wrapping around the R-native state and is not required for
 either workflow.
 
-Import requires the exact Treelite version recorded by the sidecar.
-Prepare the selected backend before import:
+cuda.ml validates the sidecar and selected backend before import.
+Prepare the backend first with
 [`cuda_ml_install()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_install.md)
 for GPU operation or `cuda_ml_install(device = "cpu")` for CPU-only
 inference. Import never downloads a backend.
@@ -115,7 +115,7 @@ inference. Import never downloads a backend.
 The JSON embeds an R-serialized hardhat blueprint so that formula and
 recipe preprocessing round-trip. Import only artifacts from trusted
 sources, as with [`readRDS()`](https://rdrr.io/r/base/readRDS.html) and
-[`cuda_ml_unserialize()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_unserialize.md).
+[`cuda_ml_unserialize()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_serialize.md).
 The recorded SHA-256 digest checks integrity, not authenticity.
 
 ## See also

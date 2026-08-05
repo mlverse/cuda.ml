@@ -19,33 +19,42 @@ cuML](https://github.com/rapidsai/cuml#supported-algorithms)).
 
 ## Supported Algorithms
 
-| Category                                              | Algorithm                                                            | Notes                                                     |
-|-------------------------------------------------------|----------------------------------------------------------------------|-----------------------------------------------------------|
-| **Clustering**                                        | Density-Based Spatial Clustering of Applications with Noise (DBSCAN) | Only single-GPU implementation is supported at the moment |
-|                                                       | K-Means                                                              | Only single-GPU implementation is supported at the moment |
-|                                                       | Single-Linkage Agglomerative Clustering                              |                                                           |
-| **Dimensionality Reduction**                          | Principal Components Analysis (PCA)                                  | Only single-GPU implementation is supported at the moment |
-|                                                       | Truncated Singular Value Decomposition (tSVD)                        | Only single-GPU implementation is supported at the moment |
-|                                                       | Uniform Manifold Approximation and Projection (UMAP)                 | Only single-GPU implementation is supported at the moment |
-|                                                       | t-Distributed Stochastic Neighbor Embedding (TSNE)                   |                                                           |
-| **Linear Models for Regression or Classification**    | Linear Regression (OLS)                                              |                                                           |
-|                                                       | Ridge, lasso, and elastic-net linear regression                      |                                                           |
-|                                                       | Logistic and multinomial regression                                  |                                                           |
-| **Nonlinear Models for Regression or Classification** | Random Forest (RF) Classification                                    | Training is single-GPU; inference uses nvForest.          |
-|                                                       | Random Forest (RF) Regression                                        | Training is single-GPU; inference uses nvForest.          |
-|                                                       | nvForest inference for XGBoost, LightGBM, and Treelite models        | CPU and GPU inference are supported.                      |
-|                                                       | K-Nearest Neighbors (KNN) Classification                             | Brute-force, IVFFlat, and IVFPQ indexes are supported.    |
-|                                                       | K-Nearest Neighbors (KNN) Regression                                 | Brute-force, IVFFlat, and IVFPQ indexes are supported.    |
-|                                                       | Support Vector Machine Classifier (SVC)                              |                                                           |
-|                                                       | Epsilon-Support Vector Regression (SVR)                              |                                                           |
+| Category                                              | Algorithm                                                                            |
+|-------------------------------------------------------|--------------------------------------------------------------------------------------|
+| **Clustering**                                        | Density-Based Spatial Clustering of Applications with Noise (DBSCAN)                 |
+|                                                       | K-Means                                                                              |
+|                                                       | Single-Linkage Agglomerative Clustering                                              |
+| **Dimensionality Reduction**                          | Principal Components Analysis (PCA)                                                  |
+|                                                       | Truncated Singular Value Decomposition (tSVD)                                        |
+|                                                       | Uniform Manifold Approximation and Projection (UMAP)                                 |
+|                                                       | t-Distributed Stochastic Neighbor Embedding (TSNE)                                   |
+| **Linear Models for Regression or Classification**    | Linear Regression (OLS)                                                              |
+|                                                       | Ridge, lasso, and elastic-net linear regression                                      |
+|                                                       | Logistic and multinomial regression                                                  |
+| **Nonlinear Models for Regression or Classification** | Random Forest (RF) classification with nvForest inference                            |
+|                                                       | Random Forest (RF) regression with nvForest inference                                |
+|                                                       | CPU or GPU nvForest inference for XGBoost, LightGBM, and Treelite models             |
+|                                                       | K-Nearest Neighbors (KNN) classification with brute-force, IVFFlat, or IVFPQ indexes |
+|                                                       | K-Nearest Neighbors (KNN) regression with brute-force, IVFFlat, or IVFPQ indexes     |
+|                                                       | Support Vector Machine Classifier (SVC)                                              |
+|                                                       | Epsilon-Support Vector Regression (SVR)                                              |
+
+cuda.ml generally provides single-GPU implementations. Interfaces that
+expose `device_id`, currently nvForest inference, can target a
+particular GPU.
 
 ## Guides
 
-- [Get started with cuda.ml](https://mlverse.github.io/cuda.ml/articles/cuda-ml.html)
-- [Install and manage cuda.ml](https://mlverse.github.io/cuda.ml/articles/install-manage.html)
-- [Use cuda.ml with tidymodels](https://mlverse.github.io/cuda.ml/articles/tidymodels.html)
-- [Save and restore models](https://mlverse.github.io/cuda.ml/articles/model-persistence.html)
-- [nvForest inference and deployment](https://mlverse.github.io/cuda.ml/articles/nvforest.html)
+- [Get started with
+  cuda.ml](https://mlverse.github.io/cuda.ml/articles/cuda-ml.html)
+- [Install and manage
+  cuda.ml](https://mlverse.github.io/cuda.ml/articles/install-manage.html)
+- [Use cuda.ml with
+  tidymodels](https://mlverse.github.io/cuda.ml/articles/tidymodels.html)
+- [Save and restore
+  models](https://mlverse.github.io/cuda.ml/articles/model-persistence.html)
+- [nvForest inference and
+  deployment](https://mlverse.github.io/cuda.ml/articles/nvforest.html)
 
 ## Examples
 
@@ -212,140 +221,29 @@ install.packages("cuda.ml")
 cuda.ml::cuda_ml_install()
 ```
 
-The CRAN package is a portable R installer and loader. It contains no
-compiled code, so `install.packages("cuda.ml")` does not need a
-compiler, CUDA, RAPIDS, Python, or conda. Loading it is silent and
-side-effect free:
+The CRAN package contains no compiled code. `cuda_ml_install()` prepares
+a native backend with the pinned CUDA 13.2.2, RAPIDS cuML and nvForest
+26.06, and Treelite 4.7.0 stack. The complete runtime is about 1.6 GiB.
+Repeated calls reuse the prepared cache.
+
+For a deployment that only runs nvForest inference on a CPU, prepare the
+separate CUDA-free backend instead:
 
 ``` r
-library(cuda.ml)
-info <- cuda_ml_backend_info()
-stopifnot(
-  identical(info$backend, "download"),
-  info$backend_available
-)
+cuda.ml::cuda_ml_install(device = "cpu")
 ```
 
-`library(cuda.ml)` does not inspect the GPU, create a cache, contact the
-network, or load native code. `cuda_ml_backend_info()` reports the
-selected platform and R-version backend, its exact library versions, and
-whether the managed cache is complete. It does not report whether a GPU
-can execute a model.
+Native operations require Linux x86_64 with glibc 2.28 or newer. On
+Windows, install and run R inside a [compatible WSL2 Linux
+distribution](https://mlverse.github.io/cuda.ml/articles/install-manage.html#windows-through-wsl2);
+native Windows R is not supported. GPU operations also require a
+supported NVIDIA GPU and driver 580 or newer; the CPU-only nvForest
+backend requires neither.
 
-### Runtime provisioning
-
-`cuda_ml_install()` first downloads the small backend archive for the
-current R minor version from the package’s GitHub Releases. It verifies
-the archive and native library against hashes shipped in the R package.
-It then downloads the locked CUDA 13.2.2 and RAPIDS cuML and nvForest
-26.06 wheels directly from their upstream Python package hosts. The
-current runtime is about 1.6 GiB, so this step can take several minutes.
-Treelite 4.7.0 is linked into the backend and is not a runtime download.
-
-For CPU-only nvForest inference, use `cuda_ml_install(device = "cpu")`.
-This installs a separate backend that is roughly 1 MiB to download and 3
-MiB when installed. It does not include cuML or any CUDA runtime
-libraries, and it requires neither an NVIDIA GPU nor an NVIDIA driver.
-Random forests trained on a GPU by `cuda_ml_rand_forest()` can be
-serialized and restored with `device = "cpu"` on this smaller deployment
-backend. An existing complete backend installation can also execute
-nvForest models on CPU; the smaller backend avoids that runtime for
-CPU-only deployments.
-
-`cuda_ml_install()` does not require a GPU or NVIDIA driver, and
-repeated calls reuse the completed cache. It does not load the backend
-or initialize CUDA. Model operations do not provision the runtime
-implicitly; when the cache is absent, they report the installation
-command. After provisioning, GPU-backed operations require only a
-supported NVIDIA GPU and driver.
-
-The default cache is `tools::R_user_dir("cuda.ml", "cache")`. Set
-`CUDA_ML_CACHE_DIR` to use a different location:
-
-``` r
-Sys.setenv(CUDA_ML_CACHE_DIR = "/opt/cuda-ml-cache")
-cuda.ml::cuda_ml_install()
-```
-
-For an internal or offline mirror, set `CUDA_ML_BACKEND_MIRROR` to an
-`https://` or `file://` directory containing the exact locked backend
-archive. Hash verification remains enabled.
-
-### Supported systems
-
-Prebuilt backends target Linux x86_64 with glibc 2.28 or newer rather
-than a specific distribution. This includes current Ubuntu, Debian,
-RHEL-compatible, and WSL2 Linux distributions that meet the glibc
-requirement. Following the [RAPIDS 26.06 platform
-requirements](https://docs.rapids.ai/platform-support/), the binary
-requires an NVIDIA driver version 580 or newer and supports GPU compute
-capabilities 7.5, 8.0, 8.6, 8.9, 9.0, 10.0, and 12.0. The compute
-capability 12.0 PTX image also provides forward compatibility for newer
-GPUs supported by CUDA, following [CUDA’s forward-compatibility
-model](https://docs.nvidia.com/cuda/archive/13.2.0/cuda-compiler-driver-nvcc/index.html).
-
-Native Windows, macOS, Linux ARM64, musl-based Linux distributions, and
-glibc versions older than 2.28 are not currently supported.
-
-### Build the backend from source
-
-To compile the native backend directly on the host without Docker or a
-prebuilt cuda.ml backend, install GNU C++ 14 or newer and run:
-
-``` r
-cuda.ml::cuda_ml_install(source = TRUE)
-```
-
-The default managed source build downloads and verifies about 1.7 GiB of
-exact locked build artifacts from PyPI and GitHub. These provide CUDA
-Toolkit 13.2.2, cuML and nvForest 26.06, Treelite 4.7.0, CMake, and
-Ninja. Python, Conda, Docker, a system CUDA Toolkit, a system RAPIDS
-installation, and a GPU are not required for the build. Linux x86_64
-with glibc 2.28 or newer and GNU C++ 14 or newer are required. The
-installer prefers `g++-14`, then `g++`, on `PATH`; set `CUDA_ML_CXX` to
-override this discovery.
-
-The toolchain and compiled backend are cached under `CUDA_ML_CACHE_DIR`,
-or the default cuda.ml user cache. Calling the function again with the
-same inputs is a no-op. By default, a managed build detects the distinct
-CUDA-visible GPU compute capabilities reported by `nvidia-smi` and
-compiles their real targets. It honors `CUDA_VISIBLE_DEVICES`. If
-detection is unavailable, it uses the package’s portable GPU
-architecture list, so GPU-free build hosts remain supported.
-
-This usually reduces build time and backend size, but the resulting
-backend supports only the detected GPU architectures. Use
-`architectures = "portable"` to force a relocatable build, or
-`architectures = "native"` to require successful detection. You can also
-supply an explicit semicolon-separated CMake CUDA architecture list, for
-example `architectures = "86-real;89-real"`.
-
-To use a native toolchain already installed on the host and make no
-downloads, provide every build input explicitly:
-
-``` r
-Sys.setenv(
-  CUDA_HOME = "/usr/local/cuda-13.2",
-  CUML_PREFIX = "/opt/rapids-26.06",
-  CUML_CUDA_ARCHITECTURES = "86-real",
-  CUDA_ML_CXX = "/usr/bin/g++-14"
-)
-cuda.ml::cuda_ml_install(source = TRUE, dependencies = "host")
-```
-
-This host pathway requires CUDA Toolkit 13.2.2; a `CUML_PREFIX`
-containing cuML and nvForest 26.06, Treelite 4.7.0 headers, and
-`lib/libtreelite_static.a`; GNU C++ 14 or newer; and CMake 3.21.1 or
-newer. The CUDA, RAPIDS, and Treelite prefixes must remain in place
-because the compiled backend links to their libraries.
-
-### Packaging
-
-CRAN installation and checks are network-free. The package contacts the
-network only when `cuda_ml_install()` is called explicitly. Native
-backend archives are built in a pinned manylinux 2.28 container, audited
-for their glibc and libstdc++ requirements, and hosted as GitHub Release
-assets. One archive is published for each supported R minor version.
+See [Install and manage
+cuda.ml](https://mlverse.github.io/cuda.ml/articles/install-manage.html)
+for cache configuration, mirrors, runtime audits, supported GPU
+architectures, and source builds.
 
 ### Development version
 

@@ -36,10 +36,9 @@
 
 - [`cuda_ml_knn()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_knn.md)
   : Build a KNN model.
-- [`cuda_ml_knn_algo_ivfflat()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_knn_algo_ivfflat.md)
-  : Build a specification for the "ivfflat" KNN query algorithm.
-- [`cuda_ml_knn_algo_ivfpq()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_knn_algo_ivfpq.md)
-  : Build a specification for the "ivfpq" KNN query algorithm.
+- [`cuda_ml_knn_algo_ivfflat()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_knn_algo.md)
+  [`cuda_ml_knn_algo_ivfpq()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_knn_algo.md)
+  : Configure an approximate KNN query algorithm
 - [`cuda_ml_rand_forest()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_rand_forest.md)
   : Train a random forest model
 - [`cuda_ml_svm()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_svm.md)
@@ -70,9 +69,8 @@
 - [`cuda_ml_tsne()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_tsne.md)
   : Perform t-distributed stochastic neighbor embedding.
 - [`cuda_ml_transform()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_transform.md)
-  : Transform data using a trained cuML model.
-- [`cuda_ml_inverse_transform()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_inverse_transform.md)
-  : Apply the inverse transformation defined by a trained cuML model.
+  [`cuda_ml_inverse_transform()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_transform.md)
+  : Transform data with a dimensionality-reduction model
 
 ## nvForest inference
 
@@ -90,9 +88,8 @@
 ## Model persistence
 
 - [`cuda_ml_serialize()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_serialize.md)
-  : Serialize a cuML model
-- [`cuda_ml_unserialize()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_unserialize.md)
-  : Unserialize a cuML model state
+  [`cuda_ml_unserialize()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_serialize.md)
+  : Save and restore supported cuda.ml models
 - [`bundle(`*`<cuda_ml_model>`*`)`](https://mlverse.github.io/cuda.ml/reference/bundle.cuda_ml_model.md)
   [`bundle(`*`<cuda_ml_nvforest>`*`)`](https://mlverse.github.io/cuda.ml/reference/bundle.cuda_ml_model.md)
   : Bundle a cuda.ml model

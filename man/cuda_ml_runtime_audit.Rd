@@ -14,8 +14,17 @@ CPU-only nvForest backend.}
 Invisibly returns \code{TRUE}.
 }
 \description{
-Recomputes the hashes recorded when the requested backend was installed and
-validates its native registration. For the complete downloaded backend, it
-also validates the managed-runtime dependency closure. Ordinary runtime
-reuse performs only fast marker, inventory, size, and link checks.
+Performs an explicit deep integrity check. It recomputes the hashes recorded
+when the requested backend was installed and validates native registration,
+loading the backend temporarily when needed. For the complete downloaded
+backend, it also validates the managed-runtime dependency closure.
+}
+\details{
+Use \code{cuda_ml_backend_info()} for routine, read-only inspection. That
+function performs only fast cache and inventory checks and does not load
+native code. Ordinary runtime reuse likewise performs only fast marker,
+inventory, size, and link checks.
+}
+\seealso{
+\code{\link{cuda_ml_backend_info}()}
 }

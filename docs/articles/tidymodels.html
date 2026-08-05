@@ -77,9 +77,7 @@
 gives the models the same specification, fitting, and prediction
 interface as other parsnip engines while training with cuML. Use the
 direct cuda.ml API when you need an algorithm that has no parsnip
-specification or detailed control over a solver.</p>
-<p>The examples are not evaluated when this vignette is built. Install
-the complete backend before running them. See <a href="cuda-ml.html">Getting started</a> for installation and runtime
+specification or detailed control over a solver. See <a href="cuda-ml.html">Getting started</a> for installation and runtime
 setup.</p>
 <div class="section level2">
 <h2 id="available-model-specifications">Available model specifications<a class="anchor" aria-label="anchor" href="#available-model-specifications"></a>
@@ -257,7 +255,38 @@ is visible.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">knn_fit</span>, <span class="va">test_predictors</span>, type <span class="op">=</span> <span class="st">"class"</span><span class="op">)</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">knn_fit</span>, <span class="va">test_predictors</span>, type <span class="op">=</span> <span class="st">"prob"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">results</span></span></code></pre></div>
+<span><span class="va">results</span></span>
+<span><span class="co">#&gt;         truth .pred_class .pred_setosa .pred_versicolor .pred_virginica</span></span>
+<span><span class="co">#&gt; 1      setosa      setosa            1              0.0             0.0</span></span>
+<span><span class="co">#&gt; 2      setosa      setosa            1              0.0             0.0</span></span>
+<span><span class="co">#&gt; 3      setosa      setosa            1              0.0             0.0</span></span>
+<span><span class="co">#&gt; 4      setosa      setosa            1              0.0             0.0</span></span>
+<span><span class="co">#&gt; 5      setosa      setosa            1              0.0             0.0</span></span>
+<span><span class="co">#&gt; 6      setosa      setosa            1              0.0             0.0</span></span>
+<span><span class="co">#&gt; 7      setosa      setosa            1              0.0             0.0</span></span>
+<span><span class="co">#&gt; 8      setosa      setosa            1              0.0             0.0</span></span>
+<span><span class="co">#&gt; 9      setosa      setosa            1              0.0             0.0</span></span>
+<span><span class="co">#&gt; 10     setosa      setosa            1              0.0             0.0</span></span>
+<span><span class="co">#&gt; 11     setosa      setosa            1              0.0             0.0</span></span>
+<span><span class="co">#&gt; 12 versicolor  versicolor            0              1.0             0.0</span></span>
+<span><span class="co">#&gt; 13 versicolor  versicolor            0              1.0             0.0</span></span>
+<span><span class="co">#&gt; 14 versicolor  versicolor            0              0.6             0.4</span></span>
+<span><span class="co">#&gt; 15 versicolor  versicolor            0              1.0             0.0</span></span>
+<span><span class="co">#&gt; 16 versicolor  versicolor            0              1.0             0.0</span></span>
+<span><span class="co">#&gt; 17 versicolor  versicolor            0              0.6             0.4</span></span>
+<span><span class="co">#&gt; 18 versicolor  versicolor            0              1.0             0.0</span></span>
+<span><span class="co">#&gt; 19 versicolor  versicolor            0              1.0             0.0</span></span>
+<span><span class="co">#&gt; 20 versicolor  versicolor            0              1.0             0.0</span></span>
+<span><span class="co">#&gt; 21 versicolor  versicolor            0              1.0             0.0</span></span>
+<span><span class="co">#&gt; 22 versicolor  versicolor            0              1.0             0.0</span></span>
+<span><span class="co">#&gt; 23 versicolor  versicolor            0              1.0             0.0</span></span>
+<span><span class="co">#&gt; 24  virginica   virginica            0              0.0             1.0</span></span>
+<span><span class="co">#&gt; 25  virginica  versicolor            0              0.8             0.2</span></span>
+<span><span class="co">#&gt; 26  virginica   virginica            0              0.2             0.8</span></span>
+<span><span class="co">#&gt; 27  virginica   virginica            0              0.2             0.8</span></span>
+<span><span class="co">#&gt; 28  virginica   virginica            0              0.4             0.6</span></span>
+<span><span class="co">#&gt; 29  virginica   virginica            0              0.0             1.0</span></span>
+<span><span class="co">#&gt; 30  virginica  versicolor            0              0.6             0.4</span></span></code></pre></div>
 <p>The parsnip KNN engine defaults to <code>algo = "ivfflat"</code> and
 <code>metric = "euclidean"</code>. <code>ivfflat</code> performs
 approximate neighbor search. Set <code>algo = "brute"</code>, as above,
@@ -445,16 +474,63 @@ and its arguments remains explicit.</p>
 specifications, use a tidymodels tuning workflow, or consume standard
 parsnip prediction types. Parsnip delegates training and prediction to
 cuda.ml’s public model functions.</p>
-<p>Use the direct API when you need:</p>
-<ul>
-<li>an unsupervised or transformation algorithm such as PCA, UMAP,
-clustering, or t-SNE;</li>
-<li>a supervised algorithm without a matching parsnip
-specification;</li>
-<li>direct matrix, data-frame, formula, or recipe methods; or</li>
-<li>solver controls that do not fit cleanly into a portable model
-specification.</li>
-</ul>
+<p>The direct API includes several capabilities that have no parsnip
+specification:</p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Capability</th>
+<th align="left">parsnip</th>
+<th align="left">Direct cuda.ml API</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Linear, logistic, random-forest, KNN, and RBF,
+polynomial, or linear SVM models</td>
+<td align="left">Supported</td>
+<td align="left">Supported</td>
+</tr>
+<tr class="even">
+<td align="left">Clustering and dimensionality reduction</td>
+<td align="left">Not available</td>
+<td align="left">Agglomerative clustering, DBSCAN, k-means, PCA, tSVD,
+UMAP, and t-SNE</td>
+</tr>
+<tr class="odd">
+<td align="left">Transform and inverse-transform operations</td>
+<td align="left">Not available</td>
+<td align="left">
+<code><a href="../reference/cuda_ml_transform.html">cuda_ml_transform()</a></code> and
+<code><a href="../reference/cuda_ml_transform.html">cuda_ml_inverse_transform()</a></code>
+</td>
+</tr>
+<tr class="even">
+<td align="left">Stochastic-gradient-descent linear regression</td>
+<td align="left">No dedicated route</td>
+<td align="left"><code><a href="../reference/cuda_ml_sgd.html">cuda_ml_sgd()</a></code></td>
+</tr>
+<tr class="odd">
+<td align="left">Hyperbolic-tangent SVM</td>
+<td align="left">No matching specification</td>
+<td align="left"><code>cuda_ml_svm(kernel = "tanh")</code></td>
+</tr>
+<tr class="even">
+<td align="left">External tree-ensemble inference and inspection</td>
+<td align="left">Not available</td>
+<td align="left">nvForest load, predict, model-info, leaf-ID, per-tree,
+import, and export functions</td>
+</tr>
+</tbody>
+</table>
+<p>Most algorithm-specific arguments for supported parsnip models remain
+available through <code><a href="https://parsnip.tidymodels.org/reference/set_engine.html" class="external-link">set_engine()</a></code>. Use the named direct
+function when selecting the algorithm or solver is part of the analysis,
+or when passing predictors and outcomes directly is preferable to a
+parsnip workflow.</p>
 <p>For example, cuda.ml’s direct SVM interface supports a
 <code>"tanh"</code> kernel, but parsnip registration is limited to the
 RBF, polynomial, and linear SVM specifications.</p>
