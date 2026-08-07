@@ -33,7 +33,7 @@ if (interactive() && cuda_ml_backend_info()$runtime_installed) {
         MASS::mvrnorm(10, mu = centroid, Sigma = diag(2))
       })
 
-    rlang::exec(rbind, !!!pts)
+    do.call(rbind, pts)
   }
 
   m <- gen_pts()

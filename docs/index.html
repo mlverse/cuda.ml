@@ -252,16 +252,10 @@
 <span><span class="co">#&gt;  int [1:60000(1d)] 5 0 4 1 9 2 1 3 1 4 ...</span></span>
 <span></span>
 <span></span>
-<span><span class="co"># flatten each image to a 1d array, combine into a matrix with 1 row per image</span></span>
-<span><span class="va">flatten</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">img</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">img</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span>
-<span>  <span class="va">img</span></span>
-<span><span class="op">}</span></span>
-<span></span>
-<span><span class="va">flattened_mnist_images</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span></span>
-<span>  <span class="va">rbind</span>,</span>
-<span>  <span class="va">mnist_images</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/asplit.html" class="external-link">asplit</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">flatten</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
+<span><span class="co"># flatten each image into one matrix row</span></span>
+<span><span class="va">flattened_mnist_images</span> <span class="op">&lt;-</span> <span class="va">mnist_images</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span>ncol <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">mnist_images</span><span class="op">)</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># embed</span></span>
 <span><span class="va">embedding</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cuda_ml_umap.html">cuda_ml_umap</a></span><span class="op">(</span></span>

@@ -186,16 +186,10 @@ str(mnist_images)
 str(mnist_labels)
 
 
-# flatten each image to a 1d array, combine into a matrix with 1 row per image
-flatten <- function(img) {
-  dim(img) <- NULL
-  img
-}
-
-flattened_mnist_images <- do.call(
-  rbind,
-  mnist_images |> asplit(3) |> lapply(flatten)
-)
+# flatten each image into one matrix row
+flattened_mnist_images <- mnist_images |>
+  matrix(ncol = dim(mnist_images)[3]) |>
+  t()
 
 # embed
 embedding <- cuda_ml_umap(

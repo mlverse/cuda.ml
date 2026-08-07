@@ -50,7 +50,7 @@ agglomerative_clustering_match_metric <- function(
 #'     pts <- centers |>
 #'       map(\(center) mvrnorm(50, mu = center, Sigma = diag(2)))
 #'
-#'     rlang::exec(rbind, !!!pts) |> as.matrix()
+#'     do.call(rbind, pts)
 #'   }
 #'
 #'   clust <- cuda_ml_agglomerative_clustering(

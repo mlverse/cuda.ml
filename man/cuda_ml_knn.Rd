@@ -150,7 +150,7 @@ if (interactive() && cuda_ml_backend_info()$runtime_installed) {
     pts <- centers |>
       map(\(center) mvrnorm(cluster_sz, mu = center, Sigma = diag(2)))
 
-    rlang::exec(rbind, !!!pts) |> as.matrix()
+    do.call(rbind, pts)
   }
 
   gen_labels <- function(cluster_sz) {

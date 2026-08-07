@@ -226,7 +226,7 @@ cuda_ml_knn_algo_ivfpq <- function(
 #'     pts <- centers |>
 #'       map(\(center) mvrnorm(cluster_sz, mu = center, Sigma = diag(2)))
 #'
-#'     rlang::exec(rbind, !!!pts) |> as.matrix()
+#'     do.call(rbind, pts)
 #'   }
 #'
 #'   gen_labels <- function(cluster_sz) {

@@ -64,7 +64,7 @@ if (interactive() && cuda_ml_backend_info()$runtime_installed) {
     pts <- centers |>
       map(\(center) mvrnorm(50, mu = center, Sigma = diag(2)))
 
-    rlang::exec(rbind, !!!pts) |> as.matrix()
+    do.call(rbind, pts)
   }
 
   clust <- cuda_ml_agglomerative_clustering(

@@ -161,7 +161,7 @@ gen_blobs <- function(blob_sz = 10, centers = NULL) {
       MASS::mvrnorm(blob_sz, mu = center, Sigma = diag(length(center)))
     })
 
-  rlang::exec(rbind, !!!pts)
+  do.call(rbind, pts)
 }
 
 verify_iris_embedding <- function(embedding) {
