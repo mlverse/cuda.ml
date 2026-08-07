@@ -14,7 +14,7 @@ cuda_ml_tsvd(
 )
 }
 \arguments{
-\item{x}{The input matrix or dataframe. Each data point should be a row
+\item{x}{The input matrix or data frame. Each data point should be a row
 and should consist of numeric values only.}
 
 \item{n_components}{Desired dimensionality of output data. Must be strictly
@@ -37,18 +37,20 @@ of the input data. Default: TRUE.}
 }
 \value{
 A TSVD model object with the following attributes:
-  - "components": a matrix of \code{n_components} rows to be used for
-     dimensionality reduction on new data points.
-  - "explained_variance": (only present if "transform_input" is set to TRUE)
-    amount of variance within the input data explained by each component.
-  - "explained_variance_ratio": (only present if "transform_input" is set to
-    TRUE) fraction of variance within the input data explained by each
-    component.
-   - "singular_values": The singular values corresponding to each component.
-    The singular values are equal to the 2-norms of the \code{n_components}
-    variables in the lower-dimensional space.
-   - "tsvd_params": opaque pointer to TSVD parameters which will be used for
-     performing inverse transforms.
+\itemize{
+\item "components": a matrix of \code{n_components} rows to be used for
+dimensionality reduction on new data points.
+\item "explained_variance": (only present if "transform_input" is set to TRUE)
+amount of variance within the input data explained by each component.
+\item "explained_variance_ratio": (only present if "transform_input" is set to
+TRUE) fraction of variance within the input data explained by each
+component.
+\item "singular_values": The singular values corresponding to each component.
+The singular values are equal to the 2-norms of the \code{n_components}
+variables in the lower-dimensional space.
+\item "tsvd_params": opaque pointer to TSVD parameters which will be used for
+performing inverse transforms.
+}
 }
 \description{
 Dimensionality reduction using Truncated Singular Value Decomposition.

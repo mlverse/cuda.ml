@@ -58,33 +58,33 @@ clustering algorithm.</p>
 
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>The input matrix or dataframe. Each data point should be a row
+<dd><p>The input matrix or data frame. Each data point should be a row
 and should consist of numeric values only.</p></dd>
 
 
 <dt id="arg-min-pts-eps">min_pts, eps<a class="anchor" aria-label="anchor" href="#arg-min-pts-eps"></a></dt>
-<dd><p>A point `p` is a core point if at least `min_pts` are
-within distance `eps` from it.</p></dd>
+<dd><p>A point <code>p</code> is a core point if at least <code>min_pts</code> are
+within distance <code>eps</code> from it.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A list containing the cluster assignments of all data points. A data
- point not belonging to any cluster (i.e., "noise") will have `NA` as its
- cluster assignment.</p>
+point not belonging to any cluster (i.e., "noise") will have <code>NA</code> as its
+cluster assignment.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="cuda_ml_backend_info.html">cuda_ml_backend_info</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">runtime_installed</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://magrittr.tidyverse.org" class="external-link">magrittr</a></span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="va">gen_pts</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>    <span class="va">centroids</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="fl">1000</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1000</span>, <span class="op">-</span><span class="fl">1000</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1000</span>, <span class="fl">1000</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span>    <span class="va">pts</span> <span class="op">&lt;-</span> <span class="va">centroids</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
-<span class="r-in"><span>      <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="op">~</span> <span class="fu">MASS</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/MASS/man/mvrnorm.html" class="external-link">mvrnorm</a></span><span class="op">(</span><span class="fl">10</span>, mu <span class="op">=</span> <span class="va">.x</span>, Sigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="va">pts</span> <span class="op">&lt;-</span> <span class="va">centroids</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>      <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span>\<span class="op">(</span><span class="va">centroid</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>        <span class="fu">MASS</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/MASS/man/mvrnorm.html" class="external-link">mvrnorm</a></span><span class="op">(</span><span class="fl">10</span>, mu <span class="op">=</span> <span class="va">centroid</span>, Sigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>      <span class="op">}</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>    <span class="fu">rlang</span><span class="fu">::</span><span class="fu"><a href="https://rlang.r-lib.org/reference/exec.html" class="external-link">exec</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="op">!</span><span class="op">!</span><span class="op">!</span><span class="va">pts</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="op">}</span></span></span>

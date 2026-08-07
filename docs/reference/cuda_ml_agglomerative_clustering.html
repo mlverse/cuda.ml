@@ -64,7 +64,7 @@ linkage distance.</p>
 
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>The input matrix or dataframe. Each data point should be a row
+<dd><p>The input matrix or data frame. Each data point should be a row
 and should consist of numeric values only.</p></dd>
 
 
@@ -80,14 +80,14 @@ and should consist of numeric values only.</p></dd>
 
 <dt id="arg-connectivity">connectivity<a class="anchor" aria-label="anchor" href="#arg-connectivity"></a></dt>
 <dd><p>The type of connectivity matrix to compute. Must be one
-of {"pairwise", "knn"}. Default: "pairwise".
-  - 'pairwise' will compute the entire fully-connected graph of pairwise
-     distances between each set of points. This is the fastest to compute
-     and can be very fast for smaller datasets but requires O(n^2) space.
-  - 'knn' will sparsify the fully-connected connectivity matrix to save
-    memory and enable much larger inputs. "n_neighbors" will control the
-    amount of memory used and the graph will be connected automatically in
-    the event "n_neighbors" was not large enough to connect it.</p></dd>
+of {"pairwise", "knn"}. Default: "pairwise".</p><ul><li><p>'pairwise' will compute the entire fully-connected graph of pairwise
+distances between each set of points. This is the fastest to compute
+and can be very fast for smaller datasets but requires O(n^2) space.</p></li>
+<li><p>'knn' will sparsify the fully-connected connectivity matrix to save
+memory and enable much larger inputs. "n_neighbors" will control the
+amount of memory used and the graph will be connected automatically in
+the event "n_neighbors" was not large enough to connect it.</p></li>
+</ul></dd>
 
 
 <dt id="arg-n-neighbors">n_neighbors<a class="anchor" aria-label="anchor" href="#arg-n-neighbors"></a></dt>
@@ -98,12 +98,12 @@ of {"pairwise", "knn"}. Default: "pairwise".
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A clustering object with the following attributes:
-  "n_clusters": The number of clusters found by the algorithm.
-  "children": The children of each non-leaf node. Values less than
-    <code>nrow(x)</code> correspond to leaves of the tree which are the original
-    samples. <code>children[i + 1][1]</code> and <code>children[i + 1][2]</code> were
-    merged to form node <code>(nrow(x) + i)</code> in the <code>i</code>-th iteration.
-  "labels": cluster label of each data point.</p>
+"n_clusters": The number of clusters found by the algorithm.
+"children": The children of each non-leaf node. Values less than
+<code>nrow(x)</code> correspond to leaves of the tree which are the original
+samples. <code>children[i + 1][1]</code> and <code>children[i + 1][2]</code> were
+merged to form node <code>(nrow(x) + i)</code> in the <code>i</code>-th iteration.
+"labels": cluster label of each data point.</p>
     </div>
 
     <div class="section level2">
@@ -112,17 +112,16 @@ of {"pairwise", "knn"}. Default: "pairwise".
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="cuda_ml_backend_info.html">cuda_ml_backend_info</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">runtime_installed</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://www.stats.ox.ac.uk/pub/MASS4/" class="external-link">MASS</a></span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://magrittr.tidyverse.org" class="external-link">magrittr</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://purrr.tidyverse.org/" class="external-link">purrr</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">0L</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="va">gen_pts</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>    <span class="va">centers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="fl">1000</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1000</span>, <span class="op">-</span><span class="fl">1000</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1000</span>, <span class="fl">1000</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span>    <span class="va">pts</span> <span class="op">&lt;-</span> <span class="va">centers</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
-<span class="r-in"><span>      <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="https://rdrr.io/pkg/MASS/man/mvrnorm.html" class="external-link">mvrnorm</a></span><span class="op">(</span><span class="fl">50</span>, mu <span class="op">=</span> <span class="va">.x</span>, Sigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="va">pts</span> <span class="op">&lt;-</span> <span class="va">centers</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>      <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span>\<span class="op">(</span><span class="va">center</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/pkg/MASS/man/mvrnorm.html" class="external-link">mvrnorm</a></span><span class="op">(</span><span class="fl">50</span>, mu <span class="op">=</span> <span class="va">center</span>, Sigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span>    <span class="fu">rlang</span><span class="fu">::</span><span class="fu"><a href="https://rlang.r-lib.org/reference/exec.html" class="external-link">exec</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="op">!</span><span class="op">!</span><span class="op">!</span><span class="va">pts</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="fu">rlang</span><span class="fu">::</span><span class="fu"><a href="https://rlang.r-lib.org/reference/exec.html" class="external-link">exec</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="op">!</span><span class="op">!</span><span class="op">!</span><span class="va">pts</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="op">}</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="va">clust</span> <span class="op">&lt;-</span> <span class="fu">cuda_ml_agglomerative_clustering</span><span class="op">(</span></span></span>

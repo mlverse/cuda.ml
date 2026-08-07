@@ -23,7 +23,7 @@ neighbor search.}
 }
 \value{
 A KNN algorithm specification to pass to the \code{algo} argument of
-  \code{cuda_ml_knn()}.
+\code{cuda_ml_knn()}.
 }
 \description{
 For the main path, pass \code{"ivfflat"} or \code{"ivfpq"} directly to the

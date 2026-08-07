@@ -51,11 +51,11 @@ metadata rather than supplied separately.
 
 The supported \code{model_type} values are:
 \itemize{
-  \item \code{"xgboost_ubj"} for XGBoost UBJSON;
-  \item \code{"xgboost_json"} for XGBoost JSON;
-  \item \code{"xgboost_legacy"} for the legacy XGBoost binary format;
-  \item \code{"lightgbm"} for LightGBM text models; and
-  \item \code{"treelite_checkpoint"} for Treelite checkpoints.
+\item \code{"xgboost_ubj"} for XGBoost UBJSON;
+\item \code{"xgboost_json"} for XGBoost JSON;
+\item \code{"xgboost_legacy"} for the legacy XGBoost binary format;
+\item \code{"lightgbm"} for LightGBM text models; and
+\item \code{"treelite_checkpoint"} for Treelite checkpoints.
 }
 When \code{model_type = NULL}, the format is inferred only from the
 case-insensitive filename suffix: \file{.ubj}, \file{.json}, \file{.model},
@@ -97,7 +97,7 @@ for a complete cuda.ml round-trip, use
 
 \seealso{
 \code{\link{cuda_ml_nvforest_info}()},
-  \code{\link{cuda_ml_nvforest_leaf_ids}()},
-  \code{\link{cuda_ml_nvforest_predict_per_tree}()}, and
-  \code{vignette("nvforest")}
+\code{\link{cuda_ml_nvforest_leaf_ids}()},
+\code{\link{cuda_ml_nvforest_predict_per_tree}()}, and
+\code{vignette("nvforest")}
 }

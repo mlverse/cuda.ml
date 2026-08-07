@@ -17,8 +17,8 @@ returned R object.}
 }
 \value{
 For scalar-leaf models, a numeric matrix with one column per tree.
-  For vector-leaf models, a numeric array indexed by observation, tree, and
-  output.
+For vector-leaf models, a numeric array indexed by observation, tree, and
+output.
 }
 \description{
 Return individual-tree predictions

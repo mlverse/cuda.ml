@@ -61,14 +61,15 @@ or newer and GNU C++ 14 or newer are required on the host. Use
 Useful links:
 \itemize{
   \item \url{https://mlverse.github.io/cuda.ml/}
+  \item \url{https://github.com/mlverse/cuda.ml}
   \item Report bugs at \url{https://github.com/mlverse/cuda.ml/issues}
 }
 
 }
 \author{
-Yitao Li <yitaoli1990@gmail.com>
+Yitao Li \href{mailto:yitaoli1990@gmail.com}{yitaoli1990@gmail.com}
 
-Tomasz Kalinowski <tomasz@posit.co>
+Tomasz Kalinowski \href{mailto:tomasz@posit.co}{tomasz@posit.co}
 
-Daniel Falbel <daniel@posit.co>
+Daniel Falbel \href{mailto:daniel@posit.co}{daniel@posit.co}
 }

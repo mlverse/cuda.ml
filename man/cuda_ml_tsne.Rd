@@ -27,7 +27,7 @@ cuda_ml_tsne(
 )
 }
 \arguments{
-\item{x}{The input matrix or dataframe. Each data point should be a row
+\item{x}{The input matrix or data frame. Each data point should be a row
 and should consist of numeric values only.}
 
 \item{n_components}{Dimension of the embedded space.}
@@ -71,7 +71,7 @@ to tune this. Default: 12.0.}
 
 \item{late_exaggeration}{Controls the space between clusters. It may be
 beneficial to increase this slightly to improve cluster separation. This
-will be applied after `exaggeration_iter` iterations (FFT only).}
+will be applied after \code{exaggeration_iter} iterations (FFT only).}
 
 \item{exaggeration_iter}{Number of exaggeration iterations. Default: 250L.}
 
@@ -94,7 +94,7 @@ Default: NULL.}
 }
 \value{
 A matrix containing the embedding of the input data in a low-
-  dimensional space, with each row representing an embedded data point.
+dimensional space, with each row representing an embedded data point.
 }
 \description{
 t-distributed stochastic neighbor embedding (t-SNE) for visualizing high-

@@ -63,12 +63,13 @@ cuda_ml_elastic_net(x, ...)
 }
 \arguments{
 \item{x}{Depending on the context:
-
-  * A __data frame__ of predictors.
-  * A __matrix__ of predictors.
-  * A __recipe__ specifying a set of preprocessing steps
-  * created from [recipes::recipe()].
-  * A __formula__ specifying the predictors and the outcome.}
+\itemize{
+\item A \strong{data frame} of predictors.
+\item A \strong{matrix} of predictors.
+\item A \strong{recipe} specifying a set of preprocessing steps created from
+\code{\link[recipes:recipe]{recipes::recipe()}}.
+\item A \strong{formula} specifying the predictors and the outcome.
+}}
 
 \item{...}{Optional arguments; currently unused.}
 
@@ -83,8 +84,8 @@ For l1_ratio = 0 the penalty is an L2 penalty. For l1_ratio = 1 it is an L1
 penalty.
 For 0 < l1_ratio < 1, the penalty is a combination of L1 and L2.
 The penalty term is computed using the following formula:
-  penalty = \code{alpha} * \code{l1_ratio} * ||w||_1 +
-            0.5 * \code{alpha} * (1 - \code{l1_ratio}) * ||w||^2_2
+penalty = \code{alpha} * \code{l1_ratio} * ||w||_1 +
+0.5 * \code{alpha} * (1 - \code{l1_ratio}) * ||w||^2_2
 where ||w||_1 is the L1 norm of the coefficients, and ||w||_2 is the L2
 norm of the coefficients.}
 
@@ -104,13 +105,13 @@ order, a random coefficient is updated in each iteration. Default: "cyclic".}
 \item{formula}{A formula specifying the outcome terms on the left-hand side,
 and the predictor terms on the right-hand side.}
 
-\item{data}{When a __recipe__ or __formula__ is used, \code{data} is
-specified as a  __data frame__ containing the predictors and (if
+\item{data}{When a \strong{recipe} or \strong{formula} is used, \code{data} is
+specified as a  \strong{data frame} containing the predictors and (if
 applicable) the outcome.}
 }
 \value{
 An elastic net regressor that can be used with the 'predict' S3
-  generic to make predictions on new data points.
+generic to make predictions on new data points.
 }
 \description{
 Train a linear model with combined L1 and L2 priors as the regularizer.

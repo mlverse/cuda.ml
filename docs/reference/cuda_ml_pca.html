@@ -69,7 +69,7 @@ place.</p>
 
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>The input matrix or dataframe. Each data point should be a row
+<dd><p>The input matrix or data frame. Each data point should be a row
 and should consist of numeric values only.</p></dd>
 
 
@@ -108,25 +108,24 @@ of the input data. Default: TRUE.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A PCA model object with the following attributes:
-   - "components": a matrix of <code>n_components</code> rows containing the top
-     principal components.
-   - "explained_variance": amount of variance within the input data explained
-     by each component.
-   - "explained_variance_ratio": fraction of variance within the input data
-     explained by each component.
-   - "singular_values": singular values (non-negative) corresponding to the
-     top principal components.
-   - "mean": the column-wise mean of <code>x</code> which was used to mean-center
-     <code>x</code> first.
-   - "transformed_data": (only present if "transform_input" is set to TRUE)
-     an approximate representation of input data based on principal
-     components.
-   - "pca_params": opaque pointer to PCA parameters which will be used for
-     performing inverse transforms.</p>
-<p>The model object can be used as input to the
- <code><a href="cuda_ml_transform.html">cuda_ml_inverse_transform()</a></code> function to map a representation based
- on principal components back to the original feature space.</p>
+    <p>A PCA model object with the following attributes:</p><ul><li><p>"components": a matrix of <code>n_components</code> rows containing the top
+principal components.</p></li>
+<li><p>"explained_variance": amount of variance within the input data explained
+by each component.</p></li>
+<li><p>"explained_variance_ratio": fraction of variance within the input data
+explained by each component.</p></li>
+<li><p>"singular_values": singular values (non-negative) corresponding to the
+top principal components.</p></li>
+<li><p>"mean": the column-wise mean of <code>x</code> which was used to mean-center
+<code>x</code> first.</p></li>
+<li><p>"transformed_data": (only present if "transform_input" is set to TRUE)
+an approximate representation of input data based on principal
+components.</p></li>
+<li><p>"pca_params": opaque pointer to PCA parameters which will be used for
+performing inverse transforms.</p></li>
+</ul><p>The model object can be used as input to the
+<code><a href="cuda_ml_transform.html">cuda_ml_inverse_transform()</a></code> function to map a representation based
+on principal components back to the original feature space.</p>
     </div>
 
     <div class="section level2">

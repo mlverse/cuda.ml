@@ -41,17 +41,16 @@ agglomerative_clustering_match_metric <- function(
 #' library(cuda.ml)
 #' if (interactive() && cuda_ml_backend_info()$runtime_installed) {
 #'   library(MASS)
-#'   library(magrittr)
 #'   library(purrr)
 #'
 #'   set.seed(0L)
 #'
 #'   gen_pts <- function() {
 #'     centers <- list(c(1000, 1000), c(-1000, -1000), c(-1000, 1000))
-#'     pts <- centers %>%
-#'       map(~ mvrnorm(50, mu = .x, Sigma = diag(2)))
+#'     pts <- centers |>
+#'       map(\(center) mvrnorm(50, mu = center, Sigma = diag(2)))
 #'
-#'     rlang::exec(rbind, !!!pts) %>% as.matrix()
+#'     rlang::exec(rbind, !!!pts) |> as.matrix()
 #'   }
 #'
 #'   clust <- cuda_ml_agglomerative_clustering(

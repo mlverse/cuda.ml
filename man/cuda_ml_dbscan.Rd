@@ -7,16 +7,16 @@
 cuda_ml_dbscan(x, min_pts, eps)
 }
 \arguments{
-\item{x}{The input matrix or dataframe. Each data point should be a row
+\item{x}{The input matrix or data frame. Each data point should be a row
 and should consist of numeric values only.}
 
-\item{min_pts, eps}{A point `p` is a core point if at least `min_pts` are
-within distance `eps` from it.}
+\item{min_pts, eps}{A point \code{p} is a core point if at least \code{min_pts} are
+within distance \code{eps} from it.}
 }
 \value{
 A list containing the cluster assignments of all data points. A data
- point not belonging to any cluster (i.e., "noise") will have `NA` as its
- cluster assignment.
+point not belonging to any cluster (i.e., "noise") will have \code{NA} as its
+cluster assignment.
 }
 \description{
 Run the DBSCAN (Density-based spatial clustering of applications with noise)
@@ -25,13 +25,13 @@ clustering algorithm.
 \examples{
 library(cuda.ml)
 if (interactive() && cuda_ml_backend_info()$runtime_installed) {
-  library(magrittr)
-
   gen_pts <- function() {
     centroids <- list(c(1000, 1000), c(-1000, -1000), c(-1000, 1000))
 
-    pts <- centroids \%>\%
-      purrr::map(~ MASS::mvrnorm(10, mu = .x, Sigma = diag(2)))
+    pts <- centroids |>
+      purrr::map(\(centroid) {
+        MASS::mvrnorm(10, mu = centroid, Sigma = diag(2))
+      })
 
     rlang::exec(rbind, !!!pts)
   }

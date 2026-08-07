@@ -61,12 +61,14 @@ Useful links:
 
 - <https://mlverse.github.io/cuda.ml/>
 
+- <https://github.com/mlverse/cuda.ml>
+
 - Report bugs at <https://github.com/mlverse/cuda.ml/issues>
 
 ## Author
 
-Yitao Li \<yitaoli1990@gmail.com\>
+Yitao Li <yitaoli1990@gmail.com>
 
-Tomasz Kalinowski \<tomasz@posit.co\>
+Tomasz Kalinowski <tomasz@posit.co>
 
-Daniel Falbel \<daniel@posit.co\>
+Daniel Falbel <daniel@posit.co>

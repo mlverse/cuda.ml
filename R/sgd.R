@@ -31,6 +31,7 @@ sgd_match_learning_rate <- function(
 #'           minimize the sum of the square of the coefficients.
 #'   - "elasticnet": perform the Elastic Net regularization which is based on
 #'                   the weighted average of L1 and L2 norms.
+#'
 #'   Default: "none".
 #' @param alpha Multiplier of the penalty term. Default: 1e-4.
 #' @param batch_size The number of samples that will be included in each batch.
@@ -56,6 +57,7 @@ sgd_match_learning_rate <- function(
 #'                 \code{n_iter_no_change} consecutive epochs fail to decrease
 #'                 the training loss by \code{tol}, the current learning rate is
 #'                 divided by 5.
+#'
 #'   Default: "constant".
 #' @param n_iter_no_change The maximum number of epochs to train if there is no
 #'   improvement in the model. Default: 5.

@@ -110,12 +110,12 @@
 
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>Depending on the context:</p>
-<p>* A __data frame__ of predictors.
-  * A __matrix__ of predictors.
-  * A __recipe__ specifying a set of preprocessing steps
-  * created from [recipes::recipe()].
-  * A __formula__ specifying the predictors and the outcome.</p></dd>
+<dd><p>Depending on the context:</p><ul><li><p>A <strong>data frame</strong> of predictors.</p></li>
+<li><p>A <strong>matrix</strong> of predictors.</p></li>
+<li><p>A <strong>recipe</strong> specifying a set of preprocessing steps created from
+<code><a href="https://recipes.tidymodels.org/reference/recipe.html" class="external-link">recipes::recipe()</a></code>.</p></li>
+<li><p>A <strong>formula</strong> specifying the predictors and the outcome.</p></li>
+</ul></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -129,22 +129,20 @@ desired responses.</p></dd>
 
 <dt id="arg-algo">algo<a class="anchor" aria-label="anchor" href="#arg-algo"></a></dt>
 <dd><p>The query algorithm to use. For most workflows, pass one of
-  {"brute", "ivfflat", "ivfpq"} or a KNN algorithm specification
-  constructed using the <code>cuda_ml_knn_algo_*</code> family of functions.
-  If the algorithm is specified by one of the <code>cuda_ml_knn_algo_*</code>
-  functions, then values of all required parameters of the algorithm will
-  need to be specified explicitly.
-  If the algorithm is specified by a character vector, then parameters for
-  the algorithm are generated automatically.</p>
-<p>Descriptions of supported algorithms:
-    - "brute": for brute-force, slow but produces exact results.
-    - "ivfflat": for inverted file, divide the dataset in partitions
-                 and perform search on relevant partitions only.
-    - "ivfpq": for inverted file and product quantization (vectors
-               are divided into sub-vectors, and each sub-vector is encoded
-               using intermediary k-means clusterings to provide partial
-               information).
-  Default: "brute".</p></dd>
+{"brute", "ivfflat", "ivfpq"} or a KNN algorithm specification
+constructed using the <code>cuda_ml_knn_algo_*</code> family of functions.
+If the algorithm is specified by one of the <code>cuda_ml_knn_algo_*</code>
+functions, then values of all required parameters of the algorithm will
+need to be specified explicitly.
+If the algorithm is specified by a character vector, then parameters for
+the algorithm are generated automatically.</p>
+<p>Descriptions of supported algorithms:</p><ul><li><p>"brute": for brute-force, slow but produces exact results.</p></li>
+<li><p>"ivfflat": for inverted file, divide the dataset in partitions and
+perform search on relevant partitions only.</p></li>
+<li><p>"ivfpq": for inverted file and product quantization (vectors are
+divided into sub-vectors, and each sub-vector is encoded using
+intermediary k-means clusterings to provide partial information).</p></li>
+</ul><p>Default: "brute".</p></dd>
 
 
 <dt id="arg-metric">metric<a class="anchor" aria-label="anchor" href="#arg-metric"></a></dt>
@@ -173,23 +171,22 @@ and the predictor terms on the right-hand side.</p></dd>
 
 
 <dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
-<dd><p>When a __recipe__ or __formula__ is used, <code>data</code> is
-specified as a  __data frame__ containing the predictors and (if
+<dd><p>When a <strong>recipe</strong> or <strong>formula</strong> is used, <code>data</code> is
+specified as a  <strong>data frame</strong> containing the predictors and (if
 applicable) the outcome.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A KNN model that can be used with the 'predict' S3 generic to make
-  predictions on new data points.
-  The model object contains the following:
-    - "knn_index": a GPU pointer to the KNN index.
-    - "algo": enum value of the algorithm being used for the KNN query.
-    - "metric": enum value of the distance metric used in KNN computations.
-    - "p": parameter for the Minkowski metric.
-    - "n_samples": number of input data points.
-    - "n_dims": dimension of each input data point.</p>
-    </div>
+predictions on new data points.
+The model object contains the following:</p><ul><li><p>"knn_index": a GPU pointer to the KNN index.</p></li>
+<li><p>"algo": enum value of the algorithm being used for the KNN query.</p></li>
+<li><p>"metric": enum value of the distance metric used in KNN computations.</p></li>
+<li><p>"p": parameter for the Minkowski metric.</p></li>
+<li><p>"n_samples": number of input data points.</p></li>
+<li><p>"n_dims": dimension of each input data point.</p></li>
+</ul></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
@@ -198,7 +195,6 @@ applicable) the outcome.</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="cuda_ml_backend_info.html">cuda_ml_backend_info</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">runtime_installed</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://www.stats.ox.ac.uk/pub/MASS4/" class="external-link">MASS</a></span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://magrittr.tidyverse.org" class="external-link">magrittr</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://purrr.tidyverse.org/" class="external-link">purrr</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">0L</span><span class="op">)</span></span></span>
@@ -206,21 +202,21 @@ applicable) the outcome.</p></dd>
 <span class="r-in"><span>  <span class="va">centers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">3</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">3</span>, <span class="op">-</span><span class="fl">3</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">3</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="va">gen_pts</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">cluster_sz</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span>    <span class="va">pts</span> <span class="op">&lt;-</span> <span class="va">centers</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
-<span class="r-in"><span>      <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="https://rdrr.io/pkg/MASS/man/mvrnorm.html" class="external-link">mvrnorm</a></span><span class="op">(</span><span class="va">cluster_sz</span>, mu <span class="op">=</span> <span class="va">.x</span>, Sigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="va">pts</span> <span class="op">&lt;-</span> <span class="va">centers</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>      <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span>\<span class="op">(</span><span class="va">center</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/pkg/MASS/man/mvrnorm.html" class="external-link">mvrnorm</a></span><span class="op">(</span><span class="va">cluster_sz</span>, mu <span class="op">=</span> <span class="va">center</span>, Sigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span>    <span class="fu">rlang</span><span class="fu">::</span><span class="fu"><a href="https://rlang.r-lib.org/reference/exec.html" class="external-link">exec</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="op">!</span><span class="op">!</span><span class="op">!</span><span class="va">pts</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="fu">rlang</span><span class="fu">::</span><span class="fu"><a href="https://rlang.r-lib.org/reference/exec.html" class="external-link">exec</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="op">!</span><span class="op">!</span><span class="op">!</span><span class="va">pts</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="op">}</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="va">gen_labels</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">cluster_sz</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">centers</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
-<span class="r-in"><span>      <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">cluster_sz</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">centers</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>      <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span>\<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">cluster_sz</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>      <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="op">}</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="va">sample_cluster_sz</span> <span class="op">&lt;-</span> <span class="fl">1000</span></span></span>
 <span class="r-in"><span>  <span class="va">sample_pts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>    <span class="fu">gen_pts</span><span class="op">(</span><span class="va">sample_cluster_sz</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    <span class="fu">gen_pts</span><span class="op">(</span><span class="va">sample_cluster_sz</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    label <span class="op">=</span> <span class="fu">gen_labels</span><span class="op">(</span><span class="va">sample_cluster_sz</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
@@ -229,7 +225,7 @@ applicable) the outcome.</p></dd>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="va">test_cluster_sz</span> <span class="op">&lt;-</span> <span class="fl">10</span></span></span>
-<span class="r-in"><span>  <span class="va">test_pts</span> <span class="op">&lt;-</span> <span class="fu">gen_pts</span><span class="op">(</span><span class="va">test_cluster_sz</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">test_pts</span> <span class="op">&lt;-</span> <span class="fu">gen_pts</span><span class="op">(</span><span class="va">test_cluster_sz</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="va">predictions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">test_pts</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">predictions</span>, n <span class="op">=</span> <span class="fl">30</span><span class="op">)</span></span></span>

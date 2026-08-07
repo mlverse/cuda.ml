@@ -17,7 +17,7 @@ returned R object.}
 }
 \value{
 An integer matrix with one row per observation and one column per
-  tree.
+tree.
 }
 \description{
 Return terminal leaf identifiers

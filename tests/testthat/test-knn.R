@@ -6,11 +6,11 @@ set.seed(0)
 blob_sz <- 1000
 centers <- list(c(3, 3), c(-3, -3), c(-3, 3))
 blobs <- gen_blobs(blob_sz, centers)
-blobs_df <- blobs %>%
-  as.data.frame() %>%
+blobs_df <- blobs |>
+  as.data.frame() |>
   cbind(
-    label = seq_along(centers) %>%
-      sapply(function(x) rep(x, blob_sz)) %>%
+    label = seq_along(centers) |>
+      sapply(\(x) rep(x, blob_sz)) |>
       factor()
   )
 
@@ -27,7 +27,7 @@ test_that("KNN defaults fit and predict", {
 })
 
 test_that("KNN classifier works as expected", {
-  test_blobs_df <- gen_blobs(test_blob_sz, centers) %>%
+  test_blobs_df <- gen_blobs(test_blob_sz, centers) |>
     as.data.frame()
   algos <- c("brute", "ivfflat", "ivfpq")
 
@@ -42,9 +42,9 @@ test_that("KNN classifier works as expected", {
 
     expect_equal(
       as.integer(preds$.pred_class),
-      seq(3) %>%
-        purrr::map(~ rep(.x, test_blob_sz)) %>%
-        purrr::flatten_int(),
+      seq(3) |>
+        purrr::map(\(x) rep(x, test_blob_sz)) |>
+        unlist(use.names = FALSE),
       label = algo
     )
   }
@@ -101,11 +101,11 @@ test_that("automated IVFPQ selects an aligned bit width", {
 })
 
 test_that("KNN regressor works as expected", {
-  resps <- seq_along(centers) %>%
-    sapply(function(x) rep(exp(-x), blob_sz)) %>%
+  resps <- seq_along(centers) |>
+    sapply(\(x) rep(exp(-x), blob_sz)) |>
     c()
-  train_df <- blobs %>%
-    as.data.frame() %>%
+  train_df <- blobs |>
+    as.data.frame() |>
     cbind(y = resps)
   test_blobs <- gen_blobs(test_blob_sz, centers)
 
@@ -141,22 +141,22 @@ test_that("KNN classifier works as expected through parsnip", {
   skip_if_not_installed("parsnip")
   library(parsnip)
 
-  test_blobs_df <- gen_blobs(test_blob_sz, centers) %>%
+  test_blobs_df <- gen_blobs(test_blob_sz, centers) |>
     as.data.frame()
   model <- nearest_neighbor(
     mode = "classification",
     neighbors = 10,
     dist_power = 2
-  ) %>%
-    set_engine("cuda.ml") %>%
+  ) |>
+    set_engine("cuda.ml") |>
     fit(label ~ ., blobs_df)
   preds <- predict(model, test_blobs_df)
 
   expect_equal(
     as.integer(preds$.pred_class),
-    seq(3) %>%
-      purrr::map(~ rep(.x, test_blob_sz)) %>%
-      purrr::flatten_int()
+    seq(3) |>
+      purrr::map(\(x) rep(x, test_blob_sz)) |>
+      unlist(use.names = FALSE)
   )
 })
 
@@ -164,11 +164,11 @@ test_that("KNN regressor works as expected through parsnip", {
   skip_if_not_installed("parsnip")
   library(parsnip)
 
-  resps <- seq_along(centers) %>%
-    sapply(function(x) rep(exp(-x), blob_sz)) %>%
+  resps <- seq_along(centers) |>
+    sapply(\(x) rep(exp(-x), blob_sz)) |>
     c()
-  train_df <- blobs %>%
-    as.data.frame() %>%
+  train_df <- blobs |>
+    as.data.frame() |>
     cbind(y = resps)
   test_blobs <- gen_blobs(test_blob_sz, centers)
 
@@ -176,8 +176,8 @@ test_that("KNN regressor works as expected through parsnip", {
     mode = "regression",
     neighbors = 5,
     dist_power = 2
-  ) %>%
-    set_engine("cuda.ml") %>%
+  ) |>
+    set_engine("cuda.ml") |>
     fit(y ~ ., data = train_df)
   cuda_ml_knn_regressor_preds <- predict(
     cuda_ml_knn_regressor,

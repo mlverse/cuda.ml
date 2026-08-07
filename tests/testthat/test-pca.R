@@ -45,10 +45,10 @@ test_that("cuda_ml_pca() works as expected", {
 
 test_that("cuda_ml_inverse_transform() works as expected for PCA models", {
   expect_equal(
-    cuda_ml_pca_model$transformed_data %>%
-      sklearn_pca_model$inverse_transform() %>%
+    cuda_ml_pca_model$transformed_data |>
+      sklearn_pca_model$inverse_transform() |>
       as.matrix(),
-    cuda_ml_pca_model %>%
+    cuda_ml_pca_model |>
       cuda_ml_inverse_transform(cuda_ml_pca_model$transformed_data),
     tolerance = 1e-8,
     scale = 1

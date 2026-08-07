@@ -219,13 +219,15 @@ linear and logistic models. Fit preprocessing parameters on the training
 data only, then apply the same recipe to assessment or production
 data.</p>
 <p>This example normalizes the predictors before fitting an exact KNN
-classifier. It uses <code><a href="https://recipes.tidymodels.org/reference/prep.html" class="external-link">prep()</a></code> and <code><a href="https://recipes.tidymodels.org/reference/bake.html" class="external-link">bake()</a></code>
-explicitly so the boundary between preprocessing and GPU model fitting
-is visible.</p>
+classifier. A workflow keeps the preprocessing and model specifications
+together. <code><a href="https://generics.r-lib.org/reference/fit.html" class="external-link">fit()</a></code> estimates the recipe from the training data
+before fitting the cuda.ml model, and <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code> applies the
+recipe to new data before calling the model engine.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/parsnip" class="external-link">parsnip</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/recipes" class="external-link">recipes</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/workflows" class="external-link">workflows</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">training_rows</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">iris</span><span class="op">)</span><span class="op">)</span>, <span class="fl">120</span><span class="op">)</span></span>
@@ -235,10 +237,6 @@ is visible.</p>
 <span><span class="va">iris_recipe</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html" class="external-link">recipe</a></span><span class="op">(</span><span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris_train</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_normalize.html" class="external-link">step_normalize</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html" class="external-link">all_numeric_predictors</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">iris_recipe</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html" class="external-link">prep</a></span><span class="op">(</span><span class="va">iris_recipe</span>, training <span class="op">=</span> <span class="va">iris_train</span><span class="op">)</span></span>
-<span><span class="va">train_processed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html" class="external-link">bake</a></span><span class="op">(</span><span class="va">iris_recipe</span>, new_data <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
-<span><span class="va">test_processed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html" class="external-link">bake</a></span><span class="op">(</span><span class="va">iris_recipe</span>, new_data <span class="op">=</span> <span class="va">iris_test</span><span class="op">)</span></span>
-<span></span>
 <span><span class="va">knn_spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://parsnip.tidymodels.org/reference/nearest_neighbor.html" class="external-link">nearest_neighbor</a></span><span class="op">(</span>neighbors <span class="op">=</span> <span class="fl">5</span>, dist_power <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://parsnip.tidymodels.org/reference/set_args.html" class="external-link">set_mode</a></span><span class="op">(</span><span class="st">"classification"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://parsnip.tidymodels.org/reference/set_engine.html" class="external-link">set_engine</a></span><span class="op">(</span></span>
@@ -247,13 +245,16 @@ is visible.</p>
 <span>    metric <span class="op">=</span> <span class="st">"euclidean"</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="va">knn_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/fit.html" class="external-link">fit</a></span><span class="op">(</span><span class="va">knn_spec</span>, <span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">train_processed</span><span class="op">)</span></span>
-<span><span class="va">test_predictors</span> <span class="op">&lt;-</span> <span class="va">test_processed</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">test_processed</span><span class="op">)</span> <span class="op">!=</span> <span class="st">"Species"</span><span class="op">]</span></span>
+<span><span class="va">knn_workflow</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://workflows.tidymodels.org/reference/workflow.html" class="external-link">workflow</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://workflows.tidymodels.org/reference/add_recipe.html" class="external-link">add_recipe</a></span><span class="op">(</span><span class="va">iris_recipe</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://workflows.tidymodels.org/reference/add_model.html" class="external-link">add_model</a></span><span class="op">(</span><span class="va">knn_spec</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">knn_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/fit.html" class="external-link">fit</a></span><span class="op">(</span><span class="va">knn_workflow</span>, data <span class="op">=</span> <span class="va">iris_train</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span></span>
-<span>  truth <span class="op">=</span> <span class="va">test_processed</span><span class="op">$</span><span class="va">Species</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">knn_fit</span>, <span class="va">test_predictors</span>, type <span class="op">=</span> <span class="st">"class"</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">knn_fit</span>, <span class="va">test_predictors</span>, type <span class="op">=</span> <span class="st">"prob"</span><span class="op">)</span></span>
+<span>  truth <span class="op">=</span> <span class="va">iris_test</span><span class="op">$</span><span class="va">Species</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">knn_fit</span>, <span class="va">iris_test</span>, type <span class="op">=</span> <span class="st">"class"</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">knn_fit</span>, <span class="va">iris_test</span>, type <span class="op">=</span> <span class="st">"prob"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">results</span></span>
 <span><span class="co">#&gt;         truth .pred_class .pred_setosa .pred_versicolor .pred_virginica</span></span>
@@ -412,11 +413,15 @@ described below</td>
 <td align="left">
 <code>coef0</code>, <code>tol</code>,
 <code>max_iter</code>, <code>nochange_steps</code>,
-<code>cache_size</code>, <code>sample_weights</code>
+<code>cache_size</code>
 </td>
 </tr>
 </tbody>
 </table>
+<p>Parsnip case weights are not currently supported by the cuda.ml
+engine. For per-observation weights, use <code>sample_weight</code> with
+<code><a href="../reference/cuda_ml_logistic_reg.html">cuda_ml_logistic_reg()</a></code> or <code>sample_weights</code> with
+<code><a href="../reference/cuda_ml_svm.html">cuda_ml_svm()</a></code> directly.</p>
 <p>Consult the corresponding <code>cuda_ml_*()</code> reference page
 before setting these arguments. For example, random-forest split
 criteria differ between classification and regression, and approximate

@@ -93,10 +93,14 @@ cuda_ml_sgd(
 
   Depending on the context:
 
-  \* A \_\_data frame\_\_ of predictors. \* A \_\_matrix\_\_ of
-  predictors. \* A \_\_recipe\_\_ specifying a set of preprocessing
-  steps \* created from \[recipes::recipe()\]. \* A \_\_formula\_\_
-  specifying the predictors and the outcome.
+  - A **data frame** of predictors.
+
+  - A **matrix** of predictors.
+
+  - A **recipe** specifying a set of preprocessing steps created from
+    [`recipes::recipe()`](https://recipes.tidymodels.org/reference/recipe.html).
+
+  - A **formula** specifying the predictors and the outcome.
 
 - ...:
 
@@ -118,13 +122,19 @@ cuda_ml_sgd(
   Type of regularization to perform, must be one of {"none", "l1", "l2",
   "elasticnet"}.
 
-  \- "none": no regularization. - "l1": perform regularization based on
-  the L1-norm (LASSO) which tries to minimize the sum of the absolute
-  values of the coefficients. - "l2": perform regularization based on
-  the L2 norm (Ridge) which tries to minimize the sum of the square of
-  the coefficients. - "elasticnet": perform the Elastic Net
-  regularization which is based on the weighted average of L1 and L2
-  norms. Default: "none".
+  - "none": no regularization.
+
+  - "l1": perform regularization based on the L1-norm (LASSO) which
+    tries to minimize the sum of the absolute values of the
+    coefficients.
+
+  - "l2": perform regularization based on the L2 norm (Ridge) which
+    tries to minimize the sum of the square of the coefficients.
+
+  - "elasticnet": perform the Elastic Net regularization which is based
+    on the weighted average of L1 and L2 norms.
+
+  Default: "none".
 
 - alpha:
 
@@ -158,13 +168,17 @@ cuda_ml_sgd(
 
   Must be one of {"constant", "invscaling", "adaptive"}.
 
-  \- "constant": the learning rate will be kept constant. -
-  "invscaling": (learning rate) = (initial learning rate) / pow(t,
-  power_t) where `t` is the number of epochs and `power_t` is a tunable
-  parameter of this model. - "adaptive": (learning rate) = (initial
-  learning rate) as long as the training loss keeps decreasing. Each
-  time the last `n_iter_no_change` consecutive epochs fail to decrease
-  the training loss by `tol`, the current learning rate is divided by 5.
+  - "constant": the learning rate will be kept constant.
+
+  - "invscaling": (learning rate) = (initial learning rate) / pow(t,
+    power_t) where `t` is the number of epochs and `power_t` is a
+    tunable parameter of this model.
+
+  - "adaptive": (learning rate) = (initial learning rate) as long as the
+    training loss keeps decreasing. Each time the last
+    `n_iter_no_change` consecutive epochs fail to decrease the training
+    loss by `tol`, the current learning rate is divided by 5.
+
   Default: "constant".
 
 - eta0:
@@ -193,9 +207,9 @@ cuda_ml_sgd(
 
 - data:
 
-  When a \_\_recipe\_\_ or \_\_formula\_\_ is used, `data` is specified
-  as a \_\_data frame\_\_ containing the predictors and (if applicable)
-  the outcome.
+  When a **recipe** or **formula** is used, `data` is specified as a
+  **data frame** containing the predictors and (if applicable) the
+  outcome.
 
 ## Value
 

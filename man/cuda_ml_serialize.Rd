@@ -38,8 +38,8 @@ precision is used. The remaining omitted options use nvForest defaults.}
 }
 \value{
 \code{cuda_ml_serialize()} returns \code{NULL} when writing to a
-  file or connection and otherwise returns a raw vector.
-  \code{cuda_ml_unserialize()} returns the restored fitted model.
+file or connection and otherwise returns a raw vector.
+\code{cuda_ml_unserialize()} returns the restored fitted model.
 }
 \description{
 \code{cuda_ml_serialize()} saves the explicit state of a fitted cuda.ml
@@ -49,12 +49,12 @@ model. \code{cuda_ml_unserialize()} restores that state as a fitted model.
 
 Explicit state is supported for:
 \itemize{
-  \item OLS, ridge, lasso, elastic-net, and SGD linear models;
-  \item logistic and multinomial regression;
-  \item PCA;
-  \item binary and one-vs-rest SVC models and SVR models;
-  \item UMAP;
-  \item random forests and other nvForest-backed models.
+\item OLS, ridge, lasso, elastic-net, and SGD linear models;
+\item logistic and multinomial regression;
+\item PCA;
+\item binary and one-vs-rest SVC models and SVR models;
+\item UMAP;
+\item random forests and other nvForest-backed models.
 }
 KNN and TSVD fits are not currently supported. The pinned KNN API does not
 expose portable approximate-index state, and the current TSVD binding retains
@@ -83,5 +83,5 @@ directly.
 
 \seealso{
 \code{\link[base]{serialize}},
-  \code{\link[base]{unserialize}}, and \code{\link[bundle]{bundle}}
+\code{\link[base]{unserialize}}, and \code{\link[bundle]{bundle}}
 }

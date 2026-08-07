@@ -45,9 +45,9 @@ use nvForest's heuristic.}
 }
 \value{
 \code{cuda_ml_nvforest_export()} invisibly returns a named character
-  vector containing the absolute \code{checkpoint} and \code{metadata}
-  paths. \code{cuda_ml_nvforest_import()} returns the restored
-  nvForest-backed model.
+vector containing the absolute \code{checkpoint} and \code{metadata}
+paths. \code{cuda_ml_nvforest_import()} returns the restored
+nvForest-backed model.
 }
 \description{
 \code{cuda_ml_nvforest_export()} writes a standard Treelite checkpoint and a
@@ -102,5 +102,5 @@ SHA-256 digest checks integrity, not authenticity.
 
 \seealso{
 \code{\link{cuda_ml_nvforest_load_model}()} and
-  \code{\link{cuda_ml_serialize}()}
+\code{\link{cuda_ml_serialize}()}
 }

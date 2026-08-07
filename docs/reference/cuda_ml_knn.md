@@ -69,10 +69,14 @@ cuda_ml_knn(
 
   Depending on the context:
 
-  \* A \_\_data frame\_\_ of predictors. \* A \_\_matrix\_\_ of
-  predictors. \* A \_\_recipe\_\_ specifying a set of preprocessing
-  steps \* created from \[recipes::recipe()\]. \* A \_\_formula\_\_
-  specifying the predictors and the outcome.
+  - A **data frame** of predictors.
+
+  - A **matrix** of predictors.
+
+  - A **recipe** specifying a set of preprocessing steps created from
+    [`recipes::recipe()`](https://recipes.tidymodels.org/reference/recipe.html).
+
+  - A **formula** specifying the predictors and the outcome.
 
 - ...:
 
@@ -93,12 +97,17 @@ cuda_ml_knn(
   explicitly. If the algorithm is specified by a character vector, then
   parameters for the algorithm are generated automatically.
 
-  Descriptions of supported algorithms: - "brute": for brute-force, slow
-  but produces exact results. - "ivfflat": for inverted file, divide the
-  dataset in partitions and perform search on relevant partitions
-  only. - "ivfpq": for inverted file and product quantization (vectors
-  are divided into sub-vectors, and each sub-vector is encoded using
-  intermediary k-means clusterings to provide partial information).
+  Descriptions of supported algorithms:
+
+  - "brute": for brute-force, slow but produces exact results.
+
+  - "ivfflat": for inverted file, divide the dataset in partitions and
+    perform search on relevant partitions only.
+
+  - "ivfpq": for inverted file and product quantization (vectors are
+    divided into sub-vectors, and each sub-vector is encoded using
+    intermediary k-means clusterings to provide partial information).
+
   Default: "brute".
 
 - metric:
@@ -126,19 +135,26 @@ cuda_ml_knn(
 
 - data:
 
-  When a \_\_recipe\_\_ or \_\_formula\_\_ is used, `data` is specified
-  as a \_\_data frame\_\_ containing the predictors and (if applicable)
-  the outcome.
+  When a **recipe** or **formula** is used, `data` is specified as a
+  **data frame** containing the predictors and (if applicable) the
+  outcome.
 
 ## Value
 
 A KNN model that can be used with the 'predict' S3 generic to make
-predictions on new data points. The model object contains the
-following: - "knn_index": a GPU pointer to the KNN index. - "algo": enum
-value of the algorithm being used for the KNN query. - "metric": enum
-value of the distance metric used in KNN computations. - "p": parameter
-for the Minkowski metric. - "n_samples": number of input data points. -
-"n_dims": dimension of each input data point.
+predictions on new data points. The model object contains the following:
+
+- "knn_index": a GPU pointer to the KNN index.
+
+- "algo": enum value of the algorithm being used for the KNN query.
+
+- "metric": enum value of the distance metric used in KNN computations.
+
+- "p": parameter for the Minkowski metric.
+
+- "n_samples": number of input data points.
+
+- "n_dims": dimension of each input data point.
 
 ## Examples
 
@@ -147,7 +163,6 @@ library(cuda.ml)
 
 if (interactive() && cuda_ml_backend_info()$runtime_installed) {
   library(MASS)
-  library(magrittr)
   library(purrr)
 
   set.seed(0L)
@@ -155,21 +170,21 @@ if (interactive() && cuda_ml_backend_info()$runtime_installed) {
   centers <- list(c(3, 3), c(-3, -3), c(-3, 3))
 
   gen_pts <- function(cluster_sz) {
-    pts <- centers %>%
-      map(~ mvrnorm(cluster_sz, mu = .x, Sigma = diag(2)))
+    pts <- centers |>
+      map(\(center) mvrnorm(cluster_sz, mu = center, Sigma = diag(2)))
 
-    rlang::exec(rbind, !!!pts) %>% as.matrix()
+    rlang::exec(rbind, !!!pts) |> as.matrix()
   }
 
   gen_labels <- function(cluster_sz) {
-    seq_along(centers) %>%
-      sapply(function(x) rep(x, cluster_sz)) %>%
+    seq_along(centers) |>
+      sapply(\(x) rep(x, cluster_sz)) |>
       factor()
   }
 
   sample_cluster_sz <- 1000
   sample_pts <- cbind(
-    gen_pts(sample_cluster_sz) %>% as.data.frame(),
+    gen_pts(sample_cluster_sz) |> as.data.frame(),
     label = gen_labels(sample_cluster_sz)
   )
 
@@ -178,7 +193,7 @@ if (interactive() && cuda_ml_backend_info()$runtime_installed) {
   )
 
   test_cluster_sz <- 10
-  test_pts <- gen_pts(test_cluster_sz) %>% as.data.frame()
+  test_pts <- gen_pts(test_cluster_sz) |> as.data.frame()
 
   predictions <- predict(model, test_pts)
   print(predictions, n = 30)

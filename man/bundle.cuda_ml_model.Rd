@@ -46,5 +46,5 @@ directly.
 
 \seealso{
 \code{\link{cuda_ml_serialize}},
-  \code{\link{cuda_ml_unserialize}}
+\code{\link{cuda_ml_unserialize}}
 }
