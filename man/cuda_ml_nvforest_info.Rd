@@ -12,18 +12,18 @@ cuda_ml_nvforest_info(object)
 \value{
 A named list with:
 \describe{
-  \item{\code{task_type}}{One of \code{"binary_classification"},
-    \code{"multiclass_classification"}, or \code{"regression"}.}
-  \item{\code{num_classes}, \code{num_features}, \code{num_outputs}, and
-    \code{num_trees}}{Model dimensions.}
-  \item{\code{has_vector_leaves}, \code{average_tree_output}, and
-    \code{has_probability_output}}{Logical model properties.}
-  \item{\code{device}, \code{device_id}, \code{layout}, and
-    \code{precision}}{Resolved inference configuration.}
-  \item{\code{default_chunk_size} and \code{align_bytes}}{Native chunk and
-    memory-alignment settings.}
-  \item{\code{treelite_postprocessor}}{The model's Treelite
-    postprocessor.}
+\item{\code{task_type}}{One of \code{"binary_classification"},
+\code{"multiclass_classification"}, or \code{"regression"}.}
+\item{\code{num_classes}, \code{num_features}, \code{num_outputs}, and
+\code{num_trees}}{Model dimensions.}
+\item{\code{has_vector_leaves}, \code{average_tree_output}, and
+\code{has_probability_output}}{Logical model properties.}
+\item{\code{device}, \code{device_id}, \code{layout}, and
+\code{precision}}{Resolved inference configuration.}
+\item{\code{default_chunk_size} and \code{align_bytes}}{Native chunk and
+memory-alignment settings.}
+\item{\code{treelite_postprocessor}}{The model's Treelite
+postprocessor.}
 }
 }
 \description{

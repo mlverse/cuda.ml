@@ -19,7 +19,7 @@ cuda_ml_tsvd(
 
 - x:
 
-  The input matrix or dataframe. Each data point should be a row and
+  The input matrix or data frame. Each data point should be a row and
   should consist of numeric values only.
 
 - n_components:
@@ -50,17 +50,25 @@ cuda_ml_tsvd(
 
 ## Value
 
-A TSVD model object with the following attributes: - "components": a
-matrix of `n_components` rows to be used for dimensionality reduction on
-new data points. - "explained_variance": (only present if
-"transform_input" is set to TRUE) amount of variance within the input
-data explained by each component. - "explained_variance_ratio": (only
-present if "transform_input" is set to TRUE) fraction of variance within
-the input data explained by each component. - "singular_values": The
-singular values corresponding to each component. The singular values are
-equal to the 2-norms of the `n_components` variables in the
-lower-dimensional space. - "tsvd_params": opaque pointer to TSVD
-parameters which will be used for performing inverse transforms.
+A TSVD model object with the following attributes:
+
+- "components": a matrix of `n_components` rows to be used for
+  dimensionality reduction on new data points.
+
+- "explained_variance": (only present if "transform_input" is set to
+  TRUE) amount of variance within the input data explained by each
+  component.
+
+- "explained_variance_ratio": (only present if "transform_input" is set
+  to TRUE) fraction of variance within the input data explained by each
+  component.
+
+- "singular_values": The singular values corresponding to each
+  component. The singular values are equal to the 2-norms of the
+  `n_components` variables in the lower-dimensional space.
+
+- "tsvd_params": opaque pointer to TSVD parameters which will be used
+  for performing inverse transforms.
 
 ## Examples
 

@@ -2,8 +2,8 @@
 #'
 #'   * A __data frame__ of predictors.
 #'   * A __matrix__ of predictors.
-#'   * A __recipe__ specifying a set of preprocessing steps
-#'   * created from [recipes::recipe()].
+#'   * A __recipe__ specifying a set of preprocessing steps created from
+#'     [recipes::recipe()].
 #'   * A __formula__ specifying the predictors and the outcome.
 #' @param formula A formula specifying the outcome terms on the left-hand side,
 #'  and the predictor terms on the right-hand side.

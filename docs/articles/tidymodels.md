@@ -90,16 +90,17 @@ linear and logistic models. Fit preprocessing parameters on the training
 data only, then apply the same recipe to assessment or production data.
 
 This example normalizes the predictors before fitting an exact KNN
-classifier. It uses
-[`prep()`](https://recipes.tidymodels.org/reference/prep.html) and
-[`bake()`](https://recipes.tidymodels.org/reference/bake.html)
-explicitly so the boundary between preprocessing and GPU model fitting
-is visible.
+classifier. A workflow keeps the preprocessing and model specifications
+together. [`fit()`](https://generics.r-lib.org/reference/fit.html)
+estimates the recipe from the training data before fitting the cuda.ml
+model, and [`predict()`](https://rdrr.io/r/stats/predict.html) applies
+the recipe to new data before calling the model engine.
 
 ``` r
 library(cuda.ml)
 library(parsnip)
 library(recipes)
+library(workflows)
 
 set.seed(1)
 training_rows <- sample(seq_len(nrow(iris)), 120)
@@ -109,10 +110,6 @@ iris_test <- iris[-training_rows, ]
 iris_recipe <- recipe(Species ~ ., data = iris_train) |>
   step_normalize(all_numeric_predictors())
 
-iris_recipe <- prep(iris_recipe, training = iris_train)
-train_processed <- bake(iris_recipe, new_data = NULL)
-test_processed <- bake(iris_recipe, new_data = iris_test)
-
 knn_spec <- nearest_neighbor(neighbors = 5, dist_power = 2) |>
   set_mode("classification") |>
   set_engine(
@@ -121,13 +118,16 @@ knn_spec <- nearest_neighbor(neighbors = 5, dist_power = 2) |>
     metric = "euclidean"
   )
 
-knn_fit <- fit(knn_spec, Species ~ ., data = train_processed)
-test_predictors <- test_processed[names(test_processed) != "Species"]
+knn_workflow <- workflow() |>
+  add_recipe(iris_recipe) |>
+  add_model(knn_spec)
+
+knn_fit <- fit(knn_workflow, data = iris_train)
 
 results <- cbind(
-  truth = test_processed$Species,
-  predict(knn_fit, test_predictors, type = "class"),
-  predict(knn_fit, test_predictors, type = "prob")
+  truth = iris_test$Species,
+  predict(knn_fit, iris_test, type = "class"),
+  predict(knn_fit, iris_test, type = "prob")
 )
 results
 #>         truth .pred_class .pred_setosa .pred_versicolor .pred_virginica
@@ -207,7 +207,14 @@ workflow. Useful engine arguments include:
 | logistic and multinomial regression | `fit_intercept`, `tol`, `class_weight`, `max_iter`, `linesearch_max_iter`, `lbfgs_memory`, `penalty_normalized`                                                            |
 | random forest                       | `bootstrap`, `sample_fraction`, `max_depth`, `max_leaves`, `n_bins`, `min_samples_leaf`, `split_criterion`, `min_impurity_decrease`, `max_batch_size`, `n_streams`, `seed` |
 | nearest neighbor                    | `algo`, `metric`                                                                                                                                                           |
-| SVM                                 | `coef0`, `tol`, `max_iter`, `nochange_steps`, `cache_size`, `sample_weights`                                                                                               |
+| SVM                                 | `coef0`, `tol`, `max_iter`, `nochange_steps`, `cache_size`                                                                                                                 |
+
+Parsnip case weights are not currently supported by the cuda.ml engine.
+For per-observation weights, use `sample_weight` with
+[`cuda_ml_logistic_reg()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_logistic_reg.md)
+or `sample_weights` with
+[`cuda_ml_svm()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_svm.md)
+directly.
 
 Consult the corresponding `cuda_ml_*()` reference page before setting
 these arguments. For example, random-forest split criteria differ

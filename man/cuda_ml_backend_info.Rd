@@ -8,7 +8,7 @@ cuda_ml_backend_info()
 }
 \value{
 A named list describing the selected backend, pinned library
-  versions, cache status, and CPU-only nvForest backend status.
+versions, cache status, and CPU-only nvForest backend status.
 }
 \description{
 Performs cheap, read-only cache and inventory checks for routine inspection.

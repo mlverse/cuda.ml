@@ -19,7 +19,7 @@ cuda_ml_kmeans(
 
 - x:
 
-  The input matrix or dataframe. Each data point should be a row and
+  The input matrix or data frame. Each data point should be a row and
   should consist of numeric values only.
 
 - k:
@@ -48,7 +48,7 @@ cuda_ml_kmeans(
 ## Value
 
 A list containing the cluster assignments and the centroid of each
-cluster. Each centroid will be a column within the \`centroids\` matrix.
+cluster. Each centroid will be a column within the `centroids` matrix.
 
 ## Examples
 

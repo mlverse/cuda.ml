@@ -39,7 +39,6 @@ run_gpu_tests <- !identical(Sys.getenv("CUDA_ML_GPU_TESTS"), "false") &&
 run_multi_gpu_tests <- run_gpu_tests && visible_gpu_count >= 2L
 
 if (run_gpu_tests) {
-  library(magrittr, warn.conflicts = FALSE)
   library(reticulate)
   library(rlang, warn.conflicts = FALSE)
 }
@@ -48,15 +47,15 @@ if (run_gpu_tests) {
   reticulate::py_require("scikit-learn")
   sklearn <- reticulate::import("sklearn")
   sklearn_iris_dataset <- list(
-    data = iris[, names(iris) != "Species"] %>%
-      unname() %>%
+    data = iris[, names(iris) != "Species"] |>
+      unname() |>
       as.matrix(),
     target = as.integer(iris[["Species"]])
   )
   sklearn_mtcars_dataset <- list(
-    data = mtcars[, names(mtcars) != "mpg"] %>%
-      data.frame(row.names = NULL) %>%
-      unname() %>%
+    data = mtcars[, names(mtcars) != "mpg"] |>
+      data.frame(row.names = NULL) |>
+      unname() |>
       as.matrix(),
     target = mtcars[["mpg"]]
   )
@@ -157,10 +156,12 @@ predict_saved_models_in_sub_proc <- function(
 
 gen_blobs <- function(blob_sz = 10, centers = NULL) {
   centers <- centers %||% list(c(1000, 1000), c(-1000, -1000), c(-1000, 1000))
-  pts <- centers %>%
-    purrr::map(~ MASS::mvrnorm(blob_sz, mu = .x, Sigma = diag(length(.))))
+  pts <- centers |>
+    purrr::map(\(center) {
+      MASS::mvrnorm(blob_sz, mu = center, Sigma = diag(length(center)))
+    })
 
-  rlang::exec(rbind, !!!pts)
+  do.call(rbind, pts)
 }
 
 verify_iris_embedding <- function(embedding) {

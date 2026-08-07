@@ -95,12 +95,13 @@ cuda_ml_rand_forest(x, ...)
 }
 \arguments{
 \item{x}{Depending on the context:
-
-  * A __data frame__ of predictors.
-  * A __matrix__ of predictors.
-  * A __recipe__ specifying a set of preprocessing steps
-  * created from [recipes::recipe()].
-  * A __formula__ specifying the predictors and the outcome.}
+\itemize{
+\item A \strong{data frame} of predictors.
+\item A \strong{matrix} of predictors.
+\item A \strong{recipe} specifying a set of preprocessing steps created from
+\code{\link[recipes:recipe]{recipes::recipe()}}.
+\item A \strong{formula} specifying the predictors and the outcome.
+}}
 
 \item{...}{Optional arguments; currently unused.}
 
@@ -117,8 +118,9 @@ uses all predictors.}
 
 \item{bootstrap}{Whether to sample observations with replacement.}
 
-\item{sample_fraction}{Proportion of rows used for each tree, between 0 and
-1. This is separate from \code{mtry}, which controls predictor sampling.}
+\item{sample_fraction}{Proportion of rows used for each tree, between
+0 and 1. This is separate from \code{mtry}, which controls predictor
+sampling.}
 
 \item{max_depth}{Maximum tree depth. Default: 16L.}
 
@@ -145,8 +147,8 @@ from R's random-number generator, so \code{set.seed()} controls the fit.}
 \item{formula}{A formula specifying the outcome terms on the left-hand side,
 and the predictor terms on the right-hand side.}
 
-\item{data}{When a __recipe__ or __formula__ is used, \code{data} is
-specified as a  __data frame__ containing the predictors and (if
+\item{data}{When a \strong{recipe} or \strong{formula} is used, \code{data} is
+specified as a  \strong{data frame} containing the predictors and (if
 applicable) the outcome.}
 }
 \value{

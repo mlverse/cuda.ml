@@ -29,10 +29,14 @@ cuda_ml_ridge(x, data, alpha = 1, fit_intercept = TRUE, ...)
 
   Depending on the context:
 
-  \* A \_\_data frame\_\_ of predictors. \* A \_\_matrix\_\_ of
-  predictors. \* A \_\_recipe\_\_ specifying a set of preprocessing
-  steps \* created from \[recipes::recipe()\]. \* A \_\_formula\_\_
-  specifying the predictors and the outcome.
+  - A **data frame** of predictors.
+
+  - A **matrix** of predictors.
+
+  - A **recipe** specifying a set of preprocessing steps created from
+    [`recipes::recipe()`](https://recipes.tidymodels.org/reference/recipe.html).
+
+  - A **formula** specifying the predictors and the outcome.
 
 - ...:
 
@@ -62,9 +66,9 @@ cuda_ml_ridge(x, data, alpha = 1, fit_intercept = TRUE, ...)
 
 - data:
 
-  When a \_\_recipe\_\_ or \_\_formula\_\_ is used, `data` is specified
-  as a \_\_data frame\_\_ containing the predictors and (if applicable)
-  the outcome.
+  When a **recipe** or **formula** is used, `data` is specified as a
+  **data frame** containing the predictors and (if applicable) the
+  outcome.
 
 ## Value
 

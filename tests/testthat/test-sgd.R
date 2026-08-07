@@ -8,10 +8,10 @@ gen_blobs_df <- function(n_samples) {
   centers <- list(c(0, 2, 2), c(2, -2, 0))
   blob_sz <- n_samples / 2
   X <- gen_blobs(blob_sz = blob_sz, centers = centers)
-  y <- c(-1, 1) %>%
-    sapply(function(x) rep(x, blob_sz)) %>%
+  y <- c(-1, 1) |>
+    sapply(\(x) rep(x, blob_sz)) |>
     c()
-  df <- cbind(X, y) %>% as.data.frame()
+  df <- cbind(X, y) |> as.data.frame()
 
   df
 }

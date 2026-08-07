@@ -11,8 +11,8 @@ test_that("cuda_ml_dbscan() works as expected", {
 
   expect_equal(
     clusters$labels,
-    seq(0, 2) %>%
-      purrr::map(~ rep(.x, blob_sz)) %>%
-      purrr::flatten_int()
+    seq(0, 2) |>
+      purrr::map(\(x) rep(x, blob_sz)) |>
+      unlist(use.names = FALSE)
   )
 })

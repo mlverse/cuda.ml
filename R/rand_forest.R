@@ -12,8 +12,9 @@
 #' @param trees Number of trees. Default: 100L.
 #' @param min_n Minimum observations required to split a node. Default: 2L.
 #' @param bootstrap Whether to sample observations with replacement.
-#' @param sample_fraction Proportion of rows used for each tree, between 0 and
-#'   1. This is separate from \code{mtry}, which controls predictor sampling.
+#' @param sample_fraction Proportion of rows used for each tree, between
+#'   0 and 1. This is separate from \code{mtry}, which controls predictor
+#'   sampling.
 #' @param max_depth Maximum tree depth. Default: 16L.
 #' @param max_leaves Maximum leaves per tree, or \code{Inf} for no limit.
 #' @param n_bins Number of candidate split bins. Default: 128L.

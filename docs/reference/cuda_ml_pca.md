@@ -22,7 +22,7 @@ cuda_ml_pca(
 
 - x:
 
-  The input matrix or dataframe. Each data point should be a row and
+  The input matrix or data frame. Each data point should be a row and
   should consist of numeric values only.
 
 - n_components:
@@ -58,17 +58,29 @@ cuda_ml_pca(
 
 ## Value
 
-A PCA model object with the following attributes: - "components": a
-matrix of `n_components` rows containing the top principal components. -
-"explained_variance": amount of variance within the input data explained
-by each component. - "explained_variance_ratio": fraction of variance
-within the input data explained by each component. - "singular_values":
-singular values (non-negative) corresponding to the top principal
-components. - "mean": the column-wise mean of `x` which was used to
-mean-center `x` first. - "transformed_data": (only present if
-"transform_input" is set to TRUE) an approximate representation of input
-data based on principal components. - "pca_params": opaque pointer to
-PCA parameters which will be used for performing inverse transforms.
+A PCA model object with the following attributes:
+
+- "components": a matrix of `n_components` rows containing the top
+  principal components.
+
+- "explained_variance": amount of variance within the input data
+  explained by each component.
+
+- "explained_variance_ratio": fraction of variance within the input data
+  explained by each component.
+
+- "singular_values": singular values (non-negative) corresponding to the
+  top principal components.
+
+- "mean": the column-wise mean of `x` which was used to mean-center `x`
+  first.
+
+- "transformed_data": (only present if "transform_input" is set to TRUE)
+  an approximate representation of input data based on principal
+  components.
+
+- "pca_params": opaque pointer to PCA parameters which will be used for
+  performing inverse transforms.
 
 The model object can be used as input to the
 [`cuda_ml_inverse_transform()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_transform.md)

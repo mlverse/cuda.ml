@@ -14,15 +14,15 @@
 #' @examples
 #' library(cuda.ml)
 #' if (interactive() && cuda_ml_backend_info()$runtime_installed) {
-#'   library(magrittr)
-#'
 #'   gen_pts <- function() {
 #'     centroids <- list(c(1000, 1000), c(-1000, -1000), c(-1000, 1000))
 #'
-#'     pts <- centroids %>%
-#'       purrr::map(~ MASS::mvrnorm(10, mu = .x, Sigma = diag(2)))
+#'     pts <- centroids |>
+#'       purrr::map(\(centroid) {
+#'         MASS::mvrnorm(10, mu = centroid, Sigma = diag(2))
+#'       })
 #'
-#'     rlang::exec(rbind, !!!pts)
+#'     do.call(rbind, pts)
 #'   }
 #'
 #'   m <- gen_pts()

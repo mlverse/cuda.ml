@@ -90,10 +90,14 @@ cuda_ml_svm(
 
   Depending on the context:
 
-  \* A \_\_data frame\_\_ of predictors. \* A \_\_matrix\_\_ of
-  predictors. \* A \_\_recipe\_\_ specifying a set of preprocessing
-  steps \* created from \[recipes::recipe()\]. \* A \_\_formula\_\_
-  specifying the predictors and the outcome.
+  - A **data frame** of predictors.
+
+  - A **matrix** of predictors.
+
+  - A **recipe** specifying a set of preprocessing steps created from
+    [`recipes::recipe()`](https://recipes.tidymodels.org/reference/recipe.html).
+
+  - A **formula** specifying the predictors and the outcome.
 
 - ...:
 
@@ -120,30 +124,51 @@ cuda_ml_svm(
   kernel functions, see explanations below). Default: 1 / (num
   features).
 
-  The following kernels are implemented: - RBF K(x_1, x_2) = exp(-gamma
-  \|x_1-x_2\|^2) - TANH K(x_1, x_2) = tanh(gamma \<x_1,x_2\> + coef0) -
-  POLYNOMIAL K(x_1, x_2) = (gamma \<x_1,x_2\> + coef0)^degree - LINEAR
-  K(x_1,x_2) = \<x_1,x_2\>, where \< , \> denotes the dot product.
+  The following kernels are implemented:
+
+  - RBF K(x_1, x_2) = exp(-gamma \|x_1-x_2\|^2)
+
+  - TANH K(x_1, x_2) = tanh(gamma \<x_1,x_2\> + coef0)
+
+  - POLYNOMIAL K(x_1, x_2) = (gamma \<x_1,x_2\> + coef0)^degree
+
+  - LINEAR K(x_1,x_2) = \<x_1,x_2\>,
+
+  where \< , \> denotes the dot product.
 
 - coef0:
 
   The 0th coefficient (only applicable to polynomial and tanh kernel
   functions, see explanations below). Default: 0.
 
-  The following kernels are implemented: - RBF K(x_1, x_2) = exp(-gamma
-  \|x_1-x_2\|^2) - TANH K(x_1, x_2) = tanh(gamma \<x_1,x_2\> + coef0) -
-  POLYNOMIAL K(x_1, x_2) = (gamma \<x_1,x_2\> + coef0)^degree - LINEAR
-  K(x_1,x_2) = \<x_1,x_2\>, where \< , \> denotes the dot product.
+  The following kernels are implemented:
+
+  - RBF K(x_1, x_2) = exp(-gamma \|x_1-x_2\|^2)
+
+  - TANH K(x_1, x_2) = tanh(gamma \<x_1,x_2\> + coef0)
+
+  - POLYNOMIAL K(x_1, x_2) = (gamma \<x_1,x_2\> + coef0)^degree
+
+  - LINEAR K(x_1,x_2) = \<x_1,x_2\>,
+
+  where \< , \> denotes the dot product.
 
 - degree:
 
   Degree of the polynomial kernel function (note: not applicable to
   other kernel types, see explanations below). Default: 3.
 
-  The following kernels are implemented: - RBF K(x_1, x_2) = exp(-gamma
-  \|x_1-x_2\|^2) - TANH K(x_1, x_2) = tanh(gamma \<x_1,x_2\> + coef0) -
-  POLYNOMIAL K(x_1, x_2) = (gamma \<x_1,x_2\> + coef0)^degree - LINEAR
-  K(x_1,x_2) = \<x_1,x_2\>, where \< , \> denotes the dot product.
+  The following kernels are implemented:
+
+  - RBF K(x_1, x_2) = exp(-gamma \|x_1-x_2\|^2)
+
+  - TANH K(x_1, x_2) = tanh(gamma \<x_1,x_2\> + coef0)
+
+  - POLYNOMIAL K(x_1, x_2) = (gamma \<x_1,x_2\> + coef0)^degree
+
+  - LINEAR K(x_1,x_2) = \<x_1,x_2\>,
+
+  where \< , \> denotes the dot product.
 
 - tol:
 
@@ -180,9 +205,9 @@ cuda_ml_svm(
 
 - data:
 
-  When a \_\_recipe\_\_ or \_\_formula\_\_ is used, `data` is specified
-  as a \_\_data frame\_\_ containing the predictors and (if applicable)
-  the outcome.
+  When a **recipe** or **formula** is used, `data` is specified as a
+  **data frame** containing the predictors and (if applicable) the
+  outcome.
 
 ## Value
 

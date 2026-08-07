@@ -109,8 +109,8 @@ test_that("cuda_ml_svm() classification works as expected through parsnip", {
 
   cuda_ml_multiclass_svc_input <- iris[, names(iris) != "Species"]
 
-  cuda_ml_multiclass_svc_model <- svm_rbf(mode = "classification") %>%
-    set_engine("cuda.ml") %>%
+  cuda_ml_multiclass_svc_model <- svm_rbf(mode = "classification") |>
+    set_engine("cuda.ml") |>
     fit(Species ~ ., data = iris)
   cuda_ml_multiclass_svc_preds <- predict(
     cuda_ml_multiclass_svc_model,
@@ -144,8 +144,8 @@ test_that("cuda_ml_svm() regression works as expected through parsnip", {
     data = mtcars,
     kernel = "rbf"
   )
-  cuda_ml_svr_model <- svm_rbf(mode = "regression") %>%
-    set_engine("cuda.ml") %>%
+  cuda_ml_svr_model <- svm_rbf(mode = "regression") |>
+    set_engine("cuda.ml") |>
     fit(mpg ~ ., data = mtcars)
   cuda_ml_svr_preds <- predict(
     cuda_ml_svr_model,

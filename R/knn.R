@@ -180,13 +180,13 @@ cuda_ml_knn_algo_ivfpq <- function(
 #'   the algorithm are generated automatically.
 #'
 #'   Descriptions of supported algorithms:
-#'     - "brute": for brute-force, slow but produces exact results.
-#'     - "ivfflat": for inverted file, divide the dataset in partitions
-#'                  and perform search on relevant partitions only.
-#'     - "ivfpq": for inverted file and product quantization (vectors
-#'                are divided into sub-vectors, and each sub-vector is encoded
-#'                using intermediary k-means clusterings to provide partial
-#'                information).
+#'   - "brute": for brute-force, slow but produces exact results.
+#'   - "ivfflat": for inverted file, divide the dataset in partitions and
+#'     perform search on relevant partitions only.
+#'   - "ivfpq": for inverted file and product quantization (vectors are
+#'     divided into sub-vectors, and each sub-vector is encoded using
+#'     intermediary k-means clusterings to provide partial information).
+#'
 #'   Default: "brute".
 #' @param metric Distance metric to use. Must be one of \{"euclidean", "l2",
 #'   "l1", "cityblock", "taxicab", "manhattan", "braycurtis", "canberra",
@@ -203,12 +203,12 @@ cuda_ml_knn_algo_ivfpq <- function(
 #' @return A KNN model that can be used with the 'predict' S3 generic to make
 #'   predictions on new data points.
 #'   The model object contains the following:
-#'     - "knn_index": a GPU pointer to the KNN index.
-#'     - "algo": enum value of the algorithm being used for the KNN query.
-#'     - "metric": enum value of the distance metric used in KNN computations.
-#'     - "p": parameter for the Minkowski metric.
-#'     - "n_samples": number of input data points.
-#'     - "n_dims": dimension of each input data point.
+#'   - "knn_index": a GPU pointer to the KNN index.
+#'   - "algo": enum value of the algorithm being used for the KNN query.
+#'   - "metric": enum value of the distance metric used in KNN computations.
+#'   - "p": parameter for the Minkowski metric.
+#'   - "n_samples": number of input data points.
+#'   - "n_dims": dimension of each input data point.
 #'
 #' @examples
 #'
@@ -216,7 +216,6 @@ cuda_ml_knn_algo_ivfpq <- function(
 #'
 #' if (interactive() && cuda_ml_backend_info()$runtime_installed) {
 #'   library(MASS)
-#'   library(magrittr)
 #'   library(purrr)
 #'
 #'   set.seed(0L)
@@ -224,21 +223,21 @@ cuda_ml_knn_algo_ivfpq <- function(
 #'   centers <- list(c(3, 3), c(-3, -3), c(-3, 3))
 #'
 #'   gen_pts <- function(cluster_sz) {
-#'     pts <- centers %>%
-#'       map(~ mvrnorm(cluster_sz, mu = .x, Sigma = diag(2)))
+#'     pts <- centers |>
+#'       map(\(center) mvrnorm(cluster_sz, mu = center, Sigma = diag(2)))
 #'
-#'     rlang::exec(rbind, !!!pts) %>% as.matrix()
+#'     do.call(rbind, pts)
 #'   }
 #'
 #'   gen_labels <- function(cluster_sz) {
-#'     seq_along(centers) %>%
-#'       sapply(function(x) rep(x, cluster_sz)) %>%
+#'     seq_along(centers) |>
+#'       sapply(\(x) rep(x, cluster_sz)) |>
 #'       factor()
 #'   }
 #'
 #'   sample_cluster_sz <- 1000
 #'   sample_pts <- cbind(
-#'     gen_pts(sample_cluster_sz) %>% as.data.frame(),
+#'     gen_pts(sample_cluster_sz) |> as.data.frame(),
 #'     label = gen_labels(sample_cluster_sz)
 #'   )
 #'
@@ -247,7 +246,7 @@ cuda_ml_knn_algo_ivfpq <- function(
 #'   )
 #'
 #'   test_cluster_sz <- 10
-#'   test_pts <- gen_pts(test_cluster_sz) %>% as.data.frame()
+#'   test_pts <- gen_pts(test_cluster_sz) |> as.data.frame()
 #'
 #'   predictions <- predict(model, test_pts)
 #'   print(predictions, n = 30)

@@ -15,7 +15,7 @@ cuda_ml_pca(
 )
 }
 \arguments{
-\item{x}{The input matrix or dataframe. Each data point should be a row
+\item{x}{The input matrix or data frame. Each data point should be a row
 and should consist of numeric values only.}
 
 \item{n_components}{Number of principal component(s) to keep. Default:
@@ -41,25 +41,27 @@ of the input data. Default: TRUE.}
 }
 \value{
 A PCA model object with the following attributes:
-   - "components": a matrix of \code{n_components} rows containing the top
-     principal components.
-   - "explained_variance": amount of variance within the input data explained
-     by each component.
-   - "explained_variance_ratio": fraction of variance within the input data
-     explained by each component.
-   - "singular_values": singular values (non-negative) corresponding to the
-     top principal components.
-   - "mean": the column-wise mean of \code{x} which was used to mean-center
-     \code{x} first.
-   - "transformed_data": (only present if "transform_input" is set to TRUE)
-     an approximate representation of input data based on principal
-     components.
-   - "pca_params": opaque pointer to PCA parameters which will be used for
-     performing inverse transforms.
+\itemize{
+\item "components": a matrix of \code{n_components} rows containing the top
+principal components.
+\item "explained_variance": amount of variance within the input data explained
+by each component.
+\item "explained_variance_ratio": fraction of variance within the input data
+explained by each component.
+\item "singular_values": singular values (non-negative) corresponding to the
+top principal components.
+\item "mean": the column-wise mean of \code{x} which was used to mean-center
+\code{x} first.
+\item "transformed_data": (only present if "transform_input" is set to TRUE)
+an approximate representation of input data based on principal
+components.
+\item "pca_params": opaque pointer to PCA parameters which will be used for
+performing inverse transforms.
+}
 
- The model object can be used as input to the
- \code{cuda_ml_inverse_transform()} function to map a representation based
- on principal components back to the original feature space.
+The model object can be used as input to the
+\code{cuda_ml_inverse_transform()} function to map a representation based
+on principal components back to the original feature space.
 }
 \description{
 Compute principal component(s) of the input data. Each feature from the input

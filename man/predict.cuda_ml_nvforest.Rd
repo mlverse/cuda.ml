@@ -34,8 +34,8 @@ returned R object.}
 }
 \value{
 A tibble with \code{.pred} for regression,
-  \code{.pred_class} for class prediction, or one probability column named
-  \code{.pred_<level>} for each class.
+\code{.pred_class} for class prediction, or one probability column named
+\code{.pred_<level>} for each class.
 }
 \description{
 Predict with an nvForest model

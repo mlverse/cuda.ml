@@ -88,8 +88,8 @@ test_that("random forest classifier works as expected through parsnip", {
   skip_if_not_installed("parsnip")
   library(parsnip)
 
-  cuda_ml_rf_model <- rand_forest(trees = 200, mode = "classification") %>%
-    set_engine("cuda.ml", bootstrap = FALSE) %>%
+  cuda_ml_rf_model <- rand_forest(trees = 200, mode = "classification") |>
+    set_engine("cuda.ml", bootstrap = FALSE) |>
     fit(Species ~ ., data = iris)
   sklearn_rf_model <- sklearn$ensemble$RandomForestClassifier(
     n_estimators = 200L,
@@ -118,8 +118,8 @@ test_that("random forest regressor works as expected through parsnip", {
   skip_if_not_installed("parsnip")
   library(parsnip)
 
-  cuda_ml_rf_model <- rand_forest(trees = 200, mode = "regression") %>%
-    set_engine("cuda.ml", bootstrap = FALSE) %>%
+  cuda_ml_rf_model <- rand_forest(trees = 200, mode = "regression") |>
+    set_engine("cuda.ml", bootstrap = FALSE) |>
     fit(mpg ~ ., data = mtcars)
   cuda_ml_preds <- predict(
     cuda_ml_rf_model,

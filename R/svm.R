@@ -22,28 +22,31 @@ svm_match_kernel_type <- function(
 #'   Default: 1 / (num features).
 #'
 #'   The following kernels are implemented:
-#'     - RBF K(x_1, x_2) = exp(-gamma |x_1-x_2|^2)
-#'     - TANH K(x_1, x_2) = tanh(gamma <x_1,x_2> + coef0)
-#'     - POLYNOMIAL K(x_1, x_2) = (gamma <x_1,x_2> + coef0)^degree
-#'     - LINEAR K(x_1,x_2) = <x_1,x_2>,
+#'   - RBF K(x_1, x_2) = exp(-gamma |x_1-x_2|^2)
+#'   - TANH K(x_1, x_2) = tanh(gamma <x_1,x_2> + coef0)
+#'   - POLYNOMIAL K(x_1, x_2) = (gamma <x_1,x_2> + coef0)^degree
+#'   - LINEAR K(x_1,x_2) = <x_1,x_2>,
+#'
 #'   where < , > denotes the dot product.
 #' @param coef0 The 0th coefficient (only applicable to polynomial and tanh
 #'   kernel functions, see explanations below). Default: 0.
 #'
 #'   The following kernels are implemented:
-#'     - RBF K(x_1, x_2) = exp(-gamma |x_1-x_2|^2)
-#'     - TANH K(x_1, x_2) = tanh(gamma <x_1,x_2> + coef0)
-#'     - POLYNOMIAL K(x_1, x_2) = (gamma <x_1,x_2> + coef0)^degree
-#'     - LINEAR K(x_1,x_2) = <x_1,x_2>,
+#'   - RBF K(x_1, x_2) = exp(-gamma |x_1-x_2|^2)
+#'   - TANH K(x_1, x_2) = tanh(gamma <x_1,x_2> + coef0)
+#'   - POLYNOMIAL K(x_1, x_2) = (gamma <x_1,x_2> + coef0)^degree
+#'   - LINEAR K(x_1,x_2) = <x_1,x_2>,
+#'
 #'   where < , > denotes the dot product.
 #' @param degree Degree of the polynomial kernel function (note: not applicable
 #'   to other kernel types, see explanations below). Default: 3.
 #'
 #'   The following kernels are implemented:
-#'     - RBF K(x_1, x_2) = exp(-gamma |x_1-x_2|^2)
-#'     - TANH K(x_1, x_2) = tanh(gamma <x_1,x_2> + coef0)
-#'     - POLYNOMIAL K(x_1, x_2) = (gamma <x_1,x_2> + coef0)^degree
-#'     - LINEAR K(x_1,x_2) = <x_1,x_2>,
+#'   - RBF K(x_1, x_2) = exp(-gamma |x_1-x_2|^2)
+#'   - TANH K(x_1, x_2) = tanh(gamma <x_1,x_2> + coef0)
+#'   - POLYNOMIAL K(x_1, x_2) = (gamma <x_1,x_2> + coef0)^degree
+#'   - LINEAR K(x_1,x_2) = <x_1,x_2>,
+#'
 #'   where < , > denotes the dot product.
 #' @param tol Tolerance to stop fitting. Default: 1e-3.
 #' @param max_iter Maximum number of outer iterations in SmoSolver.

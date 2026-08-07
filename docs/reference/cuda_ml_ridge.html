@@ -70,12 +70,12 @@
 
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>Depending on the context:</p>
-<p>* A __data frame__ of predictors.
-  * A __matrix__ of predictors.
-  * A __recipe__ specifying a set of preprocessing steps
-  * created from [recipes::recipe()].
-  * A __formula__ specifying the predictors and the outcome.</p></dd>
+<dd><p>Depending on the context:</p><ul><li><p>A <strong>data frame</strong> of predictors.</p></li>
+<li><p>A <strong>matrix</strong> of predictors.</p></li>
+<li><p>A <strong>recipe</strong> specifying a set of preprocessing steps created from
+<code><a href="https://recipes.tidymodels.org/reference/recipe.html" class="external-link">recipes::recipe()</a></code>.</p></li>
+<li><p>A <strong>formula</strong> specifying the predictors and the outcome.</p></li>
+</ul></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -104,15 +104,15 @@ and the predictor terms on the right-hand side.</p></dd>
 
 
 <dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
-<dd><p>When a __recipe__ or __formula__ is used, <code>data</code> is
-specified as a  __data frame__ containing the predictors and (if
+<dd><p>When a <strong>recipe</strong> or <strong>formula</strong> is used, <code>data</code> is
+specified as a  <strong>data frame</strong> containing the predictors and (if
 applicable) the outcome.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A ridge regressor that can be used with the 'predict' S3 generic to
-  make predictions on new data points.</p>
+make predictions on new data points.</p>
     </div>
 
     <div class="section level2">

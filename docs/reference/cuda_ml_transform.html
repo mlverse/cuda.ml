@@ -77,26 +77,26 @@ models and returns tidymodels-style prediction columns.</p>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p><code>cuda_ml_transform()</code> returns coordinates in the learned
-  representation. <code>cuda_ml_inverse_transform()</code> returns reconstructed
-  predictors in the original feature space.</p>
+representation. <code>cuda_ml_inverse_transform()</code> returns reconstructed
+predictors in the original feature space.</p>
     </div>
     <div class="section level2">
     <h2 id="supported-methods">Supported methods<a class="anchor" aria-label="anchor" href="#supported-methods"></a></h2>
 
 
 <ul><li><p><code>cuda_ml_transform()</code> maps predictors into a learned
-    lower-dimensional representation. It supports fitted TSVD and UMAP
-    models.</p></li>
+lower-dimensional representation. It supports fitted TSVD and UMAP
+models.</p></li>
 <li><p><code>cuda_ml_inverse_transform()</code> maps component coordinates back
-    toward the original feature space. It supports fitted PCA and TSVD
-    models.</p></li>
+toward the original feature space. It supports fitted PCA and TSVD
+models.</p></li>
 </ul><p>PCA stores the transformed training input when <code>transform_input = TRUE</code>,
 but it does not currently provide a method for transforming new data.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></code>, <code><a href="cuda_ml_pca.html">cuda_ml_pca</a></code>,
-  <code><a href="cuda_ml_tsvd.html">cuda_ml_tsvd</a></code>, and <code><a href="cuda_ml_umap.html">cuda_ml_umap</a></code></p></div>
+<code><a href="cuda_ml_tsvd.html">cuda_ml_tsvd</a></code>, and <code><a href="cuda_ml_umap.html">cuda_ml_umap</a></code></p></div>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

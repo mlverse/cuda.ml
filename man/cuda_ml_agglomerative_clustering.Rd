@@ -13,7 +13,7 @@ cuda_ml_agglomerative_clustering(
 )
 }
 \arguments{
-\item{x}{The input matrix or dataframe. Each data point should be a row
+\item{x}{The input matrix or data frame. Each data point should be a row
 and should consist of numeric values only.}
 
 \item{n_clusters}{The number of clusters to find. Default: 2L.}
@@ -24,25 +24,27 @@ and should consist of numeric values only.}
 
 \item{connectivity}{The type of connectivity matrix to compute. Must be one
 of \{"pairwise", "knn"\}. Default: "pairwise".
-  - 'pairwise' will compute the entire fully-connected graph of pairwise
-     distances between each set of points. This is the fastest to compute
-     and can be very fast for smaller datasets but requires O(n^2) space.
-  - 'knn' will sparsify the fully-connected connectivity matrix to save
-    memory and enable much larger inputs. "n_neighbors" will control the
-    amount of memory used and the graph will be connected automatically in
-    the event "n_neighbors" was not large enough to connect it.}
+\itemize{
+\item 'pairwise' will compute the entire fully-connected graph of pairwise
+distances between each set of points. This is the fastest to compute
+and can be very fast for smaller datasets but requires O(n^2) space.
+\item 'knn' will sparsify the fully-connected connectivity matrix to save
+memory and enable much larger inputs. "n_neighbors" will control the
+amount of memory used and the graph will be connected automatically in
+the event "n_neighbors" was not large enough to connect it.
+}}
 
 \item{n_neighbors}{The number of neighbors to compute when
 \code{connectivity} is "knn". Default: 15L.}
 }
 \value{
 A clustering object with the following attributes:
-  "n_clusters": The number of clusters found by the algorithm.
-  "children": The children of each non-leaf node. Values less than
-    \code{nrow(x)} correspond to leaves of the tree which are the original
-    samples. \code{children[i + 1][1]} and \code{children[i + 1][2]} were
-    merged to form node \code{(nrow(x) + i)} in the \code{i}-th iteration.
-  "labels": cluster label of each data point.
+"n_clusters": The number of clusters found by the algorithm.
+"children": The children of each non-leaf node. Values less than
+\code{nrow(x)} correspond to leaves of the tree which are the original
+samples. \code{children[i + 1][1]} and \code{children[i + 1][2]} were
+merged to form node \code{(nrow(x) + i)} in the \code{i}-th iteration.
+"labels": cluster label of each data point.
 }
 \description{
 Recursively merge the pair of clusters that minimally increases a given
@@ -53,17 +55,16 @@ linkage distance.
 library(cuda.ml)
 if (interactive() && cuda_ml_backend_info()$runtime_installed) {
   library(MASS)
-  library(magrittr)
   library(purrr)
 
   set.seed(0L)
 
   gen_pts <- function() {
     centers <- list(c(1000, 1000), c(-1000, -1000), c(-1000, 1000))
-    pts <- centers \%>\%
-      map(~ mvrnorm(50, mu = .x, Sigma = diag(2)))
+    pts <- centers |>
+      map(\(center) mvrnorm(50, mu = center, Sigma = diag(2)))
 
-    rlang::exec(rbind, !!!pts) \%>\% as.matrix()
+    do.call(rbind, pts)
   }
 
   clust <- cuda_ml_agglomerative_clustering(

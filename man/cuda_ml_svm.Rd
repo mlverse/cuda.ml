@@ -83,12 +83,13 @@ cuda_ml_svm(x, ...)
 }
 \arguments{
 \item{x}{Depending on the context:
-
-  * A __data frame__ of predictors.
-  * A __matrix__ of predictors.
-  * A __recipe__ specifying a set of preprocessing steps
-  * created from [recipes::recipe()].
-  * A __formula__ specifying the predictors and the outcome.}
+\itemize{
+\item A \strong{data frame} of predictors.
+\item A \strong{matrix} of predictors.
+\item A \strong{recipe} specifying a set of preprocessing steps created from
+\code{\link[recipes:recipe]{recipes::recipe()}}.
+\item A \strong{formula} specifying the predictors and the outcome.
+}}
 
 \item{...}{Optional arguments; currently unused.}
 
@@ -102,35 +103,44 @@ on the wrong side of the margin. Default: 1.}
 "polynomial", or "linear"). Default: "rbf".}
 
 \item{gamma}{The gamma coefficient (only relevant to polynomial, RBF, and
-  tanh kernel functions, see explanations below).
-  Default: 1 / (num features).
+tanh kernel functions, see explanations below).
+Default: 1 / (num features).
 
-  The following kernels are implemented:
-    - RBF K(x_1, x_2) = exp(-gamma |x_1-x_2|^2)
-    - TANH K(x_1, x_2) = tanh(gamma <x_1,x_2> + coef0)
-    - POLYNOMIAL K(x_1, x_2) = (gamma <x_1,x_2> + coef0)^degree
-    - LINEAR K(x_1,x_2) = <x_1,x_2>,
-  where < , > denotes the dot product.}
+The following kernels are implemented:
+\itemize{
+\item RBF K(x_1, x_2) = exp(-gamma |x_1-x_2|^2)
+\item TANH K(x_1, x_2) = tanh(gamma <x_1,x_2> + coef0)
+\item POLYNOMIAL K(x_1, x_2) = (gamma <x_1,x_2> + coef0)^degree
+\item LINEAR K(x_1,x_2) = <x_1,x_2>,
+}
+
+where < , > denotes the dot product.}
 
 \item{coef0}{The 0th coefficient (only applicable to polynomial and tanh
-  kernel functions, see explanations below). Default: 0.
+kernel functions, see explanations below). Default: 0.
 
-  The following kernels are implemented:
-    - RBF K(x_1, x_2) = exp(-gamma |x_1-x_2|^2)
-    - TANH K(x_1, x_2) = tanh(gamma <x_1,x_2> + coef0)
-    - POLYNOMIAL K(x_1, x_2) = (gamma <x_1,x_2> + coef0)^degree
-    - LINEAR K(x_1,x_2) = <x_1,x_2>,
-  where < , > denotes the dot product.}
+The following kernels are implemented:
+\itemize{
+\item RBF K(x_1, x_2) = exp(-gamma |x_1-x_2|^2)
+\item TANH K(x_1, x_2) = tanh(gamma <x_1,x_2> + coef0)
+\item POLYNOMIAL K(x_1, x_2) = (gamma <x_1,x_2> + coef0)^degree
+\item LINEAR K(x_1,x_2) = <x_1,x_2>,
+}
+
+where < , > denotes the dot product.}
 
 \item{degree}{Degree of the polynomial kernel function (note: not applicable
-  to other kernel types, see explanations below). Default: 3.
+to other kernel types, see explanations below). Default: 3.
 
-  The following kernels are implemented:
-    - RBF K(x_1, x_2) = exp(-gamma |x_1-x_2|^2)
-    - TANH K(x_1, x_2) = tanh(gamma <x_1,x_2> + coef0)
-    - POLYNOMIAL K(x_1, x_2) = (gamma <x_1,x_2> + coef0)^degree
-    - LINEAR K(x_1,x_2) = <x_1,x_2>,
-  where < , > denotes the dot product.}
+The following kernels are implemented:
+\itemize{
+\item RBF K(x_1, x_2) = exp(-gamma |x_1-x_2|^2)
+\item TANH K(x_1, x_2) = tanh(gamma <x_1,x_2> + coef0)
+\item POLYNOMIAL K(x_1, x_2) = (gamma <x_1,x_2> + coef0)^degree
+\item LINEAR K(x_1,x_2) = <x_1,x_2>,
+}
+
+where < , > denotes the dot product.}
 
 \item{tol}{Tolerance to stop fitting. Default: 1e-3.}
 
@@ -152,13 +162,13 @@ tasks. Default: 0.1.}
 \item{formula}{A formula specifying the outcome terms on the left-hand side,
 and the predictor terms on the right-hand side.}
 
-\item{data}{When a __recipe__ or __formula__ is used, \code{data} is
-specified as a  __data frame__ containing the predictors and (if
+\item{data}{When a \strong{recipe} or \strong{formula} is used, \code{data} is
+specified as a  \strong{data frame} containing the predictors and (if
 applicable) the outcome.}
 }
 \value{
 A SVM classifier / regressor object that can be used with the
-  'predict' S3 generic to make predictions on new data points.
+'predict' S3 generic to make predictions on new data points.
 }
 \description{
 Train a Support Vector Machine model for classification or regression tasks.

@@ -29,12 +29,13 @@ cuda_ml_ols(x, ...)
 }
 \arguments{
 \item{x}{Depending on the context:
-
-  * A __data frame__ of predictors.
-  * A __matrix__ of predictors.
-  * A __recipe__ specifying a set of preprocessing steps
-  * created from [recipes::recipe()].
-  * A __formula__ specifying the predictors and the outcome.}
+\itemize{
+\item A \strong{data frame} of predictors.
+\item A \strong{matrix} of predictors.
+\item A \strong{recipe} specifying a set of preprocessing steps created from
+\code{\link[recipes:recipe]{recipes::recipe()}}.
+\item A \strong{formula} specifying the predictors and the outcome.
+}}
 
 \item{...}{Optional arguments; currently unused.}
 
@@ -42,16 +43,17 @@ cuda_ml_ols(x, ...)
 desired responses.}
 
 \item{method}{Must be one of \{"svd", "eig", "qr"\}.
+\itemize{
+\item "svd": compute SVD decomposition using Jacobi iterations.
+\item "eig": use an eigendecomposition of the covariance matrix.
+\item "qr": use the QR decomposition algorithm and solve \verb{Rx = Q^T y}.
+}
 
-  - "svd": compute SVD decomposition using Jacobi iterations.
-  - "eig": use an eigendecomposition of the covariance matrix.
-  - "qr": use the QR decomposition algorithm and solve `Rx = Q^T y`.
+If the number of features is larger than the sample size, then the
+"svd" algorithm will be force-selected because it is the only
+algorithm that can support this type of scenario.
 
-  If the number of features is larger than the sample size, then the
-  "svd" algorithm will be force-selected because it is the only
-   algorithm that can support this type of scenario.
-
-  Default: "svd".}
+Default: "svd".}
 
 \item{fit_intercept}{If TRUE, then the model tries to correct for the global
 mean of the response variable. If FALSE, then the model expects data to be
@@ -60,13 +62,13 @@ centered. Default: TRUE.}
 \item{formula}{A formula specifying the outcome terms on the left-hand side,
 and the predictor terms on the right-hand side.}
 
-\item{data}{When a __recipe__ or __formula__ is used, \code{data} is
-specified as a  __data frame__ containing the predictors and (if
+\item{data}{When a \strong{recipe} or \strong{formula} is used, \code{data} is
+specified as a  \strong{data frame} containing the predictors and (if
 applicable) the outcome.}
 }
 \value{
 An OLS regressor that can be used with the 'predict' S3 generic to
-  make predictions on new data points.
+make predictions on new data points.
 }
 \description{
 Train an ordinary least squares (OLS) model for regression tasks.

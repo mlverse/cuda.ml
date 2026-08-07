@@ -63,12 +63,13 @@ cuda_ml_knn(x, ...)
 }
 \arguments{
 \item{x}{Depending on the context:
-
-  * A __data frame__ of predictors.
-  * A __matrix__ of predictors.
-  * A __recipe__ specifying a set of preprocessing steps
-  * created from [recipes::recipe()].
-  * A __formula__ specifying the predictors and the outcome.}
+\itemize{
+\item A \strong{data frame} of predictors.
+\item A \strong{matrix} of predictors.
+\item A \strong{recipe} specifying a set of preprocessing steps created from
+\code{\link[recipes:recipe]{recipes::recipe()}}.
+\item A \strong{formula} specifying the predictors and the outcome.
+}}
 
 \item{...}{Optional arguments; currently unused.}
 
@@ -76,23 +77,25 @@ cuda_ml_knn(x, ...)
 desired responses.}
 
 \item{algo}{The query algorithm to use. For most workflows, pass one of
-  \{"brute", "ivfflat", "ivfpq"\} or a KNN algorithm specification
-  constructed using the \code{cuda_ml_knn_algo_*} family of functions.
-  If the algorithm is specified by one of the \code{cuda_ml_knn_algo_*}
-  functions, then values of all required parameters of the algorithm will
-  need to be specified explicitly.
-  If the algorithm is specified by a character vector, then parameters for
-  the algorithm are generated automatically.
+\{"brute", "ivfflat", "ivfpq"\} or a KNN algorithm specification
+constructed using the \code{cuda_ml_knn_algo_*} family of functions.
+If the algorithm is specified by one of the \code{cuda_ml_knn_algo_*}
+functions, then values of all required parameters of the algorithm will
+need to be specified explicitly.
+If the algorithm is specified by a character vector, then parameters for
+the algorithm are generated automatically.
 
-  Descriptions of supported algorithms:
-    - "brute": for brute-force, slow but produces exact results.
-    - "ivfflat": for inverted file, divide the dataset in partitions
-                 and perform search on relevant partitions only.
-    - "ivfpq": for inverted file and product quantization (vectors
-               are divided into sub-vectors, and each sub-vector is encoded
-               using intermediary k-means clusterings to provide partial
-               information).
-  Default: "brute".}
+Descriptions of supported algorithms:
+\itemize{
+\item "brute": for brute-force, slow but produces exact results.
+\item "ivfflat": for inverted file, divide the dataset in partitions and
+perform search on relevant partitions only.
+\item "ivfpq": for inverted file and product quantization (vectors are
+divided into sub-vectors, and each sub-vector is encoded using
+intermediary k-means clusterings to provide partial information).
+}
+
+Default: "brute".}
 
 \item{metric}{Distance metric to use. Must be one of \{"euclidean", "l2",
 "l1", "cityblock", "taxicab", "manhattan", "braycurtis", "canberra",
@@ -111,20 +114,22 @@ to euclidean distance (l2).}
 \item{formula}{A formula specifying the outcome terms on the left-hand side,
 and the predictor terms on the right-hand side.}
 
-\item{data}{When a __recipe__ or __formula__ is used, \code{data} is
-specified as a  __data frame__ containing the predictors and (if
+\item{data}{When a \strong{recipe} or \strong{formula} is used, \code{data} is
+specified as a  \strong{data frame} containing the predictors and (if
 applicable) the outcome.}
 }
 \value{
 A KNN model that can be used with the 'predict' S3 generic to make
-  predictions on new data points.
-  The model object contains the following:
-    - "knn_index": a GPU pointer to the KNN index.
-    - "algo": enum value of the algorithm being used for the KNN query.
-    - "metric": enum value of the distance metric used in KNN computations.
-    - "p": parameter for the Minkowski metric.
-    - "n_samples": number of input data points.
-    - "n_dims": dimension of each input data point.
+predictions on new data points.
+The model object contains the following:
+\itemize{
+\item "knn_index": a GPU pointer to the KNN index.
+\item "algo": enum value of the algorithm being used for the KNN query.
+\item "metric": enum value of the distance metric used in KNN computations.
+\item "p": parameter for the Minkowski metric.
+\item "n_samples": number of input data points.
+\item "n_dims": dimension of each input data point.
+}
 }
 \description{
 Build a k-nearest-neighbor model for classification or regression tasks.
@@ -135,7 +140,6 @@ library(cuda.ml)
 
 if (interactive() && cuda_ml_backend_info()$runtime_installed) {
   library(MASS)
-  library(magrittr)
   library(purrr)
 
   set.seed(0L)
@@ -143,21 +147,21 @@ if (interactive() && cuda_ml_backend_info()$runtime_installed) {
   centers <- list(c(3, 3), c(-3, -3), c(-3, 3))
 
   gen_pts <- function(cluster_sz) {
-    pts <- centers \%>\%
-      map(~ mvrnorm(cluster_sz, mu = .x, Sigma = diag(2)))
+    pts <- centers |>
+      map(\(center) mvrnorm(cluster_sz, mu = center, Sigma = diag(2)))
 
-    rlang::exec(rbind, !!!pts) \%>\% as.matrix()
+    do.call(rbind, pts)
   }
 
   gen_labels <- function(cluster_sz) {
-    seq_along(centers) \%>\%
-      sapply(function(x) rep(x, cluster_sz)) \%>\%
+    seq_along(centers) |>
+      sapply(\(x) rep(x, cluster_sz)) |>
       factor()
   }
 
   sample_cluster_sz <- 1000
   sample_pts <- cbind(
-    gen_pts(sample_cluster_sz) \%>\% as.data.frame(),
+    gen_pts(sample_cluster_sz) |> as.data.frame(),
     label = gen_labels(sample_cluster_sz)
   )
 
@@ -166,7 +170,7 @@ if (interactive() && cuda_ml_backend_info()$runtime_installed) {
   )
 
   test_cluster_sz <- 10
-  test_pts <- gen_pts(test_cluster_sz) \%>\% as.data.frame()
+  test_pts <- gen_pts(test_cluster_sz) |> as.data.frame()
 
   predictions <- predict(model, test_pts)
   print(predictions, n = 30)

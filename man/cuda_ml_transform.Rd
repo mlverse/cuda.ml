@@ -18,8 +18,8 @@ cuda_ml_inverse_transform(model, x, ...)
 }
 \value{
 \code{cuda_ml_transform()} returns coordinates in the learned
-  representation. \code{cuda_ml_inverse_transform()} returns reconstructed
-  predictors in the original feature space.
+representation. \code{cuda_ml_inverse_transform()} returns reconstructed
+predictors in the original feature space.
 }
 \description{
 These generics apply a fitted dimensionality-reduction mapping. They are
@@ -29,12 +29,12 @@ models and returns tidymodels-style prediction columns.
 \section{Supported methods}{
 
 \itemize{
-  \item \code{cuda_ml_transform()} maps predictors into a learned
-    lower-dimensional representation. It supports fitted TSVD and UMAP
-    models.
-  \item \code{cuda_ml_inverse_transform()} maps component coordinates back
-    toward the original feature space. It supports fitted PCA and TSVD
-    models.
+\item \code{cuda_ml_transform()} maps predictors into a learned
+lower-dimensional representation. It supports fitted TSVD and UMAP
+models.
+\item \code{cuda_ml_inverse_transform()} maps component coordinates back
+toward the original feature space. It supports fitted PCA and TSVD
+models.
 }
 PCA stores the transformed training input when \code{transform_input = TRUE},
 but it does not currently provide a method for transforming new data.
@@ -42,5 +42,5 @@ but it does not currently provide a method for transforming new data.
 
 \seealso{
 \code{\link[stats]{predict}}, \code{\link{cuda_ml_pca}},
-  \code{\link{cuda_ml_tsvd}}, and \code{\link{cuda_ml_umap}}
+\code{\link{cuda_ml_tsvd}}, and \code{\link{cuda_ml_umap}}
 }

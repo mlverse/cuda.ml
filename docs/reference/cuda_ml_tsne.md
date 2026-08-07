@@ -33,7 +33,7 @@ cuda_ml_tsne(
 
 - x:
 
-  The input matrix or dataframe. Each data point should be a row and
+  The input matrix or data frame. Each data point should be a row and
   should consist of numeric values only.
 
 - n_components:
@@ -100,7 +100,7 @@ cuda_ml_tsne(
 
   Controls the space between clusters. It may be beneficial to increase
   this slightly to improve cluster separation. This will be applied
-  after \`exaggeration_iter\` iterations (FFT only).
+  after `exaggeration_iter` iterations (FFT only).
 
 - exaggeration_iter:
 

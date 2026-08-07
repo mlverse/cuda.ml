@@ -70,24 +70,24 @@ library(parsnip)
 library(cuda.ml)
 set.seed(11235)
 
-train_inds <- iris %>%
-  mutate(ind = row_number()) %>%
-  group_by(Species) %>%
+train_inds <- iris |>
+  mutate(ind = row_number()) |>
+  group_by(Species) |>
   slice_sample(prop = 0.7)
 
 train_data <- iris[train_inds$ind, ]
 test_data <- iris[-train_inds$ind, ]
 
-model <- svm_rbf(mode = "classification", rbf_sigma = 10, cost = 50) %>%
-  set_engine("cuda.ml") %>%
+model <- svm_rbf(mode = "classification", rbf_sigma = 10, cost = 50) |>
+  set_engine("cuda.ml") |>
   fit(Species ~ ., data = train_data)
 
 preds <- predict(model, test_data)
 
 cat("Confusion matrix:\n\n")
 #> Confusion matrix:
-preds %>%
-  bind_cols(test_data %>% select(Species)) %>%
+preds |>
+  bind_cols(test_data |> select(Species)) |>
   yardstick::conf_mat(truth = Species, estimate = .pred_class)
 #>             Truth
 #> Prediction   setosa versicolor virginica
@@ -119,8 +119,9 @@ str(clustering)
 #>  $ n_iter   : int 100
 
 library(dplyr, warn.conflicts = FALSE)
-tibble(cluster_id = clustering$labels, species = iris$Species) %>%
-  group_by(cluster_id) %>% count(species)
+tibble(cluster_id = clustering$labels, species = iris$Species) |>
+  group_by(cluster_id) |>
+  count(species)
 #> # A tibble: 5 × 3
 #> # Groups:   cluster_id [3]
 #>   cluster_id species        n
@@ -143,13 +144,12 @@ For example, the code snippet below shows how
 [`cuda_ml_umap()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_umap.md)
 can be used to visualize the MNIST hand-written digits dataset, and
 also, the coloring based on the true label of each sample demonstrates
-how well the UMAP algorithm transforms different hand writings of the
-same digit into nearby points in a 2D embedding:
+how well the UMAP algorithm transforms different handwriting samples of
+the same digit into nearby points in a 2D embedding:
 
 ``` r
 library(cuda.ml)
 library(ggplot2)
-library(magrittr)
 
 # load mnist
 source("data-raw/load-mnist.R")
@@ -159,14 +159,10 @@ str(mnist_labels)
 #>  int [1:60000(1d)] 5 0 4 1 9 2 1 3 1 4 ...
 
 
-# flatten each image to a 1d array, combine into a matrix with 1 row per image
-flatten <- function(img) {
-  dim(img) <- NULL
-  img
-}
-
-flattened_mnist_images <-
-  mnist_images %>% asplit(3) %>% lapply(flatten) %>% do.call(rbind, .)
+# flatten each image into one matrix row
+flattened_mnist_images <- mnist_images |>
+  matrix(ncol = dim(mnist_images)[3]) |>
+  t()
 
 # embed
 embedding <- cuda_ml_umap(
@@ -178,9 +174,9 @@ str(embedding$transformed_data)
 #>  num [1:60000, 1:2] -7.08 -32.55 9.61 20.65 12.25 ...
 
 # visualize
-embedding$transformed_data %>%
-  as.data.frame() %>%
-  dplyr::mutate(Label = factor(mnist_labels)) %>%
+embedding$transformed_data |>
+  as.data.frame() |>
+  dplyr::mutate(Label = factor(mnist_labels)) |>
   ggplot(aes(x = V1, y = V2, color = Label)) +
   geom_point(alpha = .5, size = .5) +
   labs(title = "UMAP: Uniform Manifold Approximation and Projection",
@@ -195,7 +191,7 @@ following about the MNIST dataset:
 
 - The dataset can be reasonably classified into some number of
   categories.
-- The right number of categories may be any where between 9 and 11.
+- The right number of categories may be anywhere between 9 and 11.
 - While there are some categories that are clearly distinguishable from
   others, there are others that have less clear boundaries with their
   neighbors.

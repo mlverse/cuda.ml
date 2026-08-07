@@ -29,7 +29,7 @@ cuda_ml_umap(
 )
 }
 \arguments{
-\item{x}{The input matrix or dataframe. Each data point should be a row
+\item{x}{The input matrix or data frame. Each data point should be a row
 and should consist of numeric values only.}
 
 \item{y}{An optional numeric vector of target values for supervised dimension
@@ -106,10 +106,10 @@ deterministic.}
 }
 \value{
 A UMAP model object that can be used as input to the
-  \code{cuda_ml_transform()} function.
-  If \code{transform_input} is set to TRUE, then the model object will
-  contain a "transformed_data" attribute containing the lower dimensional
-  embedding of the input data.
+\code{cuda_ml_transform()} function.
+If \code{transform_input} is set to TRUE, then the model object will
+contain a "transformed_data" attribute containing the lower dimensional
+embedding of the input data.
 }
 \description{
 Run the Uniform Manifold Approximation and Projection (UMAP) algorithm to
