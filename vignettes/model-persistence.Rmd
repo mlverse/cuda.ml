@@ -42,7 +42,7 @@ nvForest-backed models. It is described in more detail in the
 The simplest file workflow passes a path directly. cuda.ml writes a
 gzip-compressed model state rather than a live native pointer.
 
-```{r save-file}
+```{r save-file, results = "hide"}
 library(cuda.ml)
 
 cuda_ml_install()

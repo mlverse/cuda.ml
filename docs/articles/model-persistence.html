@@ -143,8 +143,7 @@ gzip-compressed model state rather than a live native pointer.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">state_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".cuda-ml-state"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/cuda_ml_serialize.html">cuda_ml_serialize</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">state_path</span><span class="op">)</span></span>
-<span><span class="co">#&gt; NULL</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/cuda_ml_serialize.html">cuda_ml_serialize</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">state_path</span><span class="op">)</span></span></code></pre></div>
 <p>In a new R process, prepare the required backend and restore the
 model. cuda.ml validates the state and backend before loading it.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
