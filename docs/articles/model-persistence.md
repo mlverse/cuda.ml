@@ -39,7 +39,6 @@ model <- cuda_ml_linear_reg(
 
 state_path <- tempfile(fileext = ".cuda-ml-state")
 cuda_ml_serialize(model, state_path)
-#> NULL
 ```
 
 In a new R process, prepare the required backend and restore the model.

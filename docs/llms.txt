@@ -84,8 +84,6 @@ model <- svm_rbf(mode = "classification", rbf_sigma = 10, cost = 50) |>
 
 preds <- predict(model, test_data)
 
-cat("Confusion matrix:\n\n")
-#> Confusion matrix:
 preds |>
   bind_cols(test_data |> select(Species)) |>
   yardstick::conf_mat(truth = Species, estimate = .pred_class)
