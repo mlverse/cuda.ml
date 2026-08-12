@@ -43,7 +43,7 @@ agglomerative_clustering_match_metric <- function(
 #'   library(MASS)
 #'   library(purrr)
 #'
-#'   set.seed(0L)
+#'   set.seed(0)
 #'
 #'   gen_pts <- function() {
 #'     centers <- list(c(1000, 1000), c(-1000, -1000), c(-1000, 1000))
@@ -56,7 +56,7 @@ agglomerative_clustering_match_metric <- function(
 #'   clust <- cuda_ml_agglomerative_clustering(
 #'     x = gen_pts(),
 #'     metric = "euclidean",
-#'     n_clusters = 3L
+#'     n_clusters = 3
 #'   )
 #'
 #'   print(clust$labels)

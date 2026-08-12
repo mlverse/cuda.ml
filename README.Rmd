@@ -129,7 +129,7 @@ oil_predictors <- scale(oils[names(oils) != "class"])
 
 clustering <- cuda_ml_kmeans(
   oil_predictors,
-  k = 7, max_iters = 100, seed = 0L
+  k = 7, max_iters = 100
 )
 
 # The clusters largely align with oil type.
@@ -195,7 +195,7 @@ flattened_mnist_images <- mnist_images |>
 # embed
 embedding <- cuda_ml_umap(
   flattened_mnist_images, n_components = 2, n_neighbors = 50,
-  local_connectivity = 15, repulsion_strength = 10, seed = 0L
+  local_connectivity = 15, repulsion_strength = 10
 )
 
 str(embedding$transformed_data)

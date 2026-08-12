@@ -57,22 +57,25 @@ and requests class probabilities through the usual parsnip interface:
 library(cuda.ml)
 library(parsnip)
 
-forest_spec <- rand_forest(mode = "classification") |>
-  set_engine("cuda.ml")
+forest_spec <-
+  rand_forest(mtry = 2, trees = 500, min_n = 5) |>
+  set_mode("classification") |>
+  set_engine("cuda.ml", max_depth = 20)
 
+set.seed(1)
 forest_fit <- fit(forest_spec, class ~ ., data = modeldata::hpc_data)
 predict(forest_fit, modeldata::hpc_data[1:5, ], type = "prob")
 ```
 
 ```text
 # A tibble: 5 × 4
-  .pred_VF .pred_F .pred_M  .pred_L
-     <dbl>   <dbl>   <dbl>    <dbl>
-1    0.284  0.621  0.0845  0.0107
-2    0.924  0.0637 0.0103  0.00235
-3    0.952  0.0411 0.00623 0.000214
-4    0.974  0.0196 0.00646 0.000160
-5    0.972  0.0209 0.00705 0.000202
+  .pred_VF .pred_F .pred_M .pred_L
+     <dbl>   <dbl>   <dbl>   <dbl>
+1    0.461   0.383  0.111  0.0448
+2    0.776   0.162  0.0468 0.0145
+3    0.822   0.126  0.0423 0.00969
+4    0.832   0.121  0.0382 0.00817
+5    0.828   0.125  0.0390 0.00826
 ```
 
 `set_engine("cuda.ml")` selects the GPU-backed cuda.ml engine; the rest
@@ -88,7 +91,7 @@ own.
 ```r
 library(ggplot2)
 
-clusters <- cuda_ml_kmeans(scale(faithful), k = 2, seed = 1L)
+clusters <- cuda_ml_kmeans(scale(faithful), k = 2)
 faithful$cluster <- factor(clusters$labels)
 
 ggplot(faithful, aes(eruptions, waiting, color = cluster)) +
@@ -137,11 +140,11 @@ wrapped with the bundle package.
 The simplest file workflow passes a path directly:
 
 ```r
+set.seed(1)
 model <- cuda_ml_rand_forest(
   class ~ .,
   data = modeldata::hpc_data,
-  trees = 100L,
-  seed = 1L
+  trees = 100
 )
 
 cuda_ml_serialize(model, "hpc-runtime-forest.cuda-ml")

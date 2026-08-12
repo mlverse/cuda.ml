@@ -57,7 +57,7 @@ if (interactive() && cuda_ml_backend_info()$runtime_installed) {
   library(MASS)
   library(purrr)
 
-  set.seed(0L)
+  set.seed(0)
 
   gen_pts <- function() {
     centers <- list(c(1000, 1000), c(-1000, -1000), c(-1000, 1000))
@@ -70,7 +70,7 @@ if (interactive() && cuda_ml_backend_info()$runtime_installed) {
   clust <- cuda_ml_agglomerative_clustering(
     x = gen_pts(),
     metric = "euclidean",
-    n_clusters = 3L
+    n_clusters = 3
   )
 
   print(clust$labels)

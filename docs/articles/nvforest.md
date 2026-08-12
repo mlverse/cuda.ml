@@ -53,11 +53,11 @@ as imported models.
 library(cuda.ml)
 cuda_ml_install()
 
+set.seed(1)
 forest <- cuda_ml_rand_forest(
   class ~ .,
   data = modeldata::hpc_data,
-  trees = 500,
-  seed = 1
+  trees = 500
 )
 
 dir.create("hpc-forest")

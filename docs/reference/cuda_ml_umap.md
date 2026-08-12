@@ -173,7 +173,7 @@ if (interactive() && cuda_ml_backend_info()$runtime_installed) {
     transform_input = TRUE
   )
 
-  set.seed(0L)
+  set.seed(0)
   print(kmeans(model$transformed_data, iter.max = 100, centers = 7))
 }
 ```

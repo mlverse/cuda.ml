@@ -101,11 +101,11 @@ restore. Use this when training a random forest on a GPU and deploying
 it on a CPU-only host.
 
 ``` r
+set.seed(1)
 forest <- cuda_ml_rand_forest(
   class ~ .,
   data = modeldata::hpc_data,
-  trees = 100,
-  seed = 1
+  trees = 100
 )
 
 cpu_bundle <- bundle(forest, device = "cpu")

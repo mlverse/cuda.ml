@@ -100,7 +100,7 @@ new_umap_model <- function(model) {
 #'     transform_input = TRUE
 #'   )
 #'
-#'   set.seed(0L)
+#'   set.seed(0)
 #'   print(kmeans(model$transformed_data, iter.max = 100, centers = 7))
 #' }
 #' @export

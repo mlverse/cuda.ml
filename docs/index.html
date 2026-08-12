@@ -209,7 +209,7 @@
 <span></span>
 <span><span class="va">clustering</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cuda_ml_kmeans.html">cuda_ml_kmeans</a></span><span class="op">(</span></span>
 <span>  <span class="va">oil_predictors</span>,</span>
-<span>  k <span class="op">=</span> <span class="fl">7</span>, max_iters <span class="op">=</span> <span class="fl">100</span>, seed <span class="op">=</span> <span class="fl">0L</span></span>
+<span>  k <span class="op">=</span> <span class="fl">7</span>, max_iters <span class="op">=</span> <span class="fl">100</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># The clusters largely align with oil type.</span></span>
@@ -266,11 +266,11 @@
 <span><span class="co"># embed</span></span>
 <span><span class="va">embedding</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cuda_ml_umap.html">cuda_ml_umap</a></span><span class="op">(</span></span>
 <span>  <span class="va">flattened_mnist_images</span>, n_components <span class="op">=</span> <span class="fl">2</span>, n_neighbors <span class="op">=</span> <span class="fl">50</span>,</span>
-<span>  local_connectivity <span class="op">=</span> <span class="fl">15</span>, repulsion_strength <span class="op">=</span> <span class="fl">10</span>, seed <span class="op">=</span> <span class="fl">0L</span></span>
+<span>  local_connectivity <span class="op">=</span> <span class="fl">15</span>, repulsion_strength <span class="op">=</span> <span class="fl">10</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">embedding</span><span class="op">$</span><span class="va">transformed_data</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  num [1:60000, 1:2] -7.08 -32.55 9.61 20.65 12.25 ...</span></span>
+<span><span class="co">#&gt;  num [1:60000, 1:2] -0.265 -27.208 8.108 16.145 11.808 ...</span></span>
 <span></span>
 <span><span class="co"># visualize</span></span>
 <span><span class="va">embedding</span><span class="op">$</span><span class="va">transformed_data</span> <span class="op">|&gt;</span></span>

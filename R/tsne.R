@@ -74,7 +74,7 @@ new_tsne_model <- function(embedding) {
 #'
 #'   embedding <- cuda_ml_tsne(oil_predictors, method = "exact")
 #'
-#'   set.seed(0L)
+#'   set.seed(0)
 #'   print(kmeans(embedding, centers = 7))
 #' }
 #' @export

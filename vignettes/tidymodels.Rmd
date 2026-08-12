@@ -75,11 +75,11 @@ forest_spec <- rand_forest(
 ) |>
   set_engine(
     "cuda.ml",
-    max_depth = 20L,
-    n_bins = 256L,
-    seed = 1L
+    max_depth = 20,
+    n_bins = 256
   )
 
+set.seed(1)
 forest_fit <- fit(forest_spec, class ~ ., data = modeldata::hpc_data)
 
 class_predictions <- predict(forest_fit, modeldata::hpc_data, type = "class")

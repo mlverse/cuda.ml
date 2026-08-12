@@ -110,7 +110,7 @@ if (interactive() && cuda_ml_backend_info()$runtime_installed) {
 
   embedding <- cuda_ml_tsne(oil_predictors, method = "exact")
 
-  set.seed(0L)
+  set.seed(0)
   print(kmeans(embedding, centers = 7))
 }
 }

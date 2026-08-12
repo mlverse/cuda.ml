@@ -187,10 +187,10 @@ library(cuda.ml)
 if (interactive() && cuda_ml_backend_info()$runtime_installed) {
   model <- cuda_ml_sgd(
     mpg ~ ., mtcars,
-    batch_size = 4L, epochs = 50000L,
+    batch_size = 4, epochs = 50000,
     learning_rate = "adaptive", eta0 = 1e-5,
     penalty = "l2", alpha = 1e-5, tol = 1e-6,
-    n_iter_no_change = 10L
+    n_iter_no_change = 10
   )
 
   preds <- predict(model, mtcars[names(mtcars) != "mpg"])
