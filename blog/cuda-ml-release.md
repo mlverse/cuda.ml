@@ -62,7 +62,6 @@ forest_spec <-
   set_mode("classification") |>
   set_engine("cuda.ml", max_depth = 20)
 
-set.seed(1)
 forest_fit <- fit(forest_spec, class ~ ., data = modeldata::hpc_data)
 predict(forest_fit, modeldata::hpc_data[1:5, ], type = "prob")
 ```
@@ -140,7 +139,6 @@ wrapped with the bundle package.
 The simplest file workflow passes a path directly:
 
 ```r
-set.seed(1)
 model <- cuda_ml_rand_forest(
   class ~ .,
   data = modeldata::hpc_data,
