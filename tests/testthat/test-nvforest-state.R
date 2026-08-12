@@ -173,9 +173,8 @@ test_that("GPU-trained random forests restore for CPU inference", {
     "requires the CPU-only nvForest runtime"
   )
 
-  model <- cuda_ml_rand_forest(Species ~ ., iris, trees = 50L, seed = 1L)
-  predictor_names <- names(iris)[names(iris) != "Species"]
-  data <- iris[rev(predictor_names)]
+  model <- cuda_ml_rand_forest(species ~ ., penguins, trees = 50L, seed = 1L)
+  data <- penguins[rev(penguin_predictors)]
   expected_class <- predict(model, data, type = "class")
   expected_prob <- predict(model, data, type = "prob")
   state <- unserialize(cuda_ml_serialize(model))
@@ -192,7 +191,7 @@ test_that("GPU-trained random forests restore for CPU inference", {
     add = TRUE
   )
   saveRDS(bundle::bundle(model, device = "cpu"), bundle_path)
-  cuda_ml_nvforest_export(model, export_directory, "iris-random-forest")
+  cuda_ml_nvforest_export(model, export_directory, "penguins-random-forest")
 
   deployed <- callr::r(
     function(state, data, bundle_path, export_directory, cache) {
@@ -204,7 +203,7 @@ test_that("GPU-trained random forests restore for CPU inference", {
       unbundled <- bundle::unbundle(readRDS(bundle_path))
       imported <- cuda_ml_nvforest_import(
         export_directory,
-        "iris-random-forest",
+        "penguins-random-forest",
         device = "cpu"
       )
       list(

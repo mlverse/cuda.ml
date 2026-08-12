@@ -54,7 +54,8 @@ particular GPU.
 {cuda.ml} provides {parsnip} bindings for supervised ML algorithms such
 as `linear_reg`, `logistic_reg`, `multinom_reg`, `rand_forest`,
 `nearest_neighbor`, `svm_rbf`, `svm_poly`, and `svm_linear`. Install
-{parsnip} separately to use these optional bindings.
+{parsnip}, {recipes}, {workflows}, and {palmerpenguins} separately to
+run the supervised example below.
 
 Regularized models follow tidymodels conventions for `penalty` and
 `mixture`. When predictors need scaling, learn and apply it explicitly
@@ -67,31 +68,46 @@ engine to build a SVM classifier.
 ``` r
 library(dplyr, warn.conflicts = FALSE)
 library(parsnip)
+library(recipes)
+library(workflows)
 library(cuda.ml)
 set.seed(11235)
 
-train_inds <- iris |>
+penguins <- palmerpenguins::penguins[c(
+  "bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g",
+  "species"
+)]
+penguins <- penguins[complete.cases(penguins), ]
+
+train_inds <- penguins |>
   mutate(ind = row_number()) |>
-  group_by(Species) |>
+  group_by(species) |>
   slice_sample(prop = 0.7)
 
-train_data <- iris[train_inds$ind, ]
-test_data <- iris[-train_inds$ind, ]
+train_data <- penguins[train_inds$ind, ]
+test_data <- penguins[-train_inds$ind, ]
 
-model <- svm_rbf(mode = "classification", rbf_sigma = 10, cost = 50) |>
-  set_engine("cuda.ml") |>
-  fit(Species ~ ., data = train_data)
+penguin_recipe <- recipe(species ~ ., data = train_data) |>
+  step_normalize(all_numeric_predictors())
+
+model_spec <- svm_rbf(mode = "classification", rbf_sigma = 10, cost = 50) |>
+  set_engine("cuda.ml")
+
+model <- workflow() |>
+  add_recipe(penguin_recipe) |>
+  add_model(model_spec) |>
+  fit(data = train_data)
 
 preds <- predict(model, test_data)
 
 preds |>
-  bind_cols(test_data |> select(Species)) |>
-  yardstick::conf_mat(truth = Species, estimate = .pred_class)
-#>             Truth
-#> Prediction   setosa versicolor virginica
-#>   setosa         15          0         0
-#>   versicolor      0         12         1
-#>   virginica       0          3        14
+  bind_cols(test_data |> select(species)) |>
+  yardstick::conf_mat(truth = species, estimate = .pred_class)
+#>            Truth
+#> Prediction  Adelie Chinstrap Gentoo
+#>   Adelie        45         1      0
+#>   Chinstrap      1        20      0
+#>   Gentoo         0         0     37
 ```
 
 ### Using {cuda.ml} for unsupervised ML tasks
@@ -102,33 +118,40 @@ ML tasks such as k-means clustering.
 ``` r
 library(cuda.ml)
 
+penguins <- palmerpenguins::penguins[c(
+  "bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g",
+  "species"
+)]
+penguins <- penguins[complete.cases(penguins), ]
+penguin_predictors <- scale(penguins[names(penguins) != "species"])
+
 clustering <- cuda_ml_kmeans(
-  iris[, which(names(iris) != "Species")],
+  penguin_predictors,
   k = 3, max_iters = 100, seed = 0L
 )
 
 # Expected outcome: there is strong correlation
-# between cluster labels and `iris$Species`
+# between cluster labels and `penguins$species`
 str(clustering)
 #> List of 4
-#>  $ labels   : int [1:150] 1 1 1 1 1 1 1 1 1 1 ...
-#>  $ centroids: num [1:3, 1:4] 5.9 5.01 6.85 2.75 3.43 ...
-#>  $ inertia  : num 78.9
+#>  $ labels   : int [1:342] 2 2 2 2 2 2 2 2 2 2 ...
+#>  $ centroids: num [1:3, 1:4] 0.905 0.656 -0.967 0.764 -1.098 ...
+#>  $ inertia  : num 380
 #>  $ n_iter   : int 100
 
 library(dplyr, warn.conflicts = FALSE)
-tibble(cluster_id = clustering$labels, species = iris$Species) |>
+tibble(cluster_id = clustering$labels, species = penguins$species) |>
   group_by(cluster_id) |>
   count(species)
 #> # A tibble: 5 × 3
 #> # Groups:   cluster_id [3]
-#>   cluster_id species        n
-#>        <int> <fct>      <int>
-#> 1          0 versicolor    48
-#> 2          0 virginica     14
-#> 3          1 setosa        50
-#> 4          2 versicolor     2
-#> 5          2 virginica     36
+#>   cluster_id species       n
+#>        <int> <fct>     <int>
+#> 1          0 Adelie        7
+#> 2          0 Chinstrap    63
+#> 3          1 Gentoo      123
+#> 4          2 Adelie      144
+#> 5          2 Chinstrap     5
 ```
 
 ### Using {cuda.ml} for visualizations

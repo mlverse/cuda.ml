@@ -4,30 +4,32 @@ context("Support Vector Machine")
 
 test_that("cuda_ml_svm() works as expected for binary classification tasks", {
   gen_cuda_ml_binary_svc_input <- function() {
-    data <- iris
-    data[, "is_versicolor"] <- factor(data[, "Species"] == "versicolor")
+    data <- scaled_penguin_predictors
+    data$is_chinstrap <- factor(penguins$species == "Chinstrap")
 
-    data[, names(data) != "Species"]
+    data
   }
   cuda_ml_binary_svc_input <- gen_cuda_ml_binary_svc_input()
 
   gen_sklearn_binary_svc_input <- function() {
-    ds <- sklearn_iris_dataset
-    ds$target <- (ds$target == which(levels(iris$Species) == "versicolor"))
+    ds <- sklearn_penguins_dataset
+    ds$target <- (
+      ds$target == which(levels(penguins$species) == "Chinstrap")
+    )
 
     ds
   }
   sklearn_binary_svc_input <- gen_sklearn_binary_svc_input()
 
   cuda_ml_binary_svc_model <- cuda_ml_svm(
-    formula = is_versicolor ~ .,
+    formula = is_chinstrap ~ .,
     data = cuda_ml_binary_svc_input,
     kernel = "rbf"
   )
   cuda_ml_binary_svc_preds <- predict(
     cuda_ml_binary_svc_model,
     cuda_ml_binary_svc_input[,
-      names(cuda_ml_binary_svc_input) != "is_versicolor"
+      names(cuda_ml_binary_svc_input) != "is_chinstrap"
     ]
   )
 
@@ -47,11 +49,13 @@ test_that("cuda_ml_svm() works as expected for binary classification tasks", {
 })
 
 test_that("cuda_ml_svm() works as expected for multi-class classification tasks", {
-  cuda_ml_multiclass_svc_input <- iris[, names(iris) != "Species"]
+  data <- scaled_penguin_predictors
+  data$species <- penguins$species
+  cuda_ml_multiclass_svc_input <- scaled_penguin_predictors
 
   cuda_ml_multiclass_svc_model <- cuda_ml_svm(
-    formula = Species ~ .,
-    data = iris,
+    formula = species ~ .,
+    data = data,
     kernel = "rbf"
   )
   cuda_ml_multiclass_svc_preds <- predict(
@@ -64,11 +68,11 @@ test_that("cuda_ml_svm() works as expected for multi-class classification tasks"
     gamma = "auto"
   )
   sklearn_multiclass_svc_model$fit(
-    as.matrix(unname(iris[, names(iris) != "Species"])),
-    as.integer(iris[["Species"]])
+    as.matrix(unname(scaled_penguin_predictors)),
+    as.integer(penguins[["species"]])
   )
   sklearn_multiclass_svc_preds <- sklearn_multiclass_svc_model$predict(
-    as.matrix(unname(iris[, names(iris) != "Species"]))
+    as.matrix(unname(scaled_penguin_predictors))
   )
 
   expect_equal(
@@ -107,11 +111,13 @@ test_that("cuda_ml_svm() classification works as expected through parsnip", {
   skip_if_not_installed("parsnip")
   library(parsnip)
 
-  cuda_ml_multiclass_svc_input <- iris[, names(iris) != "Species"]
+  data <- scaled_penguin_predictors
+  data$species <- penguins$species
+  cuda_ml_multiclass_svc_input <- scaled_penguin_predictors
 
   cuda_ml_multiclass_svc_model <- svm_rbf(mode = "classification") |>
     set_engine("cuda.ml") |>
-    fit(Species ~ ., data = iris)
+    fit(species ~ ., data = data)
   cuda_ml_multiclass_svc_preds <- predict(
     cuda_ml_multiclass_svc_model,
     cuda_ml_multiclass_svc_input
@@ -122,11 +128,11 @@ test_that("cuda_ml_svm() classification works as expected through parsnip", {
     gamma = "auto"
   )
   sklearn_multiclass_svc_model$fit(
-    as.matrix(unname(iris[, names(iris) != "Species"])),
-    as.integer(iris[["Species"]])
+    as.matrix(unname(scaled_penguin_predictors)),
+    as.integer(penguins[["species"]])
   )
   sklearn_multiclass_svc_preds <- sklearn_multiclass_svc_model$predict(
-    as.matrix(unname(iris[, names(iris) != "Species"]))
+    as.matrix(unname(scaled_penguin_predictors))
   )
 
   expect_equal(

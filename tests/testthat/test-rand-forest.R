@@ -4,8 +4,8 @@ context("Random Forest")
 
 test_that("random forest classifier works as expected", {
   cuda_ml_rf_model <- cuda_ml_rand_forest(
-    formula = Species ~ .,
-    data = iris,
+    formula = species ~ .,
+    data = penguins,
     trees = 200,
     bootstrap = FALSE,
     n_streams = 12L
@@ -15,16 +15,16 @@ test_that("random forest classifier works as expected", {
     bootstrap = FALSE
   )
   sklearn_rf_model$fit(
-    X = as.matrix(iris[which(names(iris) != "Species")]),
-    y = as.integer(iris$Species)
+    X = as.matrix(penguins[penguin_predictors]),
+    y = as.integer(penguins$species)
   )
 
   cuda_ml_preds <- predict(
     cuda_ml_rf_model,
-    iris[which(names(iris) != "Species")]
+    penguins[penguin_predictors]
   )
   sklearn_preds <- sklearn_rf_model$predict(
-    as.matrix(iris[which(names(iris) != "Species")])
+    as.matrix(penguins[penguin_predictors])
   )
 
   expect_equal(
@@ -50,14 +50,14 @@ test_that("random forest regressor works as expected", {
 })
 
 test_that("random forest classifier returns R probability columns", {
-  model <- cuda_ml_rand_forest(Species ~ ., iris, trees = 100L)
+  model <- cuda_ml_rand_forest(species ~ ., penguins, trees = 100L)
 
-  probabilities <- predict(model, iris, type = "prob")
-  per_tree <- cuda_ml_nvforest_predict_per_tree(model, iris)
+  probabilities <- predict(model, penguins, type = "prob")
+  per_tree <- cuda_ml_nvforest_predict_per_tree(model, penguins)
   info <- cuda_ml_nvforest_info(model)
 
-  expect_named(probabilities, paste0(".pred_", levels(iris$Species)))
-  expect_equal(rowSums(probabilities), rep(1, nrow(iris)))
+  expect_named(probabilities, paste0(".pred_", levels(penguins$species)))
+  expect_equal(rowSums(probabilities), rep(1, nrow(penguins)))
   expect_true(info$has_vector_leaves)
   expect_true(info$average_tree_output)
   expect_true(info$has_probability_output)
@@ -70,15 +70,15 @@ test_that("random forest classifier returns R probability columns", {
 })
 
 test_that("random forest binary classes honor the probability threshold", {
-  data <- iris[iris$Species != "virginica", ]
-  data$Species <- droplevels(data$Species)
-  model <- cuda_ml_rand_forest(Species ~ ., data, trees = 100L)
+  data <- penguins[penguins$species != "Gentoo", ]
+  data$species <- droplevels(data$species)
+  model <- cuda_ml_rand_forest(species ~ ., data, trees = 100L)
 
   probabilities <- predict(model, data, type = "prob")
   classes <- predict(model, data, type = "class", threshold = 0.25)
   expected <- factor(
-    levels(data$Species)[1L + (probabilities[[2L]] >= 0.25)],
-    levels = levels(data$Species)
+    levels(data$species)[1L + (probabilities[[2L]] >= 0.25)],
+    levels = levels(data$species)
   )
 
   expect_identical(classes$.pred_class, expected)
@@ -90,22 +90,22 @@ test_that("random forest classifier works as expected through parsnip", {
 
   cuda_ml_rf_model <- rand_forest(trees = 200, mode = "classification") |>
     set_engine("cuda.ml", bootstrap = FALSE) |>
-    fit(Species ~ ., data = iris)
+    fit(species ~ ., data = penguins)
   sklearn_rf_model <- sklearn$ensemble$RandomForestClassifier(
     n_estimators = 200L,
     bootstrap = FALSE
   )
   sklearn_rf_model$fit(
-    X = as.matrix(iris[which(names(iris) != "Species")]),
-    y = as.integer(iris$Species)
+    X = as.matrix(penguins[penguin_predictors]),
+    y = as.integer(penguins$species)
   )
 
   cuda_ml_preds <- predict(
     cuda_ml_rf_model,
-    iris[which(names(iris) != "Species")]
+    penguins[penguin_predictors]
   )
   sklearn_preds <- sklearn_rf_model$predict(
-    as.matrix(iris[which(names(iris) != "Species")])
+    as.matrix(penguins[penguin_predictors])
   )
 
   expect_equal(

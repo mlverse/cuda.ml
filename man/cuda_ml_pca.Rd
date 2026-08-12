@@ -73,7 +73,16 @@ place.
 library(cuda.ml)
 
 if (interactive() && cuda_ml_backend_info()$runtime_installed) {
-  iris.pca <- cuda_ml_pca(iris[1:4], n_components = 3)
-  print(iris.pca)
+  penguins <- palmerpenguins::penguins[
+    c(
+      "bill_length_mm", "bill_depth_mm", "flipper_length_mm",
+      "body_mass_g", "species"
+    )
+  ]
+  penguins <- penguins[complete.cases(penguins), ]
+  penguin_predictors <- scale(penguins[names(penguins) != "species"])
+
+  penguin_pca <- cuda_ml_pca(penguin_predictors, n_components = 3)
+  print(penguin_pca)
 }
 }

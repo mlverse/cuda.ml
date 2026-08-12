@@ -161,9 +161,18 @@ dimensional embedding of the input data.
 library(cuda.ml)
 
 if (interactive() && cuda_ml_backend_info()$runtime_installed) {
+  penguins <- palmerpenguins::penguins[
+    c(
+      "bill_length_mm", "bill_depth_mm", "flipper_length_mm",
+      "body_mass_g", "species"
+    )
+  ]
+  penguins <- penguins[complete.cases(penguins), ]
+  penguin_predictors <- scale(penguins[names(penguins) != "species"])
+
   model <- cuda_ml_umap(
-    x = iris[1:4],
-    y = iris[[5]],
+    x = penguin_predictors,
+    y = penguins$species,
     n_components = 2,
     n_epochs = 200,
     transform_input = TRUE

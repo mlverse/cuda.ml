@@ -140,9 +140,9 @@ test_that("linear and logistic models use explicit portable states", {
   skip_if_not(run_gpu_tests, "requires the GPU test environment")
 
   linear <- cuda_ml_ols(mpg ~ ., mtcars)
-  binary <- iris[iris$Species != "virginica", ]
-  binary$Species <- droplevels(binary$Species)
-  logistic <- cuda_ml_logistic_reg(Species ~ ., binary)
+  binary <- penguins[penguins$species != "Gentoo", ]
+  binary$species <- droplevels(binary$species)
+  logistic <- cuda_ml_logistic_reg(species ~ ., binary)
 
   restored_linear <- cuda_ml_unserialize(cuda_ml_serialize(linear))
   restored_logistic <- cuda_ml_unserialize(cuda_ml_serialize(logistic))

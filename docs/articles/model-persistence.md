@@ -101,9 +101,17 @@ restore. Use this when training a random forest on a GPU and deploying
 it on a CPU-only host.
 
 ``` r
+penguins <- palmerpenguins::penguins[
+  c(
+    "bill_length_mm", "bill_depth_mm", "flipper_length_mm",
+    "body_mass_g", "species"
+  )
+]
+penguins <- penguins[complete.cases(penguins), ]
+
 forest <- cuda_ml_rand_forest(
-  Species ~ .,
-  data = iris,
+  species ~ .,
+  data = penguins,
   trees = 100,
   seed = 1
 )

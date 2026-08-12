@@ -57,12 +57,18 @@ through the usual parsnip interface:
 library(cuda.ml)
 library(parsnip)
 
+penguins <- palmerpenguins::penguins[c(
+  "bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g",
+  "species"
+)]
+penguins <- penguins[complete.cases(penguins), ]
+
 forest_spec <- rand_forest(mtry = 2, trees = 500, min_n = 5) |>
   set_mode("classification") |>
   set_engine("cuda.ml", max_depth = 20L, seed = 1L)
 
-forest_fit <- fit(forest_spec, Species ~ ., data = iris)
-predict(forest_fit, iris[1:5, ], type = "prob")
+forest_fit <- fit(forest_spec, species ~ ., data = penguins)
+predict(forest_fit, penguins[1:5, ], type = "prob")
 ```
 
 Portable model arguments stay in the parsnip specification, while
@@ -78,10 +84,15 @@ own. For example, you can run k-means clustering with a single function
 call:
 
 ```r
-iris_x <- scale(iris[1:4])
-clusters <- cuda_ml_kmeans(iris_x, k = 3, seed = 1L)
+penguins <- palmerpenguins::penguins[c(
+  "bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g",
+  "species"
+)]
+penguins <- penguins[complete.cases(penguins), ]
+penguin_predictors <- scale(penguins[names(penguins) != "species"])
+clusters <- cuda_ml_kmeans(penguin_predictors, k = 3, seed = 1L)
 
-table(cluster = clusters$labels, species = iris$Species)
+table(cluster = clusters$labels, species = penguins$species)
 ```
 
 The direct API covers supervised models as well as clustering and
@@ -121,14 +132,20 @@ wrapped with the bundle package.
 The simplest file workflow passes a path directly:
 
 ```r
+penguins <- palmerpenguins::penguins[c(
+  "bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g",
+  "species"
+)]
+penguins <- penguins[complete.cases(penguins), ]
+
 model <- cuda_ml_rand_forest(
-  Species ~ .,
-  data = iris,
+  species ~ .,
+  data = penguins,
   trees = 100L,
   seed = 1L
 )
 
-cuda_ml_serialize(model, "iris-forest.cuda-ml")
+cuda_ml_serialize(model, "penguin-forest.cuda-ml")
 ```
 
 In another R process or deployment environment, prepare cuda.ml and
@@ -138,9 +155,13 @@ restore the fitted model:
 library(cuda.ml)
 
 cuda_ml_install()
-model <- cuda_ml_unserialize("iris-forest.cuda-ml")
+model <- cuda_ml_unserialize("penguin-forest.cuda-ml")
 
-predict(model, iris[1:5, -5], type = "class")
+penguins <- palmerpenguins::penguins[c(
+  "bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g"
+)]
+penguins <- penguins[complete.cases(penguins), ]
+predict(model, penguins[1:5, ], type = "class")
 ```
 
 File paths use gzip compression. Passing `connection = NULL` instead

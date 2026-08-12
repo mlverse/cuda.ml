@@ -67,6 +67,14 @@ more than one, and select the cuda.ml engine:
 library(cuda.ml)
 library(parsnip)
 
+penguins <- palmerpenguins::penguins[
+  c(
+    "bill_length_mm", "bill_depth_mm", "flipper_length_mm",
+    "body_mass_g", "species"
+  )
+]
+penguins <- penguins[complete.cases(penguins), ]
+
 forest_spec <- rand_forest(
   mtry = 2,
   trees = 500,
@@ -80,10 +88,10 @@ forest_spec <- rand_forest(
     seed = 1L
   )
 
-forest_fit <- fit(forest_spec, Species ~ ., data = iris)
+forest_fit <- fit(forest_spec, species ~ ., data = penguins)
 
-class_predictions <- predict(forest_fit, iris, type = "class")
-probabilities <- predict(forest_fit, iris, type = "prob")
+class_predictions <- predict(forest_fit, penguins, type = "class")
+probabilities <- predict(forest_fit, penguins, type = "prob")
 ```
 
 Arguments in the model specification, such as `mtry`, are common parsnip
@@ -111,11 +119,14 @@ library(recipes)
 library(workflows)
 
 set.seed(1)
-training_rows <- sample(seq_len(nrow(iris)), 120)
-iris_train <- iris[training_rows, ]
-iris_test <- iris[-training_rows, ]
+training_rows <- unlist(lapply(
+  split(seq_len(nrow(penguins)), penguins$species),
+  \(rows) sample(rows, floor(0.8 * length(rows)))
+))
+penguin_train <- penguins[training_rows, ]
+penguin_test <- penguins[-training_rows, ]
 
-iris_recipe <- recipe(Species ~ ., data = iris_train) |>
+penguin_recipe <- recipe(species ~ ., data = penguin_train) |>
   step_normalize(all_numeric_predictors())
 
 knn_spec <- nearest_neighbor(neighbors = 5, dist_power = 2) |>
@@ -127,17 +138,17 @@ knn_spec <- nearest_neighbor(neighbors = 5, dist_power = 2) |>
   )
 
 knn_workflow <- workflow() |>
-  add_recipe(iris_recipe) |>
+  add_recipe(penguin_recipe) |>
   add_model(knn_spec)
 
-knn_fit <- fit(knn_workflow, data = iris_train)
+knn_fit <- fit(knn_workflow, data = penguin_train)
 
 results <- cbind(
-  truth = iris_test$Species,
-  predict(knn_fit, iris_test, type = "class"),
-  predict(knn_fit, iris_test, type = "prob")
+  truth = penguin_test$species,
+  predict(knn_fit, penguin_test, type = "class"),
+  predict(knn_fit, penguin_test, type = "prob")
 )
-results
+head(results)
 ```
 
 The parsnip KNN engine defaults to `algo = "ivfflat"` and
@@ -238,8 +249,8 @@ specifications.
 
 ```{r direct-api}
 direct_fit <- cuda_ml_svm(
-  Species ~ .,
-  data = iris,
+  species ~ .,
+  data = penguins,
   kernel = "tanh",
   cost = 2,
   gamma = 0.1,
@@ -248,7 +259,7 @@ direct_fit <- cuda_ml_svm(
 
 direct_predictions <- predict(
   direct_fit,
-  iris[names(iris) != "Species"]
+  penguins[names(penguins) != "species"]
 )
 ```
 

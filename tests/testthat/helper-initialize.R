@@ -1,5 +1,14 @@
 backend_info <- cuda_ml_backend_info()
 native_platform_supported <- cuda_ml_supported_platform()
+penguin_predictors <- c(
+  "bill_length_mm",
+  "bill_depth_mm",
+  "flipper_length_mm",
+  "body_mass_g"
+)
+penguins <- palmerpenguins::penguins[c(penguin_predictors, "species")]
+penguins <- penguins[complete.cases(penguins), , drop = FALSE]
+scaled_penguin_predictors <- as.data.frame(scale(penguins[penguin_predictors]))
 nvidia_smi <- unname(Sys.which("nvidia-smi"))
 gpu_output <- character()
 if (nzchar(nvidia_smi)) {
@@ -46,11 +55,11 @@ if (run_gpu_tests) {
 if (run_gpu_tests) {
   reticulate::py_require("scikit-learn")
   sklearn <- reticulate::import("sklearn")
-  sklearn_iris_dataset <- list(
-    data = iris[, names(iris) != "Species"] |>
+  sklearn_penguins_dataset <- list(
+    data = scaled_penguin_predictors |>
       unname() |>
       as.matrix(),
-    target = as.integer(iris[["Species"]])
+    target = as.integer(penguins[["species"]])
   )
   sklearn_mtcars_dataset <- list(
     data = mtcars[, names(mtcars) != "mpg"] |>
@@ -164,24 +173,24 @@ gen_blobs <- function(blob_sz = 10, centers = NULL) {
   do.call(rbind, pts)
 }
 
-verify_iris_embedding <- function(embedding) {
+verify_penguins_embedding <- function(embedding) {
   set.seed(0L)
-  k_clust <- kmeans(embedding, centers = embedding[c(1, 51, 101), ])
+  initial_rows <- match(levels(penguins$species), penguins$species)
+  k_clust <- kmeans(embedding, centers = embedding[initial_rows, ])
 
   # i.e., one should be able to obtain a reasonably good clustering result
   # (as measured by the BSS/TSS ratio) within very few k-means iterations on the
   # embedding.
   expect_lte(k_clust$iter, 3)
-  expect_gte(k_clust$betweenss / k_clust$totss, 0.95)
+  expect_gte(k_clust$betweenss / k_clust$totss, 0.75)
 
-  # Use `iris$Species` to check pairs of data points from the same species are
-  # mostly in the same cluster, and those from different species are mostly in
-  # different clusters in the resulting clustering.
+  # Use the species labels to check that pairs from the same species are mostly
+  # in the same cluster, and pairs from different species are mostly separate.
   expect_gte(
     sklearn$metrics$adjusted_rand_score(
-      labels_true = iris$Species,
+      labels_true = penguins$species,
       labels_pred = k_clust$cluster
     ),
-    0.7
+    0.35
   )
 }

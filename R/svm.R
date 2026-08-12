@@ -70,13 +70,21 @@ svm_match_kernel_type <- function(
 #' if (interactive() && cuda_ml_backend_info()$runtime_installed) {
 #'   # Classification
 #'
+#'   penguins <- palmerpenguins::penguins[
+#'     c(
+#'       "bill_length_mm", "bill_depth_mm", "flipper_length_mm",
+#'       "body_mass_g", "species"
+#'     )
+#'   ]
+#'   penguins <- penguins[complete.cases(penguins), ]
+#'
 #'   model <- cuda_ml_svm(
-#'     formula = Species ~ .,
-#'     data = iris,
+#'     formula = species ~ .,
+#'     data = penguins,
 #'     kernel = "rbf"
 #'   )
 #'
-#'   predictions <- predict(model, iris[names(iris) != "Species"])
+#'   predictions <- predict(model, penguins[names(penguins) != "species"])
 #'
 #'   # Regression
 #'

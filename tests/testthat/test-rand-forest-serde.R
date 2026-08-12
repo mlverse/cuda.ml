@@ -1,9 +1,9 @@
 skip_if_not(run_gpu_tests, "requires the GPU test environment")
 
 test_that("random forest classifier state preserves classes and probabilities", {
-  model <- cuda_ml_rand_forest(Species ~ ., iris, trees = 200L)
+  model <- cuda_ml_rand_forest(species ~ ., penguins, trees = 200L)
   state <- cuda_ml_serialize(model)
-  data <- iris[names(iris) != "Species"]
+  data <- penguins[penguin_predictors]
 
   expect_identical(
     unserialize(state)$model_abi,

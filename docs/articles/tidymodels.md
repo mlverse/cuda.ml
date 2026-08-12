@@ -56,6 +56,14 @@ supports more than one, and select the cuda.ml engine:
 library(cuda.ml)
 library(parsnip)
 
+penguins <- palmerpenguins::penguins[
+  c(
+    "bill_length_mm", "bill_depth_mm", "flipper_length_mm",
+    "body_mass_g", "species"
+  )
+]
+penguins <- penguins[complete.cases(penguins), ]
+
 forest_spec <- rand_forest(
   mtry = 2,
   trees = 500,
@@ -69,10 +77,10 @@ forest_spec <- rand_forest(
     seed = 1L
   )
 
-forest_fit <- fit(forest_spec, Species ~ ., data = iris)
+forest_fit <- fit(forest_spec, species ~ ., data = penguins)
 
-class_predictions <- predict(forest_fit, iris, type = "class")
-probabilities <- predict(forest_fit, iris, type = "prob")
+class_predictions <- predict(forest_fit, penguins, type = "class")
+probabilities <- predict(forest_fit, penguins, type = "prob")
 ```
 
 Arguments in the model specification, such as `mtry`, are common parsnip
@@ -103,11 +111,14 @@ library(recipes)
 library(workflows)
 
 set.seed(1)
-training_rows <- sample(seq_len(nrow(iris)), 120)
-iris_train <- iris[training_rows, ]
-iris_test <- iris[-training_rows, ]
+training_rows <- unlist(lapply(
+  split(seq_len(nrow(penguins)), penguins$species),
+  \(rows) sample(rows, floor(0.8 * length(rows)))
+))
+penguin_train <- penguins[training_rows, ]
+penguin_test <- penguins[-training_rows, ]
 
-iris_recipe <- recipe(Species ~ ., data = iris_train) |>
+penguin_recipe <- recipe(species ~ ., data = penguin_train) |>
   step_normalize(all_numeric_predictors())
 
 knn_spec <- nearest_neighbor(neighbors = 5, dist_power = 2) |>
@@ -119,48 +130,24 @@ knn_spec <- nearest_neighbor(neighbors = 5, dist_power = 2) |>
   )
 
 knn_workflow <- workflow() |>
-  add_recipe(iris_recipe) |>
+  add_recipe(penguin_recipe) |>
   add_model(knn_spec)
 
-knn_fit <- fit(knn_workflow, data = iris_train)
+knn_fit <- fit(knn_workflow, data = penguin_train)
 
 results <- cbind(
-  truth = iris_test$Species,
-  predict(knn_fit, iris_test, type = "class"),
-  predict(knn_fit, iris_test, type = "prob")
+  truth = penguin_test$species,
+  predict(knn_fit, penguin_test, type = "class"),
+  predict(knn_fit, penguin_test, type = "prob")
 )
-results
-#>         truth .pred_class .pred_setosa .pred_versicolor .pred_virginica
-#> 1      setosa      setosa            1              0.0             0.0
-#> 2      setosa      setosa            1              0.0             0.0
-#> 3      setosa      setosa            1              0.0             0.0
-#> 4      setosa      setosa            1              0.0             0.0
-#> 5      setosa      setosa            1              0.0             0.0
-#> 6      setosa      setosa            1              0.0             0.0
-#> 7      setosa      setosa            1              0.0             0.0
-#> 8      setosa      setosa            1              0.0             0.0
-#> 9      setosa      setosa            1              0.0             0.0
-#> 10     setosa      setosa            1              0.0             0.0
-#> 11     setosa      setosa            1              0.0             0.0
-#> 12 versicolor  versicolor            0              1.0             0.0
-#> 13 versicolor  versicolor            0              1.0             0.0
-#> 14 versicolor  versicolor            0              0.6             0.4
-#> 15 versicolor  versicolor            0              1.0             0.0
-#> 16 versicolor  versicolor            0              1.0             0.0
-#> 17 versicolor  versicolor            0              0.6             0.4
-#> 18 versicolor  versicolor            0              1.0             0.0
-#> 19 versicolor  versicolor            0              1.0             0.0
-#> 20 versicolor  versicolor            0              1.0             0.0
-#> 21 versicolor  versicolor            0              1.0             0.0
-#> 22 versicolor  versicolor            0              1.0             0.0
-#> 23 versicolor  versicolor            0              1.0             0.0
-#> 24  virginica   virginica            0              0.0             1.0
-#> 25  virginica  versicolor            0              0.8             0.2
-#> 26  virginica   virginica            0              0.2             0.8
-#> 27  virginica   virginica            0              0.2             0.8
-#> 28  virginica   virginica            0              0.4             0.6
-#> 29  virginica   virginica            0              0.0             1.0
-#> 30  virginica  versicolor            0              0.6             0.4
+head(results)
+#>    truth .pred_class .pred_Adelie .pred_Chinstrap .pred_Gentoo
+#> 1 Adelie      Adelie            1               0            0
+#> 2 Adelie      Adelie            1               0            0
+#> 3 Adelie      Adelie            1               0            0
+#> 4 Adelie      Adelie            1               0            0
+#> 5 Adelie      Adelie            1               0            0
+#> 6 Adelie      Adelie            1               0            0
 ```
 
 The parsnip KNN engine defaults to `algo = "ivfflat"` and
@@ -272,8 +259,8 @@ SVM specifications.
 
 ``` r
 direct_fit <- cuda_ml_svm(
-  Species ~ .,
-  data = iris,
+  species ~ .,
+  data = penguins,
   kernel = "tanh",
   cost = 2,
   gamma = 0.1,
@@ -282,7 +269,7 @@ direct_fit <- cuda_ml_svm(
 
 direct_predictions <- predict(
   direct_fit,
-  iris[names(iris) != "Species"]
+  penguins[names(penguins) != "species"]
 )
 ```
 

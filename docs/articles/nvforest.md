@@ -53,17 +53,25 @@ as imported models.
 library(cuda.ml)
 cuda_ml_install()
 
+penguins <- palmerpenguins::penguins[
+  c(
+    "bill_length_mm", "bill_depth_mm", "flipper_length_mm",
+    "body_mass_g", "species"
+  )
+]
+penguins <- penguins[complete.cases(penguins), ]
+
 forest <- cuda_ml_rand_forest(
-  Species ~ .,
-  data = iris,
+  species ~ .,
+  data = penguins,
   trees = 500,
   seed = 1
 )
 
-dir.create("iris-forest")
+dir.create("penguin-forest")
 cuda_ml_nvforest_export(
   forest,
-  directory = "iris-forest",
+  directory = "penguin-forest",
   prefix = "model"
 )
 ```
@@ -76,14 +84,23 @@ backend:
 library(cuda.ml)
 cuda_ml_install(device = "cpu")
 
+penguins <- palmerpenguins::penguins[
+  c(
+    "bill_length_mm", "bill_depth_mm", "flipper_length_mm",
+    "body_mass_g", "species"
+  )
+]
+penguins <- penguins[complete.cases(penguins), ]
+
 forest <- cuda_ml_nvforest_import(
-  directory = "iris-forest",
+  directory = "penguin-forest",
   prefix = "model",
   device = "cpu"
 )
 
-predict(forest, iris[1:5, -5], type = "class")
-predict(forest, iris[1:5, -5], type = "prob")
+penguin_predictors <- penguins[names(penguins) != "species"]
+predict(forest, penguin_predictors[1:5, ], type = "class")
+predict(forest, penguin_predictors[1:5, ], type = "prob")
 ```
 
 The checkpoint is a standard, device-neutral Treelite checkpoint

@@ -6,9 +6,12 @@ tsvd_model <- sklearn$decomposition$TruncatedSVD(
   n_components = 2L,
   algorithm = "arpack"
 )
-sklearn_tsvd_model <- tsvd_model$fit(sklearn_iris_dataset$data)
+sklearn_tsvd_model <- tsvd_model$fit(sklearn_penguins_dataset$data)
 
-cuda_ml_tsvd_model <- cuda_ml_tsvd(iris[1:4], n_components = 2)
+cuda_ml_tsvd_model <- cuda_ml_tsvd(
+  scaled_penguin_predictors,
+  n_components = 2
+)
 
 # SVD components are only defined up to sign — align signs before comparing.
 # For each component row, flip the cuML sign to match sklearn if the first
@@ -55,7 +58,9 @@ test_that("cuda_ml_tsvd() works as expected", {
   )
 
   # Transformed data columns also have sign ambiguity matching the components
-  sklearn_transformed <- sklearn_tsvd_model$transform(sklearn_iris_dataset$data)
+  sklearn_transformed <- sklearn_tsvd_model$transform(
+    sklearn_penguins_dataset$data
+  )
   cuda_transformed <- cuda_ml_tsvd_model$transformed_data
   for (j in seq_len(ncol(cuda_transformed))) {
     if (sign(cuda_transformed[1, j]) != sign(sklearn_transformed[1, j])) {
@@ -77,7 +82,7 @@ test_that("cuda_ml_inverse_transform() works as expected for TSVD models", {
     cuda_ml_tsvd_model$transformed_data
   )
   sklearn_reconstructed <- sklearn_tsvd_model$inverse_transform(
-    sklearn_tsvd_model$transform(sklearn_iris_dataset$data)
+    sklearn_tsvd_model$transform(sklearn_penguins_dataset$data)
   )
   expect_equal(
     cuda_ml_reconstructed,
@@ -88,11 +93,14 @@ test_that("cuda_ml_inverse_transform() works as expected for TSVD models", {
 })
 
 test_that("TSVD transformations use the current batch size", {
-  batch_sizes <- c(3L, nrow(sklearn_iris_dataset$data) + 7L)
+  batch_sizes <- c(3L, nrow(sklearn_penguins_dataset$data) + 7L)
 
   for (batch_size in batch_sizes) {
-    rows <- rep(seq_len(nrow(sklearn_iris_dataset$data)), length.out = batch_size)
-    new_data <- sklearn_iris_dataset$data[rows, , drop = FALSE]
+    rows <- rep(
+      seq_len(nrow(sklearn_penguins_dataset$data)),
+      length.out = batch_size
+    )
+    new_data <- sklearn_penguins_dataset$data[rows, , drop = FALSE]
     expected_transformed <- new_data %*% t(cuda_ml_tsvd_model$components)
 
     transformed <- cuda_ml_transform(cuda_ml_tsvd_model, new_data)
@@ -126,7 +134,7 @@ test_that("TSVD transformations reject incompatible input widths", {
   expect_error(
     cuda_ml_transform(
       cuda_ml_tsvd_model,
-      cbind(sklearn_iris_dataset$data, extra = 0)
+      cbind(sklearn_penguins_dataset$data, extra = 0)
     ),
     "same number of columns"
   )

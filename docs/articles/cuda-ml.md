@@ -107,16 +107,24 @@ predictors to the backend.
 ## Compute a lower-dimensional representation
 
 Unsupervised and transformation functions take observations in rows and
-numeric features in columns.
-[`cuda_ml_pca()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_pca.md)
-mean-centers the features, fits the principal components, and, by
-default, transforms the input data:
+numeric features in columns. Because the measurements below use
+different units, the example scales them before calling
+[`cuda_ml_pca()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_pca.md).
+The function mean-centers the scaled features, fits the principal
+components, and, by default, transforms the input data:
 
 ``` r
-iris_predictors <- iris[names(iris) != "Species"]
+penguins <- palmerpenguins::penguins[
+  c(
+    "bill_length_mm", "bill_depth_mm", "flipper_length_mm",
+    "body_mass_g", "species"
+  )
+]
+penguins <- penguins[complete.cases(penguins), ]
+penguin_predictors <- scale(penguins[names(penguins) != "species"])
 
 pca_fit <- cuda_ml_pca(
-  iris_predictors,
+  penguin_predictors,
   n_components = 2
 )
 
