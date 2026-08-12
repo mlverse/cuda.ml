@@ -107,8 +107,8 @@ predictors to the backend.
 ## Compute a lower-dimensional representation
 
 Unsupervised and transformation functions take observations in rows and
-numeric features in columns. Because the measurements below use
-different units, the example scales them before calling
+numeric features in columns. Because the measurements below have
+different ranges, the example scales them before calling
 [`cuda_ml_pca()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_pca.md).
 The function mean-centers the scaled features, fits the principal
 components, and, by default, transforms the input data:

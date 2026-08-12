@@ -169,8 +169,8 @@ the backend.</p>
 <h2 id="compute-a-lower-dimensional-representation">Compute a lower-dimensional representation<a class="anchor" aria-label="anchor" href="#compute-a-lower-dimensional-representation"></a>
 </h2>
 <p>Unsupervised and transformation functions take observations in rows
-and numeric features in columns. Because the measurements below use
-different units, the example scales them before calling
+and numeric features in columns. Because the measurements below have
+different ranges, the example scales them before calling
 <code><a href="../reference/cuda_ml_pca.html">cuda_ml_pca()</a></code>. The function mean-centers the scaled
 features, fits the principal components, and, by default, transforms the
 input data:</p>
