@@ -19,7 +19,7 @@ to save and restore supported fitted models.
 For most users, setup is two commands:
 
 ```r
-install.packages(c("cuda.ml", "ggplot2", "modeldata", "parsnip"))
+install.packages("cuda.ml")
 cuda.ml::cuda_ml_install()
 ```
 
