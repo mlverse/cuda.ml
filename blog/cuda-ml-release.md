@@ -19,7 +19,7 @@ to save and restore supported fitted models.
 For most users, setup is two commands:
 
 ```r
-install.packages(c("cuda.ml", "modeldata", "parsnip"))
+install.packages(c("cuda.ml", "ggplot2", "modeldata", "parsnip"))
 cuda.ml::cuda_ml_install()
 ```
 
@@ -81,18 +81,18 @@ prefer a function-oriented workflow or want to use the package on its
 own.
 
 ```r
-clusters <- cuda_ml_kmeans(scale(faithful), k = 2, seed = 1L)
+library(ggplot2)
 
-plot(
-  faithful,
-  col = hcl.colors(2, "Dark 3")[clusters$labels + 1L],
-  pch = 19,
-  cex = 1.15,
-  xlab = "Eruption duration (minutes)",
-  ylab = "Waiting time (minutes)",
-  bty = "l",
-  las = 1
-)
+clusters <- cuda_ml_kmeans(scale(faithful), k = 2, seed = 1L)
+faithful$cluster <- factor(clusters$labels)
+
+ggplot(faithful, aes(eruptions, waiting, color = cluster)) +
+  geom_point(size = 2.5) +
+  labs(
+    x = "Eruption duration (minutes)",
+    y = "Waiting time (minutes)"
+  ) +
+  theme_minimal()
 ```
 
 The direct API covers supervised models as well as clustering and
