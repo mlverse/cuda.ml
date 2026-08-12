@@ -65,25 +65,17 @@ functions as imported models.
 library(cuda.ml)
 cuda_ml_install()
 
-penguins <- palmerpenguins::penguins[
-  c(
-    "bill_length_mm", "bill_depth_mm", "flipper_length_mm",
-    "body_mass_g", "species"
-  )
-]
-penguins <- penguins[complete.cases(penguins), ]
-
 forest <- cuda_ml_rand_forest(
-  species ~ .,
-  data = penguins,
+  class ~ .,
+  data = modeldata::hpc_data,
   trees = 500,
   seed = 1
 )
 
-dir.create("penguin-forest")
+dir.create("hpc-forest")
 cuda_ml_nvforest_export(
   forest,
-  directory = "penguin-forest",
+  directory = "hpc-forest",
   prefix = "model"
 )
 ```
@@ -95,23 +87,17 @@ files to a CPU host. That host needs only the CPU inference backend:
 library(cuda.ml)
 cuda_ml_install(device = "cpu")
 
-penguins <- palmerpenguins::penguins[
-  c(
-    "bill_length_mm", "bill_depth_mm", "flipper_length_mm",
-    "body_mass_g", "species"
-  )
-]
-penguins <- penguins[complete.cases(penguins), ]
-
 forest <- cuda_ml_nvforest_import(
-  directory = "penguin-forest",
+  directory = "hpc-forest",
   prefix = "model",
   device = "cpu"
 )
 
-penguin_predictors <- penguins[names(penguins) != "species"]
-predict(forest, penguin_predictors[1:5, ], type = "class")
-predict(forest, penguin_predictors[1:5, ], type = "prob")
+hpc_predictors <- modeldata::hpc_data[
+  names(modeldata::hpc_data) != "class"
+]
+predict(forest, hpc_predictors[1:5, ], type = "class")
+predict(forest, hpc_predictors[1:5, ], type = "prob")
 ```
 
 The checkpoint is a standard, device-neutral Treelite checkpoint containing

@@ -161,24 +161,19 @@ dimensional embedding of the input data.
 library(cuda.ml)
 
 if (interactive() && cuda_ml_backend_info()$runtime_installed) {
-  penguins <- palmerpenguins::penguins[
-    c(
-      "bill_length_mm", "bill_depth_mm", "flipper_length_mm",
-      "body_mass_g", "species"
-    )
-  ]
-  penguins <- penguins[complete.cases(penguins), ]
-  penguin_predictors <- scale(penguins[names(penguins) != "species"])
+  oil_predictors <- scale(
+    modeldata::oils[names(modeldata::oils) != "class"]
+  )
 
   model <- cuda_ml_umap(
-    x = penguin_predictors,
-    y = penguins$species,
+    x = oil_predictors,
+    y = modeldata::oils$class,
     n_components = 2,
     n_epochs = 200,
     transform_input = TRUE
   )
 
   set.seed(0L)
-  print(kmeans(model$transformed_data, iter.max = 100, centers = 3))
+  print(kmeans(model$transformed_data, iter.max = 100, centers = 7))
 }
 ```

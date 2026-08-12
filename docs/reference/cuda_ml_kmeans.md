@@ -56,18 +56,13 @@ cluster. Each centroid will be a column within the `centroids` matrix.
 library(cuda.ml)
 
 if (interactive() && cuda_ml_backend_info()$runtime_installed) {
-  penguins <- palmerpenguins::penguins[
-    c(
-      "bill_length_mm", "bill_depth_mm", "flipper_length_mm",
-      "body_mass_g", "species"
-    )
-  ]
-  penguins <- penguins[complete.cases(penguins), ]
-  penguin_predictors <- scale(penguins[names(penguins) != "species"])
+  oil_predictors <- scale(
+    modeldata::oils[names(modeldata::oils) != "class"]
+  )
 
   kclust <- cuda_ml_kmeans(
-    penguin_predictors,
-    k = 3, max_iters = 100
+    oil_predictors,
+    k = 7, max_iters = 100
   )
 
   print(kclust)

@@ -114,17 +114,12 @@ The function mean-centers the scaled features, fits the principal
 components, and, by default, transforms the input data:
 
 ``` r
-penguins <- palmerpenguins::penguins[
-  c(
-    "bill_length_mm", "bill_depth_mm", "flipper_length_mm",
-    "body_mass_g", "species"
-  )
-]
-penguins <- penguins[complete.cases(penguins), ]
-penguin_predictors <- scale(penguins[names(penguins) != "species"])
+oil_predictors <- scale(
+  modeldata::oils[names(modeldata::oils) != "class"]
+)
 
 pca_fit <- cuda_ml_pca(
-  penguin_predictors,
+  oil_predictors,
   n_components = 2
 )
 

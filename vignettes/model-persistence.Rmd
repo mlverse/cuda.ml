@@ -107,17 +107,9 @@ Use this when training a random forest on a GPU and deploying it on a CPU-only
 host.
 
 ```{r bundle-nvforest}
-penguins <- palmerpenguins::penguins[
-  c(
-    "bill_length_mm", "bill_depth_mm", "flipper_length_mm",
-    "body_mass_g", "species"
-  )
-]
-penguins <- penguins[complete.cases(penguins), ]
-
 forest <- cuda_ml_rand_forest(
-  species ~ .,
-  data = penguins,
+  class ~ .,
+  data = modeldata::hpc_data,
   trees = 100,
   seed = 1
 )

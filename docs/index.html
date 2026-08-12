@@ -166,52 +166,36 @@
 <div class="section level3">
 <h3 id="using-cudaml-for-supervised-ml-tasks-through-parsnip">Using {cuda.ml} for supervised ML tasks through {parsnip}<a class="anchor" aria-label="anchor" href="#using-cudaml-for-supervised-ml-tasks-through-parsnip"></a>
 </h3>
-<p>{cuda.ml} provides {parsnip} bindings for supervised ML algorithms such as <code>linear_reg</code>, <code>logistic_reg</code>, <code>multinom_reg</code>, <code>rand_forest</code>, <code>nearest_neighbor</code>, <code>svm_rbf</code>, <code>svm_poly</code>, and <code>svm_linear</code>. Install {parsnip}, {recipes}, {workflows}, and {palmerpenguins} separately to run the supervised example below.</p>
+<p>{cuda.ml} provides {parsnip} bindings for supervised ML algorithms such as <code>linear_reg</code>, <code>logistic_reg</code>, <code>multinom_reg</code>, <code>rand_forest</code>, <code>nearest_neighbor</code>, <code>svm_rbf</code>, <code>svm_poly</code>, and <code>svm_linear</code>. Install {parsnip} and {modeldata} separately to run the examples below.</p>
 <p>Regularized models follow tidymodels conventions for <code>penalty</code> and <code>mixture</code>. When predictors need scaling, learn and apply it explicitly with a {recipes} step such as <code>step_normalize(all_numeric_predictors())</code>.</p>
 <p>The following example shows how {cuda.ml} can be used as a {parsnip} engine to build a SVM classifier.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span>, warn.conflicts <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/parsnip" class="external-link">parsnip</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/recipes" class="external-link">recipes</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/workflows" class="external-link">workflows</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">11235</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">penguins</span> <span class="op">&lt;-</span> <span class="fu">palmerpenguins</span><span class="fu">::</span><span class="va"><a href="https://allisonhorst.github.io/palmerpenguins/reference/penguins.html" class="external-link">penguins</a></span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>  <span class="st">"bill_length_mm"</span>, <span class="st">"bill_depth_mm"</span>, <span class="st">"flipper_length_mm"</span>, <span class="st">"body_mass_g"</span>,</span>
-<span>  <span class="st">"species"</span></span>
-<span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="va">penguins</span> <span class="op">&lt;-</span> <span class="va">penguins</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html" class="external-link">complete.cases</a></span><span class="op">(</span><span class="va">penguins</span><span class="op">)</span>, <span class="op">]</span></span>
+<span><span class="va">two_class</span> <span class="op">&lt;-</span> <span class="fu">modeldata</span><span class="fu">::</span><span class="va"><a href="https://modeldata.tidymodels.org/reference/two_class_dat.html" class="external-link">two_class_dat</a></span></span>
 <span></span>
-<span><span class="va">train_inds</span> <span class="op">&lt;-</span> <span class="va">penguins</span> <span class="op">|&gt;</span></span>
+<span><span class="va">train_inds</span> <span class="op">&lt;-</span> <span class="va">two_class</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>ind <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/row_number.html" class="external-link">row_number</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">species</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">Class</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_sample</a></span><span class="op">(</span>prop <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">train_data</span> <span class="op">&lt;-</span> <span class="va">penguins</span><span class="op">[</span><span class="va">train_inds</span><span class="op">$</span><span class="va">ind</span>, <span class="op">]</span></span>
-<span><span class="va">test_data</span> <span class="op">&lt;-</span> <span class="va">penguins</span><span class="op">[</span><span class="op">-</span><span class="va">train_inds</span><span class="op">$</span><span class="va">ind</span>, <span class="op">]</span></span>
+<span><span class="va">train_data</span> <span class="op">&lt;-</span> <span class="va">two_class</span><span class="op">[</span><span class="va">train_inds</span><span class="op">$</span><span class="va">ind</span>, <span class="op">]</span></span>
+<span><span class="va">test_data</span> <span class="op">&lt;-</span> <span class="va">two_class</span><span class="op">[</span><span class="op">-</span><span class="va">train_inds</span><span class="op">$</span><span class="va">ind</span>, <span class="op">]</span></span>
 <span></span>
-<span><span class="va">penguin_recipe</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html" class="external-link">recipe</a></span><span class="op">(</span><span class="va">species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">train_data</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_normalize.html" class="external-link">step_normalize</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html" class="external-link">all_numeric_predictors</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">model_spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://parsnip.tidymodels.org/reference/svm_rbf.html" class="external-link">svm_rbf</a></span><span class="op">(</span>mode <span class="op">=</span> <span class="st">"classification"</span>, rbf_sigma <span class="op">=</span> <span class="fl">10</span>, cost <span class="op">=</span> <span class="fl">50</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://parsnip.tidymodels.org/reference/set_engine.html" class="external-link">set_engine</a></span><span class="op">(</span><span class="st">"cuda.ml"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://workflows.tidymodels.org/reference/workflow.html" class="external-link">workflow</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://workflows.tidymodels.org/reference/add_recipe.html" class="external-link">add_recipe</a></span><span class="op">(</span><span class="va">penguin_recipe</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://workflows.tidymodels.org/reference/add_model.html" class="external-link">add_model</a></span><span class="op">(</span><span class="va">model_spec</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://generics.r-lib.org/reference/fit.html" class="external-link">fit</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">train_data</span><span class="op">)</span></span>
+<span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://parsnip.tidymodels.org/reference/svm_rbf.html" class="external-link">svm_rbf</a></span><span class="op">(</span>mode <span class="op">=</span> <span class="st">"classification"</span>, rbf_sigma <span class="op">=</span> <span class="fl">10</span>, cost <span class="op">=</span> <span class="fl">50</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://parsnip.tidymodels.org/reference/set_engine.html" class="external-link">set_engine</a></span><span class="op">(</span><span class="st">"cuda.ml"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://generics.r-lib.org/reference/fit.html" class="external-link">fit</a></span><span class="op">(</span><span class="va">Class</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">train_data</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">test_data</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">preds</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_cols.html" class="external-link">bind_cols</a></span><span class="op">(</span><span class="va">test_data</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">species</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">yardstick</span><span class="fu">::</span><span class="fu"><a href="https://yardstick.tidymodels.org/reference/conf_mat.html" class="external-link">conf_mat</a></span><span class="op">(</span>truth <span class="op">=</span> <span class="va">species</span>, estimate <span class="op">=</span> <span class="va">.pred_class</span><span class="op">)</span></span>
-<span><span class="co">#&gt;            Truth</span></span>
-<span><span class="co">#&gt; Prediction  Adelie Chinstrap Gentoo</span></span>
-<span><span class="co">#&gt;   Adelie        45         1      0</span></span>
-<span><span class="co">#&gt;   Chinstrap      1        20      0</span></span>
-<span><span class="co">#&gt;   Gentoo         0         0     37</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span>truth <span class="op">=</span> <span class="va">test_data</span><span class="op">$</span><span class="va">Class</span>, estimate <span class="op">=</span> <span class="va">preds</span><span class="op">$</span><span class="va">.pred_class</span><span class="op">)</span></span>
+<span><span class="co">#&gt;         estimate</span></span>
+<span><span class="co">#&gt; truth    Class1 Class2</span></span>
+<span><span class="co">#&gt;   Class1    115     17</span></span>
+<span><span class="co">#&gt;   Class2     22     85</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="using-cudaml-for-unsupervised-ml-tasks">Using {cuda.ml} for unsupervised ML tasks<a class="anchor" aria-label="anchor" href="#using-cudaml-for-unsupervised-ml-tasks"></a>
@@ -220,40 +204,42 @@
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">penguins</span> <span class="op">&lt;-</span> <span class="fu">palmerpenguins</span><span class="fu">::</span><span class="va"><a href="https://allisonhorst.github.io/palmerpenguins/reference/penguins.html" class="external-link">penguins</a></span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>  <span class="st">"bill_length_mm"</span>, <span class="st">"bill_depth_mm"</span>, <span class="st">"flipper_length_mm"</span>, <span class="st">"body_mass_g"</span>,</span>
-<span>  <span class="st">"species"</span></span>
-<span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="va">penguins</span> <span class="op">&lt;-</span> <span class="va">penguins</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html" class="external-link">complete.cases</a></span><span class="op">(</span><span class="va">penguins</span><span class="op">)</span>, <span class="op">]</span></span>
-<span><span class="va">penguin_predictors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="va">penguins</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">penguins</span><span class="op">)</span> <span class="op">!=</span> <span class="st">"species"</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">oils</span> <span class="op">&lt;-</span> <span class="fu">modeldata</span><span class="fu">::</span><span class="va"><a href="https://modeldata.tidymodels.org/reference/oils.html" class="external-link">oils</a></span></span>
+<span><span class="va">oil_predictors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="va">oils</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">oils</span><span class="op">)</span> <span class="op">!=</span> <span class="st">"class"</span><span class="op">]</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">clustering</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cuda_ml_kmeans.html">cuda_ml_kmeans</a></span><span class="op">(</span></span>
-<span>  <span class="va">penguin_predictors</span>,</span>
-<span>  k <span class="op">=</span> <span class="fl">3</span>, max_iters <span class="op">=</span> <span class="fl">100</span>, seed <span class="op">=</span> <span class="fl">0L</span></span>
+<span>  <span class="va">oil_predictors</span>,</span>
+<span>  k <span class="op">=</span> <span class="fl">7</span>, max_iters <span class="op">=</span> <span class="fl">100</span>, seed <span class="op">=</span> <span class="fl">0L</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Expected outcome: there is strong correlation</span></span>
-<span><span class="co"># between cluster labels and `penguins$species`</span></span>
+<span><span class="co"># The clusters largely align with oil type.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">clustering</span><span class="op">)</span></span>
 <span><span class="co">#&gt; List of 4</span></span>
-<span><span class="co">#&gt;  $ labels   : int [1:342] 2 2 2 2 2 2 2 2 2 2 ...</span></span>
-<span><span class="co">#&gt;  $ centroids: num [1:3, 1:4] 0.905 0.656 -0.967 0.764 -1.098 ...</span></span>
-<span><span class="co">#&gt;  $ inertia  : num 380</span></span>
+<span><span class="co">#&gt;  $ labels   : int [1:96] 0 0 0 0 0 0 0 0 0 0 ...</span></span>
+<span><span class="co">#&gt;  $ centroids: num [1:7, 1:7] 0.825 -1.015 -1.505 1.097 0.557 ...</span></span>
+<span><span class="co">#&gt;  $ inertia  : num 135</span></span>
 <span><span class="co">#&gt;  $ n_iter   : int 100</span></span>
 <span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span>, warn.conflicts <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>cluster_id <span class="op">=</span> <span class="va">clustering</span><span class="op">$</span><span class="va">labels</span>, species <span class="op">=</span> <span class="va">penguins</span><span class="op">$</span><span class="va">species</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>cluster_id <span class="op">=</span> <span class="va">clustering</span><span class="op">$</span><span class="va">labels</span>, oil_type <span class="op">=</span> <span class="va">oils</span><span class="op">$</span><span class="va">class</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">cluster_id</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">species</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 5 × 3</span></span>
-<span><span class="co">#&gt; # Groups:   cluster_id [3]</span></span>
-<span><span class="co">#&gt;   cluster_id species       n</span></span>
-<span><span class="co">#&gt;        &lt;int&gt; &lt;fct&gt;     &lt;int&gt;</span></span>
-<span><span class="co">#&gt; 1          0 Adelie        7</span></span>
-<span><span class="co">#&gt; 2          0 Chinstrap    63</span></span>
-<span><span class="co">#&gt; 3          1 Gentoo      123</span></span>
-<span><span class="co">#&gt; 4          2 Adelie      144</span></span>
-<span><span class="co">#&gt; 5          2 Chinstrap     5</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">oil_type</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 12 × 3</span></span>
+<span><span class="co">#&gt; # Groups:   cluster_id [7]</span></span>
+<span><span class="co">#&gt;    cluster_id oil_type      n</span></span>
+<span><span class="co">#&gt;         &lt;int&gt; &lt;fct&gt;     &lt;int&gt;</span></span>
+<span><span class="co">#&gt;  1          0 pumpkin      34</span></span>
+<span><span class="co">#&gt;  2          1 pumpkin       2</span></span>
+<span><span class="co">#&gt;  3          1 sunflower    25</span></span>
+<span><span class="co">#&gt;  4          2 rapeseed      6</span></span>
+<span><span class="co">#&gt;  5          3 olive         6</span></span>
+<span><span class="co">#&gt;  6          4 corn          2</span></span>
+<span><span class="co">#&gt;  7          4 pumpkin       1</span></span>
+<span><span class="co">#&gt;  8          4 soybean      11</span></span>
+<span><span class="co">#&gt;  9          5 sunflower     1</span></span>
+<span><span class="co">#&gt; 10          6 olive         1</span></span>
+<span><span class="co">#&gt; 11          6 peanut        3</span></span>
+<span><span class="co">#&gt; 12          6 rapeseed      4</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="using-cudaml-for-visualizations">Using {cuda.ml} for visualizations<a class="anchor" aria-label="anchor" href="#using-cudaml-for-visualizations"></a>

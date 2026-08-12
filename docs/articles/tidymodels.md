@@ -49,27 +49,19 @@ loss.
 
 ## Set the engine
 
-Create a parsnip specification, set its mode when the specification
-supports more than one, and select the cuda.ml engine:
+Set the mode and common arguments in a parsnip specification, then
+select the cuda.ml engine:
 
 ``` r
 library(cuda.ml)
 library(parsnip)
 
-penguins <- palmerpenguins::penguins[
-  c(
-    "bill_length_mm", "bill_depth_mm", "flipper_length_mm",
-    "body_mass_g", "species"
-  )
-]
-penguins <- penguins[complete.cases(penguins), ]
-
 forest_spec <- rand_forest(
+  mode = "classification",
   mtry = 2,
   trees = 500,
   min_n = 5
 ) |>
-  set_mode("classification") |>
   set_engine(
     "cuda.ml",
     max_depth = 20L,
@@ -77,10 +69,10 @@ forest_spec <- rand_forest(
     seed = 1L
   )
 
-forest_fit <- fit(forest_spec, species ~ ., data = penguins)
+forest_fit <- fit(forest_spec, class ~ ., data = modeldata::hpc_data)
 
-class_predictions <- predict(forest_fit, penguins, type = "class")
-probabilities <- predict(forest_fit, penguins, type = "prob")
+class_predictions <- predict(forest_fit, modeldata::hpc_data, type = "class")
+probabilities <- predict(forest_fit, modeldata::hpc_data, type = "prob")
 ```
 
 Arguments in the model specification, such as `mtry`, are common parsnip
@@ -111,18 +103,21 @@ library(recipes)
 library(workflows)
 
 set.seed(1)
-training_rows <- unlist(lapply(
-  split(seq_len(nrow(penguins)), penguins$species),
-  \(rows) sample(rows, floor(0.8 * length(rows)))
-))
-penguin_train <- penguins[training_rows, ]
-penguin_test <- penguins[-training_rows, ]
+training_rows <- sample(
+  seq_len(nrow(modeldata::two_class_dat)),
+  floor(0.8 * nrow(modeldata::two_class_dat))
+)
+training_data <- modeldata::two_class_dat[training_rows, ]
+testing_data <- modeldata::two_class_dat[-training_rows, ]
 
-penguin_recipe <- recipe(species ~ ., data = penguin_train) |>
+classifier_recipe <- recipe(Class ~ ., data = training_data) |>
   step_normalize(all_numeric_predictors())
 
-knn_spec <- nearest_neighbor(neighbors = 5, dist_power = 2) |>
-  set_mode("classification") |>
+knn_spec <- nearest_neighbor(
+  mode = "classification",
+  neighbors = 5,
+  dist_power = 2
+) |>
   set_engine(
     "cuda.ml",
     algo = "brute",
@@ -130,24 +125,24 @@ knn_spec <- nearest_neighbor(neighbors = 5, dist_power = 2) |>
   )
 
 knn_workflow <- workflow() |>
-  add_recipe(penguin_recipe) |>
+  add_recipe(classifier_recipe) |>
   add_model(knn_spec)
 
-knn_fit <- fit(knn_workflow, data = penguin_train)
+knn_fit <- fit(knn_workflow, data = training_data)
 
 results <- cbind(
-  truth = penguin_test$species,
-  predict(knn_fit, penguin_test, type = "class"),
-  predict(knn_fit, penguin_test, type = "prob")
+  truth = testing_data$Class,
+  predict(knn_fit, testing_data, type = "class"),
+  predict(knn_fit, testing_data, type = "prob")
 )
 head(results)
-#>    truth .pred_class .pred_Adelie .pred_Chinstrap .pred_Gentoo
-#> 1 Adelie      Adelie            1               0            0
-#> 2 Adelie      Adelie            1               0            0
-#> 3 Adelie      Adelie            1               0            0
-#> 4 Adelie      Adelie            1               0            0
-#> 5 Adelie      Adelie            1               0            0
-#> 6 Adelie      Adelie            1               0            0
+#>    truth .pred_class .pred_Class1 .pred_Class2
+#> 1 Class1      Class1          0.8          0.2
+#> 2 Class2      Class2          0.0          1.0
+#> 3 Class1      Class1          1.0          0.0
+#> 4 Class2      Class2          0.2          0.8
+#> 5 Class1      Class1          1.0          0.0
+#> 6 Class1      Class1          0.6          0.4
 ```
 
 The parsnip KNN engine defaults to `algo = "ivfflat"` and
@@ -259,8 +254,8 @@ SVM specifications.
 
 ``` r
 direct_fit <- cuda_ml_svm(
-  species ~ .,
-  data = penguins,
+  Class ~ .,
+  data = modeldata::two_class_dat,
   kernel = "tanh",
   cost = 2,
   gamma = 0.1,
@@ -269,7 +264,7 @@ direct_fit <- cuda_ml_svm(
 
 direct_predictions <- predict(
   direct_fit,
-  penguins[names(penguins) != "species"]
+  modeldata::two_class_dat[c("A", "B")]
 )
 ```
 

@@ -76,16 +76,11 @@ A TSVD model object with the following attributes:
 library(cuda.ml)
 
 if (interactive() && cuda_ml_backend_info()$runtime_installed) {
-  penguins <- palmerpenguins::penguins[
-    c(
-      "bill_length_mm", "bill_depth_mm", "flipper_length_mm",
-      "body_mass_g", "species"
-    )
-  ]
-  penguins <- penguins[complete.cases(penguins), ]
-  penguin_predictors <- scale(penguins[names(penguins) != "species"])
+  oil_predictors <- scale(
+    modeldata::oils[names(modeldata::oils) != "class"]
+  )
 
-  penguin_tsvd <- cuda_ml_tsvd(penguin_predictors, n_components = 2)
-  print(penguin_tsvd)
+  oil_tsvd <- cuda_ml_tsvd(oil_predictors, n_components = 2)
+  print(oil_tsvd)
 }
 ```

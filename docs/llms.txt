@@ -54,8 +54,7 @@ particular GPU.
 {cuda.ml} provides {parsnip} bindings for supervised ML algorithms such
 as `linear_reg`, `logistic_reg`, `multinom_reg`, `rand_forest`,
 `nearest_neighbor`, `svm_rbf`, `svm_poly`, and `svm_linear`. Install
-{parsnip}, {recipes}, {workflows}, and {palmerpenguins} separately to
-run the supervised example below.
+{parsnip} and {modeldata} separately to run the examples below.
 
 Regularized models follow tidymodels conventions for `penalty` and
 `mixture`. When predictors need scaling, learn and apply it explicitly
@@ -68,46 +67,30 @@ engine to build a SVM classifier.
 ``` r
 library(dplyr, warn.conflicts = FALSE)
 library(parsnip)
-library(recipes)
-library(workflows)
 library(cuda.ml)
 set.seed(11235)
 
-penguins <- palmerpenguins::penguins[c(
-  "bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g",
-  "species"
-)]
-penguins <- penguins[complete.cases(penguins), ]
+two_class <- modeldata::two_class_dat
 
-train_inds <- penguins |>
+train_inds <- two_class |>
   mutate(ind = row_number()) |>
-  group_by(species) |>
+  group_by(Class) |>
   slice_sample(prop = 0.7)
 
-train_data <- penguins[train_inds$ind, ]
-test_data <- penguins[-train_inds$ind, ]
+train_data <- two_class[train_inds$ind, ]
+test_data <- two_class[-train_inds$ind, ]
 
-penguin_recipe <- recipe(species ~ ., data = train_data) |>
-  step_normalize(all_numeric_predictors())
-
-model_spec <- svm_rbf(mode = "classification", rbf_sigma = 10, cost = 50) |>
-  set_engine("cuda.ml")
-
-model <- workflow() |>
-  add_recipe(penguin_recipe) |>
-  add_model(model_spec) |>
-  fit(data = train_data)
+model <- svm_rbf(mode = "classification", rbf_sigma = 10, cost = 50) |>
+  set_engine("cuda.ml") |>
+  fit(Class ~ ., data = train_data)
 
 preds <- predict(model, test_data)
 
-preds |>
-  bind_cols(test_data |> select(species)) |>
-  yardstick::conf_mat(truth = species, estimate = .pred_class)
-#>            Truth
-#> Prediction  Adelie Chinstrap Gentoo
-#>   Adelie        45         1      0
-#>   Chinstrap      1        20      0
-#>   Gentoo         0         0     37
+table(truth = test_data$Class, estimate = preds$.pred_class)
+#>         estimate
+#> truth    Class1 Class2
+#>   Class1    115     17
+#>   Class2     22     85
 ```
 
 ### Using {cuda.ml} for unsupervised ML tasks
@@ -118,40 +101,42 @@ ML tasks such as k-means clustering.
 ``` r
 library(cuda.ml)
 
-penguins <- palmerpenguins::penguins[c(
-  "bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g",
-  "species"
-)]
-penguins <- penguins[complete.cases(penguins), ]
-penguin_predictors <- scale(penguins[names(penguins) != "species"])
+oils <- modeldata::oils
+oil_predictors <- scale(oils[names(oils) != "class"])
 
 clustering <- cuda_ml_kmeans(
-  penguin_predictors,
-  k = 3, max_iters = 100, seed = 0L
+  oil_predictors,
+  k = 7, max_iters = 100, seed = 0L
 )
 
-# Expected outcome: there is strong correlation
-# between cluster labels and `penguins$species`
+# The clusters largely align with oil type.
 str(clustering)
 #> List of 4
-#>  $ labels   : int [1:342] 2 2 2 2 2 2 2 2 2 2 ...
-#>  $ centroids: num [1:3, 1:4] 0.905 0.656 -0.967 0.764 -1.098 ...
-#>  $ inertia  : num 380
+#>  $ labels   : int [1:96] 0 0 0 0 0 0 0 0 0 0 ...
+#>  $ centroids: num [1:7, 1:7] 0.825 -1.015 -1.505 1.097 0.557 ...
+#>  $ inertia  : num 135
 #>  $ n_iter   : int 100
 
 library(dplyr, warn.conflicts = FALSE)
-tibble(cluster_id = clustering$labels, species = penguins$species) |>
+tibble(cluster_id = clustering$labels, oil_type = oils$class) |>
   group_by(cluster_id) |>
-  count(species)
-#> # A tibble: 5 × 3
-#> # Groups:   cluster_id [3]
-#>   cluster_id species       n
-#>        <int> <fct>     <int>
-#> 1          0 Adelie        7
-#> 2          0 Chinstrap    63
-#> 3          1 Gentoo      123
-#> 4          2 Adelie      144
-#> 5          2 Chinstrap     5
+  count(oil_type)
+#> # A tibble: 12 × 3
+#> # Groups:   cluster_id [7]
+#>    cluster_id oil_type      n
+#>         <int> <fct>     <int>
+#>  1          0 pumpkin      34
+#>  2          1 pumpkin       2
+#>  3          1 sunflower    25
+#>  4          2 rapeseed      6
+#>  5          3 olive         6
+#>  6          4 corn          2
+#>  7          4 pumpkin       1
+#>  8          4 soybean      11
+#>  9          5 sunflower     1
+#> 10          6 olive         1
+#> 11          6 peanut        3
+#> 12          6 rapeseed      4
 ```
 
 ### Using {cuda.ml} for visualizations

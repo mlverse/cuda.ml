@@ -118,25 +118,17 @@ prediction and inspection functions as imported models.</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">penguins</span> <span class="op">&lt;-</span> <span class="fu">palmerpenguins</span><span class="fu">::</span><span class="va"><a href="https://allisonhorst.github.io/palmerpenguins/reference/penguins.html" class="external-link">penguins</a></span><span class="op">[</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"bill_length_mm"</span>, <span class="st">"bill_depth_mm"</span>, <span class="st">"flipper_length_mm"</span>,</span>
-<span>    <span class="st">"body_mass_g"</span>, <span class="st">"species"</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="op">]</span></span>
-<span><span class="va">penguins</span> <span class="op">&lt;-</span> <span class="va">penguins</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html" class="external-link">complete.cases</a></span><span class="op">(</span><span class="va">penguins</span><span class="op">)</span>, <span class="op">]</span></span>
-<span></span>
 <span><span class="va">forest</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_ml_rand_forest.html">cuda_ml_rand_forest</a></span><span class="op">(</span></span>
-<span>  <span class="va">species</span> <span class="op">~</span> <span class="va">.</span>,</span>
-<span>  data <span class="op">=</span> <span class="va">penguins</span>,</span>
+<span>  <span class="va">class</span> <span class="op">~</span> <span class="va">.</span>,</span>
+<span>  data <span class="op">=</span> <span class="fu">modeldata</span><span class="fu">::</span><span class="va"><a href="https://modeldata.tidymodels.org/reference/hpc_data.html" class="external-link">hpc_data</a></span>,</span>
 <span>  trees <span class="op">=</span> <span class="fl">500</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="st">"penguin-forest"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="st">"hpc-forest"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/cuda_ml_nvforest_export.html">cuda_ml_nvforest_export</a></span><span class="op">(</span></span>
 <span>  <span class="va">forest</span>,</span>
-<span>  directory <span class="op">=</span> <span class="st">"penguin-forest"</span>,</span>
+<span>  directory <span class="op">=</span> <span class="st">"hpc-forest"</span>,</span>
 <span>  prefix <span class="op">=</span> <span class="st">"model"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>This writes <code>model.treelite.checkpoint</code> and
@@ -146,23 +138,17 @@ host needs only the CPU inference backend:</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/cuda_ml_install.html">cuda_ml_install</a></span><span class="op">(</span>device <span class="op">=</span> <span class="st">"cpu"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">penguins</span> <span class="op">&lt;-</span> <span class="fu">palmerpenguins</span><span class="fu">::</span><span class="va"><a href="https://allisonhorst.github.io/palmerpenguins/reference/penguins.html" class="external-link">penguins</a></span><span class="op">[</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"bill_length_mm"</span>, <span class="st">"bill_depth_mm"</span>, <span class="st">"flipper_length_mm"</span>,</span>
-<span>    <span class="st">"body_mass_g"</span>, <span class="st">"species"</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="op">]</span></span>
-<span><span class="va">penguins</span> <span class="op">&lt;-</span> <span class="va">penguins</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html" class="external-link">complete.cases</a></span><span class="op">(</span><span class="va">penguins</span><span class="op">)</span>, <span class="op">]</span></span>
-<span></span>
 <span><span class="va">forest</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_ml_nvforest_export.html">cuda_ml_nvforest_import</a></span><span class="op">(</span></span>
-<span>  directory <span class="op">=</span> <span class="st">"penguin-forest"</span>,</span>
+<span>  directory <span class="op">=</span> <span class="st">"hpc-forest"</span>,</span>
 <span>  prefix <span class="op">=</span> <span class="st">"model"</span>,</span>
 <span>  device <span class="op">=</span> <span class="st">"cpu"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">penguin_predictors</span> <span class="op">&lt;-</span> <span class="va">penguins</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">penguins</span><span class="op">)</span> <span class="op">!=</span> <span class="st">"species"</span><span class="op">]</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">forest</span>, <span class="va">penguin_predictors</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="op">]</span>, type <span class="op">=</span> <span class="st">"class"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">forest</span>, <span class="va">penguin_predictors</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="op">]</span>, type <span class="op">=</span> <span class="st">"prob"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">hpc_predictors</span> <span class="op">&lt;-</span> <span class="fu">modeldata</span><span class="fu">::</span><span class="va"><a href="https://modeldata.tidymodels.org/reference/hpc_data.html" class="external-link">hpc_data</a></span><span class="op">[</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu">modeldata</span><span class="fu">::</span><span class="va"><a href="https://modeldata.tidymodels.org/reference/hpc_data.html" class="external-link">hpc_data</a></span><span class="op">)</span> <span class="op">!=</span> <span class="st">"class"</span></span>
+<span><span class="op">]</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">forest</span>, <span class="va">hpc_predictors</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="op">]</span>, type <span class="op">=</span> <span class="st">"class"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">forest</span>, <span class="va">hpc_predictors</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="op">]</span>, type <span class="op">=</span> <span class="st">"prob"</span><span class="op">)</span></span></code></pre></div>
 <p>The checkpoint is a standard, device-neutral Treelite checkpoint
 containing the trees. The JSON is cuda.ml metadata, not an XGBoost-style
 model file. It binds the pair with the checkpoint size and SHA-256

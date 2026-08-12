@@ -180,21 +180,16 @@ library(cuda.ml)
 if (interactive() && cuda_ml_backend_info()$runtime_installed) {
   # Classification
 
-  penguins <- palmerpenguins::penguins[
-    c(
-      "bill_length_mm", "bill_depth_mm", "flipper_length_mm",
-      "body_mass_g", "species"
-    )
-  ]
-  penguins <- penguins[complete.cases(penguins), ]
-
   model <- cuda_ml_svm(
-    formula = species ~ .,
-    data = penguins,
+    formula = Class ~ .,
+    data = modeldata::two_class_dat,
     kernel = "rbf"
   )
 
-  predictions <- predict(model, penguins[names(penguins) != "species"])
+  predictions <- predict(
+    model,
+    modeldata::two_class_dat[names(modeldata::two_class_dat) != "Class"]
+  )
 
   # Regression
 

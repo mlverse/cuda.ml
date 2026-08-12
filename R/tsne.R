@@ -68,19 +68,14 @@ new_tsne_model <- function(embedding) {
 #' library(cuda.ml)
 #'
 #' if (interactive() && cuda_ml_backend_info()$runtime_installed) {
-#'   penguins <- palmerpenguins::penguins[
-#'     c(
-#'       "bill_length_mm", "bill_depth_mm", "flipper_length_mm",
-#'       "body_mass_g", "species"
-#'     )
-#'   ]
-#'   penguins <- penguins[complete.cases(penguins), ]
-#'   penguin_predictors <- scale(penguins[names(penguins) != "species"])
+#'   oil_predictors <- scale(
+#'     modeldata::oils[names(modeldata::oils) != "class"]
+#'   )
 #'
-#'   embedding <- cuda_ml_tsne(penguin_predictors, method = "exact")
+#'   embedding <- cuda_ml_tsne(oil_predictors, method = "exact")
 #'
 #'   set.seed(0L)
-#'   print(kmeans(embedding, centers = 3))
+#'   print(kmeans(embedding, centers = 7))
 #' }
 #' @export
 cuda_ml_tsne <- function(

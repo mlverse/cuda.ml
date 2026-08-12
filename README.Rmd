@@ -82,8 +82,7 @@ cuda.ml generally provides single-GPU implementations. Interfaces that expose
 {cuda.ml} provides {parsnip} bindings for supervised ML algorithms such as
 `linear_reg`, `logistic_reg`, `multinom_reg`, `rand_forest`,
 `nearest_neighbor`, `svm_rbf`, `svm_poly`, and `svm_linear`.
-Install {parsnip}, {recipes}, {workflows}, and {palmerpenguins} separately to
-run the supervised example below.
+Install {parsnip} and {modeldata} separately to run the examples below.
 
 Regularized models follow tidymodels conventions for `penalty` and `mixture`.
 When predictors need scaling, learn and apply it explicitly with a {recipes}
@@ -95,41 +94,26 @@ build a SVM classifier.
 ```{r svm-example, message = FALSE}
 library(dplyr, warn.conflicts = FALSE)
 library(parsnip)
-library(recipes)
-library(workflows)
 library(cuda.ml)
 set.seed(11235)
 
-penguins <- palmerpenguins::penguins[c(
-  "bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g",
-  "species"
-)]
-penguins <- penguins[complete.cases(penguins), ]
+two_class <- modeldata::two_class_dat
 
-train_inds <- penguins |>
+train_inds <- two_class |>
   mutate(ind = row_number()) |>
-  group_by(species) |>
+  group_by(Class) |>
   slice_sample(prop = 0.7)
 
-train_data <- penguins[train_inds$ind, ]
-test_data <- penguins[-train_inds$ind, ]
+train_data <- two_class[train_inds$ind, ]
+test_data <- two_class[-train_inds$ind, ]
 
-penguin_recipe <- recipe(species ~ ., data = train_data) |>
-  step_normalize(all_numeric_predictors())
-
-model_spec <- svm_rbf(mode = "classification", rbf_sigma = 10, cost = 50) |>
-  set_engine("cuda.ml")
-
-model <- workflow() |>
-  add_recipe(penguin_recipe) |>
-  add_model(model_spec) |>
-  fit(data = train_data)
+model <- svm_rbf(mode = "classification", rbf_sigma = 10, cost = 50) |>
+  set_engine("cuda.ml") |>
+  fit(Class ~ ., data = train_data)
 
 preds <- predict(model, test_data)
 
-preds |>
-  bind_cols(test_data |> select(species)) |>
-  yardstick::conf_mat(truth = species, estimate = .pred_class)
+table(truth = test_data$Class, estimate = preds$.pred_class)
 ```
 
 ### Using {cuda.ml} for unsupervised ML tasks
@@ -140,26 +124,21 @@ such as k-means clustering.
 ```{r kmeans-example}
 library(cuda.ml)
 
-penguins <- palmerpenguins::penguins[c(
-  "bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g",
-  "species"
-)]
-penguins <- penguins[complete.cases(penguins), ]
-penguin_predictors <- scale(penguins[names(penguins) != "species"])
+oils <- modeldata::oils
+oil_predictors <- scale(oils[names(oils) != "class"])
 
 clustering <- cuda_ml_kmeans(
-  penguin_predictors,
-  k = 3, max_iters = 100, seed = 0L
+  oil_predictors,
+  k = 7, max_iters = 100, seed = 0L
 )
 
-# Expected outcome: there is strong correlation
-# between cluster labels and `penguins$species`
+# The clusters largely align with oil type.
 str(clustering)
 
 library(dplyr, warn.conflicts = FALSE)
-tibble(cluster_id = clustering$labels, species = penguins$species) |>
+tibble(cluster_id = clustering$labels, oil_type = oils$class) |>
   group_by(cluster_id) |>
-  count(species)
+  count(oil_type)
 ```
 
 ### Using {cuda.ml} for visualizations

@@ -198,17 +198,9 @@ use <code>bundle</code>.</p>
 bundle will restore. Use this when training a random forest on a GPU and
 deploying it on a CPU-only host.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">penguins</span> <span class="op">&lt;-</span> <span class="fu">palmerpenguins</span><span class="fu">::</span><span class="va"><a href="https://allisonhorst.github.io/palmerpenguins/reference/penguins.html" class="external-link">penguins</a></span><span class="op">[</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"bill_length_mm"</span>, <span class="st">"bill_depth_mm"</span>, <span class="st">"flipper_length_mm"</span>,</span>
-<span>    <span class="st">"body_mass_g"</span>, <span class="st">"species"</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="op">]</span></span>
-<span><span class="va">penguins</span> <span class="op">&lt;-</span> <span class="va">penguins</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html" class="external-link">complete.cases</a></span><span class="op">(</span><span class="va">penguins</span><span class="op">)</span>, <span class="op">]</span></span>
-<span></span>
-<span><span class="va">forest</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_ml_rand_forest.html">cuda_ml_rand_forest</a></span><span class="op">(</span></span>
-<span>  <span class="va">species</span> <span class="op">~</span> <span class="va">.</span>,</span>
-<span>  data <span class="op">=</span> <span class="va">penguins</span>,</span>
+<code class="sourceCode R"><span><span class="va">forest</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_ml_rand_forest.html">cuda_ml_rand_forest</a></span><span class="op">(</span></span>
+<span>  <span class="va">class</span> <span class="op">~</span> <span class="va">.</span>,</span>
+<span>  data <span class="op">=</span> <span class="fu">modeldata</span><span class="fu">::</span><span class="va"><a href="https://modeldata.tidymodels.org/reference/hpc_data.html" class="external-link">hpc_data</a></span>,</span>
 <span>  trees <span class="op">=</span> <span class="fl">100</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span>

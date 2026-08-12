@@ -93,16 +93,11 @@ the original feature space.
 library(cuda.ml)
 
 if (interactive() && cuda_ml_backend_info()$runtime_installed) {
-  penguins <- palmerpenguins::penguins[
-    c(
-      "bill_length_mm", "bill_depth_mm", "flipper_length_mm",
-      "body_mass_g", "species"
-    )
-  ]
-  penguins <- penguins[complete.cases(penguins), ]
-  penguin_predictors <- scale(penguins[names(penguins) != "species"])
+  oil_predictors <- scale(
+    modeldata::oils[names(modeldata::oils) != "class"]
+  )
 
-  penguin_pca <- cuda_ml_pca(penguin_predictors, n_components = 3)
-  print(penguin_pca)
+  oil_pca <- cuda_ml_pca(oil_predictors, n_components = 3)
+  print(oil_pca)
 }
 ```

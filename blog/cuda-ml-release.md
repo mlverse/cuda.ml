@@ -19,7 +19,7 @@ to save and restore supported fitted models.
 For most users, setup is two commands:
 
 ```r
-install.packages("cuda.ml")
+install.packages(c("cuda.ml", "modeldata", "parsnip"))
 cuda.ml::cuda_ml_install()
 ```
 
@@ -50,25 +50,23 @@ The [installation guide](
 cuda.ml registers parsnip engines for linear, logistic, and multinomial
 regression, random forests, nearest neighbors, and radial, polynomial,
 and linear support-vector machines. For example, this fits a
-random-forest classifier on the GPU and requests class probabilities
-through the usual parsnip interface:
+random-forest classifier on the GPU to predict job runtime categories
+and requests class probabilities through the usual parsnip interface:
 
 ```r
 library(cuda.ml)
 library(parsnip)
 
-penguins <- palmerpenguins::penguins[c(
-  "bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g",
-  "species"
-)]
-penguins <- penguins[complete.cases(penguins), ]
-
-forest_spec <- rand_forest(mtry = 2, trees = 500, min_n = 5) |>
-  set_mode("classification") |>
+forest_spec <- rand_forest(
+  mode = "classification",
+  mtry = 2,
+  trees = 500,
+  min_n = 5
+) |>
   set_engine("cuda.ml", max_depth = 20L, seed = 1L)
 
-forest_fit <- fit(forest_spec, species ~ ., data = penguins)
-predict(forest_fit, penguins[1:5, ], type = "prob")
+forest_fit <- fit(forest_spec, class ~ ., data = modeldata::hpc_data)
+predict(forest_fit, modeldata::hpc_data[1:5, ], type = "prob")
 ```
 
 Portable model arguments stay in the parsnip specification, while
@@ -84,15 +82,11 @@ own. For example, you can run k-means clustering with a single function
 call:
 
 ```r
-penguins <- palmerpenguins::penguins[c(
-  "bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g",
-  "species"
-)]
-penguins <- penguins[complete.cases(penguins), ]
-penguin_predictors <- scale(penguins[names(penguins) != "species"])
-clusters <- cuda_ml_kmeans(penguin_predictors, k = 3, seed = 1L)
+oils <- modeldata::oils
+oil_predictors <- scale(oils[names(oils) != "class"])
+clusters <- cuda_ml_kmeans(oil_predictors, k = 7, seed = 1L)
 
-table(cluster = clusters$labels, species = penguins$species)
+table(cluster = clusters$labels, oil_type = oils$class)
 ```
 
 The direct API covers supervised models as well as clustering and
@@ -132,20 +126,14 @@ wrapped with the bundle package.
 The simplest file workflow passes a path directly:
 
 ```r
-penguins <- palmerpenguins::penguins[c(
-  "bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g",
-  "species"
-)]
-penguins <- penguins[complete.cases(penguins), ]
-
 model <- cuda_ml_rand_forest(
-  species ~ .,
-  data = penguins,
+  class ~ .,
+  data = modeldata::hpc_data,
   trees = 100L,
   seed = 1L
 )
 
-cuda_ml_serialize(model, "penguin-forest.cuda-ml")
+cuda_ml_serialize(model, "hpc-runtime-forest.cuda-ml")
 ```
 
 In another R process or deployment environment, prepare cuda.ml and
@@ -155,13 +143,9 @@ restore the fitted model:
 library(cuda.ml)
 
 cuda_ml_install()
-model <- cuda_ml_unserialize("penguin-forest.cuda-ml")
+model <- cuda_ml_unserialize("hpc-runtime-forest.cuda-ml")
 
-penguins <- palmerpenguins::penguins[c(
-  "bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g"
-)]
-penguins <- penguins[complete.cases(penguins), ]
-predict(model, penguins[1:5, ], type = "class")
+predict(model, modeldata::hpc_data[1:5, ], type = "class")
 ```
 
 File paths use gzip compression. Passing `connection = NULL` instead
