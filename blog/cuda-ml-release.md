@@ -57,22 +57,27 @@ and requests class probabilities through the usual parsnip interface:
 library(cuda.ml)
 library(parsnip)
 
-forest_spec <- rand_forest(
-  mode = "classification",
-  mtry = 2,
-  trees = 500,
-  min_n = 5
-) |>
-  set_engine("cuda.ml", max_depth = 20L, seed = 1L)
+forest_spec <- rand_forest(mode = "classification") |>
+  set_engine("cuda.ml")
 
 forest_fit <- fit(forest_spec, class ~ ., data = modeldata::hpc_data)
 predict(forest_fit, modeldata::hpc_data[1:5, ], type = "prob")
 ```
 
-Portable model arguments stay in the parsnip specification, while
-algorithm-specific controls go in `set_engine()`. Recipes can learn
-preprocessing on the training data and carry it into resampling and
-prediction.
+```text
+# A tibble: 5 × 4
+  .pred_VF .pred_F .pred_M  .pred_L
+     <dbl>   <dbl>   <dbl>    <dbl>
+1    0.284  0.621  0.0845  0.0107
+2    0.924  0.0637 0.0103  0.00235
+3    0.952  0.0411 0.00623 0.000214
+4    0.974  0.0196 0.00646 0.000160
+5    0.972  0.0209 0.00705 0.000202
+```
+
+`set_engine("cuda.ml")` selects the GPU-backed cuda.ml engine; the rest
+is a standard parsnip workflow. Recipes can learn preprocessing on the
+training data and carry it into resampling and prediction.
 
 ## Work directly with cuda.ml
 
