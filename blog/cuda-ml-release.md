@@ -78,15 +78,12 @@ prediction.
 
 cuda.ml also provides a direct R interface. This is useful when you
 prefer a function-oriented workflow or want to use the package on its
-own. For example, you can run k-means clustering with a single function
-call:
+own. For example, this clusters observations of Old Faithful eruptions:
 
 ```r
-oils <- modeldata::oils
-oil_predictors <- scale(oils[names(oils) != "class"])
-clusters <- cuda_ml_kmeans(oil_predictors, k = 7, seed = 1L)
+clusters <- cuda_ml_kmeans(scale(faithful), k = 2, seed = 1L)
 
-table(cluster = clusters$labels, oil_type = oils$class)
+round(aggregate(faithful, list(cluster = clusters$labels), mean), 1)
 ```
 
 The direct API covers supervised models as well as clustering and
