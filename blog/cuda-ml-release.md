@@ -50,8 +50,8 @@ The [installation guide](
 cuda.ml registers parsnip engines for linear, logistic, and multinomial
 regression, random forests, nearest neighbors, and radial, polynomial,
 and linear support-vector machines. For example, this fits a
-random-forest classifier on the GPU to predict job runtime categories
-and requests class probabilities through the usual parsnip interface:
+random-forest classifier on the GPU using the standard parsnip
+interface:
 
 ```r
 library(cuda.ml)
