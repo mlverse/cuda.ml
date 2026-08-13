@@ -57,10 +57,9 @@ and requests class probabilities through the usual parsnip interface:
 library(cuda.ml)
 library(parsnip)
 
-forest_spec <-
-  rand_forest(mtry = 2, trees = 500, min_n = 5) |>
+forest_spec <- rand_forest() |>
   set_mode("classification") |>
-  set_engine("cuda.ml", max_depth = 20)
+  set_engine("cuda.ml")
 
 forest_fit <- fit(forest_spec, class ~ ., data = modeldata::hpc_data)
 predict(forest_fit, modeldata::hpc_data[1:5, ], type = "prob")
@@ -68,13 +67,13 @@ predict(forest_fit, modeldata::hpc_data[1:5, ], type = "prob")
 
 ```text
 # A tibble: 5 × 4
-  .pred_VF .pred_F .pred_M .pred_L
-     <dbl>   <dbl>   <dbl>   <dbl>
-1    0.461   0.383  0.111  0.0448
-2    0.776   0.162  0.0468 0.0145
-3    0.822   0.126  0.0423 0.00969
-4    0.832   0.121  0.0382 0.00817
-5    0.828   0.125  0.0390 0.00826
+  .pred_VF .pred_F .pred_M  .pred_L
+     <dbl>   <dbl>   <dbl>    <dbl>
+1    0.309  0.597  0.0666  0.0275
+2    0.899  0.0838 0.0138  0.00335
+3    0.965  0.0261 0.00850 0.000883
+4    0.973  0.0228 0.00416 0.000352
+5    0.966  0.0298 0.00416 0.000352
 ```
 
 `set_engine("cuda.ml")` selects the GPU-backed cuda.ml engine; the rest
