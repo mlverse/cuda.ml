@@ -29,12 +29,14 @@ test_that("cuda_ml_kmeans() works as expected with 'kmeans++' initialization met
   )
 
   expect_lte(cuda_ml_kclust$inertia, as.numeric(sklearn_kclust$inertia_) * 1.02)
-  expect_gte(
-    sklearn$metrics$adjusted_rand_score(
-      labels_true = penguins$species,
-      labels_pred = cuda_ml_kclust$labels
-    ),
-    0.85
+  assigned_centroids <- cuda_ml_kclust$centroids[
+    cuda_ml_kclust$labels + 1,
+    ,
+    drop = FALSE
+  ]
+  expect_equal(
+    cuda_ml_kclust$inertia,
+    sum((as.matrix(scaled_penguin_predictors) - assigned_centroids)^2)
   )
 })
 
