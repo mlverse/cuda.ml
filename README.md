@@ -111,7 +111,9 @@ ML tasks such as k-means clustering.
 library(cuda.ml)
 
 oils <- modeldata::oils
-oil_predictors <- scale(oils[names(oils) != "class"])
+oil_predictors <- oils |>
+  subset(select = -class) |>
+  scale()
 
 clustering <- cuda_ml_kmeans(
   oil_predictors,

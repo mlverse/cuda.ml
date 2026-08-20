@@ -133,7 +133,8 @@ library(cuda.ml)
 
 if (interactive() && cuda_ml_backend_info()$runtime_installed) {
   model <- cuda_ml_lasso(formula = mpg ~ ., data = mtcars, alpha = 1e-3)
-  cuda_ml_predictions <- predict(model, mtcars)
+  predictors <- subset(mtcars, select = -mpg)
+  cuda_ml_predictions <- predict(model, predictors)
 
   # predictions will be comparable to those from a `glmnet` model with
   # `lambda` set to 1e-3 and `alpha` set to 1
@@ -142,12 +143,12 @@ if (interactive() && cuda_ml_backend_info()$runtime_installed) {
 
   if (requireNamespace("glmnet", quietly = TRUE)) {
     glmnet_model <- glmnet::glmnet(
-      x = as.matrix(mtcars[names(mtcars) != "mpg"]), y = mtcars$mpg,
+      x = as.matrix(predictors), y = mtcars$mpg,
       alpha = 1, lambda = 1e-3, nlambda = 1, standardize = FALSE
     )
 
     glm_predictions <- predict(
-      glmnet_model, as.matrix(mtcars[names(mtcars) != "mpg"]),
+      glmnet_model, as.matrix(predictors),
       s = 0
     )
 

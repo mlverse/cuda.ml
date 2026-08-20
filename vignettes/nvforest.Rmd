@@ -93,9 +93,7 @@ forest <- cuda_ml_nvforest_import(
   device = "cpu"
 )
 
-hpc_predictors <- modeldata::hpc_data[
-  names(modeldata::hpc_data) != "class"
-]
+hpc_predictors <- subset(modeldata::hpc_data, select = -class)
 predict(forest, hpc_predictors[1:5, ], type = "class")
 predict(forest, hpc_predictors[1:5, ], type = "prob")
 ```

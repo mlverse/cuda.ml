@@ -98,11 +98,12 @@ library(cuda.ml)
 
 if (interactive() && cuda_ml_backend_info()$runtime_installed) {
   model <- cuda_ml_ols(formula = mpg ~ ., data = mtcars, method = "qr")
-  predictions <- predict(model, mtcars[names(mtcars) != "mpg"])
+  predictors <- subset(mtcars, select = -mpg)
+  predictions <- predict(model, predictors)
 
   # predictions will be comparable to those from a `stats::lm` model
   lm_model <- stats::lm(formula = mpg ~ ., data = mtcars, method = "qr")
-  lm_predictions <- predict(lm_model, mtcars[names(mtcars) != "mpg"])
+  lm_predictions <- predict(lm_model, predictors)
 
   print(
     all.equal(

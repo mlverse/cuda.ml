@@ -262,10 +262,8 @@ direct_fit <- cuda_ml_svm(
   coef0 = 0
 )
 
-direct_predictions <- predict(
-  direct_fit,
-  modeldata::two_class_dat[c("A", "B")]
-)
+direct_predictors <- subset(modeldata::two_class_dat, select = -Class)
+direct_predictions <- predict(direct_fit, direct_predictors)
 ```
 
 See [Save and restore

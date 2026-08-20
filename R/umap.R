@@ -88,13 +88,14 @@ new_umap_model <- function(model) {
 #' library(cuda.ml)
 #'
 #' if (interactive() && cuda_ml_backend_info()$runtime_installed) {
-#'   oil_predictors <- scale(
-#'     modeldata::oils[names(modeldata::oils) != "class"]
-#'   )
+#'   oils <- modeldata::oils
+#'   oil_predictors <- oils |>
+#'     subset(select = -class) |>
+#'     scale()
 #'
 #'   model <- cuda_ml_umap(
 #'     x = oil_predictors,
-#'     y = modeldata::oils$class,
+#'     y = oils$class,
 #'     n_components = 2,
 #'     n_epochs = 200,
 #'     transform_input = TRUE

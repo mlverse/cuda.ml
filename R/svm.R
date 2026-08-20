@@ -70,16 +70,16 @@ svm_match_kernel_type <- function(
 #' if (interactive() && cuda_ml_backend_info()$runtime_installed) {
 #'   # Classification
 #'
+#'   two_class <- modeldata::two_class_dat
+#'
 #'   model <- cuda_ml_svm(
 #'     formula = Class ~ .,
-#'     data = modeldata::two_class_dat,
+#'     data = two_class,
 #'     kernel = "rbf"
 #'   )
 #'
-#'   predictions <- predict(
-#'     model,
-#'     modeldata::two_class_dat[names(modeldata::two_class_dat) != "Class"]
-#'   )
+#'   predictors <- subset(two_class, select = -Class)
+#'   predictions <- predict(model, predictors)
 #'
 #'   # Regression
 #'

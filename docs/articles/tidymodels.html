@@ -531,10 +531,8 @@ RBF, polynomial, and linear SVM specifications.</p>
 <span>  coef0 <span class="op">=</span> <span class="fl">0</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">direct_predictions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span></span>
-<span>  <span class="va">direct_fit</span>,</span>
-<span>  <span class="fu">modeldata</span><span class="fu">::</span><span class="va"><a href="https://modeldata.tidymodels.org/reference/two_class_dat.html" class="external-link">two_class_dat</a></span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">direct_predictors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fu">modeldata</span><span class="fu">::</span><span class="va"><a href="https://modeldata.tidymodels.org/reference/two_class_dat.html" class="external-link">two_class_dat</a></span>, select <span class="op">=</span> <span class="op">-</span><span class="va">Class</span><span class="op">)</span></span>
+<span><span class="va">direct_predictions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">direct_fit</span>, <span class="va">direct_predictors</span><span class="op">)</span></span></code></pre></div>
 <p>See <a href="model-persistence.html">Save and restore models</a>
 before moving a fitted model to another R process or deployment
 host.</p>

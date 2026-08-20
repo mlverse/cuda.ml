@@ -42,9 +42,10 @@ Run the k-means clustering algorithm.
 library(cuda.ml)
 
 if (interactive() && cuda_ml_backend_info()$runtime_installed) {
-  oil_predictors <- scale(
-    modeldata::oils[names(modeldata::oils) != "class"]
-  )
+  oils <- modeldata::oils
+  oil_predictors <- oils |>
+    subset(select = -class) |>
+    scale()
 
   kclust <- cuda_ml_kmeans(
     oil_predictors,

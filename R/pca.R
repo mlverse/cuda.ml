@@ -45,9 +45,10 @@ new_pca_model <- function(model) {
 #' library(cuda.ml)
 #'
 #' if (interactive() && cuda_ml_backend_info()$runtime_installed) {
-#'   oil_predictors <- scale(
-#'     modeldata::oils[names(modeldata::oils) != "class"]
-#'   )
+#'   oils <- modeldata::oils
+#'   oil_predictors <- oils |>
+#'     subset(select = -class) |>
+#'     scale()
 #'
 #'   oil_pca <- cuda_ml_pca(oil_predictors, n_components = 3)
 #'   print(oil_pca)

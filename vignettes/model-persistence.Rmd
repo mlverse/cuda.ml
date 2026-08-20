@@ -68,7 +68,8 @@ cuda_ml_install()
 
 model <- cuda_ml_unserialize(state_path)
 
-predict(model, mtcars[1:5, names(mtcars) != "mpg"])
+predictors <- subset(mtcars, select = -mpg)
+predict(model, predictors[1:5, ])
 ```
 
 ## Keep the state as raw bytes

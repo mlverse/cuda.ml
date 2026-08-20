@@ -59,9 +59,10 @@ Dimensionality reduction using Truncated Singular Value Decomposition.
 library(cuda.ml)
 
 if (interactive() && cuda_ml_backend_info()$runtime_installed) {
-  oil_predictors <- scale(
-    modeldata::oils[names(modeldata::oils) != "class"]
-  )
+  oils <- modeldata::oils
+  oil_predictors <- oils |>
+    subset(select = -class) |>
+    scale()
 
   oil_tsvd <- cuda_ml_tsvd(oil_predictors, n_components = 2)
   print(oil_tsvd)

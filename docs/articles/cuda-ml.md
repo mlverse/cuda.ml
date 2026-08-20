@@ -88,10 +88,8 @@ fit <- cuda_ml_ols(
   method = "qr"
 )
 
-predictions <- predict(
-  fit,
-  new_data = test[names(test) != "mpg"]
-)
+test_predictors <- subset(test, select = -mpg)
+predictions <- predict(fit, new_data = test_predictors)
 
 cbind(
   actual = test$mpg,
@@ -114,9 +112,10 @@ The function mean-centers the scaled features, fits the principal
 components, and, by default, transforms the input data:
 
 ``` r
-oil_predictors <- scale(
-  modeldata::oils[names(modeldata::oils) != "class"]
-)
+oils <- modeldata::oils
+oil_predictors <- oils |>
+  subset(select = -class) |>
+  scale()
 
 pca_fit <- cuda_ml_pca(
   oil_predictors,

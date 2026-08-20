@@ -78,7 +78,8 @@ sgd_match_learning_rate <- function(
 #'     n_iter_no_change = 10
 #'   )
 #'
-#'   preds <- predict(model, mtcars[names(mtcars) != "mpg"])
+#'   predictors <- subset(mtcars, select = -mpg)
+#'   preds <- predict(model, predictors)
 #'   print(all.equal(preds$.pred, mtcars$mpg, tolerance = 0.09))
 #' }
 #' @importFrom ellipsis check_dots_used
