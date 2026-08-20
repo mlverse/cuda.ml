@@ -10,34 +10,39 @@
 <!-- badges: end -->
 
 The goal of {cuda.ml} is to provide a simple and intuitive R interface
-for [RAPIDS cuML](https://github.com/rapidsai/cuml). RAPIDS cuML is a
+for [RAPIDS cuML](https://github.com/NVIDIA/cuml). RAPIDS cuML is a
 suite of GPU-accelerated machine learning libraries powered by
 [CUDA](https://en.wikipedia.org/wiki/CUDA). {cuda.ml} is under active
 development, and currently implements R interfaces for the algorithms
 listed below (which is a subset of [algorithms supported by RAPIDS
-cuML](https://github.com/rapidsai/cuml#supported-algorithms)).
+cuML](https://github.com/NVIDIA/cuml#supported-algorithms)).
 
 ## Supported Algorithms
 
-| Category                                              | Algorithm                                                                            |
-|-------------------------------------------------------|--------------------------------------------------------------------------------------|
-| **Clustering**                                        | Density-Based Spatial Clustering of Applications with Noise (DBSCAN)                 |
-|                                                       | K-Means                                                                              |
-|                                                       | Single-Linkage Agglomerative Clustering                                              |
-| **Dimensionality Reduction**                          | Principal Components Analysis (PCA)                                                  |
-|                                                       | Truncated Singular Value Decomposition (tSVD)                                        |
-|                                                       | Uniform Manifold Approximation and Projection (UMAP)                                 |
-|                                                       | t-Distributed Stochastic Neighbor Embedding (TSNE)                                   |
-| **Linear Models for Regression or Classification**    | Linear Regression (OLS)                                                              |
-|                                                       | Ridge, lasso, and elastic-net linear regression                                      |
-|                                                       | Logistic and multinomial regression                                                  |
-| **Nonlinear Models for Regression or Classification** | Random Forest (RF) classification with nvForest inference                            |
-|                                                       | Random Forest (RF) regression with nvForest inference                                |
-|                                                       | CPU or GPU nvForest inference for XGBoost, LightGBM, and Treelite models             |
-|                                                       | K-Nearest Neighbors (KNN) classification with brute-force, IVFFlat, or IVFPQ indexes |
-|                                                       | K-Nearest Neighbors (KNN) regression with brute-force, IVFFlat, or IVFPQ indexes     |
-|                                                       | Support Vector Machine Classifier (SVC)                                              |
-|                                                       | Epsilon-Support Vector Regression (SVR)                                              |
+- **Clustering**
+  - Density-Based Spatial Clustering of Applications with Noise (DBSCAN)
+  - K-Means
+  - Single-Linkage Agglomerative Clustering
+- **Dimensionality Reduction**
+  - Principal Components Analysis (PCA)
+  - Truncated Singular Value Decomposition (tSVD)
+  - Uniform Manifold Approximation and Projection (UMAP)
+  - t-Distributed Stochastic Neighbor Embedding (TSNE)
+- **Linear Models for Regression or Classification**
+  - Linear Regression (OLS)
+  - Ridge, lasso, and elastic-net linear regression
+  - Logistic and multinomial regression
+- **Nonlinear Models for Regression or Classification**
+  - Random Forest (RF) classification with nvForest inference
+  - Random Forest (RF) regression with nvForest inference
+  - CPU or GPU nvForest inference for XGBoost, LightGBM, and Treelite
+    models
+  - K-Nearest Neighbors (KNN) classification with brute-force, IVFFlat,
+    or IVFPQ indexes
+  - K-Nearest Neighbors (KNN) regression with brute-force, IVFFlat, or
+    IVFPQ indexes
+  - Support Vector Machine Classifier (SVC)
+  - Epsilon-Support Vector Regression (SVR)
 
 cuda.ml generally provides single-GPU implementations. Interfaces that
 expose `device_id`, currently nvForest inference, can target a
@@ -187,7 +192,7 @@ embedding <- cuda_ml_umap(
 )
 
 str(embedding$transformed_data)
-#>  num [1:60000, 1:2] -0.265 -27.208 8.108 16.145 11.808 ...
+#>  num [1:60000, 1:2] -1.08 -28.59 8.03 12.62 11.67 ...
 
 # visualize
 embedding$transformed_data |>
