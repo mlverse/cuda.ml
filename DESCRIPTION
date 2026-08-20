@@ -18,7 +18,7 @@ Authors@R:
              email = "daniel@posit.co"),
       person(given = "RStudio",
            role = c("cph", "fnd")))
-Description: R interface for RAPIDS cuML (<https://github.com/rapidsai/cuml>),
+Description: R interface for RAPIDS cuML (<https://github.com/NVIDIA/cuml>),
     a suite of GPU-accelerated machine learning libraries powered by CUDA
     (<https://en.wikipedia.org/wiki/CUDA>).
 License: MIT + file LICENSE
