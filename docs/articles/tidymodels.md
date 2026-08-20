@@ -49,30 +49,30 @@ loss.
 
 ## Set the engine
 
-Create a parsnip specification, set its mode when the specification
-supports more than one, and select the cuda.ml engine:
+Set the mode and common arguments in a parsnip specification, then
+select the cuda.ml engine:
 
 ``` r
 library(cuda.ml)
 library(parsnip)
 
 forest_spec <- rand_forest(
+  mode = "classification",
   mtry = 2,
   trees = 500,
   min_n = 5
 ) |>
-  set_mode("classification") |>
   set_engine(
     "cuda.ml",
-    max_depth = 20L,
-    n_bins = 256L,
-    seed = 1L
+    max_depth = 20,
+    n_bins = 256
   )
 
-forest_fit <- fit(forest_spec, Species ~ ., data = iris)
+set.seed(1)
+forest_fit <- fit(forest_spec, class ~ ., data = modeldata::hpc_data)
 
-class_predictions <- predict(forest_fit, iris, type = "class")
-probabilities <- predict(forest_fit, iris, type = "prob")
+class_predictions <- predict(forest_fit, modeldata::hpc_data, type = "class")
+probabilities <- predict(forest_fit, modeldata::hpc_data, type = "prob")
 ```
 
 Arguments in the model specification, such as `mtry`, are common parsnip
@@ -103,15 +103,21 @@ library(recipes)
 library(workflows)
 
 set.seed(1)
-training_rows <- sample(seq_len(nrow(iris)), 120)
-iris_train <- iris[training_rows, ]
-iris_test <- iris[-training_rows, ]
+training_rows <- sample(
+  seq_len(nrow(modeldata::two_class_dat)),
+  floor(0.8 * nrow(modeldata::two_class_dat))
+)
+training_data <- modeldata::two_class_dat[training_rows, ]
+testing_data <- modeldata::two_class_dat[-training_rows, ]
 
-iris_recipe <- recipe(Species ~ ., data = iris_train) |>
+classifier_recipe <- recipe(Class ~ ., data = training_data) |>
   step_normalize(all_numeric_predictors())
 
-knn_spec <- nearest_neighbor(neighbors = 5, dist_power = 2) |>
-  set_mode("classification") |>
+knn_spec <- nearest_neighbor(
+  mode = "classification",
+  neighbors = 5,
+  dist_power = 2
+) |>
   set_engine(
     "cuda.ml",
     algo = "brute",
@@ -119,48 +125,24 @@ knn_spec <- nearest_neighbor(neighbors = 5, dist_power = 2) |>
   )
 
 knn_workflow <- workflow() |>
-  add_recipe(iris_recipe) |>
+  add_recipe(classifier_recipe) |>
   add_model(knn_spec)
 
-knn_fit <- fit(knn_workflow, data = iris_train)
+knn_fit <- fit(knn_workflow, data = training_data)
 
 results <- cbind(
-  truth = iris_test$Species,
-  predict(knn_fit, iris_test, type = "class"),
-  predict(knn_fit, iris_test, type = "prob")
+  truth = testing_data$Class,
+  predict(knn_fit, testing_data, type = "class"),
+  predict(knn_fit, testing_data, type = "prob")
 )
-results
-#>         truth .pred_class .pred_setosa .pred_versicolor .pred_virginica
-#> 1      setosa      setosa            1              0.0             0.0
-#> 2      setosa      setosa            1              0.0             0.0
-#> 3      setosa      setosa            1              0.0             0.0
-#> 4      setosa      setosa            1              0.0             0.0
-#> 5      setosa      setosa            1              0.0             0.0
-#> 6      setosa      setosa            1              0.0             0.0
-#> 7      setosa      setosa            1              0.0             0.0
-#> 8      setosa      setosa            1              0.0             0.0
-#> 9      setosa      setosa            1              0.0             0.0
-#> 10     setosa      setosa            1              0.0             0.0
-#> 11     setosa      setosa            1              0.0             0.0
-#> 12 versicolor  versicolor            0              1.0             0.0
-#> 13 versicolor  versicolor            0              1.0             0.0
-#> 14 versicolor  versicolor            0              0.6             0.4
-#> 15 versicolor  versicolor            0              1.0             0.0
-#> 16 versicolor  versicolor            0              1.0             0.0
-#> 17 versicolor  versicolor            0              0.6             0.4
-#> 18 versicolor  versicolor            0              1.0             0.0
-#> 19 versicolor  versicolor            0              1.0             0.0
-#> 20 versicolor  versicolor            0              1.0             0.0
-#> 21 versicolor  versicolor            0              1.0             0.0
-#> 22 versicolor  versicolor            0              1.0             0.0
-#> 23 versicolor  versicolor            0              1.0             0.0
-#> 24  virginica   virginica            0              0.0             1.0
-#> 25  virginica  versicolor            0              0.8             0.2
-#> 26  virginica   virginica            0              0.2             0.8
-#> 27  virginica   virginica            0              0.2             0.8
-#> 28  virginica   virginica            0              0.4             0.6
-#> 29  virginica   virginica            0              0.0             1.0
-#> 30  virginica  versicolor            0              0.6             0.4
+head(results)
+#>    truth .pred_class .pred_Class1 .pred_Class2
+#> 1 Class1      Class1          0.8          0.2
+#> 2 Class2      Class2          0.0          1.0
+#> 3 Class1      Class1          1.0          0.0
+#> 4 Class2      Class2          0.2          0.8
+#> 5 Class1      Class1          1.0          0.0
+#> 6 Class1      Class1          0.6          0.4
 ```
 
 The parsnip KNN engine defaults to `algo = "ivfflat"` and
@@ -272,18 +254,16 @@ SVM specifications.
 
 ``` r
 direct_fit <- cuda_ml_svm(
-  Species ~ .,
-  data = iris,
+  Class ~ .,
+  data = modeldata::two_class_dat,
   kernel = "tanh",
   cost = 2,
   gamma = 0.1,
   coef0 = 0
 )
 
-direct_predictions <- predict(
-  direct_fit,
-  iris[names(iris) != "Species"]
-)
+direct_predictors <- subset(modeldata::two_class_dat, select = -Class)
+direct_predictions <- predict(direct_fit, direct_predictors)
 ```
 
 See [Save and restore

@@ -8,7 +8,7 @@ sklearn_kmeans_model <- sklearn$cluster$KMeans(
   n_init = 10L,
   random_state = 0L
 )
-sklearn_kclust <- sklearn_kmeans_model$fit(sklearn_iris_dataset$data)
+sklearn_kclust <- sklearn_kmeans_model$fit(sklearn_penguins_dataset$data)
 
 verify_cluster_centers <- function(centers) {
   expect_equal(
@@ -21,25 +21,35 @@ verify_cluster_centers <- function(centers) {
 
 test_that("cuda_ml_kmeans() works as expected with 'kmeans++' initialization method", {
   cuda_ml_kclust <- cuda_ml_kmeans(
-    iris[, which(names(iris) != "Species")],
+    scaled_penguin_predictors,
     k = 3,
     max_iters = 100,
-    init_method = "kmeans++"
+    init_method = "kmeans++",
+    seed = 0L
   )
 
-  verify_cluster_centers(cuda_ml_kclust$centroids)
+  expect_lte(cuda_ml_kclust$inertia, as.numeric(sklearn_kclust$inertia_) * 1.02)
+  assigned_centroids <- cuda_ml_kclust$centroids[
+    cuda_ml_kclust$labels + 1,
+    ,
+    drop = FALSE
+  ]
+  expect_equal(
+    cuda_ml_kclust$inertia,
+    sum((as.matrix(scaled_penguin_predictors) - assigned_centroids)^2)
+  )
 })
 
 test_that("cuda_ml_kmeans() works as expected with 'random' initialization method", {
   cuda_ml_kclust <- cuda_ml_kmeans(
-    iris[, which(names(iris) != "Species")],
+    scaled_penguin_predictors,
     k = 3,
     max_iters = 100,
     init_method = "random"
   )
 
   expect_equal(dim(cuda_ml_kclust$centroids), c(3L, 4L))
-  expect_equal(length(cuda_ml_kclust$labels), nrow(iris))
+  expect_equal(length(cuda_ml_kclust$labels), nrow(penguins))
   expect_equal(length(unique(cuda_ml_kclust$labels)), 3L)
   expect_true(all(is.finite(cuda_ml_kclust$centroids)))
   expect_true(is.finite(cuda_ml_kclust$inertia))
@@ -48,7 +58,7 @@ test_that("cuda_ml_kmeans() works as expected with 'random' initialization metho
 
 test_that("zero tolerance disables inertia-based convergence", {
   cuda_ml_kclust <- cuda_ml_kmeans(
-    iris[, which(names(iris) != "Species")],
+    scaled_penguin_predictors,
     k = 3,
     max_iters = 10,
     tol = 0,
@@ -60,7 +70,7 @@ test_that("zero tolerance disables inertia-based convergence", {
 
 test_that("cuda_ml_kmeans() works as expected with user-specified initial cluster centers", {
   cuda_ml_kclust <- cuda_ml_kmeans(
-    iris[, which(names(iris) != "Species")],
+    scaled_penguin_predictors,
     k = 3,
     max_iters = 100,
     tol = 1e-4,

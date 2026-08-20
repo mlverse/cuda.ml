@@ -56,9 +56,14 @@ cluster. Each centroid will be a column within the `centroids` matrix.
 library(cuda.ml)
 
 if (interactive() && cuda_ml_backend_info()$runtime_installed) {
+  oils <- modeldata::oils
+  oil_predictors <- oils |>
+    subset(select = -class) |>
+    scale()
+
   kclust <- cuda_ml_kmeans(
-    iris[names(iris) != "Species"],
-    k = 3, max_iters = 100
+    oil_predictors,
+    k = 7, max_iters = 100
   )
 
   print(kclust)

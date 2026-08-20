@@ -2,17 +2,17 @@ skip_if_not(run_gpu_tests, "requires the GPU test environment")
 
 context("Uniform Manifold Approximation and Projection")
 
-iris_input <- iris[, names(iris) != "Species"]
+penguins_input <- scaled_penguin_predictors
 
 test_that("cuda_ml_umap() works as expected", {
   umap_output <- cuda_ml_umap(
-    x = iris_input,
-    y = iris$Species,
+    x = penguins_input,
+    y = penguins$species,
     n_components = 2,
     n_epochs = 500,
     transform_input = TRUE,
     seed = 0L
   )
 
-  verify_iris_embedding(umap_output$transformed_data)
+  verify_penguins_embedding(umap_output$transformed_data)
 })

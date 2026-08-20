@@ -2,151 +2,167 @@ skip_if_not(run_gpu_tests, "requires the GPU test environment")
 
 context("Logistic Regression")
 
-iris_scaled <- scale(as.matrix(iris[names(iris) != "Species"]))
-y <- iris$Species
-subset <- c(1:50, 51:60, 141:150)
-iris_subset <- iris_scaled[subset, ]
-y_subset <- y[subset]
+penguins_scaled <- scale(as.matrix(penguins[penguin_predictors]))
+y <- penguins$species
+subset_sizes <- c(Adelie = 50L, Chinstrap = 10L, Gentoo = 10L)
+subset_rows <- unlist(Map(
+  \(level, size) {
+    rows <- which(y == level)
+    rows[round(seq(1, length(rows), length.out = size))]
+  },
+  names(subset_sizes),
+  subset_sizes
+))
+penguins_subset <- penguins_scaled[subset_rows, ]
+y_subset <- y[subset_rows]
+minimum_accuracy <- 14 / 15
 
 test_that("logistic regression works as expected", {
-  model <- cuda_ml_logistic_reg(iris_scaled, y, max_iter = 100)
-  preds <- predict(model, iris_scaled, type = "class")
+  model <- cuda_ml_logistic_reg(penguins_scaled, y, max_iter = 100)
+  preds <- predict(model, penguins_scaled, type = "class")
 
-  expect_gte(sum(preds$.pred_class == iris$Species), 140)
+  expect_gte(mean(preds$.pred_class == penguins$species), minimum_accuracy)
 })
 
 test_that("logistic regression is silent by default", {
   expect_silent({
-    model <- cuda_ml_logistic_reg(iris_scaled, y, max_iter = 2)
-    predict(model, iris_scaled, type = "class")
+    model <- cuda_ml_logistic_reg(penguins_scaled, y, max_iter = 2)
+    predict(model, penguins_scaled, type = "class")
   })
 })
 
 test_that("multinomial regression returns probabilities for every class", {
-  model <- cuda_ml_logistic_reg(iris_scaled, y, max_iter = 100)
-  classes <- predict(model, iris_scaled, type = "class")
-  probabilities <- predict(model, iris_scaled, type = "prob")
+  model <- cuda_ml_logistic_reg(penguins_scaled, y, max_iter = 100)
+  classes <- predict(model, penguins_scaled, type = "class")
+  probabilities <- predict(model, penguins_scaled, type = "prob")
 
   expect_named(probabilities, paste0(".pred_", levels(y)))
-  expect_equal(rowSums(probabilities), rep(1, nrow(iris_scaled)))
+  expect_equal(rowSums(probabilities), rep(1, nrow(penguins_scaled)))
   expect_identical(
     max.col(as.matrix(probabilities)),
     as.integer(classes$.pred_class)
   )
-  expect_gte(sum(levels(y)[max.col(as.matrix(probabilities))] == y), 140)
+  expect_gte(
+    mean(levels(y)[max.col(as.matrix(probabilities))] == y),
+    minimum_accuracy
+  )
 })
 
 test_that("logistic regression works as expected with custom sample weight", {
-  sample_weight <- c(rep(1, 50), rep(5, 20))
+  class_counts <- table(y_subset)
+  sample_weight <- as.numeric(max(class_counts) / class_counts[y_subset])
 
   model <- cuda_ml_logistic_reg(
-    iris_subset,
+    penguins_subset,
     y_subset,
     max_iter = 100,
     sample_weight = sample_weight
   )
-  preds <- predict(model, iris_scaled)
+  preds <- predict(model, penguins_scaled)
 
-  expect_gte(sum(preds$.pred_class == iris$Species), 140)
+  expect_gte(mean(preds$.pred_class == penguins$species), minimum_accuracy)
 })
 
 test_that("logistic regression works as expected with custom class weight", {
-  class_weight <- c(setosa = 1, versicolor = 5, virginica = 5)
+  class_counts <- table(y_subset)
+  class_weight <- max(class_counts) / class_counts
 
   model <- cuda_ml_logistic_reg(
-    iris_subset,
+    penguins_subset,
     y_subset,
     max_iter = 100,
     class_weight = class_weight
   )
-  preds <- predict(model, iris_scaled)
+  preds <- predict(model, penguins_scaled)
 
-  expect_gte(sum(preds$.pred_class == iris$Species), 140)
+  expect_gte(mean(preds$.pred_class == penguins$species), minimum_accuracy)
 })
 
 test_that("logistic regression works as expected with \"balanced\" class weight", {
   model <- cuda_ml_logistic_reg(
-    iris_subset,
+    penguins_subset,
     y_subset,
     max_iter = 100,
     class_weight = "balanced"
   )
-  preds <- predict(model, iris_scaled)
+  preds <- predict(model, penguins_scaled)
 
-  expect_gte(sum(preds$.pred_class == iris$Species), 140)
+  expect_gte(mean(preds$.pred_class == penguins$species), minimum_accuracy)
 })
 
 test_that("logistic regression works as expected with custom sample weight and class weight", {
-  sample_weight <- c(rep(1, 50), rep(2, 10), rep(3, 10))
-  class_weight <- c(setosa = 1, versicolor = 5 / 2, virginica = 5 / 3)
+  sample_weight_by_class <- c(Adelie = 1, Chinstrap = 2, Gentoo = 3)
+  sample_weight <- unname(sample_weight_by_class[as.character(y_subset)])
+  weighted_class_counts <- tapply(sample_weight, y_subset, sum)
+  class_weight <- max(weighted_class_counts) / weighted_class_counts
 
   model <- cuda_ml_logistic_reg(
-    iris_subset,
+    penguins_subset,
     y_subset,
     max_iter = 100,
     sample_weight = sample_weight,
     class_weight = class_weight
   )
-  preds <- predict(model, iris_scaled)
+  preds <- predict(model, penguins_scaled)
 
-  expect_gte(sum(preds$.pred_class == iris$Species), 140)
+  expect_gte(mean(preds$.pred_class == penguins$species), minimum_accuracy)
 })
 
 test_that("logistic regression works as expected with L1 regularization", {
   model <- cuda_ml_logistic_reg(
-    iris_scaled,
+    penguins_scaled,
     y,
     max_iter = 100,
     penalty = 2,
     mixture = 1
   )
-  preds <- predict(model, iris_scaled)
+  preds <- predict(model, penguins_scaled)
 
-  expect_gte(sum(preds$.pred_class == iris$Species), 140)
+  expect_gte(mean(preds$.pred_class == penguins$species), minimum_accuracy)
 })
 
 test_that("logistic regression works as expected with L2 regularization", {
   model <- cuda_ml_logistic_reg(
-    iris_scaled,
+    penguins_scaled,
     y,
     max_iter = 100,
     penalty = 2,
     mixture = 0
   )
-  preds <- predict(model, iris_scaled)
+  preds <- predict(model, penguins_scaled)
 
-  expect_gte(sum(preds$.pred_class == iris$Species), 140)
+  expect_gte(mean(preds$.pred_class == penguins$species), minimum_accuracy)
 })
 
 test_that("logistic regression works as expected with elasticnet regularization", {
   model <- cuda_ml_logistic_reg(
-    iris_scaled,
+    penguins_scaled,
     y,
     max_iter = 100,
     penalty = 2,
     mixture = 0.5
   )
-  preds <- predict(model, iris_scaled)
+  preds <- predict(model, penguins_scaled)
 
-  expect_gte(sum(preds$.pred_class == iris$Species), 140)
+  expect_gte(mean(preds$.pred_class == penguins$species), minimum_accuracy)
 })
 
 test_that("logistic_reg uses the cuda.ml engine", {
   skip_if_not_installed("parsnip")
 
-  data <- iris[iris$Species != "virginica", ]
-  data$Species <- droplevels(data$Species)
+  data <- penguins[penguins$species != "Gentoo", ]
+  data$species <- droplevels(data$species)
   specification <- parsnip::set_engine(
     parsnip::logistic_reg(penalty = 0.01, mixture = 0),
     "cuda.ml"
   )
-  model <- parsnip::fit(specification, Species ~ ., data = data)
+  model <- parsnip::fit(specification, species ~ ., data = data)
 
   classes <- predict(model, data, type = "class")
   probabilities <- predict(model, data, type = "prob")
 
   expect_named(classes, ".pred_class")
-  expect_named(probabilities, paste0(".pred_", levels(data$Species)))
+  expect_named(probabilities, paste0(".pred_", levels(data$species)))
 })
 
 test_that("multinom_reg uses the cuda.ml engine", {
@@ -156,9 +172,9 @@ test_that("multinom_reg uses the cuda.ml engine", {
     parsnip::multinom_reg(penalty = 0.01, mixture = 0.5),
     "cuda.ml"
   )
-  model <- parsnip::fit(specification, Species ~ ., data = iris)
+  model <- parsnip::fit(specification, species ~ ., data = penguins)
 
-  probabilities <- predict(model, iris, type = "prob")
+  probabilities <- predict(model, penguins, type = "prob")
 
-  expect_named(probabilities, paste0(".pred_", levels(iris$Species)))
+  expect_named(probabilities, paste0(".pred_", levels(penguins$species)))
 })

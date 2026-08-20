@@ -2,11 +2,11 @@ skip_if_not(run_gpu_tests, "requires the GPU test environment")
 
 context("t-distributed Stochastic Neighbor Embedding")
 
-iris_input <- iris[, names(iris) != "Species"]
+penguins_input <- scaled_penguin_predictors
 
 verify_tsne_embedding <- function(embedding) {
   expect_s3_class(embedding, "cuda_ml_tsne_model")
-  expect_equal(dim(embedding), c(nrow(iris_input), 2L))
+  expect_equal(dim(embedding), c(nrow(penguins_input), 2L))
   expect_true(all(is.finite(embedding)))
   expect_gt(sum(apply(embedding, 2L, stats::sd)), 0)
 
@@ -17,12 +17,12 @@ verify_tsne_embedding <- function(embedding) {
 
 test_that("cuda_ml_tsne() works as expected with 'exact' method", {
   verify_tsne_embedding(
-    cuda_ml_tsne(iris_input, method = "exact", seed = 0L)
+    cuda_ml_tsne(penguins_input, method = "exact", seed = 0L)
   )
 })
 
 test_that("cuda_ml_tsne() works as expected with 'fft' method", {
   verify_tsne_embedding(
-    cuda_ml_tsne(iris_input, method = "fft", n_iter = 5000L, seed = 0L)
+    cuda_ml_tsne(penguins_input, method = "fft", n_iter = 5000L, seed = 0L)
   )
 })

@@ -82,7 +82,7 @@ cuda.ml generally provides single-GPU implementations. Interfaces that expose
 {cuda.ml} provides {parsnip} bindings for supervised ML algorithms such as
 `linear_reg`, `logistic_reg`, `multinom_reg`, `rand_forest`,
 `nearest_neighbor`, `svm_rbf`, `svm_poly`, and `svm_linear`.
-Install {parsnip} separately to use these optional bindings.
+Install {parsnip} and {modeldata} separately to run the examples below.
 
 Regularized models follow tidymodels conventions for `penalty` and `mixture`.
 When predictors need scaling, learn and apply it explicitly with a {recipes}
@@ -91,29 +91,29 @@ step such as `step_normalize(all_numeric_predictors())`.
 The following example shows how {cuda.ml} can be used as a {parsnip} engine to
 build a SVM classifier.
 
-```{r svm-example}
+```{r svm-example, message = FALSE}
 library(dplyr, warn.conflicts = FALSE)
 library(parsnip)
 library(cuda.ml)
 set.seed(11235)
 
-train_inds <- iris |>
+two_class <- modeldata::two_class_dat
+
+train_inds <- two_class |>
   mutate(ind = row_number()) |>
-  group_by(Species) |>
+  group_by(Class) |>
   slice_sample(prop = 0.7)
 
-train_data <- iris[train_inds$ind, ]
-test_data <- iris[-train_inds$ind, ]
+train_data <- two_class[train_inds$ind, ]
+test_data <- two_class[-train_inds$ind, ]
 
 model <- svm_rbf(mode = "classification", rbf_sigma = 10, cost = 50) |>
   set_engine("cuda.ml") |>
-  fit(Species ~ ., data = train_data)
+  fit(Class ~ ., data = train_data)
 
 preds <- predict(model, test_data)
 
-preds |>
-  bind_cols(test_data |> select(Species)) |>
-  yardstick::conf_mat(truth = Species, estimate = .pred_class)
+table(truth = test_data$Class, estimate = preds$.pred_class)
 ```
 
 ### Using {cuda.ml} for unsupervised ML tasks
@@ -124,19 +124,23 @@ such as k-means clustering.
 ```{r kmeans-example}
 library(cuda.ml)
 
+oils <- modeldata::oils
+oil_predictors <- oils |>
+  subset(select = -class) |>
+  scale()
+
 clustering <- cuda_ml_kmeans(
-  iris[, which(names(iris) != "Species")],
-  k = 3, max_iters = 100, seed = 0L
+  oil_predictors,
+  k = 7, max_iters = 100
 )
 
-# Expected outcome: there is strong correlation
-# between cluster labels and `iris$Species`
+# The clusters largely align with oil type.
 str(clustering)
 
 library(dplyr, warn.conflicts = FALSE)
-tibble(cluster_id = clustering$labels, species = iris$Species) |>
+tibble(cluster_id = clustering$labels, oil_type = oils$class) |>
   group_by(cluster_id) |>
-  count(species)
+  count(oil_type)
 ```
 
 ### Using {cuda.ml} for visualizations
@@ -193,7 +197,7 @@ flattened_mnist_images <- mnist_images |>
 # embed
 embedding <- cuda_ml_umap(
   flattened_mnist_images, n_components = 2, n_neighbors = 50,
-  local_connectivity = 15, repulsion_strength = 10, seed = 0L
+  local_connectivity = 15, repulsion_strength = 10
 )
 
 str(embedding$transformed_data)

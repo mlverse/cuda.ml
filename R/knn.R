@@ -218,7 +218,7 @@ cuda_ml_knn_algo_ivfpq <- function(
 #'   library(MASS)
 #'   library(purrr)
 #'
-#'   set.seed(0L)
+#'   set.seed(0)
 #'
 #'   centers <- list(c(3, 3), c(-3, -3), c(-3, 3))
 #'

@@ -43,7 +43,8 @@ elastic_net_validate_l1_ratio <- function(l1_ratio) {
 #'   model <- cuda_ml_elastic_net(
 #'     formula = mpg ~ ., data = mtcars, alpha = 1e-3, l1_ratio = 0.6
 #'   )
-#'   cuda_ml_predictions <- predict(model, mtcars)
+#'   predictors <- subset(mtcars, select = -mpg)
+#'   cuda_ml_predictions <- predict(model, predictors)
 #'
 #'   # predictions will be comparable to those from a `glmnet` model with
 #'   # `lambda` set to 1e-3 and `alpha` set to 0.6
@@ -52,12 +53,12 @@ elastic_net_validate_l1_ratio <- function(l1_ratio) {
 #'
 #'   if (requireNamespace("glmnet", quietly = TRUE)) {
 #'     glmnet_model <- glmnet::glmnet(
-#'       x = as.matrix(mtcars[names(mtcars) != "mpg"]), y = mtcars$mpg,
+#'       x = as.matrix(predictors), y = mtcars$mpg,
 #'       alpha = 0.6, lambda = 1e-3, nlambda = 1, standardize = FALSE
 #'     )
 #'
 #'     glm_predictions <- predict(
-#'       glmnet_model, as.matrix(mtcars[names(mtcars) != "mpg"]),
+#'       glmnet_model, as.matrix(predictors),
 #'       s = 0
 #'     )
 #'

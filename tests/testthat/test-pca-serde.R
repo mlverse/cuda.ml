@@ -8,7 +8,7 @@ test_that("PCA models can be serialized and unserialized correctly", {
   for (whiten in c(FALSE, TRUE)) {
     for (transform_input in c(FALSE, TRUE)) {
       model <- cuda_ml_pca(
-        iris[1:4],
+        scaled_penguin_predictors,
         n_components = 3,
         whiten = whiten,
         transform_input = transform_input

@@ -2,8 +2,8 @@ skip_if_not(run_gpu_tests, "requires the GPU test environment")
 skip_if_not_installed("xgboost")
 
 test_that("nvForest loads current XGBoost formats and reports model metadata", {
-  x <- unname(as.matrix(iris[names(iris) != "Species"]))
-  y <- as.integer(iris$Species) - 1L
+  x <- unname(as.matrix(penguins[penguin_predictors]))
+  y <- as.integer(penguins$species) - 1L
   training <- xgboost::xgb.DMatrix(x, label = y)
   xgb_model <- xgboost::xgb.train(
     params = list(
@@ -23,7 +23,7 @@ test_that("nvForest loads current XGBoost formats and reports model metadata", {
   model <- cuda_ml_nvforest_load_model(
     path,
     model_type = "xgboost_json",
-    class_levels = levels(iris$Species),
+    class_levels = levels(penguins$species),
     device = "gpu"
   )
   info <- cuda_ml_nvforest_info(model)
@@ -46,7 +46,7 @@ test_that("nvForest loads current XGBoost formats and reports model metadata", {
   expect_true(info$has_probability_output)
   expect_named(
     probabilities,
-    paste0(".pred_", levels(iris$Species))
+    paste0(".pred_", levels(penguins$species))
   )
   expect_equal(rowSums(probabilities), rep(1, nrow(x)), tolerance = 1e-6)
 })
@@ -93,10 +93,10 @@ test_that("nvForest exposes leaf and per-tree predictions", {
 })
 
 test_that("nvForest matches XGBoost binary probabilities and classes", {
-  data <- iris[iris$Species != "virginica", ]
-  class_levels <- levels(droplevels(data$Species))
-  x <- unname(as.matrix(data[names(data) != "Species"]))
-  y <- as.integer(data$Species) - 1L
+  data <- penguins[penguins$species != "Gentoo", ]
+  class_levels <- levels(droplevels(data$species))
+  x <- unname(as.matrix(data[penguin_predictors]))
+  y <- as.integer(data$species) - 1L
   training <- xgboost::xgb.DMatrix(x, label = y)
   xgb_model <- xgboost::xgb.train(
     params = list(objective = "binary:logistic", max_depth = 3L),
@@ -134,8 +134,8 @@ test_that("nvForest matches XGBoost binary probabilities and classes", {
 })
 
 test_that("nvForest matches XGBoost multiclass probabilities and classes", {
-  x <- unname(as.matrix(iris[names(iris) != "Species"]))
-  y <- as.integer(iris$Species) - 1L
+  x <- unname(as.matrix(penguins[penguin_predictors]))
+  y <- as.integer(penguins$species) - 1L
   training <- xgboost::xgb.DMatrix(x, label = y)
   xgb_model <- xgboost::xgb.train(
     params = list(
@@ -154,13 +154,15 @@ test_that("nvForest matches XGBoost multiclass probabilities and classes", {
   model <- cuda_ml_nvforest_load_model(
     path,
     model_type = "xgboost_ubj",
-    class_levels = levels(iris$Species),
+    class_levels = levels(penguins$species),
     device = "gpu"
   )
   expected_probability <- predict(xgb_model, x, strict_shape = TRUE)
   expected_class <- factor(
-    levels(iris$Species)[max.col(expected_probability, ties.method = "first")],
-    levels = levels(iris$Species)
+    levels(penguins$species)[
+      max.col(expected_probability, ties.method = "first")
+    ],
+    levels = levels(penguins$species)
   )
   probabilities <- predict(model, x, type = "prob")
   classes <- predict(model, x, type = "class")
@@ -175,9 +177,9 @@ test_that("nvForest matches XGBoost multiclass probabilities and classes", {
 })
 
 test_that("nvForest rejects raw margins as classes or probabilities", {
-  data <- iris[iris$Species != "virginica", ]
-  x <- unname(as.matrix(data[names(data) != "Species"]))
-  y <- as.integer(data$Species) - 1L
+  data <- penguins[penguins$species != "Gentoo", ]
+  x <- unname(as.matrix(data[penguin_predictors]))
+  y <- as.integer(data$species) - 1L
   training <- xgboost::xgb.DMatrix(x, label = y)
   xgb_model <- xgboost::xgb.train(
     params = list(objective = "binary:logitraw", max_depth = 3L),
@@ -192,7 +194,7 @@ test_that("nvForest rejects raw margins as classes or probabilities", {
   model <- cuda_ml_nvforest_load_model(
     path,
     model_type = "xgboost_ubj",
-    class_levels = levels(droplevels(data$Species)),
+    class_levels = levels(droplevels(data$species)),
     device = "gpu"
   )
   info <- cuda_ml_nvforest_info(model)
@@ -203,9 +205,9 @@ test_that("nvForest rejects raw margins as classes or probabilities", {
 })
 
 test_that("nvForest treats hinge output as classes, not probabilities", {
-  data <- iris[iris$Species != "virginica", ]
-  x <- unname(as.matrix(data[names(data) != "Species"]))
-  y <- as.integer(data$Species) - 1L
+  data <- penguins[penguins$species != "Gentoo", ]
+  x <- unname(as.matrix(data[penguin_predictors]))
+  y <- as.integer(data$species) - 1L
   training <- xgboost::xgb.DMatrix(x, label = y)
   xgb_model <- xgboost::xgb.train(
     params = list(objective = "binary:hinge", max_depth = 3L),
@@ -220,12 +222,12 @@ test_that("nvForest treats hinge output as classes, not probabilities", {
   model <- cuda_ml_nvforest_load_model(
     path,
     model_type = "xgboost_ubj",
-    class_levels = levels(droplevels(data$Species)),
+    class_levels = levels(droplevels(data$species)),
     device = "gpu"
   )
   expected <- factor(
-    levels(droplevels(data$Species))[as.integer(predict(xgb_model, x)) + 1L],
-    levels = levels(droplevels(data$Species))
+    levels(droplevels(data$species))[as.integer(predict(xgb_model, x)) + 1L],
+    levels = levels(droplevels(data$species))
   )
 
   expect_identical(predict(model, x)$.pred_class, expected)

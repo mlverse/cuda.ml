@@ -73,7 +73,12 @@ place.
 library(cuda.ml)
 
 if (interactive() && cuda_ml_backend_info()$runtime_installed) {
-  iris.pca <- cuda_ml_pca(iris[1:4], n_components = 3)
-  print(iris.pca)
+  oils <- modeldata::oils
+  oil_predictors <- oils |>
+    subset(select = -class) |>
+    scale()
+
+  oil_pca <- cuda_ml_pca(oil_predictors, n_components = 3)
+  print(oil_pca)
 }
 }

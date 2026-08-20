@@ -181,29 +181,29 @@ loss.</p>
 <div class="section level2">
 <h2 id="set-the-engine">Set the engine<a class="anchor" aria-label="anchor" href="#set-the-engine"></a>
 </h2>
-<p>Create a parsnip specification, set its mode when the specification
-supports more than one, and select the cuda.ml engine:</p>
+<p>Set the mode and common arguments in a parsnip specification, then
+select the cuda.ml engine:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mlverse.github.io/cuda.ml/">cuda.ml</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/parsnip" class="external-link">parsnip</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">forest_spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://parsnip.tidymodels.org/reference/rand_forest.html" class="external-link">rand_forest</a></span><span class="op">(</span></span>
+<span>  mode <span class="op">=</span> <span class="st">"classification"</span>,</span>
 <span>  mtry <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  trees <span class="op">=</span> <span class="fl">500</span>,</span>
 <span>  min_n <span class="op">=</span> <span class="fl">5</span></span>
 <span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://parsnip.tidymodels.org/reference/set_args.html" class="external-link">set_mode</a></span><span class="op">(</span><span class="st">"classification"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://parsnip.tidymodels.org/reference/set_engine.html" class="external-link">set_engine</a></span><span class="op">(</span></span>
 <span>    <span class="st">"cuda.ml"</span>,</span>
-<span>    max_depth <span class="op">=</span> <span class="fl">20L</span>,</span>
-<span>    n_bins <span class="op">=</span> <span class="fl">256L</span>,</span>
-<span>    seed <span class="op">=</span> <span class="fl">1L</span></span>
+<span>    max_depth <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>    n_bins <span class="op">=</span> <span class="fl">256</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="va">forest_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/fit.html" class="external-link">fit</a></span><span class="op">(</span><span class="va">forest_spec</span>, <span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">forest_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/fit.html" class="external-link">fit</a></span><span class="op">(</span><span class="va">forest_spec</span>, <span class="va">class</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="fu">modeldata</span><span class="fu">::</span><span class="va"><a href="https://modeldata.tidymodels.org/reference/hpc_data.html" class="external-link">hpc_data</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">class_predictions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">forest_fit</span>, <span class="va">iris</span>, type <span class="op">=</span> <span class="st">"class"</span><span class="op">)</span></span>
-<span><span class="va">probabilities</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">forest_fit</span>, <span class="va">iris</span>, type <span class="op">=</span> <span class="st">"prob"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">class_predictions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">forest_fit</span>, <span class="fu">modeldata</span><span class="fu">::</span><span class="va"><a href="https://modeldata.tidymodels.org/reference/hpc_data.html" class="external-link">hpc_data</a></span>, type <span class="op">=</span> <span class="st">"class"</span><span class="op">)</span></span>
+<span><span class="va">probabilities</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">forest_fit</span>, <span class="fu">modeldata</span><span class="fu">::</span><span class="va"><a href="https://modeldata.tidymodels.org/reference/hpc_data.html" class="external-link">hpc_data</a></span>, type <span class="op">=</span> <span class="st">"prob"</span><span class="op">)</span></span></code></pre></div>
 <p>Arguments in the model specification, such as <code>mtry</code>, are
 common parsnip arguments. Arguments in <code><a href="https://parsnip.tidymodels.org/reference/set_engine.html" class="external-link">set_engine()</a></code>, such
 as <code>max_depth</code>, are specific to cuda.ml. Put each argument in
@@ -230,15 +230,21 @@ recipe to new data before calling the model engine.</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/workflows" class="external-link">workflows</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
-<span><span class="va">training_rows</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">iris</span><span class="op">)</span><span class="op">)</span>, <span class="fl">120</span><span class="op">)</span></span>
-<span><span class="va">iris_train</span> <span class="op">&lt;-</span> <span class="va">iris</span><span class="op">[</span><span class="va">training_rows</span>, <span class="op">]</span></span>
-<span><span class="va">iris_test</span> <span class="op">&lt;-</span> <span class="va">iris</span><span class="op">[</span><span class="op">-</span><span class="va">training_rows</span>, <span class="op">]</span></span>
+<span><span class="va">training_rows</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu">modeldata</span><span class="fu">::</span><span class="va"><a href="https://modeldata.tidymodels.org/reference/two_class_dat.html" class="external-link">two_class_dat</a></span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">floor</a></span><span class="op">(</span><span class="fl">0.8</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu">modeldata</span><span class="fu">::</span><span class="va"><a href="https://modeldata.tidymodels.org/reference/two_class_dat.html" class="external-link">two_class_dat</a></span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">training_data</span> <span class="op">&lt;-</span> <span class="fu">modeldata</span><span class="fu">::</span><span class="va"><a href="https://modeldata.tidymodels.org/reference/two_class_dat.html" class="external-link">two_class_dat</a></span><span class="op">[</span><span class="va">training_rows</span>, <span class="op">]</span></span>
+<span><span class="va">testing_data</span> <span class="op">&lt;-</span> <span class="fu">modeldata</span><span class="fu">::</span><span class="va"><a href="https://modeldata.tidymodels.org/reference/two_class_dat.html" class="external-link">two_class_dat</a></span><span class="op">[</span><span class="op">-</span><span class="va">training_rows</span>, <span class="op">]</span></span>
 <span></span>
-<span><span class="va">iris_recipe</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html" class="external-link">recipe</a></span><span class="op">(</span><span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">iris_train</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span><span class="va">classifier_recipe</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html" class="external-link">recipe</a></span><span class="op">(</span><span class="va">Class</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">training_data</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_normalize.html" class="external-link">step_normalize</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html" class="external-link">all_numeric_predictors</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">knn_spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://parsnip.tidymodels.org/reference/nearest_neighbor.html" class="external-link">nearest_neighbor</a></span><span class="op">(</span>neighbors <span class="op">=</span> <span class="fl">5</span>, dist_power <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://parsnip.tidymodels.org/reference/set_args.html" class="external-link">set_mode</a></span><span class="op">(</span><span class="st">"classification"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span><span class="va">knn_spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://parsnip.tidymodels.org/reference/nearest_neighbor.html" class="external-link">nearest_neighbor</a></span><span class="op">(</span></span>
+<span>  mode <span class="op">=</span> <span class="st">"classification"</span>,</span>
+<span>  neighbors <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>  dist_power <span class="op">=</span> <span class="fl">2</span></span>
+<span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://parsnip.tidymodels.org/reference/set_engine.html" class="external-link">set_engine</a></span><span class="op">(</span></span>
 <span>    <span class="st">"cuda.ml"</span>,</span>
 <span>    algo <span class="op">=</span> <span class="st">"brute"</span>,</span>
@@ -246,48 +252,24 @@ recipe to new data before calling the model engine.</p>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="va">knn_workflow</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://workflows.tidymodels.org/reference/workflow.html" class="external-link">workflow</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://workflows.tidymodels.org/reference/add_recipe.html" class="external-link">add_recipe</a></span><span class="op">(</span><span class="va">iris_recipe</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://workflows.tidymodels.org/reference/add_recipe.html" class="external-link">add_recipe</a></span><span class="op">(</span><span class="va">classifier_recipe</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://workflows.tidymodels.org/reference/add_model.html" class="external-link">add_model</a></span><span class="op">(</span><span class="va">knn_spec</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">knn_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/fit.html" class="external-link">fit</a></span><span class="op">(</span><span class="va">knn_workflow</span>, data <span class="op">=</span> <span class="va">iris_train</span><span class="op">)</span></span>
+<span><span class="va">knn_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/fit.html" class="external-link">fit</a></span><span class="op">(</span><span class="va">knn_workflow</span>, data <span class="op">=</span> <span class="va">training_data</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span></span>
-<span>  truth <span class="op">=</span> <span class="va">iris_test</span><span class="op">$</span><span class="va">Species</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">knn_fit</span>, <span class="va">iris_test</span>, type <span class="op">=</span> <span class="st">"class"</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">knn_fit</span>, <span class="va">iris_test</span>, type <span class="op">=</span> <span class="st">"prob"</span><span class="op">)</span></span>
+<span>  truth <span class="op">=</span> <span class="va">testing_data</span><span class="op">$</span><span class="va">Class</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">knn_fit</span>, <span class="va">testing_data</span>, type <span class="op">=</span> <span class="st">"class"</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">knn_fit</span>, <span class="va">testing_data</span>, type <span class="op">=</span> <span class="st">"prob"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">results</span></span>
-<span><span class="co">#&gt;         truth .pred_class .pred_setosa .pred_versicolor .pred_virginica</span></span>
-<span><span class="co">#&gt; 1      setosa      setosa            1              0.0             0.0</span></span>
-<span><span class="co">#&gt; 2      setosa      setosa            1              0.0             0.0</span></span>
-<span><span class="co">#&gt; 3      setosa      setosa            1              0.0             0.0</span></span>
-<span><span class="co">#&gt; 4      setosa      setosa            1              0.0             0.0</span></span>
-<span><span class="co">#&gt; 5      setosa      setosa            1              0.0             0.0</span></span>
-<span><span class="co">#&gt; 6      setosa      setosa            1              0.0             0.0</span></span>
-<span><span class="co">#&gt; 7      setosa      setosa            1              0.0             0.0</span></span>
-<span><span class="co">#&gt; 8      setosa      setosa            1              0.0             0.0</span></span>
-<span><span class="co">#&gt; 9      setosa      setosa            1              0.0             0.0</span></span>
-<span><span class="co">#&gt; 10     setosa      setosa            1              0.0             0.0</span></span>
-<span><span class="co">#&gt; 11     setosa      setosa            1              0.0             0.0</span></span>
-<span><span class="co">#&gt; 12 versicolor  versicolor            0              1.0             0.0</span></span>
-<span><span class="co">#&gt; 13 versicolor  versicolor            0              1.0             0.0</span></span>
-<span><span class="co">#&gt; 14 versicolor  versicolor            0              0.6             0.4</span></span>
-<span><span class="co">#&gt; 15 versicolor  versicolor            0              1.0             0.0</span></span>
-<span><span class="co">#&gt; 16 versicolor  versicolor            0              1.0             0.0</span></span>
-<span><span class="co">#&gt; 17 versicolor  versicolor            0              0.6             0.4</span></span>
-<span><span class="co">#&gt; 18 versicolor  versicolor            0              1.0             0.0</span></span>
-<span><span class="co">#&gt; 19 versicolor  versicolor            0              1.0             0.0</span></span>
-<span><span class="co">#&gt; 20 versicolor  versicolor            0              1.0             0.0</span></span>
-<span><span class="co">#&gt; 21 versicolor  versicolor            0              1.0             0.0</span></span>
-<span><span class="co">#&gt; 22 versicolor  versicolor            0              1.0             0.0</span></span>
-<span><span class="co">#&gt; 23 versicolor  versicolor            0              1.0             0.0</span></span>
-<span><span class="co">#&gt; 24  virginica   virginica            0              0.0             1.0</span></span>
-<span><span class="co">#&gt; 25  virginica  versicolor            0              0.8             0.2</span></span>
-<span><span class="co">#&gt; 26  virginica   virginica            0              0.2             0.8</span></span>
-<span><span class="co">#&gt; 27  virginica   virginica            0              0.2             0.8</span></span>
-<span><span class="co">#&gt; 28  virginica   virginica            0              0.4             0.6</span></span>
-<span><span class="co">#&gt; 29  virginica   virginica            0              0.0             1.0</span></span>
-<span><span class="co">#&gt; 30  virginica  versicolor            0              0.6             0.4</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">results</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    truth .pred_class .pred_Class1 .pred_Class2</span></span>
+<span><span class="co">#&gt; 1 Class1      Class1          0.8          0.2</span></span>
+<span><span class="co">#&gt; 2 Class2      Class2          0.0          1.0</span></span>
+<span><span class="co">#&gt; 3 Class1      Class1          1.0          0.0</span></span>
+<span><span class="co">#&gt; 4 Class2      Class2          0.2          0.8</span></span>
+<span><span class="co">#&gt; 5 Class1      Class1          1.0          0.0</span></span>
+<span><span class="co">#&gt; 6 Class1      Class1          0.6          0.4</span></span></code></pre></div>
 <p>The parsnip KNN engine defaults to <code>algo = "ivfflat"</code> and
 <code>metric = "euclidean"</code>. <code>ivfflat</code> performs
 approximate neighbor search. Set <code>algo = "brute"</code>, as above,
@@ -541,18 +523,16 @@ parsnip workflow.</p>
 RBF, polynomial, and linear SVM specifications.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">direct_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_ml_svm.html">cuda_ml_svm</a></span><span class="op">(</span></span>
-<span>  <span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>,</span>
-<span>  data <span class="op">=</span> <span class="va">iris</span>,</span>
+<span>  <span class="va">Class</span> <span class="op">~</span> <span class="va">.</span>,</span>
+<span>  data <span class="op">=</span> <span class="fu">modeldata</span><span class="fu">::</span><span class="va"><a href="https://modeldata.tidymodels.org/reference/two_class_dat.html" class="external-link">two_class_dat</a></span>,</span>
 <span>  kernel <span class="op">=</span> <span class="st">"tanh"</span>,</span>
 <span>  cost <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  gamma <span class="op">=</span> <span class="fl">0.1</span>,</span>
 <span>  coef0 <span class="op">=</span> <span class="fl">0</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">direct_predictions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span></span>
-<span>  <span class="va">direct_fit</span>,</span>
-<span>  <span class="va">iris</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">iris</span><span class="op">)</span> <span class="op">!=</span> <span class="st">"Species"</span><span class="op">]</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">direct_predictors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fu">modeldata</span><span class="fu">::</span><span class="va"><a href="https://modeldata.tidymodels.org/reference/two_class_dat.html" class="external-link">two_class_dat</a></span>, select <span class="op">=</span> <span class="op">-</span><span class="va">Class</span><span class="op">)</span></span>
+<span><span class="va">direct_predictions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">direct_fit</span>, <span class="va">direct_predictors</span><span class="op">)</span></span></code></pre></div>
 <p>See <a href="model-persistence.html">Save and restore models</a>
 before moving a fitted model to another R process or deployment
 host.</p>

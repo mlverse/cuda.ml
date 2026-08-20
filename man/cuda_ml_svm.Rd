@@ -180,13 +180,16 @@ library(cuda.ml)
 if (interactive() && cuda_ml_backend_info()$runtime_installed) {
   # Classification
 
+  two_class <- modeldata::two_class_dat
+
   model <- cuda_ml_svm(
-    formula = Species ~ .,
-    data = iris,
+    formula = Class ~ .,
+    data = two_class,
     kernel = "rbf"
   )
 
-  predictions <- predict(model, iris[names(iris) != "Species"])
+  predictors <- subset(two_class, select = -Class)
+  predictions <- predict(model, predictors)
 
   # Regression
 

@@ -51,7 +51,8 @@ cuda_ml_install()
 
 model <- cuda_ml_unserialize(state_path)
 
-predict(model, mtcars[1:5, names(mtcars) != "mpg"])
+predictors <- subset(mtcars, select = -mpg)
+predict(model, predictors[1:5, ])
 #> # A tibble: 5 × 1
 #>   .pred
 #>   <dbl>
@@ -101,11 +102,11 @@ restore. Use this when training a random forest on a GPU and deploying
 it on a CPU-only host.
 
 ``` r
+set.seed(1)
 forest <- cuda_ml_rand_forest(
-  Species ~ .,
-  data = iris,
-  trees = 100,
-  seed = 1
+  class ~ .,
+  data = modeldata::hpc_data,
+  trees = 100
 )
 
 cpu_bundle <- bundle(forest, device = "cpu")

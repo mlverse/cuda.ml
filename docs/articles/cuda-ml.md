@@ -88,10 +88,8 @@ fit <- cuda_ml_ols(
   method = "qr"
 )
 
-predictions <- predict(
-  fit,
-  new_data = test[names(test) != "mpg"]
-)
+test_predictors <- subset(test, select = -mpg)
+predictions <- predict(fit, new_data = test_predictors)
 
 cbind(
   actual = test$mpg,
@@ -107,16 +105,20 @@ predictors to the backend.
 ## Compute a lower-dimensional representation
 
 Unsupervised and transformation functions take observations in rows and
-numeric features in columns.
-[`cuda_ml_pca()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_pca.md)
-mean-centers the features, fits the principal components, and, by
-default, transforms the input data:
+numeric features in columns. Because the measurements below have
+different ranges, the example scales them before calling
+[`cuda_ml_pca()`](https://mlverse.github.io/cuda.ml/reference/cuda_ml_pca.md).
+The function mean-centers the scaled features, fits the principal
+components, and, by default, transforms the input data:
 
 ``` r
-iris_predictors <- iris[names(iris) != "Species"]
+oils <- modeldata::oils
+oil_predictors <- oils |>
+  subset(select = -class) |>
+  scale()
 
 pca_fit <- cuda_ml_pca(
-  iris_predictors,
+  oil_predictors,
   n_components = 2
 )
 

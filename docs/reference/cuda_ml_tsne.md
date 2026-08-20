@@ -143,9 +143,14 @@ dimensional space, with each row representing an embedded data point.
 library(cuda.ml)
 
 if (interactive() && cuda_ml_backend_info()$runtime_installed) {
-  embedding <- cuda_ml_tsne(iris[1:4], method = "exact")
+  oils <- modeldata::oils
+  oil_predictors <- oils |>
+    subset(select = -class) |>
+    scale()
 
-  set.seed(0L)
-  print(kmeans(embedding, centers = 3))
+  embedding <- cuda_ml_tsne(oil_predictors, method = "exact")
+
+  set.seed(0)
+  print(kmeans(embedding, centers = 7))
 }
 ```

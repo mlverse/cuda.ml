@@ -88,16 +88,21 @@ new_umap_model <- function(model) {
 #' library(cuda.ml)
 #'
 #' if (interactive() && cuda_ml_backend_info()$runtime_installed) {
+#'   oils <- modeldata::oils
+#'   oil_predictors <- oils |>
+#'     subset(select = -class) |>
+#'     scale()
+#'
 #'   model <- cuda_ml_umap(
-#'     x = iris[1:4],
-#'     y = iris[[5]],
+#'     x = oil_predictors,
+#'     y = oils$class,
 #'     n_components = 2,
 #'     n_epochs = 200,
 #'     transform_input = TRUE
 #'   )
 #'
-#'   set.seed(0L)
-#'   print(kmeans(model$transformed_data, iter.max = 100, centers = 3))
+#'   set.seed(0)
+#'   print(kmeans(model$transformed_data, iter.max = 100, centers = 7))
 #' }
 #' @export
 cuda_ml_umap <- function(

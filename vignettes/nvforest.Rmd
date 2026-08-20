@@ -65,17 +65,17 @@ functions as imported models.
 library(cuda.ml)
 cuda_ml_install()
 
+set.seed(1)
 forest <- cuda_ml_rand_forest(
-  Species ~ .,
-  data = iris,
-  trees = 500,
-  seed = 1
+  class ~ .,
+  data = modeldata::hpc_data,
+  trees = 500
 )
 
-dir.create("iris-forest")
+dir.create("hpc-forest")
 cuda_ml_nvforest_export(
   forest,
-  directory = "iris-forest",
+  directory = "hpc-forest",
   prefix = "model"
 )
 ```
@@ -88,13 +88,14 @@ library(cuda.ml)
 cuda_ml_install(device = "cpu")
 
 forest <- cuda_ml_nvforest_import(
-  directory = "iris-forest",
+  directory = "hpc-forest",
   prefix = "model",
   device = "cpu"
 )
 
-predict(forest, iris[1:5, -5], type = "class")
-predict(forest, iris[1:5, -5], type = "prob")
+hpc_predictors <- subset(modeldata::hpc_data, select = -class)
+predict(forest, hpc_predictors[1:5, ], type = "class")
+predict(forest, hpc_predictors[1:5, ], type = "prob")
 ```
 
 The checkpoint is a standard, device-neutral Treelite checkpoint containing

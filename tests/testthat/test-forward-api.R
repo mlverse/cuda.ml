@@ -40,22 +40,22 @@ test_that("prediction methods use the R modeling new_data convention", {
 })
 
 test_that("classification rejects unobserved outcome levels", {
-  data <- iris[iris$Species != "virginica", ]
+  data <- penguins[penguins$species != "Gentoo", ]
 
   expect_error(
-    cuda_ml_rand_forest(Species ~ ., data, trees = 10L),
+    cuda_ml_rand_forest(species ~ ., data, trees = 10L),
     "Every outcome factor level must be represented"
   )
   expect_error(
-    cuda_ml_logistic_reg(Species ~ ., data),
+    cuda_ml_logistic_reg(species ~ ., data),
     "Every outcome factor level must be represented"
   )
   expect_error(
-    cuda_ml_knn(Species ~ ., data, algo = "brute", metric = "euclidean"),
+    cuda_ml_knn(species ~ ., data, algo = "brute", metric = "euclidean"),
     "Every outcome factor level must be represented"
   )
   expect_error(
-    cuda_ml_svm(Species ~ ., data, cost = 1),
+    cuda_ml_svm(species ~ ., data, cost = 1),
     "Every outcome factor level must be represented"
   )
 })
@@ -183,9 +183,9 @@ test_that("default fit calls request the RAPIDS off log level", {
   cuda_ml_kmeans(matrix(c(0, 1), ncol = 1), k = 1)
   cuda_ml_tsne(matrix(seq_len(12), nrow = 6), method = "exact")
   cuda_ml_umap(matrix(seq_len(12), nrow = 6), transform_input = FALSE)
-  data <- iris[iris$Species != "virginica", ]
-  data$Species <- droplevels(data$Species)
-  cuda_ml_svm(Species ~ ., data)
+  data <- penguins[penguins$species != "Gentoo", ]
+  data$species <- droplevels(data$species)
+  cuda_ml_svm(species ~ ., data)
 
   expect_identical(verbosity$dbscan, 6L)
   expect_identical(verbosity$kmeans, 6L)
@@ -219,7 +219,7 @@ test_that("random forest mtry survives conversion to single precision", {
 
 test_that("random forest arguments fail before native execution", {
   expect_error(
-    cuda_ml_rand_forest(Species ~ ., iris, split_criterion = "mse"),
+    cuda_ml_rand_forest(species ~ ., penguins, split_criterion = "mse"),
     "one of"
   )
   expect_error(
@@ -241,19 +241,19 @@ test_that("random forest arguments fail before native execution", {
 })
 
 test_that("logistic regression arguments fail before native execution", {
-  data <- iris[iris$Species != "virginica", ]
-  data$Species <- droplevels(data$Species)
+  data <- penguins[penguins$species != "Gentoo", ]
+  data$species <- droplevels(data$species)
 
   expect_error(
-    cuda_ml_logistic_reg(Species ~ ., data, fit_intercept = NA),
+    cuda_ml_logistic_reg(species ~ ., data, fit_intercept = NA),
     "fit_intercept"
   )
   expect_error(
-    cuda_ml_logistic_reg(Species ~ ., data, tol = 0),
+    cuda_ml_logistic_reg(species ~ ., data, tol = 0),
     "tol"
   )
   expect_error(
-    cuda_ml_logistic_reg(Species ~ ., data, max_iter = 1.5),
+    cuda_ml_logistic_reg(species ~ ., data, max_iter = 1.5),
     "max_iter"
   )
 })

@@ -54,7 +54,7 @@ particular GPU.
 {cuda.ml} provides {parsnip} bindings for supervised ML algorithms such
 as `linear_reg`, `logistic_reg`, `multinom_reg`, `rand_forest`,
 `nearest_neighbor`, `svm_rbf`, `svm_poly`, and `svm_linear`. Install
-{parsnip} separately to use these optional bindings.
+{parsnip} and {modeldata} separately to run the examples below.
 
 Regularized models follow tidymodels conventions for `penalty` and
 `mixture`. When predictors need scaling, learn and apply it explicitly
@@ -70,28 +70,27 @@ library(parsnip)
 library(cuda.ml)
 set.seed(11235)
 
-train_inds <- iris |>
+two_class <- modeldata::two_class_dat
+
+train_inds <- two_class |>
   mutate(ind = row_number()) |>
-  group_by(Species) |>
+  group_by(Class) |>
   slice_sample(prop = 0.7)
 
-train_data <- iris[train_inds$ind, ]
-test_data <- iris[-train_inds$ind, ]
+train_data <- two_class[train_inds$ind, ]
+test_data <- two_class[-train_inds$ind, ]
 
 model <- svm_rbf(mode = "classification", rbf_sigma = 10, cost = 50) |>
   set_engine("cuda.ml") |>
-  fit(Species ~ ., data = train_data)
+  fit(Class ~ ., data = train_data)
 
 preds <- predict(model, test_data)
 
-preds |>
-  bind_cols(test_data |> select(Species)) |>
-  yardstick::conf_mat(truth = Species, estimate = .pred_class)
-#>             Truth
-#> Prediction   setosa versicolor virginica
-#>   setosa         15          0         0
-#>   versicolor      0         12         1
-#>   virginica       0          3        14
+table(truth = test_data$Class, estimate = preds$.pred_class)
+#>         estimate
+#> truth    Class1 Class2
+#>   Class1    115     17
+#>   Class2     22     85
 ```
 
 ### Using {cuda.ml} for unsupervised ML tasks
@@ -102,33 +101,44 @@ ML tasks such as k-means clustering.
 ``` r
 library(cuda.ml)
 
+oils <- modeldata::oils
+oil_predictors <- oils |>
+  subset(select = -class) |>
+  scale()
+
 clustering <- cuda_ml_kmeans(
-  iris[, which(names(iris) != "Species")],
-  k = 3, max_iters = 100, seed = 0L
+  oil_predictors,
+  k = 7, max_iters = 100
 )
 
-# Expected outcome: there is strong correlation
-# between cluster labels and `iris$Species`
+# The clusters largely align with oil type.
 str(clustering)
 #> List of 4
-#>  $ labels   : int [1:150] 1 1 1 1 1 1 1 1 1 1 ...
-#>  $ centroids: num [1:3, 1:4] 5.9 5.01 6.85 2.75 3.43 ...
-#>  $ inertia  : num 78.9
+#>  $ labels   : int [1:96] 0 0 0 0 0 0 0 0 0 0 ...
+#>  $ centroids: num [1:7, 1:7] 0.825 -1.015 -1.505 1.097 0.557 ...
+#>  $ inertia  : num 135
 #>  $ n_iter   : int 100
 
 library(dplyr, warn.conflicts = FALSE)
-tibble(cluster_id = clustering$labels, species = iris$Species) |>
+tibble(cluster_id = clustering$labels, oil_type = oils$class) |>
   group_by(cluster_id) |>
-  count(species)
-#> # A tibble: 5 × 3
-#> # Groups:   cluster_id [3]
-#>   cluster_id species        n
-#>        <int> <fct>      <int>
-#> 1          0 versicolor    48
-#> 2          0 virginica     14
-#> 3          1 setosa        50
-#> 4          2 versicolor     2
-#> 5          2 virginica     36
+  count(oil_type)
+#> # A tibble: 12 × 3
+#> # Groups:   cluster_id [7]
+#>    cluster_id oil_type      n
+#>         <int> <fct>     <int>
+#>  1          0 pumpkin      34
+#>  2          1 pumpkin       2
+#>  3          1 sunflower    25
+#>  4          2 rapeseed      6
+#>  5          3 olive         6
+#>  6          4 corn          2
+#>  7          4 pumpkin       1
+#>  8          4 soybean      11
+#>  9          5 sunflower     1
+#> 10          6 olive         1
+#> 11          6 peanut        3
+#> 12          6 rapeseed      4
 ```
 
 ### Using {cuda.ml} for visualizations
@@ -165,11 +175,11 @@ flattened_mnist_images <- mnist_images |>
 # embed
 embedding <- cuda_ml_umap(
   flattened_mnist_images, n_components = 2, n_neighbors = 50,
-  local_connectivity = 15, repulsion_strength = 10, seed = 0L
+  local_connectivity = 15, repulsion_strength = 10
 )
 
 str(embedding$transformed_data)
-#>  num [1:60000, 1:2] -7.08 -32.55 9.61 20.65 12.25 ...
+#>  num [1:60000, 1:2] -0.265 -27.208 8.108 16.145 11.808 ...
 
 # visualize
 embedding$transformed_data |>
