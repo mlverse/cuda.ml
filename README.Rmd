@@ -33,63 +33,76 @@ stopifnot(
 <a href="https://www.r-pkg.org/pkg/cuda.ml"><img src="https://cranlogs.r-pkg.org/badges/cuda.ml?color=brightgreen" alt="CRAN downloads"></a>
 <!-- badges: end -->
 
-The goal of {cuda.ml} is to provide a simple and intuitive R interface for
-[RAPIDS cuML](https://github.com/rapidsai/cuml).
-RAPIDS cuML is a suite of GPU-accelerated machine learning libraries powered by
-[CUDA](https://en.wikipedia.org/wiki/CUDA).
-{cuda.ml} is under active development, and currently implements R interfaces for
-the algorithms listed below
-(which is a subset of
-[algorithms supported by RAPIDS cuML](https://github.com/rapidsai/cuml#supported-algorithms)).
+The goal of {cuda.ml} is to provide a simple and intuitive R interface
+for [RAPIDS cuML](https://github.com/NVIDIA/cuml). RAPIDS cuML is a
+suite of GPU-accelerated machine learning libraries powered by
+[CUDA](https://en.wikipedia.org/wiki/CUDA). {cuda.ml} is under active
+development, and currently implements R interfaces for the algorithms
+listed below (which is a subset of
+[algorithms supported by RAPIDS cuML](
+  https://github.com/NVIDIA/cuml#supported-algorithms
+)).
 
 ## Supported Algorithms
 
-| Category | Algorithm |
-| --- | --- |
-| **Clustering** | Density-Based Spatial Clustering of Applications with Noise (DBSCAN) |
-|  | K-Means |
-|  | Single-Linkage Agglomerative Clustering |
-| **Dimensionality Reduction** | Principal Components Analysis (PCA) |
-| | Truncated Singular Value Decomposition (tSVD) |
-| | Uniform Manifold Approximation and Projection (UMAP) |
-| | t-Distributed Stochastic Neighbor Embedding (TSNE) |
-| **Linear Models for Regression or Classification** | Linear Regression (OLS) |
-| | Ridge, lasso, and elastic-net linear regression |
-| | Logistic and multinomial regression |
-| **Nonlinear Models for Regression or Classification** | Random Forest (RF) classification with nvForest inference |
-| | Random Forest (RF) regression with nvForest inference |
-| | CPU or GPU nvForest inference for XGBoost, LightGBM, and Treelite models |
-|  | K-Nearest Neighbors (KNN) classification with brute-force, IVFFlat, or IVFPQ indexes |
-|  | K-Nearest Neighbors (KNN) regression with brute-force, IVFFlat, or IVFPQ indexes |
-|  | Support Vector Machine Classifier (SVC) |
-|  | Epsilon-Support Vector Regression (SVR) |
+| Category                                              | Algorithm                                                                            |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| **Clustering**                                        | Density-Based Spatial Clustering of Applications with Noise (DBSCAN)                 |
+|                                                       | K-Means                                                                              |
+|                                                       | Single-Linkage Agglomerative Clustering                                              |
+| **Dimensionality Reduction**                          | Principal Components Analysis (PCA)                                                  |
+|                                                       | Truncated Singular Value Decomposition (tSVD)                                        |
+|                                                       | Uniform Manifold Approximation and Projection (UMAP)                                 |
+|                                                       | t-Distributed Stochastic Neighbor Embedding (TSNE)                                   |
+| **Linear Models for Regression or Classification**    | Linear Regression (OLS)                                                              |
+|                                                       | Ridge, lasso, and elastic-net linear regression                                      |
+|                                                       | Logistic and multinomial regression                                                  |
+| **Nonlinear Models for Regression or Classification** | Random Forest (RF) classification with nvForest inference                            |
+|                                                       | Random Forest (RF) regression with nvForest inference                                |
+|                                                       | CPU or GPU nvForest inference for XGBoost, LightGBM, and Treelite models             |
+|                                                       | K-Nearest Neighbors (KNN) classification with brute-force, IVFFlat, or IVFPQ indexes |
+|                                                       | K-Nearest Neighbors (KNN) regression with brute-force, IVFFlat, or IVFPQ indexes     |
+|                                                       | Support Vector Machine Classifier (SVC)                                              |
+|                                                       | Epsilon-Support Vector Regression (SVR)                                              |
 
-cuda.ml generally provides single-GPU implementations. Interfaces that expose
-`device_id`, currently nvForest inference, can target a particular GPU.
+cuda.ml generally provides single-GPU implementations. Interfaces that
+expose `device_id`, currently nvForest inference, can target a
+particular GPU.
 
 ## Guides
 
-- [Get started with cuda.ml](https://mlverse.github.io/cuda.ml/articles/cuda-ml.html)
-- [Install and manage cuda.ml](https://mlverse.github.io/cuda.ml/articles/install-manage.html)
-- [Use cuda.ml with tidymodels](https://mlverse.github.io/cuda.ml/articles/tidymodels.html)
-- [Save and restore models](https://mlverse.github.io/cuda.ml/articles/model-persistence.html)
-- [nvForest inference and deployment](https://mlverse.github.io/cuda.ml/articles/nvforest.html)
+- [Get started with cuda.ml](
+    https://mlverse.github.io/cuda.ml/articles/cuda-ml.html
+  )
+- [Install and manage cuda.ml](
+    https://mlverse.github.io/cuda.ml/articles/install-manage.html
+  )
+- [Use cuda.ml with tidymodels](
+    https://mlverse.github.io/cuda.ml/articles/tidymodels.html
+  )
+- [Save and restore models](
+    https://mlverse.github.io/cuda.ml/articles/model-persistence.html
+  )
+- [nvForest inference and deployment](
+    https://mlverse.github.io/cuda.ml/articles/nvforest.html
+  )
 
 ## Examples
 
 ### Using {cuda.ml} for supervised ML tasks through {parsnip}
 
-{cuda.ml} provides {parsnip} bindings for supervised ML algorithms such as
-`linear_reg`, `logistic_reg`, `multinom_reg`, `rand_forest`,
-`nearest_neighbor`, `svm_rbf`, `svm_poly`, and `svm_linear`.
-Install {parsnip} and {modeldata} separately to run the examples below.
+{cuda.ml} provides {parsnip} bindings for supervised ML algorithms such
+as `linear_reg`, `logistic_reg`, `multinom_reg`, `rand_forest`,
+`nearest_neighbor`, `svm_rbf`, `svm_poly`, and `svm_linear`. Install
+{parsnip} and {modeldata} separately to run the examples below.
 
-Regularized models follow tidymodels conventions for `penalty` and `mixture`.
-When predictors need scaling, learn and apply it explicitly with a {recipes}
-step such as `step_normalize(all_numeric_predictors())`.
+Regularized models follow tidymodels conventions for `penalty` and
+`mixture`. When predictors need scaling, learn and apply it explicitly
+with a {recipes} step such as
+`step_normalize(all_numeric_predictors())`.
 
-The following example shows how {cuda.ml} can be used as a {parsnip} engine to
-build a SVM classifier.
+The following example shows how {cuda.ml} can be used as a {parsnip}
+engine to build a SVM classifier.
 
 ```{r svm-example, message = FALSE}
 library(dplyr, warn.conflicts = FALSE)
@@ -118,8 +131,8 @@ table(truth = test_data$Class, estimate = preds$.pred_class)
 
 ### Using {cuda.ml} for unsupervised ML tasks
 
-The following example shows how {cuda.ml} can be used for unsupervised ML tasks
-such as k-means clustering.
+The following example shows how {cuda.ml} can be used for unsupervised
+ML tasks such as k-means clustering.
 
 ```{r kmeans-example}
 library(cuda.ml)
@@ -145,16 +158,16 @@ tibble(cluster_id = clustering$labels, oil_type = oils$class) |>
 
 ### Using {cuda.ml} for visualizations
 
-{cuda.ml} also features R interfaces for algorithms such as UMAP and t-SNE,
-which are useful when one needs to visualize clusters of high-dimensional data
-points by embedding them onto low-dimensional manifolds (i.e., 4 dimensions or
-fewer).
+{cuda.ml} also features R interfaces for algorithms such as UMAP and
+t-SNE, which are useful when one needs to visualize clusters of
+high-dimensional data points by embedding them onto low-dimensional
+manifolds (i.e., 4 dimensions or fewer).
 
-For example, the code snippet below shows how `cuda_ml_umap()` can be used to
-visualize the MNIST hand-written digits dataset, and also, the coloring based on
-the true label of each sample demonstrates how well the UMAP algorithm
-transforms different handwriting samples of the same digit into nearby points
-in a 2D embedding:
+For example, the code snippet below shows how `cuda_ml_umap()` can be
+used to visualize the MNIST hand-written digits dataset, and also, the
+coloring based on the true label of each sample demonstrates how well
+the UMAP algorithm transforms different handwriting samples of the same
+digit into nearby points in a 2D embedding:
 
 ```{r mnist-inputs, include = FALSE}
 mnist_files <- file.path(
@@ -213,32 +226,35 @@ embedding$transformed_data |>
 
 ```
 
-From this type of visualization, we can qualitatively understand the following
-about the MNIST dataset:
+From this type of visualization, we can qualitatively understand the
+following about the MNIST dataset:
 
-- The dataset can be reasonably classified into some number of categories.
-- The right number of categories may be anywhere between 9 and 11.
-- While there are some categories that are clearly distinguishable from others,
-  there are others that have less clear boundaries with their neighbors.
-- A small fraction of data points did not fit particularly well into any of the
+- The dataset can be reasonably classified into some number of
   categories.
-- Most data points belonging to the same digit category are clustered together
-  in the UMAP output
+- The right number of categories may be anywhere between 9 and 11.
+- While there are some categories that are clearly distinguishable from
+  others, there are others that have less clear boundaries with their
+  neighbors.
+- A small fraction of data points did not fit particularly well into any
+  of the categories.
+- Most data points belonging to the same digit category are clustered
+  together in the UMAP output
 
 
 ## Installation
 
-Install the R package from CRAN, then prepare its native backend and runtime:
+Install the R package from CRAN, then prepare its native backend and
+runtime:
 
 ``` r
 install.packages("cuda.ml")
 cuda.ml::cuda_ml_install()
 ```
 
-The CRAN package contains no compiled code. `cuda_ml_install()` prepares a
-native backend with the pinned CUDA 13.2.2, RAPIDS cuML and nvForest 26.06, and
-Treelite 4.7.0 stack. The complete runtime is about 1.6 GiB. Repeated calls
-reuse the prepared cache.
+The CRAN package contains no compiled code. `cuda_ml_install()` prepares
+a native backend with the pinned CUDA 13.2.2, RAPIDS cuML and nvForest
+26.06, and Treelite 4.7.0 stack. The complete runtime is about 1.6 GiB.
+Repeated calls reuse the prepared cache.
 
 For a deployment that only runs nvForest inference on a CPU, prepare the
 separate CUDA-free backend instead:
@@ -247,20 +263,23 @@ separate CUDA-free backend instead:
 cuda.ml::cuda_ml_install(device = "cpu")
 ```
 
-Native operations require Linux x86_64 with glibc 2.28 or newer. On Windows,
-install and run R inside a [compatible WSL2 Linux distribution](https://mlverse.github.io/cuda.ml/articles/install-manage.html#windows-through-wsl2);
-native Windows R is not supported. GPU operations also require a supported
-NVIDIA GPU and driver 580 or newer; the CPU-only nvForest backend requires
-neither.
+Native operations require Linux x86_64 with glibc 2.28 or newer. On
+Windows, install and run R inside a
+[compatible WSL2 Linux distribution](
+  https://mlverse.github.io/cuda.ml/articles/install-manage.html#windows-through-wsl2
+); native Windows R is not supported. GPU operations also require a
+supported NVIDIA GPU and driver 580 or newer; the CPU-only nvForest
+backend requires neither.
 
-See [Install and manage cuda.ml](https://mlverse.github.io/cuda.ml/articles/install-manage.html)
-for cache configuration, mirrors, runtime audits, supported GPU architectures,
-and source builds.
+See [Install and manage cuda.ml](
+  https://mlverse.github.io/cuda.ml/articles/install-manage.html
+) for cache configuration, mirrors, runtime audits, supported GPU
+architectures, and source builds.
 
 ### Development version
 
-Install the development version directly from GitHub with {pak}. It uses the
-same downloaded backend pathway:
+Install the development version directly from GitHub with {pak}. It uses
+the same downloaded backend pathway:
 
 ``` r
 # install.packages("pak")
