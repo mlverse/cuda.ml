@@ -45,25 +45,27 @@ listed below (which is a subset of
 
 ## Supported Algorithms
 
-| Category                                              | Algorithm                                                                            |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| **Clustering**                                        | Density-Based Spatial Clustering of Applications with Noise (DBSCAN)                 |
-|                                                       | K-Means                                                                              |
-|                                                       | Single-Linkage Agglomerative Clustering                                              |
-| **Dimensionality Reduction**                          | Principal Components Analysis (PCA)                                                  |
-|                                                       | Truncated Singular Value Decomposition (tSVD)                                        |
-|                                                       | Uniform Manifold Approximation and Projection (UMAP)                                 |
-|                                                       | t-Distributed Stochastic Neighbor Embedding (TSNE)                                   |
-| **Linear Models for Regression or Classification**    | Linear Regression (OLS)                                                              |
-|                                                       | Ridge, lasso, and elastic-net linear regression                                      |
-|                                                       | Logistic and multinomial regression                                                  |
-| **Nonlinear Models for Regression or Classification** | Random Forest (RF) classification with nvForest inference                            |
-|                                                       | Random Forest (RF) regression with nvForest inference                                |
-|                                                       | CPU or GPU nvForest inference for XGBoost, LightGBM, and Treelite models             |
-|                                                       | K-Nearest Neighbors (KNN) classification with brute-force, IVFFlat, or IVFPQ indexes |
-|                                                       | K-Nearest Neighbors (KNN) regression with brute-force, IVFFlat, or IVFPQ indexes     |
-|                                                       | Support Vector Machine Classifier (SVC)                                              |
-|                                                       | Epsilon-Support Vector Regression (SVR)                                              |
+- **Clustering**
+  - Density-Based Spatial Clustering of Applications with Noise (DBSCAN)
+  - K-Means
+  - Single-Linkage Agglomerative Clustering
+- **Dimensionality Reduction**
+  - Principal Components Analysis (PCA)
+  - Truncated Singular Value Decomposition (tSVD)
+  - Uniform Manifold Approximation and Projection (UMAP)
+  - t-Distributed Stochastic Neighbor Embedding (TSNE)
+- **Linear Models for Regression or Classification**
+  - Linear Regression (OLS)
+  - Ridge, lasso, and elastic-net linear regression
+  - Logistic and multinomial regression
+- **Nonlinear Models for Regression or Classification**
+  - Random Forest (RF) classification with nvForest inference
+  - Random Forest (RF) regression with nvForest inference
+  - CPU or GPU nvForest inference for XGBoost, LightGBM, and Treelite models
+  - K-Nearest Neighbors (KNN) classification with brute-force, IVFFlat, or IVFPQ indexes
+  - K-Nearest Neighbors (KNN) regression with brute-force, IVFFlat, or IVFPQ indexes
+  - Support Vector Machine Classifier (SVC)
+  - Epsilon-Support Vector Regression (SVR)
 
 cuda.ml generally provides single-GPU implementations. Interfaces that
 expose `device_id`, currently nvForest inference, can target a
