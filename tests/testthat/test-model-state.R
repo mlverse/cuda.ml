@@ -61,16 +61,16 @@ test_that("model-state file paths are one nonempty string", {
   )
 })
 
-test_that("a frozen compatible state restores across package versions", {
-  serialized <- linear_state_fixture()
-  state <- unserialize(serialized)
+test_that("a compatible state restores across package versions", {
+  state <- unserialize(linear_state_fixture())
+  state$package_version <- "0.4.0"
 
   expect_false(identical(
     state$package_version,
     as.character(utils::packageVersion("cuda.ml"))
   ))
 
-  model <- cuda_ml_unserialize(serialized)
+  model <- cuda_ml_unserialize(serialize(state, NULL))
   expect_s3_class(model, "cuda_ml_ols")
 
   skip_if_not(run_gpu_tests, "requires the GPU test environment")

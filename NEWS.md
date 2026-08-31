@@ -1,5 +1,7 @@
 # cuda.ml (development version)
 
+- Development versions can install their pinned prebuilt backends.
+
 # cuda.ml 0.4.0
 
 This is a breaking release for users upgrading from the cuda.ml 0.3 release

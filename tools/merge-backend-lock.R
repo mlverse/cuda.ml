@@ -21,6 +21,7 @@ catalog <- do.call(
 )
 required <- c(
   "r_version",
+  "package_version",
   "filename",
   "url",
   "size",

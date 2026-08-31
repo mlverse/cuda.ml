@@ -228,6 +228,115 @@ test_that("CPU-only nvForest installation does not accept source inputs", {
   )
 })
 
+test_that("CPU-only nvForest installation uses the locked artifact version", {
+  skip_if_not(
+    native_platform_supported,
+    "requires the managed runtime platform"
+  )
+
+  cache <- tempfile("cuda-ml-cpu-cache-")
+  staging <- tempfile("cuda-ml-cpu-archive-")
+  archive <- tempfile(fileext = ".tar.gz")
+  dir.create(staging)
+  on.exit(unlink(c(cache, staging, archive), recursive = TRUE, force = TRUE))
+
+  backend_name <- paste0("cuda.ml.nvforest", .Platform$dynlib.ext)
+  backend <- file.path(staging, backend_name)
+  writeBin(as.raw(c(0x7f, 0x45, 0x4c, 0x46)), backend)
+  backend_hash <- unname(digest::digest(
+    file = backend,
+    algo = "sha256",
+    serialize = FALSE
+  ))
+  artifact_version <- "0.4.0"
+  info <- cuda_ml_backend_info()
+  write.dcf(
+    matrix(
+      c(
+        "1",
+        "cuda.ml",
+        "nvforest-cpu",
+        artifact_version,
+        info$r_version,
+        info$platform,
+        info$nvforest_version,
+        info$treelite_version,
+        backend_hash,
+        paste(rep("0", 40L), collapse = "")
+      ),
+      nrow = 1L,
+      dimnames = list(
+        NULL,
+        c(
+          "Schema",
+          "Package",
+          "Backend",
+          "Package-Version",
+          "R-Version",
+          "Platform",
+          "nvForest",
+          "Treelite",
+          "Backend-SHA256",
+          "Source-Commit"
+        )
+      )
+    ),
+    file = file.path(staging, "backend.dcf")
+  )
+  writeLines(
+    "Third-party license notices",
+    file.path(staging, "THIRD-PARTY-LICENSES.txt")
+  )
+
+  old_directory <- setwd(staging)
+  on.exit(setwd(old_directory), add = TRUE)
+  utils::tar(
+    archive,
+    c("backend.dcf", backend_name, "THIRD-PARTY-LICENSES.txt"),
+    compression = "gzip",
+    tar = "internal"
+  )
+  setwd(old_directory)
+
+  release <- data.frame(
+    r_version = info$r_version,
+    package_version = artifact_version,
+    filename = basename(archive),
+    url = paste0("https://example.com/", basename(archive)),
+    size = as.numeric(file.info(archive)[["size"]]),
+    sha256 = unname(digest::digest(
+      file = archive,
+      algo = "sha256",
+      serialize = FALSE
+    )),
+    backend_sha256 = backend_hash,
+    stringsAsFactors = FALSE
+  )
+  old_cache <- Sys.getenv("CUDA_ML_CACHE_DIR", unset = NA_character_)
+  Sys.setenv(CUDA_ML_CACHE_DIR = cache)
+  on.exit(
+    {
+      if (is.na(old_cache)) {
+        Sys.unsetenv("CUDA_ML_CACHE_DIR")
+      } else {
+        Sys.setenv(CUDA_ML_CACHE_DIR = old_cache)
+      }
+    },
+    add = TRUE
+  )
+  local_mocked_bindings(
+    cuda_ml_nvforest_cpu_backend_release = function(required = TRUE) release,
+    cuda_ml_download = function(component, url, destination, size, sha256) {
+      stopifnot(file.copy(archive, destination))
+      invisible(destination)
+    },
+    .package = "cuda.ml"
+  )
+
+  expect_true(cuda_ml_install(device = "cpu"))
+  expect_true(cuda_ml_backend_info()$nvforest_cpu_runtime_installed)
+})
+
 test_that("an unpublished backend fails before downloading the runtime", {
   skip_if_not(
     native_platform_supported,
