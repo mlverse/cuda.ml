@@ -7,6 +7,11 @@ home:
 template:
   bootstrap: 5
 
+news:
+  releases:
+  - text: "Version 0.4.0"
+    href: https://opensource.posit.co/blog/2026-08-21_cuda-ml-0-4-0/
+
 articles:
 - title: Guides
   navbar: ~
