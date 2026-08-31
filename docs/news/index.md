@@ -2,6 +2,8 @@
 
 ## cuda.ml 0.4.0
 
+CRAN release: 2026-08-21
+
 This is a breaking release for users upgrading from the cuda.ml 0.3
 release series. It requires R 4.1 or newer and targets CUDA Toolkit
 13.2.2, RAPIDS cuML and nvForest 26.06, and Treelite 4.7.0.

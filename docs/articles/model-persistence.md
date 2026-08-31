@@ -124,6 +124,7 @@ library(cuda.ml)
 library(bundle)
 
 cuda_ml_install(device = "cpu")
+#> Downloading CPU-only nvForest backend for R 4.6 (0.9 MiB)
 forest <- unbundle(readRDS(forest_bundle_path))
 ```
 

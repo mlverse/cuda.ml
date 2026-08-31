@@ -44,7 +44,15 @@
     <li><a class="dropdown-item" href="articles/nvforest.html">nvForest inference and deployment</a></li>
   </ul>
 </li>
-<li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-news" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">News</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-news">
+<li><h6 class="dropdown-header" data-toc-skip>Releases</h6></li>
+    <li><a class="external-link dropdown-item" href="https://opensource.posit.co/blog/2026-08-21_cuda-ml-0-4-0/">Version 0.4.0</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="news/index.html">Changelog</a></li>
+  </ul>
+</li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
@@ -63,90 +71,49 @@
 </h1></div>
 <!-- badges: start -->
 
-<p>The goal of {cuda.ml} is to provide a simple and intuitive R interface for <a href="https://github.com/rapidsai/cuml" class="external-link">RAPIDS cuML</a>. RAPIDS cuML is a suite of GPU-accelerated machine learning libraries powered by <a href="https://en.wikipedia.org/wiki/CUDA" class="external-link">CUDA</a>. {cuda.ml} is under active development, and currently implements R interfaces for the algorithms listed below (which is a subset of <a href="https://github.com/rapidsai/cuml#supported-algorithms" class="external-link">algorithms supported by RAPIDS cuML</a>).</p>
+<p>The goal of {cuda.ml} is to provide a simple and intuitive R interface for <a href="https://github.com/NVIDIA/cuml" class="external-link">RAPIDS cuML</a>. RAPIDS cuML is a suite of GPU-accelerated machine learning libraries powered by <a href="https://en.wikipedia.org/wiki/CUDA" class="external-link">CUDA</a>. {cuda.ml} is under active development, and currently implements R interfaces for the algorithms listed below (which is a subset of <a href="https://github.com/NVIDIA/cuml#supported-algorithms" class="external-link">algorithms supported by RAPIDS cuML</a>).</p>
 <div class="section level2">
 <h2 id="supported-algorithms">Supported Algorithms<a class="anchor" aria-label="anchor" href="#supported-algorithms"></a>
 </h2>
-<table class="table">
-<colgroup>
-<col width="39%">
-<col width="60%">
-</colgroup>
-<thead><tr class="header">
-<th>Category</th>
-<th>Algorithm</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td><strong>Clustering</strong></td>
-<td>Density-Based Spatial Clustering of Applications with Noise (DBSCAN)</td>
-</tr>
-<tr class="even">
-<td></td>
-<td>K-Means</td>
-</tr>
-<tr class="odd">
-<td></td>
-<td>Single-Linkage Agglomerative Clustering</td>
-</tr>
-<tr class="even">
-<td><strong>Dimensionality Reduction</strong></td>
-<td>Principal Components Analysis (PCA)</td>
-</tr>
-<tr class="odd">
-<td></td>
-<td>Truncated Singular Value Decomposition (tSVD)</td>
-</tr>
-<tr class="even">
-<td></td>
-<td>Uniform Manifold Approximation and Projection (UMAP)</td>
-</tr>
-<tr class="odd">
-<td></td>
-<td>t-Distributed Stochastic Neighbor Embedding (TSNE)</td>
-</tr>
-<tr class="even">
-<td><strong>Linear Models for Regression or Classification</strong></td>
-<td>Linear Regression (OLS)</td>
-</tr>
-<tr class="odd">
-<td></td>
-<td>Ridge, lasso, and elastic-net linear regression</td>
-</tr>
-<tr class="even">
-<td></td>
-<td>Logistic and multinomial regression</td>
-</tr>
-<tr class="odd">
-<td><strong>Nonlinear Models for Regression or Classification</strong></td>
-<td>Random Forest (RF) classification with nvForest inference</td>
-</tr>
-<tr class="even">
-<td></td>
-<td>Random Forest (RF) regression with nvForest inference</td>
-</tr>
-<tr class="odd">
-<td></td>
-<td>CPU or GPU nvForest inference for XGBoost, LightGBM, and Treelite models</td>
-</tr>
-<tr class="even">
-<td></td>
-<td>K-Nearest Neighbors (KNN) classification with brute-force, IVFFlat, or IVFPQ indexes</td>
-</tr>
-<tr class="odd">
-<td></td>
-<td>K-Nearest Neighbors (KNN) regression with brute-force, IVFFlat, or IVFPQ indexes</td>
-</tr>
-<tr class="even">
-<td></td>
-<td>Support Vector Machine Classifier (SVC)</td>
-</tr>
-<tr class="odd">
-<td></td>
-<td>Epsilon-Support Vector Regression (SVR)</td>
-</tr>
-</tbody>
-</table>
+<ul>
+<li>
+<strong>Clustering</strong>
+<ul>
+<li>Density-Based Spatial Clustering of Applications with Noise (DBSCAN)</li>
+<li>K-Means</li>
+<li>Single-Linkage Agglomerative Clustering</li>
+</ul>
+</li>
+<li>
+<strong>Dimensionality Reduction</strong>
+<ul>
+<li>Principal Components Analysis (PCA)</li>
+<li>Truncated Singular Value Decomposition (tSVD)</li>
+<li>Uniform Manifold Approximation and Projection (UMAP)</li>
+<li>t-Distributed Stochastic Neighbor Embedding (TSNE)</li>
+</ul>
+</li>
+<li>
+<strong>Linear Models for Regression or Classification</strong>
+<ul>
+<li>Linear Regression (OLS)</li>
+<li>Ridge, lasso, and elastic-net linear regression</li>
+<li>Logistic and multinomial regression</li>
+</ul>
+</li>
+<li>
+<strong>Nonlinear Models for Regression or Classification</strong>
+<ul>
+<li>Random Forest (RF) classification with nvForest inference</li>
+<li>Random Forest (RF) regression with nvForest inference</li>
+<li>CPU or GPU nvForest inference for XGBoost, LightGBM, and Treelite models</li>
+<li>K-Nearest Neighbors (KNN) classification with brute-force, IVFFlat, or IVFPQ indexes</li>
+<li>K-Nearest Neighbors (KNN) regression with brute-force, IVFFlat, or IVFPQ indexes</li>
+<li>Support Vector Machine Classifier (SVC)</li>
+<li>Epsilon-Support Vector Regression (SVR)</li>
+</ul>
+</li>
+</ul>
 <p>cuda.ml generally provides single-GPU implementations. Interfaces that expose <code>device_id</code>, currently nvForest inference, can target a particular GPU.</p>
 </div>
 <div class="section level2">
@@ -272,7 +239,7 @@
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">embedding</span><span class="op">$</span><span class="va">transformed_data</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  num [1:60000, 1:2] -0.265 -27.208 8.108 16.145 11.808 ...</span></span>
+<span><span class="co">#&gt;  num [1:60000, 1:2] -1.08 -28.59 8.03 12.62 11.67 ...</span></span>
 <span></span>
 <span><span class="co"># visualize</span></span>
 <span><span class="va">embedding</span><span class="op">$</span><span class="va">transformed_data</span> <span class="op">|&gt;</span></span>
