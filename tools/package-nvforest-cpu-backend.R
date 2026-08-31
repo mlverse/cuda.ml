@@ -182,6 +182,7 @@ archive_hash <- unname(digest::digest(
 ))
 row <- data.frame(
   r_version = r_version,
+  package_version = description[["Version"]],
   filename = filename,
   url = paste0(base_url, "/", filename),
   size = as.numeric(file.info(archive)[["size"]]),

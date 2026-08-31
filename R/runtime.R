@@ -378,6 +378,7 @@ cuda_ml_backend_catalog <- function() {
         "character",
         "character",
         "character",
+        "character",
         "numeric",
         "character",
         "character"
@@ -387,6 +388,7 @@ cuda_ml_backend_catalog <- function() {
   )
   required <- c(
     "r_version",
+    "package_version",
     "filename",
     "url",
     "size",
@@ -397,6 +399,7 @@ cuda_ml_backend_catalog <- function() {
     identical(names(catalog), required) &&
     !anyDuplicated(catalog$r_version) &&
     all(grepl("^[0-9]+[.][0-9]+$", catalog$r_version)) &&
+    all(grepl("^[0-9]+([.-][0-9]+)+$", catalog$package_version)) &&
     all(nzchar(catalog$filename)) &&
     all(basename(catalog$filename) == catalog$filename) &&
     all(endsWith(catalog$filename, ".tar.gz")) &&
@@ -453,6 +456,7 @@ cuda_ml_nvforest_cpu_backend_catalog <- function() {
         "character",
         "character",
         "character",
+        "character",
         "numeric",
         "character",
         "character"
@@ -462,6 +466,7 @@ cuda_ml_nvforest_cpu_backend_catalog <- function() {
   )
   required <- c(
     "r_version",
+    "package_version",
     "filename",
     "url",
     "size",
@@ -472,6 +477,7 @@ cuda_ml_nvforest_cpu_backend_catalog <- function() {
     identical(names(catalog), required) &&
     !anyDuplicated(catalog$r_version) &&
     all(grepl("^[0-9]+[.][0-9]+$", catalog$r_version)) &&
+    all(grepl("^[0-9]+([.-][0-9]+)+$", catalog$package_version)) &&
     all(nzchar(catalog$filename)) &&
     all(basename(catalog$filename) == catalog$filename) &&
     all(endsWith(catalog$filename, ".tar.gz")) &&
@@ -973,7 +979,9 @@ cuda_ml_backend_archive_metadata <- function(path, backend_identity) {
   expected <- c(
     Schema = "1",
     Package = "cuda.ml",
-    `Package-Version` = as.character(utils::packageVersion("cuda.ml")),
+    `Package-Version` = unname(
+      backend_identity$release[["package_version"]]
+    ),
     `R-Version` = backend_identity$r_version,
     Platform = unname(.cuda_ml_state$metadata[["Platform"]]),
     CUDA = unname(.cuda_ml_state$metadata[["CUDA"]]),
@@ -1022,7 +1030,9 @@ cuda_ml_nvforest_cpu_archive_metadata <- function(path, backend_identity) {
     Schema = "1",
     Package = "cuda.ml",
     Backend = "nvforest-cpu",
-    `Package-Version` = as.character(utils::packageVersion("cuda.ml")),
+    `Package-Version` = unname(
+      backend_identity$release[["package_version"]]
+    ),
     `R-Version` = backend_identity$r_version,
     Platform = unname(.cuda_ml_state$metadata[["Platform"]]),
     nvForest = unname(.cuda_ml_state$metadata[["nvForest"]]),
